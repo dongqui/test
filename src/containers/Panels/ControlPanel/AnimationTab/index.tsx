@@ -23,7 +23,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
-  const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
+  const _selectedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
@@ -49,10 +49,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [eulerZ, setEulerZ] = useState<number>(0);
 
   // useState for quaternion value
-  const [quarternionW, setQuarternionW] = useState<number>(1);
-  const [quarternionX, setQuarternionX] = useState<number>(0);
-  const [quarternionY, setQuarternionY] = useState<number>(0);
-  const [quarternionZ, setQuarternionZ] = useState<number>(0);
+  const [quaternionW, setQuaternionW] = useState<number>(1);
+  const [quaternionX, setQuaternionX] = useState<number>(0);
+  const [quaternionY, setQuaternionY] = useState<number>(0);
+  const [quaternionZ, setQuaternionZ] = useState<number>(0);
 
   // useState for scaling value
   const [scaleX, setScaleX] = useState<number>(0);
@@ -67,6 +67,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const [currentRotationType, setCurrentRotationType] = useState<PlaskRotationType>('euler');
 
   // filter section
+  // 1euro filter values. refer https://cristal.univ-lille.fr/~casiez/1euro/
   const [isFilterOn, setIsFilterOn] = useState<boolean>(false);
   const [fcValue, setFcValue] = useState<number>(10);
   const [betaValue, setBetaValue] = useState<number>(1);
@@ -92,7 +93,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else if (_selectedTargets.length === 1) {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId && animationIngredient.current);
-      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer)!;
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _selectedLayer)!;
       const targetTrack = targetLayer.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
 
       setControlLayer(targetLayer);
@@ -101,7 +102,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       setControlLayer(null);
       setControlTrack(null);
     }
-  }, [_animationIngredients, _selectedTargets, _seletedLayer]);
+  }, [_animationIngredients, _selectedTargets, _selectedLayer]);
 
   // set states related to target's properties when target's matrix is updated
   useEffect(() => {
@@ -117,10 +118,10 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         setEulerY(convertToDegree(e.y));
         setEulerZ(convertToDegree(e.z));
 
-        setQuarternionW(rotationQuaternion!.w);
-        setQuarternionX(rotationQuaternion!.x);
-        setQuarternionY(rotationQuaternion!.y);
-        setQuarternionZ(rotationQuaternion!.z);
+        setQuaternionW(rotationQuaternion!.w);
+        setQuaternionX(rotationQuaternion!.x);
+        setQuaternionY(rotationQuaternion!.y);
+        setQuaternionZ(rotationQuaternion!.z);
 
         setScaleX(scaling.x);
         setScaleY(scaling.y);
@@ -137,7 +138,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   useEffect(() => {
     if (selectedAssetId) {
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
+      const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _selectedLayer);
 
       if (targetLayer) {
         const useFilter = targetLayer.useFilter;
@@ -148,7 +149,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     } else {
       setIsFilterOn(false);
     }
-  }, [_animationIngredients, _seletedLayer, selectedAssetId]);
+  }, [_animationIngredients, _selectedLayer, selectedAssetId]);
 
   // change filter parameters according to the selected track
   useEffect(() => {
@@ -163,44 +164,29 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // callback to spread/fold transform section
   const handleSpreadTransform = useCallback(() => {
-    if (isTransformSectionSpread) {
-      setIsTransformSectionSpread(false);
-    } else {
-      setIsTransformSectionSpread(true);
-    }
-  }, [isTransformSectionSpread]);
+    setIsTransformSectionSpread((prevState) => !prevState);
+  }, []);
 
   // callback to spread/fold filter section
   const handleSpreadFilter = useCallback(() => {
-    if (isFilterSectionSpread) {
-      setIsFilterSectionSpread(false);
-    } else {
-      setIsFilterSectionSpread(true);
-    }
-  }, [isFilterSectionSpread]);
+    setIsFilterSectionSpread((prevState) => !prevState);
+  }, []);
 
   // callback to power filter on/off
   const handleFilterToggle = useCallback(() => {
     if (selectedAssetId) {
-      if (isFilterOn) {
-        setIsFilterOn(false);
-        // useFilter to false
-        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-        if (targetAnimationIngredient) {
-          dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
-          forceClickAnimationPauseAndPlay(_playState, _playDirection);
-        }
-      } else {
-        setIsFilterOn(true);
-        // useFilter to true
-        const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-        if (targetAnimationIngredient) {
-          dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id, layerId: _seletedLayer }));
-          forceClickAnimationPauseAndPlay(_playState, _playDirection);
+      const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
+      if (targetAnimationIngredient) {
+        if (isFilterOn) {
+          dispatch(animationDataActions.turnFilterOff({ animationIngredientId: targetAnimationIngredient.id, layerId: _selectedLayer }));
+        } else {
+          dispatch(animationDataActions.turnFilterOn({ animationIngredientId: targetAnimationIngredient.id, layerId: _selectedLayer }));
         }
       }
+      setIsFilterOn((prevState) => !prevState);
+      forceClickAnimationPauseAndPlay(_playState, _playDirection);
     }
-  }, [_animationIngredients, _playDirection, _playState, _seletedLayer, dispatch, isFilterOn, selectedAssetId]);
+  }, [_animationIngredients, _playDirection, _playState, _selectedLayer, dispatch, isFilterOn, selectedAssetId]);
 
   const positionInputData = [
     {
@@ -368,7 +354,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           }
 
           if (controlTarget) {
-            setQuarternionW(parseFloat(event.target.value));
+            setQuaternionW(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.w = parseFloat(event.target.value);
           }
         },
@@ -376,7 +362,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 1), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quarternionW,
+      currentValue: quaternionW,
     },
     {
       text: 'X',
@@ -387,7 +373,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           }
 
           if (controlTarget) {
-            setQuarternionX(parseFloat(event.target.value));
+            setQuaternionX(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.x = parseFloat(event.target.value);
           }
         },
@@ -395,7 +381,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quarternionX,
+      currentValue: quaternionX,
     },
     {
       text: 'Y',
@@ -406,7 +392,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           }
 
           if (controlTarget) {
-            setQuarternionY(parseFloat(event.target.value));
+            setQuaternionY(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.y = parseFloat(event.target.value);
           }
         },
@@ -414,7 +400,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.y : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quarternionY,
+      currentValue: quaternionY,
     },
     {
       text: 'Z',
@@ -425,7 +411,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           }
 
           if (controlTarget) {
-            setQuarternionZ(parseFloat(event.target.value));
+            setQuaternionZ(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.z = parseFloat(event.target.value);
           }
         },
@@ -433,7 +419,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.z : 0), [controlTarget]),
       decimalDigit: 4,
-      currnetValue: quarternionZ,
+      currentValue: quaternionZ,
     },
   ];
 
@@ -511,13 +497,13 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            dispatch(animationDataActions.changeTrackFilterMinCutoff({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
+            dispatch(animationDataActions.changeTrackFilterMinCutoff({ layerId: _selectedLayer, trackId: controlTrack.id, value: inputValue }));
             // @TODO anti-pattern
             // to use new animationGroup, click pause and play button
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
-        [_playDirection, _playState, _seletedLayer, controlTrack, dispatch],
+        [_playDirection, _playState, _selectedLayer, controlTrack, dispatch],
       ),
     },
     {
@@ -533,13 +519,13 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       onChangeEnd: useCallback(
         (inputValue: number) => {
           if (controlTrack) {
-            dispatch(animationDataActions.changeTrackFilterBeta({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
+            dispatch(animationDataActions.changeTrackFilterBeta({ layerId: _selectedLayer, trackId: controlTrack.id, value: inputValue }));
             // @TODO anti-pattern
             // to use new animationGroup, click pause and play button
             forceClickAnimationPauseAndPlay(_playState, _playDirection);
           }
         },
-        [_playDirection, _playState, _seletedLayer, controlTrack, dispatch],
+        [_playDirection, _playState, _selectedLayer, controlTrack, dispatch],
       ),
     },
   ];
@@ -562,7 +548,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             <AnimationInputWrapper inputTitle="Quaternion" inputInfo={quaternionInputData} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
           )}
           <AnimationInputWrapper inputTitle="Scale" inputInfo={scaleInputData} activeStatus={isAllActive && !isNull(controlTarget)} />
-          {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
+          {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')} />}
         </div>
       </section>
       <section className={cx('filter-section')}>
@@ -591,7 +577,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
               onChangeEnd={info.onChangeEnd}
             />
           ))}
-          {(!isAllActive || !isFilterOn || isNull(controlTrack)) && <div className={cx('inactive-overlay')}></div>}
+          {(!isAllActive || !isFilterOn || isNull(controlTrack)) && <div className={cx('inactive-overlay')} />}
         </div>
       </section>
     </Fragment>

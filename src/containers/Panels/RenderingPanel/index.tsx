@@ -662,7 +662,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             plaskEngine.visibilityLayers.toggleVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isMeshVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
         },
         {
           value: 'Mesh',
@@ -670,7 +670,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             plaskEngine.visibilityLayers.toggleVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isBoneVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
         },
         {
           value: 'Gizmo',
@@ -688,7 +688,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   return (
     <div className={cx('wrapper')}>
-      <div id="rpDragBox" ref={rpDragBox}></div>
+      <div id="rpDragBox" ref={rpDragBox} />
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
       <ScreenVisibility itemList={screenVisibilityItemList} />
     </div>

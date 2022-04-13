@@ -1,5 +1,5 @@
-import { FunctionComponent, memo, useState, useEffect, useCallback, useRef } from 'react';
-import _ from 'lodash';
+import { FunctionComponent, memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { find, map, isEqual } from 'lodash';
 import DropdownItem from './DropdownItem';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classNames from 'classnames/bind';
@@ -42,12 +42,12 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [transform, setTransform] = useState<string>();
 
-  const defaultValue = _.find(list, { isSelected: true })?.value || list[0]?.value;
+  const defaultValue = useMemo(() => find(list, { isSelected: true })?.value || list[0]?.value, [list]);
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const handleToggle = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
+    setIsOpen((prevState) => !prevState);
+  }, []);
 
   const handleClose = useCallback(() => {
     isOpen && setIsOpen(false);
@@ -80,31 +80,27 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
 
       const handleTrapTabKey = (e: KeyboardEvent) => {
         // Trap Tab Key: KeyCode 9
-        if (_.isEqual(e.key, 'Tab')) {
+        if (isEqual(e.key, 'Tab')) {
           if (e.shiftKey) {
-            if (_.isEqual(document.activeElement, firstFocusTarget)) {
+            if (isEqual(document.activeElement, firstFocusTarget)) {
               e.preventDefault();
               lastFocusTarget.focus();
             }
-          }
-
-          // Tab
-          if (!e.shiftKey) {
-            if (_.isEqual(document.activeElement, lastFocusTarget)) {
+          } else {
+            if (isEqual(document.activeElement, lastFocusTarget)) {
               e.preventDefault();
-
               firstFocusTarget.focus();
             }
           }
         }
 
         // ESC Key: KeyCode 27
-        if (_.isEqual(e.key, 'Escape')) {
+        if (isEqual(e.key, 'Escape')) {
           isOpen && handleToggle();
         }
 
         // Enter Key: Keycode 13
-        if (_.isEqual(e.key, 'Enter')) {
+        if (isEqual(e.key, 'Enter')) {
           e.preventDefault();
         }
       };
@@ -166,7 +162,7 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
       </div>
       {isOpen && (
         <ul className={dropdownClasses} style={{ transform }} role="menu">
-          {_.map(list, (item, i) => {
+          {map(list, (item, i) => {
             const key = `${item.key}_${i}`;
             return <DropdownItem key={key} item={item} selectedValue={selectedValue} onSelect={handleSelect} />;
           })}

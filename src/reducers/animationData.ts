@@ -180,7 +180,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       return Object.assign({}, state, {
         retargetMaps: state.retargetMaps.map((retargetMap) => {
           if (retargetMap.assetId === action.payload.assetId) {
-            return { ...retargetMap, hipSpace: action.payload.hipSpaece };
+            return { ...retargetMap, hipSpace: action.payload.hipSpace };
           } else {
             return retargetMap;
           }

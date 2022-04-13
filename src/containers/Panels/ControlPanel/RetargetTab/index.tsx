@@ -103,56 +103,66 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   }, [_selectedTargets]);
 
   // 스켈레톤 icon 위에 circle로 bone들을 찍기위한 데이터
-  const sourceBoneList: { left: number; top: number; name: RetargetSourceBoneType }[] = [
-    { left: 92, top: 186, name: 'hips' },
-    { left: 92, top: 152, name: 'spine' },
-    { left: 92, top: 124, name: 'spine1' },
-    { left: 92, top: 96, name: 'spine2' },
-    { left: 92, top: 57, name: 'neck' },
-    { left: 92, top: 23, name: 'head' },
-    { left: 101, top: 72, name: 'leftShoulder' },
-    { left: 127, top: 78, name: 'leftArm' },
-    { left: 137, top: 130, name: 'leftForeArm' },
-    { left: 155, top: 163, name: 'leftHand' },
-    { left: 164, top: 181, name: 'leftHandIndex1' },
-    { left: 83, top: 72, name: 'rightShoulder' },
-    { left: 57, top: 78, name: 'rightArm' },
-    { left: 47, top: 130, name: 'rightForeArm' },
-    { left: 29, top: 163, name: 'rightHand' },
-    { left: 20, top: 181, name: 'rightHandIndex1' },
-    { left: 113, top: 201, name: 'leftUpLeg' },
-    { left: 115, top: 255, name: 'leftLeg' },
-    { left: 118, top: 327, name: 'leftFoot' },
-    { left: 121, top: 352, name: 'leftToeBase' },
-    { left: 71, top: 201, name: 'rightUpLeg' },
-    { left: 69, top: 255, name: 'rightLeg' },
-    { left: 66, top: 327, name: 'rightFoot' },
-    { left: 63, top: 352, name: 'rightToeBase' },
-  ];
+  const sourceBoneList: { left: number; top: number; name: RetargetSourceBoneType }[] = useMemo(
+    () => [
+      { left: 92, top: 186, name: 'hips' },
+      { left: 92, top: 152, name: 'spine' },
+      { left: 92, top: 124, name: 'spine1' },
+      { left: 92, top: 96, name: 'spine2' },
+      { left: 92, top: 57, name: 'neck' },
+      { left: 92, top: 23, name: 'head' },
+      { left: 101, top: 72, name: 'leftShoulder' },
+      { left: 127, top: 78, name: 'leftArm' },
+      { left: 137, top: 130, name: 'leftForeArm' },
+      { left: 155, top: 163, name: 'leftHand' },
+      { left: 164, top: 181, name: 'leftHandIndex1' },
+      { left: 83, top: 72, name: 'rightShoulder' },
+      { left: 57, top: 78, name: 'rightArm' },
+      { left: 47, top: 130, name: 'rightForeArm' },
+      { left: 29, top: 163, name: 'rightHand' },
+      { left: 20, top: 181, name: 'rightHandIndex1' },
+      { left: 113, top: 201, name: 'leftUpLeg' },
+      { left: 115, top: 255, name: 'leftLeg' },
+      { left: 118, top: 327, name: 'leftFoot' },
+      { left: 121, top: 352, name: 'leftToeBase' },
+      { left: 71, top: 201, name: 'rightUpLeg' },
+      { left: 69, top: 255, name: 'rightLeg' },
+      { left: 66, top: 327, name: 'rightFoot' },
+      { left: 63, top: 352, name: 'rightToeBase' },
+    ],
+    [],
+  );
 
   // source bone pointer/dropdown 클릭 시 active 효과 적용
   // source bone과 mapping 된 target bone에도 active 효과 적용
-  const selectSourceBone = (sourceBoneName: RetargetSourceBoneType) => {
-    const mappedTargetTransformNodeId = checkAlreadyMappedTargetBone(sourceBoneName);
-    if (mappedTargetTransformNodeId === RETARGET_TARGET_BONE_NONE) {
-      setCurrentTargetTransformNode({ id: null, name: RETARGET_TARGET_BONE_NONE });
-      dispatch(selectingDataActions.resetSelectedTargets());
-    } else if (mappedTargetTransformNodeId !== null) {
-      const transformNode = visualizedTransformNodes.find((visualizedTransformNode) => visualizedTransformNode.id === mappedTargetTransformNodeId);
-      if (transformNode) {
-        setCurrentTargetTransformNode({ id: transformNode.id, name: transformNode.name });
-        dispatch(selectingDataActions.defaultSingleSelect({ target: transformNode }));
+  const selectSourceBone = useCallback(
+    (sourceBoneName: RetargetSourceBoneType) => {
+      const mappedTargetTransformNodeId = checkAlreadyMappedTargetBone(sourceBoneName);
+      if (mappedTargetTransformNodeId === RETARGET_TARGET_BONE_NONE) {
+        setCurrentTargetTransformNode({ id: null, name: RETARGET_TARGET_BONE_NONE });
+        dispatch(selectingDataActions.resetSelectedTargets());
+      } else if (mappedTargetTransformNodeId !== null) {
+        const transformNode = visualizedTransformNodes.find((visualizedTransformNode) => visualizedTransformNode.id === mappedTargetTransformNodeId);
+        if (transformNode) {
+          setCurrentTargetTransformNode({ id: transformNode.id, name: transformNode.name });
+          dispatch(selectingDataActions.defaultSingleSelect({ target: transformNode }));
+        }
       }
-    }
-    setCurrentSourceBoneName(sourceBoneName);
-    isSelectedTargetBoneOption.current = false;
-  };
+      setCurrentSourceBoneName(sourceBoneName);
+      isSelectedTargetBoneOption.current = false;
+    },
+    [checkAlreadyMappedTargetBone, dispatch, visualizedTransformNodes],
+  );
 
   // sourceBone을 선택하기 위한 드랍다운으로 넘길 데이터
-  const sourceBoneOptions = sourceBoneList.map((bone) => ({
-    text: bone.name,
-    handleSelect: () => selectSourceBone(bone.name),
-  }));
+  const sourceBoneOptions = useMemo(
+    () =>
+      sourceBoneList.map((bone) => ({
+        text: bone.name,
+        handleSelect: () => selectSourceBone(bone.name),
+      })),
+    [selectSourceBone, sourceBoneList],
+  );
 
   // targetBone(targetTransformNode)를 선택하기 위한 드랍다운으로 넘길 데이터
   const targetTransformNodeOptions = useMemo(() => {
@@ -212,22 +222,20 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   // 조절 된 hip space값 전달
   const dispatchChangedHipSpace = useCallback(
-    (hipSpaece: number) => {
+    (hipSpace: number) => {
       if (visualizedRetargetMap) {
-        dispatch(animationDataActions.changeHipSpace({ assetId: visualizedRetargetMap.assetId, hipSpaece }));
+        dispatch(animationDataActions.changeHipSpace({ assetId: visualizedRetargetMap.assetId, hipSpace: hipSpace }));
       }
     },
     [visualizedRetargetMap, dispatch],
   );
 
+  // Function to fold/unfold retargeting section
   const handleSpreadMapping = useCallback(() => {
-    if (isMappingSectionSpread) {
-      setIsMappingSectionSpread(false);
-    } else {
-      setIsMappingSectionSpread(true);
-    }
-  }, [isMappingSectionSpread]);
+    setIsMappingSectionSpread((prevState) => !prevState);
+  }, []);
 
+  // Function to change hip space range input
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setHipSpace(parseFloat(event.target.value));
   }, []);
@@ -250,11 +258,11 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
                 style={{ left: bone.left, top: bone.top }}
                 onClick={() => selectSourceBone(bone.name)}
               >
-                <div className={cx('bone', { mapped: mappedBones.includes(bone.name) })}></div>
+                <div className={cx('bone', { mapped: mappedBones.includes(bone.name) })} />
               </div>
             ))}
           </div>
-          {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
+          {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')} />}
         </div>
         <div className={cx('container', { active: isMappingSectionSpread })}>
           <DropdownWrapper
@@ -277,7 +285,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             <FilledButton className={cx('mapping-assign-button', { active: canAssign })} onClick={handleAssignButtonClick}>
               Assign
             </FilledButton>
-            {!canAssign && <div className={cx('inactive-overlay')}></div>}
+            {!canAssign && <div className={cx('inactive-overlay')} />}
           </div>
           <AnimationRangeInput
             text="Hip space"
@@ -290,7 +298,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             handleChange={handleChange}
             limitMax={1000}
           />
-          {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')}></div>}
+          {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')} />}
         </div>
       </section>
     </Fragment>

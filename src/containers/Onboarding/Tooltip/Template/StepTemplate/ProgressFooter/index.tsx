@@ -36,7 +36,7 @@ const ProgressFooter: FunctionComponent<Props> = (props) => {
 
   // Next 버튼 클릭
   const handleClickNextButton = () => {
-    const nextStep = (step + 1) as OnboardingStep;
+    const nextStep = (step + 1) as ProgressStep;
     dispatch(globalUIActions.progressOnboarding({ onboardingStep: nextStep }));
   };
 
