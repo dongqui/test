@@ -16,6 +16,7 @@ import {
   Matrix,
   Skeleton,
   Scalar,
+  AssetContainer,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { 
@@ -31,7 +32,6 @@ import { SelectorModule } from '../selector/SelectorModule';
 type BoneIKParams = {
   name: string;
   controllerSize: number;
-  initialPosition: Vector3;
   poleAngle: number;
 };
 
@@ -50,10 +50,8 @@ export class IKModule extends Module {
   private _gizmoManager!: GizmoManager;
   private _advancedTexture!: AdvancedDynamicTexture;
   private _pickedIkMesh: Mesh | undefined;
-  private _pickedIkMeshClone: Mesh | undefined;
-  private _ikMeshesClones: Mesh[] = [];
-  private _blendSlider: Slider | undefined;
-  private _poleAngleSlider: Slider | undefined;
+  private _blendSlider: Slider = new Slider();
+  private _poleAngleSlider: Slider = new Slider();
 
   private get _allTransformNodes() {
     return this.plaskEngine.selectorModule.allTransformNodes;
@@ -79,8 +77,7 @@ export class IKModule extends Module {
     this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
     this._gizmoManager.usePointerToAttachGizmos = false;
     this._gizmoManager.positionGizmoEnabled = true; // position
-    //this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI', undefined, this.plaskEngine.scene);
-    this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI', true, this.plaskEngine.scene);
+    this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI', undefined, this.plaskEngine.scene);
   }
 
   public tick(elapsed: number) {
@@ -106,7 +103,7 @@ export class IKModule extends Module {
     // Creating IK Target Meshes
     // TODO : make that generic (for now really name dependent)
     const scene = this.plaskEngine.scene;
-    const control = MeshBuilder.CreateTorus(
+    const controller = MeshBuilder.CreateTorus(
       'ctrl_' + params.name,
       {
         diameter: params.name.includes('Hand') ? params.controllerSize * 1.5 : params.controllerSize,
@@ -116,41 +113,40 @@ export class IKModule extends Module {
       scene,
     );
 
-    control.renderingGroupId = 1;
-    control.material = new StandardMaterial(control.name, scene);
-    (control.material as StandardMaterial).diffuseColor = Color3.Teal();
-    (control.material as StandardMaterial).emissiveColor = Color3.Teal();
-    (control.material as StandardMaterial).specularColor = Color3.Teal();
+    controller.renderingGroupId = 1;
+    controller.material = new StandardMaterial(controller.name, scene);
+    (controller.material as StandardMaterial).diffuseColor = Color3.Teal();
+    (controller.material as StandardMaterial).emissiveColor = Color3.Teal();
+    (controller.material as StandardMaterial).specularColor = Color3.Teal();
 
-    bone.getPositionToRef(Space.WORLD, transformNode, control.position);
-    params.initialPosition = control.position;
-    //control.rotationQuaternion = transformNode.absoluteRotationQuaternion;
+    bone.getPositionToRef(Space.WORLD, transformNode, controller.position);
     // eslint-disable-next-line prettier/prettier
-    control.rotationQuaternion = params.name.includes('Hand')
+    // TRICK to adjust Foot Controllers rotation to Leg instead of Foot 
+    controller.rotationQuaternion = params.name.includes('Hand')
     ? transformNode.absoluteRotationQuaternion
     : (transformNode.parent as Mesh).absoluteRotationQuaternion;
 
     // TODO : make this a child class instead of storing in metadata
     // Or make a map that link ikctrlmesh / bone / transformNode
-    control.metadata = control.metadata || {};
-    control.metadata.__transformNode = transformNode;
-    control.metadata.__bone = bone;
+    // Clone addition
+    const controllerClone = controller.clone('cln_'+controller.name);
+    controllerClone.metadata = {
+      controller: controller,
+      ikController: undefined,
+      transformNodeClone: scene.getTransformNodeByName('Clone of '+bone.name),
+      blend: 1,
+    };
+    controller.setParent(controllerClone);
+    controller.isVisible = false;
+    controller.isPickable = false;
 
-    // Nelson's aditions
-    control.metadata.__initialPosition = new Vector3(control.position.x, control.position.y, control.position.z);
-    control.metadata.__poleAngle = params.poleAngle;
-    control.metadata.__blend = 1;
-
-    return control;
+    return {controller, controllerClone};
   }
 
   private _createGUIElement() {
 
     const advancedTexture = this._advancedTexture;
-    //const activeIKControllers = this._activeIkControllers;
-    const pickedIkCtrl = this._pickedIkMesh;
     const scene = this.plaskEngine.scene;
-    const retargetMap = this.retargetMap;
 
     // IK PANELS ///////////////////////////////////////////////////////////////////
     const slidePanel = new StackPanel();
@@ -184,14 +180,7 @@ export class IKModule extends Module {
         header_PoleAngle.text = "Pole Angle: " + (Tools.ToDegrees(value) | 0) + " deg";
 
         if (this._pickedIkMesh) {
-           let ikController = this._ikControllers.find((ctrl) => ctrl.targetMesh == this._pickedIkMesh)
-           if (ikController)
-            {
-              ikController.poleAngle = value;
-              console.log(ikController.poleAngle);
-            }
-
-            this._pickedIkMesh.metadata.__poleAngle = value;
+            this._pickedIkMesh.metadata.ikController.poleAngle = value;
         }
     });
     slidePanel.addControl(slider_PoleAngle);
@@ -211,63 +200,38 @@ export class IKModule extends Module {
     slider_Blend.value = 1;
     slider_Blend.height = "20px";
     slider_Blend.width = "200px";
-    //slider_Blend.isVisible = false;
     slider_Blend.background = "teal";
     slider_Blend.onValueChangedObservable.add((value) => {
         header_Blend.text = "FK / IK Blend: " + value.toFixed(1);
 
         // Evaluate if a IK Controller is selected
-        if (this._pickedIkMesh && this._pickedIkMeshClone) {
-          this._pickedIkMesh.isVisible = false;
-          this._pickedIkMeshClone.isVisible = true;
-         
-          // Blend between FK (original) position and IK position
-          this._pickedIkMesh.absolutePosition.x = 
-              Scalar.Lerp(
-                this._pickedIkMesh.metadata.__initialPosition.x,
-                this._pickedIkMeshClone.position.x,
-                value
+        if (this._pickedIkMesh) {
+          let newPos = new Vector3();
+          Vector3.LerpToRef(
+            this._pickedIkMesh.metadata.transformNodeClone.absolutePosition,
+            this._pickedIkMesh.absolutePosition,
+              value,
+              newPos
           );
-          this._pickedIkMesh.absolutePosition.y = 
-              Scalar.Lerp(
-                this._pickedIkMesh.metadata.__initialPosition.y,
-                this._pickedIkMeshClone.position.y,
-                value
-          );
-          this._pickedIkMesh.absolutePosition.z = 
-              Scalar.Lerp(
-                this._pickedIkMesh.metadata.__initialPosition.z,
-                this._pickedIkMeshClone.position.z,
-                value
-          );
+          this._pickedIkMesh.metadata.controller.setAbsolutePosition(newPos);
+          this._pickedIkMesh.metadata.blend = value;
 
-          if (this._pickedIkMeshClone.material) {
-            // Blend between TEAL and WHITE colors
-            (this._pickedIkMeshClone.material as StandardMaterial).emissiveColor.r =
-                Scalar.Lerp(
-                    Color3.White().r,
-                    Color3.Teal().r,
-                    value
-            );
-            (this._pickedIkMeshClone.material as StandardMaterial).emissiveColor.g =
-                Scalar.Lerp(
-                    Color3.White().g,
-                    Color3.Teal().g,
-                    value
-            );
-            (this._pickedIkMeshClone.material as StandardMaterial).emissiveColor.b =
-                Scalar.Lerp(
-                    Color3.White().b,
-                    Color3.Teal().b,
-                    value
-            );
-          }
-          this._pickedIkMesh.metadata.__blend = value;
-          //console.log(this._pickedIkMesh.absolutePosition, this._pickedIkMesh.metadata.__initialPosition, this._pickedIkMeshClone.position);
+          let newColor = new Color3();
+          let newMat = new StandardMaterial("", scene);
+          // Blend between TEAL and WHITE colors
+          Color3.LerpToRef(
+              Color3.White(),
+              Color3.Teal(),
+              value,
+              newColor
+          );
+          newMat.emissiveColor = newColor;
+          this._pickedIkMesh.material = newMat;
         }
     });
     slidePanel.addControl(slider_Blend);
     this._blendSlider = slider_Blend;
+
 
     // FINGERS CONTROLS //////////////////////////////////////////////////////////////////
     const fingersBackPanel = new StackPanel();
@@ -319,27 +283,29 @@ export class IKModule extends Module {
 
       //console.log(scene.transformNodes);
 
-      let finger_1 = scene.transformNodes.find((el) => el.name.includes(elem.name_1));
-      let finger_2 = scene.transformNodes.find((el) => el.name.includes(elem.name_2));
-      let finger_3 = null as unknown as TransformNode;
+      let finger_1 = scene.transformNodes.find((el) => el.name.includes(elem.name_1)) as TransformNode;
+      let finger_2 = scene.transformNodes.find((el) => el.name.includes(elem.name_2)) as TransformNode;
+      let finger_3: TransformNode;
       if (elem.name_3)
-        finger_3 = scene.transformNodes.find((el) => el.name.includes(elem.name_3));
+        finger_3 = scene.transformNodes.find((el) => el.name.includes(elem.name_3)) as TransformNode;
 
-      slider_finger.onValueChangedObservable.add(function(value) {
-        if (finger_1)
+      slider_finger.onValueChangedObservable.add(function(value) {          
+        if (finger_1) {
           if (!finger_1.name.includes('Thumb')) {
             finger_1.rotationQuaternion.x = value;
           } else if (finger_1.name.includes('Left')){
             finger_1.rotationQuaternion.z = -value;
           } else 
             finger_1.rotationQuaternion.z = value;
+        }
 
-        if (finger_2)
-          if (!finger_2.name.includes('Thumb')) {
+        if (finger_2) {
+         if (!finger_2.name.includes('Thumb')) {
             finger_2.rotationQuaternion.x = value;
           } else {
             finger_2.rotationQuaternion.x = -value;
           }
+        }
 
         if (finger_3)
           finger_3.rotationQuaternion.x = value;
@@ -356,9 +322,46 @@ export class IKModule extends Module {
     
   }
 
+  // public get assetList() {
+  //   return this.plaskEngine.state.plaskProject.assetList;
+  // }
+
+  // public get currentVisualizedAssetId() {
+  //   return this.visualizedAssetIds[0];
+  // }
+
+  // public get visualizedAssetIds() {
+  //   return this.plaskEngine.state.plaskProject.visualizedAssetIds;
+  // }
+
   private _playgroundCode() {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
     const scene = this.plaskEngine.scene;
+
+    //const targetAsset = this.assetList.find((asset) => asset.id ===   this.currentVisualizedAssetId);
+    // if (targetAsset) {
+    //   const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
+    //   container.meshes = meshes;
+    //   container.geometries = geometries;
+    //   container.skeletons[0] = skeleton;
+    //   container.skeletons[0].bones = bones;
+    //   container.transformNodes = transformNodes;
+    // }
+
+    // Container created to generate the Clone of Character
+    const container = new AssetContainer(scene);
+    container.meshes = scene.meshes;
+    container.geometries = scene.geometries;
+    container.skeletons = scene.skeletons;
+    container.transformNodes = scene.transformNodes;
+    const clone = container.instantiateModelsToScene();
+    scene.onReadyObservable.addOnce(() => {
+      // Adjusting transparency of the Cloned meshes    
+      scene.meshes.forEach(m => {
+        if (m.name.includes('Clone of'))
+            m.visibility = 0.25;
+      })
+  })
 
     this._createGUIElement();
 
@@ -366,6 +369,8 @@ export class IKModule extends Module {
     //const body = scene.getMeshByName('Body') as Mesh; // store body mesh
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
+
+  // Trying to Realign some Skeleton Bones
     /*
     if (skeleton.name === 'Armature') {
       // This show Mannequin model Matrix
@@ -459,17 +464,18 @@ export class IKModule extends Module {
       });
     }
     */
+
     // Defining bones to be used in IK
     const bonesSelection = [
-      { name: 'rightFoot', controllerSize: 0.2, initialPosition: new Vector3(0, 0, 0), poleAngle: -Math.PI / 2 },
-      { name: 'leftFoot', controllerSize: 0.2, initialPosition: new Vector3(0, 0, 0), poleAngle: Math.PI / 2 },
-      { name: 'rightHand', controllerSize: 0.15, initialPosition: new Vector3(0, 0, 0), poleAngle: 0 },
-      { name: 'leftHand', controllerSize: 0.15, initialPosition: new Vector3(0, 0, 0), poleAngle: 0 },
+      { name: 'rightFoot', controllerSize: 0.2, poleAngle: -Math.PI / 2 },
+      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: Math.PI / 2 },
+      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0 },
+      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0 },
     ] as BoneIKParams[];
 
     let activeIkControllers: BoneIKController[] = this._activeIkControllers;
 
-    // Creating IK controls for Limbs and Torso elements
+    // Creating IK controls
     bonesSelection.forEach((elem) => {
       // Finding Bone
       if (!this.retargetMap) {
@@ -481,13 +487,8 @@ export class IKModule extends Module {
         console.warn('Cannot find bone name, check boneSelection');
         return;
       }
-      //console.log(this.retargetMap);
-
-      const boneName = retargetValue.sourceBoneName;
       const transformNode = this.plaskEngine.scene.getTransformNodeById(retargetValue.targetTransformNodeId!);
       const bone = skeleton.bones.find((bone) => bone.getTransformNode() === transformNode);
-
-      //console.log(transformNode, bone);
 
       if (!bone) {
         console.warn(`Cannot insert IK controller on bone ${elem.name} : bone not found`);
@@ -499,30 +500,21 @@ export class IKModule extends Module {
         return;
       }
 
-      // Storing Bones Initial Position
-      elem.initialPosition = transformNode.absolutePosition.clone();
-
-      const controller = this._createIKControllerMesh(elem, bone, transformNode);
-      this._ikControllerMeshes.push(controller);
-      this._ikMeshesClones.push(controller.clone(controller.name+'_clone'));
-      console.log(this._ikMeshesClones);
-
-      //console.log(elem);
+      const {controller, controllerClone} = this._createIKControllerMesh(elem, bone, transformNode);
+      this._ikControllerMeshes.push(controllerClone);
 
       // Creating IK Controllers
       //const ikCtrl = new BoneIKController(transformNode, bone, {
+      //const ikCtrl = new BoneIKController(body, bone, {
+      //const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex() - 1], {
       const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
-        //const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex() - 1], {
         targetMesh: controller,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
         poleAngle: elem.poleAngle,
       });
       ikControllers.push(ikCtrl);
-    });
 
-    this._ikMeshesClones.forEach(elem => {
-      elem.isVisible = false;
-      elem.isPickable = false;
+      controllerClone.metadata.ikController = ikCtrl;
     });
 
     // Starting IK movement
@@ -531,7 +523,6 @@ export class IKModule extends Module {
 
     gizmoManager.gizmos.positionGizmo!.onDragStartObservable.add(() => {
       if (pickedIkCtrl) {
-        //this._meshSettings
         // Storing IK Controller to being updated
         activeIkControllers.push(ikControllers.find((ctrl) => ctrl.targetMesh === pickedIkCtrl) as BoneIKController);
       }
@@ -539,19 +530,13 @@ export class IKModule extends Module {
 
     // Ending IK movement
     gizmoManager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
-      if (pickedIkCtrl && this._pickedIkMeshClone) {
+      if (pickedIkCtrl) {
         // Releasing IK Controller of being updated
         activeIkControllers.length = 0;
-        // Updating PickedMeshClone position
-        this._pickedIkMeshClone.position = pickedIkCtrl.position;
       }
     });
 
     let pickedIkCtrl: Nullable<Mesh> = null;
-
-    // let bonesSelectionElem: Nullable<BoneIKParams> = null;
-    let pickedBone = null;
-    let pickedTrans = null;
 
     // Evaluating the pick of red spheres to enable IK on related bones
     this.plaskEngine.onPickObservable.add((pickedMesh) => {
@@ -565,17 +550,11 @@ export class IKModule extends Module {
         pickedIkCtrl.outlineColor = Color3.White();
         pickedIkCtrl.outlineWidth = 0.01;
 
-        pickedBone = pickedIkCtrl.metadata.__bone;
-        pickedTrans = pickedIkCtrl.metadata.__transformNode;
-
         gizmoManager.attachToMesh(pickedMesh);
 
         this._pickedIkMesh = pickedIkCtrl;
-        this._pickedIkMeshClone = this._ikMeshesClones.find(elem => elem.name.includes(pickedIkCtrl.name));
-        //console.log(this._pickedIkMesh, this._pickedIkMeshClone);
-
-        this._blendSlider.value = this._pickedIkMesh.metadata.__blend;
-        this._poleAngleSlider.value = this._pickedIkMesh.metadata.__poleAngle;
+        this._blendSlider.value = pickedIkCtrl.metadata.blend;
+        this._poleAngleSlider.value = pickedIkCtrl.metadata.ikController.poleAngle;
       }
     });
   }
