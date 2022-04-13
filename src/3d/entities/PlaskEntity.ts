@@ -47,6 +47,11 @@ export abstract class PlaskEntity {
    * (No PlaskEntity with the same id was present before)
    */
   public async onInitialize() {}
+
+  /**
+   * This function is called when this PlaskEntity is disposed
+   */
+  public onDispose() {}
   /**
    * Serializes this entity to a plain Javascript object
    *

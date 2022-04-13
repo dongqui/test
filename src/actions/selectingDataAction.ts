@@ -2,7 +2,7 @@ import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 export type SelectingDataAction =
-  | ReturnType<typeof addSelectableObjects>
+  | ReturnType<typeof updateSelectableObjects>
   | ReturnType<typeof removeSelectableControllers>
   | ReturnType<typeof removeSelectableJoints>
   | ReturnType<typeof unrenderAsset>
@@ -14,7 +14,7 @@ export type SelectingDataAction =
   | ReturnType<typeof resetSelectedTargets>
   | ReturnType<typeof updateEntity>;
 
-const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
+const UPDATE_SELECTABLE_OBJECTS = 'selectingDataAction/UPDATE_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
 const REMOVE_SELECTABLE_JOINTS = 'selectingDataAction/REMOVE_SELECTABLE_JOINTS' as const;
 const UNRENDER_ASSET = 'selectingDataAction/UNRENDER_ASSET' as const;
@@ -71,8 +71,8 @@ interface UpdateSelectedTargets {
  *
  * @param objects - objects to make selectable
  */
-export const addSelectableObjects = (params: AddSelectableObjects) => ({
-  type: ADD_SELECTABLE_OBJECTS,
+export const updateSelectableObjects = (params: AddSelectableObjects) => ({
+  type: UPDATE_SELECTABLE_OBJECTS,
   payload: {
     ...params,
   },

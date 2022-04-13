@@ -21,7 +21,10 @@ TransformNode.prototype.getPlaskEntity = function () {
     throw new Error('Engine is not yet initialized, cannot get entity');
   }
   if (this.metadata.__plaskEntityId) {
-    return engine.getEntity(this.metadata.__plaskEntityId) as PlaskTransformNode;
+    const entity = engine.getEntity(this.metadata.__plaskEntityId) as PlaskTransformNode;
+    if (entity) {
+      return entity;
+    }
   }
   // Entity id is not yet cached, we must search all entities to match ids
   const result = engine.getEntitiesByPredicate((entity) => entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).id === this.id);

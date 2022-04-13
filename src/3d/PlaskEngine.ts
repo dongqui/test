@@ -34,6 +34,7 @@ import { updateEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
 import { AnimationModule } from './modules/animation/AnimationModule';
+import { paste } from 'actions/keyframes';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
@@ -163,9 +164,24 @@ export class PlaskEngine {
         if (currentEntity.className === entityClass && currentEntity !== previousEntity) {
           // Entity is dirty
           await this._entityStore.registerEntity(this.state.selectingData.present.allEntitiesMap[entityId]);
+
+          if (entityClass === 'PlaskAsset') {
+            console.log((this.state.selectingData.present.allEntitiesMap[entityId] as any).assetId);
+            console.log(
+              this.state.selectingData.past.length ? (this.state.selectingData.past[this.state.selectingData.past.length - 1].allEntitiesMap[entityId] as any).assetId : 0,
+            );
+          }
         }
       }
     }
+
+    // // Remove any entity that is not present in the new state
+    // for (const entityId in previousState.selectingData.present.allEntitiesMap) {
+    //   if (!this.state.selectingData.present.allEntitiesMap[entityId]) {
+    //     console.log('entity disposed');
+    //     this._entityStore.unregisterEntity(previousState.selectingData.present.allEntitiesMap[entityId]);
+    //   }
+    // }
   }
 
   /**

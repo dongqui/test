@@ -50,23 +50,22 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects'];
+  public reduxObservedStates = ['selectingData.present.selectedTargets'/* , 'selectingData.present.selectableObjects' */];
   public onStateChanged(key: string, previousState: any) {
     if (key === 'selectingData.present.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
       return;
     }
 
-    if (key === 'selectingData.present.selectableObjects') {
-      if (this.selectableObjects !== previousState.selectableObjects) {
-        // TODO : we clear history here because we don't handle undoing/redoing a model change.
-        // It should be removed once we handle that
-        this.plaskEngine.clearHistory();
-        // Init positions
-        this.plaskEngine.dispatch(updateEntity({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }));
-      }
-      return;
-    }
+    // if (key === 'selectingData.present.selectableObjects') {
+    //   if (this.selectableObjects !== previousState.selectableObjects) {
+    //     // TODO : we clear history here because we don't handle undoing/redoing a model change.
+    //     // It should be removed once we handle that
+    //     this.plaskEngine.clearHistory();
+    //     // Init positions
+    //   }
+    //   return;
+    // }
   }
 
   constructor(plaskEngine: PlaskEngine) {

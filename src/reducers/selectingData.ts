@@ -18,9 +18,9 @@ const defaultState: State = {
 export const selectingData = undoable(
   (state: State = defaultState, action: SelectingDataAction) => {
     switch (action.type) {
-      case 'selectingDataAction/ADD_SELECTABLE_OBJECTS': {
+      case 'selectingDataAction/UPDATE_SELECTABLE_OBJECTS': {
         return Object.assign({}, state, {
-          selectableObjects: [...state.selectableObjects, ...action.payload.objects],
+          selectableObjects: action.payload.objects,
         });
       }
       case 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS': {

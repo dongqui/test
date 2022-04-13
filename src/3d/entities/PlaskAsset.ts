@@ -17,6 +17,7 @@ export class PlaskAsset extends PlaskEntity {
   }
 
   public copyFrom(other: PlaskAsset | PlaskAssetSpec): PlaskAsset {
+    console.log('assetId update :', other.assetId);
     this.assetId = other.assetId;
 
     return this;
@@ -26,6 +27,7 @@ export class PlaskAsset extends PlaskEntity {
     const engine = PlaskEngine.GetInstance();
 
     return new Promise<void>((resolve, reject) => {
+      console.log(this.assetId, 'visualized');
       engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
     });
   }

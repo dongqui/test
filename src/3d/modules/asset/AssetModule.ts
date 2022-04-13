@@ -166,9 +166,9 @@ export class AssetModule extends Module {
           const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as TransformNode[];
           const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
             const ptn = new PlaskTransformNode(transformNode);
-            this.plaskEngine.registerEntity(ptn);
             return ptn;
           });
+
           const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
           sphereBoneGroups.forEach(([jointSphere, bone]) => {
             if (targetVisibilityOption) {
@@ -196,8 +196,7 @@ export class AssetModule extends Module {
           // This only sets state.visualizedAssetIds
           this.plaskEngine.dispatch(plaskProjectActions.renderAsset({ assetId }));
           // This appends PlaskTransformNodes to state.selectableObjects
-          // TODO : move that out of this function
-          this.plaskEngine.dispatch(selectingDataActions.addSelectableObjects({ objects: plaskTransformNodes }));
+          this.plaskEngine.dispatch(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
         }
       }
       forceClickAnimationPlayAndStop();
@@ -234,9 +233,28 @@ export class AssetModule extends Module {
       currentVisualizedAsset = currentVisualizedAsset.clone();
     }
     currentVisualizedAsset.assetId = assetId;
-    // this.plaskEngine.registerEntity(currentVisualizedAsset);
-    // TODO : should this be inside registerEntity ?
     this.plaskEngine.dispatch(selectingDataActions.updateEntity({ targets: [currentVisualizedAsset] }));
+
+    // Add PTNs
+    const targetAsset = this.assetList.find((asset) => asset.id === assetId);
+    if (targetAsset) {
+      const { bones } = targetAsset;
+      // // add joint to each bone and add it to the scene
+      const jointBones = bones.filter(
+        (bone) =>
+          !bone.name.toLowerCase().includes('scene') &&
+          !bone.name.toLowerCase().includes('camera') &&
+          !bone.name.toLowerCase().includes('light') &&
+          !bone.name.toLowerCase().includes('__root__'),
+      );
+
+      const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as TransformNode[];
+      const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
+        const ptn = new PlaskTransformNode(transformNode);
+        return ptn;
+      });
+      this.plaskEngine.dispatch(selectingDataActions.updateEntity({ targets: plaskTransformNodes }));
+    }
   }
 
   public initialize() {}

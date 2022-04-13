@@ -47,9 +47,20 @@ export class EntityStore {
       this._entities[entity.entityId].copyFrom(entity);
       await this._entities[entity.entityId].onUpdate();
     } else {
-      this._entities[entity.entityId] = entity;
+      // Cloning so we make sure that history is not impacted
+      this._entities[entity.entityId] = entity.clone();
       await this._entities[entity.entityId].onInitialize();
     }
+  }
+
+  public unregisterEntity(entity: PlaskEntity) {
+    if (!this._entities[entity.entityId]) {
+      console.warn('Trying to unregister a non-registered entity');
+      return;
+    }
+
+    delete this._entities[entity.entityId];
+    entity.onDispose();
   }
 
   public serializeAll() {

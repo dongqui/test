@@ -108,11 +108,13 @@ export class PlaskTransformNode extends PlaskEntity {
   }
 
   public async onUpdate() {
-    // We must sync with babylon when a transformNode already exists
+    // We must sync with babylon
     this.toTransformNode();
-    
-    // Caching entity id for faster referencing
-    this.reference.metadata.__plaskEntityId = this.entityId;
+  }
+
+  public async onInitialize(): Promise<void> {
+    // We must sync with babylon
+    this.toTransformNode();
   }
 
   /**
