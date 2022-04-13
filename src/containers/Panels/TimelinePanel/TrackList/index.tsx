@@ -4,6 +4,8 @@ import _ from 'lodash';
 
 import { changeTrackScrollTop } from 'actions/trackList';
 import { useSelector } from 'reducers';
+
+import Box from 'components/Layout/Box';
 import { LayerTrackItem } from './TrackItem';
 
 import classNames from 'classnames/bind';
@@ -27,11 +29,13 @@ const TrackList = () => {
   }, [throttledThing]);
 
   return (
-    <ul className={cx('track-list')} ref={trackListRef} onScroll={scrollTrackList}>
-      {layerTrackList.map((layerTrack) => (
-        <LayerTrackItem key={layerTrack.trackId} {...layerTrack} />
-      ))}
-    </ul>
+    <Box id="TrackList" noResize>
+      <ul className={cx('track-list')} ref={trackListRef} onScroll={scrollTrackList}>
+        {layerTrackList.map((layerTrack) => (
+          <LayerTrackItem key={layerTrack.trackId} {...layerTrack} />
+        ))}
+      </ul>
+    </Box>
   );
 };
 

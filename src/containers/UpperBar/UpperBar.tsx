@@ -62,7 +62,7 @@ const UpperBar: FunctionComponent<Props> = ({
 
   const handleChangeMode = useCallback(() => {
     setSrcAddress && setSrcAddress('');
-    videoRef && (videoRef.current!.src = '');
+    videoRef && videoRef.current && (videoRef.current.src = '');
     dispatch(changeMode({ videoURL: '' }));
     setDeleteModal(false);
     stopStream && stopStream();
@@ -143,17 +143,19 @@ const UpperBar: FunctionComponent<Props> = ({
         </Dropdown>
       </div>
       <div className={cx('right-upper')}>
-        <IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />
+        {/*<IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />*/}
         <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />
-        {standbyState && <div className={cx('segment-disable')}></div>}
+        {standbyState && <div className={cx('segment-disable')} />}
         {mode === 'videoMode' && !recording && !recordOverTwice && (
           <div className={cx('device-select')} onClick={handleCameraDropdown}>
-            Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
+            Camera
+            <IconWrapper icon={SvgPath.EmptyDownArrow} />
           </div>
         )}
         {mode === 'videoMode' && (recording || recordOverTwice) && (
           <div className={cx('device-select', 'disable')}>
-            Camera<IconWrapper icon={SvgPath.EmptyDownArrow}></IconWrapper>
+            Camera
+            <IconWrapper icon={SvgPath.EmptyDownArrow} />
           </div>
         )}
         {cameraDropdownState && (
@@ -161,10 +163,10 @@ const UpperBar: FunctionComponent<Props> = ({
             <div>Select a Camera</div>
             {deviceList &&
               deviceList.map((device, idx) => (
-                <li key={idx} className={cx('device-select-dropdown')} data-value>
-                  {currentDevice === device.label && <IconWrapper className={cx('device-select-check')} icon={SvgPath.Check}></IconWrapper>}
+                <li key={idx} className={cx('device-select-dropdown')}>
+                  {currentDevice === device.label && <IconWrapper className={cx('device-select-check')} icon={SvgPath.Check} />}
                   <div className={cx('device-label')}>{device.label}</div>
-                  <div className={cx('button-overlay')} id={device.deviceId} onClick={handleChangeCamera}></div>
+                  <div className={cx('button-overlay')} id={device.deviceId} onClick={handleChangeCamera} />
                 </li>
               ))}
           </ul>
@@ -177,8 +179,8 @@ const UpperBar: FunctionComponent<Props> = ({
             Your video will be <strong>deleted</strong> to take a new video.
           </p>
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setDeleteModal(false)}></FilledButton>
-            <FilledButton text="Delete" className={cx('extract-button')} onClick={handleChangeMode}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setDeleteModal(false)} />
+            <FilledButton text="Delete" className={cx('extract-button')} onClick={handleChangeMode} />
           </div>
         </BaseModal>
       )}

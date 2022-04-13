@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, FunctionComponent } from 'react';
+import { useCallback, useEffect, useRef, useState, FunctionComponent, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -8,6 +8,7 @@ import { useSelector } from 'reducers';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { BaseInput } from 'components/Input';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -22,7 +23,8 @@ const Scrubber: FunctionComponent<Props> = (props) => {
   const { isFocusedTimelineEditor } = props;
   const dispatch = useDispatch();
 
-  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
+  const { plaskEngine } = useContext(BabylonContext);
+
   const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
@@ -73,18 +75,12 @@ const Scrubber: FunctionComponent<Props> = (props) => {
       if (isNaN(nextValue) || nextValue < startTimeIndex || endTimeIndex < nextValue) {
         setInputValue(currentTimeIndex);
       } else {
-        if (_currentAnimationGroup) {
-          if (_currentAnimationGroup.isStarted) {
-            _currentAnimationGroup.goToFrame(nextValue);
-          } else {
-            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(nextValue);
-          }
-        }
+        plaskEngine.animationModule.moveCurrentAnimationGroup(nextValue);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: nextValue }));
       }
       setFocusScrubber(false);
     },
-    [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch],
+    [dispatch, plaskEngine.animationModule],
   );
 
   // currentTimeIndex 변경 시, now value와 scrubber 위치 변경
@@ -108,13 +104,8 @@ const Scrubber: FunctionComponent<Props> = (props) => {
         const cursorTimeIndex = _.floor(scaleX.invert(event.x - subValue));
         const clampedTimeIndex = clampTimeIndex(cursorTimeIndex);
 
-        if (_currentAnimationGroup) {
-          if (_currentAnimationGroup.isStarted) {
-            _currentAnimationGroup.goToFrame(clampedTimeIndex);
-          } else {
-            _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
-          }
-        }
+        plaskEngine.animationModule.moveCurrentAnimationGroup(clampedTimeIndex);
+
         setDisableScrubber(true);
         dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
       }, 75);
@@ -138,35 +129,23 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     const scrubber = d3.select(scrubberRef.current);
     const dragBehavior = setDragBehavior();
     scrubber.call(dragBehavior as any);
-  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+  }, [_endTimeIndex, _playSpeed, _startTimeIndex, dispatch, plaskEngine.animationModule]);
 
   // A 키 입력 시, 오른쪽으로 scrubber 1frame 이동
   const pressAKey = useCallback(() => {
     const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
     const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
     dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
-    if (_currentAnimationGroup) {
-      if (_currentAnimationGroup.isStarted) {
-        _currentAnimationGroup.goToFrame(clampedTimeIndex);
-      } else {
-        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
-      }
-    }
-  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+    plaskEngine.animationModule.moveCurrentAnimationGroup(clampedTimeIndex);
+  }, [dispatch, plaskEngine.animationModule]);
 
   // S 키 입력 시, 왼쪽으로 scrubber 1frame 이동
   const pressSKey = useCallback(() => {
     const currentTimeIndex = TimeIndex.getCurrentTimeIndex();
     const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
     dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
-    if (_currentAnimationGroup) {
-      if (_currentAnimationGroup.isStarted) {
-        _currentAnimationGroup.goToFrame(clampedTimeIndex);
-      } else {
-        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).pause().goToFrame(clampedTimeIndex);
-      }
-    }
-  }, [_currentAnimationGroup, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+    plaskEngine.animationModule.moveCurrentAnimationGroup(clampedTimeIndex);
+  }, [dispatch, plaskEngine.animationModule]);
 
   // scrubber 키 입력 이벤트
   const keydownListener = useCallback(

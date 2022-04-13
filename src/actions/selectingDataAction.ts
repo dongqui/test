@@ -1,5 +1,4 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import * as BABYLON from '@babylonjs/core';
 
 export type SelectingDataAction =
   | ReturnType<typeof addSelectableObjects>
@@ -27,7 +26,7 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
-const UPDATE_TRANSFORM = 'selectingDataAction/UPDATE_TRANSFORM' as const;
+const UPDATE_TRANSFORM = 'selectingDataAction/UPDATE_ENTITY' as const;
 
 interface AddSelectableObjects {
   objects: Array<PlaskTransformNode>;

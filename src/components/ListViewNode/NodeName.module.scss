@@ -1,9 +1,10 @@
 @import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
 
 .input {
   display: flex;
   align-items: center;
-  border: 1px solid var(--blue300);
+  border: 1px solid $primary;
   padding-left: 7px;
   font-size: 11px;
   color: #fff;
@@ -19,7 +20,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 11px;
-  color: #f4f4f4;
+  color: $content-active;
 }
 
 .text {

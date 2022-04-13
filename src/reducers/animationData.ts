@@ -1,10 +1,10 @@
-import * as BABYLON from '@babylonjs/core';
 import { AnimationDataAction } from 'actions/animationDataAction';
 import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
+import { TransformNode } from '@babylonjs/core';
 
 type State = {
-  animationTransformNodes: BABYLON.TransformNode[];
+  animationTransformNodes: TransformNode[];
   animationIngredients: AnimationIngredient[];
   retargetMaps: PlaskRetargetMap[];
 };

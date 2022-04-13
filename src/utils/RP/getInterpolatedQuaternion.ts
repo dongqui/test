@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { IAnimationKey, Quaternion } from '@babylonjs/core';
 
 /**
  * return interpolated quaternion value for target frame
@@ -6,24 +6,24 @@ import * as BABYLON from '@babylonjs/core';
  * @param transformKeys - transformKeys with quaternion values
  * @param targetFrame - target frame
  */
-const getInterpolatedQuaternion = (transformKeys: BABYLON.IAnimationKey[], targetFrame: number): BABYLON.Quaternion => {
+const getInterpolatedQuaternion = (transformKeys: IAnimationKey[], targetFrame: number): Quaternion => {
   // under assumption that there is no key at the target frame within the transformKeys
   if (transformKeys.length === 0) {
     // if there isn't any key, return Quaternion.Identity (0, 0, 0, 1)
-    return BABYLON.Quaternion.Identity();
+    return Quaternion.Identity();
   } else if (transformKeys.length === 1) {
     // if there is only 1 key, return the value of that key
-    return transformKeys[0].value as BABYLON.Quaternion;
+    return transformKeys[0].value as Quaternion;
   } else {
     // if there are more than 2 keys,
     if (transformKeys[0].frame > targetFrame) {
       // if target frame is earlier than the first key's frame, return the value of the first key
       // case: targetFrame - first - o - o - o
-      return transformKeys[0].value as BABYLON.Quaternion;
+      return transformKeys[0].value as Quaternion;
     } else if (transformKeys[transformKeys.length - 1].frame < targetFrame) {
       // if target frame is later than the last key's frame, return the value of the last key
       // case: o - o - o - last - targetFrame
-      return transformKeys[transformKeys.length - 1].value as BABYLON.Quaternion;
+      return transformKeys[transformKeys.length - 1].value as Quaternion;
     } else {
       // if target frame is in between the first key's frame and the last key's frame, return linear interpolated value
       // case: first - o - targetFrame - o - last
@@ -41,7 +41,7 @@ const getInterpolatedQuaternion = (transformKeys: BABYLON.IAnimationKey[], targe
         }
       }
 
-      return BABYLON.Quaternion.Slerp(prev.value, current.value, dt);
+      return Quaternion.Slerp(prev.value, current.value, dt);
     }
   }
 };

@@ -5,6 +5,8 @@ import { useSelector } from 'reducers';
 import { ExportFormat } from 'types/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import { useContext } from 'react';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 interface Props {
   nodeId: string;
@@ -19,6 +21,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
   const dispatch = useDispatch();
   const { animationData, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
+  const { plaskEngine } = useContext(BabylonContext);
 
   const handleDelete = () => {
     dispatch(
@@ -26,9 +29,9 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
         title: 'Delete Model',
         // TODO: 모델에 맞는 모달 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
-        confirmButtonColor: 'error',
+        confirmButtonColor: 'negative',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteModel({ nodeId, assetId, parentId }));
+          dispatch(lpNodeActions.deleteModel({ nodeId, assetId, parentId, plaskEngine }));
         },
       }),
     );
@@ -42,14 +45,14 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
     const hasMotions = childNodeIds.length !== 0;
 
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId, plaskEngine }));
     }
-    dispatch(lpNodeActions.visualizeNode(assetId));
+    dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
   };
 
   const handleCancelVisualization = () => {
     if (assetId) {
-      dispatch(lpNodeActions.cancelVisulization(assetId));
+      dispatch(lpNodeActions.cancelVisulization({ assetId, plaskEngine }));
     }
   };
 
@@ -59,6 +62,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
         lpNodeActions.addEmptyMotion({
           nodeId,
           assetId,
+          plaskEngine,
         }),
       );
     }
@@ -78,6 +82,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
               nodeName,
               assetId,
               type,
+              plaskEngine,
             }),
           );
         },
