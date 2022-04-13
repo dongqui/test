@@ -74,7 +74,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
       try {
         const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
-          plaskEngine.animationModule.createAnimationIngredientFromMocapData,
+          [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
           dropNode.assetId!,
           nodeName,
           targetRetargetMap,
@@ -134,7 +134,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
       );
 
       const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
-        plaskEngine.animationModule.createAnimationIngredientFromMocapData,
+        [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
         dropNode.assetId!,
         draggedNode.name,
         targetRetargetMap,
