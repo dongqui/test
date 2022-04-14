@@ -93,7 +93,6 @@ function* handeDeleteMotionReceive(action: ReturnType<typeof lpNodeActions.delet
 export default function* watchDeleteMotionSocketActions() {
   yield all([
     takeLatest(getType(lpNodeActions.deleteMotionSocket.request), handeDeleteMotionRequest),
-    takeLatest(getType(lpNodeActions.deleteMotionSocket.send), handeDeleteMotionSend),
     takeLatest(getType(lpNodeActions.deleteMotionSocket.receive), handeDeleteMotionReceive),
   ]);
 }

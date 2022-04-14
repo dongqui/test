@@ -1,10 +1,8 @@
-import { v4 as uuid } from 'uuid';
-
-function createFolderNode(nodeName: string, filePath: string, parentId?: string): LP.Node {
+function createFolderNode(id: string, nodeName: string, filePath: string, parentId?: string): LP.Node {
   return {
-    id: uuid(),
+    id,
     parentId: parentId || '',
-    filePath: parentId ? filePath + `\\${nodeName}` : '\\root',
+    filePath: parentId ? filePath + `\\${nodeName}` : '',
     name: nodeName,
     extension: '',
     type: 'Folder',

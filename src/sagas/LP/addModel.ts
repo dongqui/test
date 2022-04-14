@@ -26,7 +26,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
-    const { modelUrl, assetsUid, name }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
+    const { uid, modelUrl, assetsUid, name }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
     const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelUrl, '', baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
     if (!skeletons?.length || !skeletons[0].bones?.length || !meshes?.length) {
@@ -58,7 +58,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
     const nextNodes = produce(lpNode.nodes, (draft) => {
       const newModelNode: LP.Node = {
-        id: uuid(),
+        id: uid,
         parentId: '',
         filePath: '\\root',
         name: nodeName,

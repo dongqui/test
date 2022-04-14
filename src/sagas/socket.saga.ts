@@ -1,10 +1,12 @@
-import { editNodeName, editNodeNameSocket, moveNodeSocket } from './../actions/LP/lpNodeAction';
+import { editNodeNameSocket } from './../actions/LP/lpNodeAction';
 import { eventChannel, EventChannel } from 'redux-saga';
 import { call, fork, put, take, takeLatest, ChannelTakeEffect, all } from 'redux-saga/effects';
 import { io, Socket } from 'socket.io-client';
 import { PayloadActionCreator } from 'typesafe-actions';
 
 import * as socketActions from 'actions/Common/socket';
+import * as lpActions from 'actions/LP/lpNodeAction';
+import { execPath } from 'process';
 
 const TEMP_SCENE_ID = 'q0j0y8dzoq9xmv7gn4n526ger3lkp1m6';
 const TEMP_TOKEN =
@@ -37,9 +39,7 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
   });
 }
 
-type LibraryEventPayload = ReturnType<
-  typeof lpActions.deleteFolderOrMocapSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive
->['payload'];
+type LibraryEventPayload = ReturnType<typeof lpActions.deleteNodeSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive>['payload'];
 function createEventChannel(socket: Socket) {
   return eventChannel((emit) => {
     const libraryEvent = (payload: LibraryEventPayload) => {
@@ -48,7 +48,7 @@ function createEventChannel(socket: Socket) {
         //   break;
         // }
         case 'delete': {
-          emit(lpActions.deleteFolderOrMocapSocket.receive(payload));
+          emit(lpActions.deleteNodeSocket.receive(payload));
           break;
         }
         // case 'modify-retarget-map': {
@@ -56,13 +56,11 @@ function createEventChannel(socket: Socket) {
         //   break;
         // }
         case 'move': {
-          // emit(receiveFoo(payload));
+          emit(lpActions.moveNodeSocket.receive(payload));
           break;
         }
-        case 'update': {
-          // emit(receiveFoo(payload));
-          break;
-        }
+        case 'update-name':
+          emit(lpActions.editNodeNameSocket.receive(payload));
       }
     };
 
@@ -113,7 +111,7 @@ function createEventChannel(socket: Socket) {
 
     socket.on('library', libraryEvent);
     socket.on('animation', animationEvent);
-
+    socket.on('exception', (payload) => console.log(payload));
     return () => {
       socket.off('library', libraryEvent);
       socket.off('animation', animationEvent);
@@ -145,8 +143,9 @@ function* handleIO(socket: Socket) {
     receiveEventChannel(socket),
 
     // sendSocketEmit
-    sendSocketEmit(socket, 'library', lpActions.deleteFolderOrMocapSocket.send),
+    sendSocketEmit(socket, 'library', lpActions.deleteNodeSocket.send),
     sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send),
+    sendSocketEmit(socket, 'library', lpActions.moveNodeSocket.send),
   ]);
 }
 

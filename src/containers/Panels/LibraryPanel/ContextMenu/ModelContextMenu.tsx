@@ -28,7 +28,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
         message: 'Are you sure? All files in the directory will be deleted.',
         confirmButtonColor: 'negative',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteModel({ nodeId, assetId, parentId }));
+          dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
         },
       }),
     );

@@ -13,8 +13,7 @@ import watchMoveNodeSocketActions from './moveNode';
 import watchEditNodeNameSocketActions from './editNodeName';
 import handleExportAsset from './exportAsset';
 import watchDeleteMotionSocketActions from './deleteMotion';
-import watchDeleteModelSocketActions from './deleteModel';
-import watchDeleteFolderOrMocapSocketActions from './deleteFolderOrMocap';
+import watchDeleteNodeSocketActions from './deleteNode';
 import handleFileUpload from './fileUpload';
 import handleAddModel from './addModel';
 import getNodes from './getNodes';
@@ -39,10 +38,9 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
     watchClickJointChannel(),
     // watchConfirmOnError(),
-    watchDeleteFolderOrMocapSocketActions(),
-    watchDeleteModelSocketActions(),
+    watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),
-    watchEditNodeNameSocketActions(),
     watchDeleteMotionSocketActions(),
+    watchEditNodeNameSocketActions(),
   ]);
 }
