@@ -144,7 +144,7 @@ const Buttons = () => {
     };
   }, [_playDirection, _playState, _visualizedAssetIds, dispatch, editAnimationPause, editAnimationPlay, editAnimationRewind, loopAnimation]);
 
-  const ButtonState = () => {
+  const ButtonState = useCallback(() => {
     if (_playState === 'play') {
       if (_playDirection === PlayDirection.forward) {
         return (
@@ -169,7 +169,7 @@ const Buttons = () => {
         </Fragment>
       );
     }
-  };
+  }, [_playDirection, _playState, handlePauseButtonClick, handlePlayButtonClick, handleRewindButtonClick]);
 
   return (
     <div className={cx('animation-buttons')}>

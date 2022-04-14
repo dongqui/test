@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+import { partition } from 'lodash';
 
 import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
@@ -46,8 +47,9 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      const videos = files.filter((file) => file.type.includes('video'));
-      const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
+      const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
+      // const videos = files.filter((file) => file.type.includes('video'));
+      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
       const isError = videos.length > 1;
 

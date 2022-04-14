@@ -280,7 +280,7 @@ export const assignBoneMapping = (params: AssignBoneMapping) => ({
 interface ChangeHipSpace {
   assetId: string;
 
-  hipSpaece: number;
+  hipSpace: number;
 }
 
 /**
