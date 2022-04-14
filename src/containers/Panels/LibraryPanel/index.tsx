@@ -1,8 +1,9 @@
-import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+import { partition } from 'lodash';
 
 import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
@@ -13,17 +14,18 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
-import ImportErrorModal from 'containers/Common/Modal/ImportErrorModal';
 const cx = classNames.bind(styles);
 
 const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
   const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
+  const { plaskEngine } = useContext(BabylonContext);
 
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
@@ -35,17 +37,19 @@ const LibraryPanel: FunctionComponent = () => {
           lpNodeActions.fileUpload({
             file,
             showLoading,
+            plaskEngine,
           }),
         );
       }
     },
-    [dispatch],
+    [dispatch, plaskEngine],
   );
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      const videos = files.filter((file) => file.type.includes('video'));
-      const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
+      const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
+      // const videos = files.filter((file) => file.type.includes('video'));
+      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
       const isError = videos.length > 1;
 

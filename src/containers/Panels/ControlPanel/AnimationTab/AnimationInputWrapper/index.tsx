@@ -33,6 +33,9 @@ interface Props {
  * @param className - PropertyInputWrapper를 감싸는 div 요소에 className 부여
  * @param inputTitle - input 목록들을 대표하는 title 지정
  * @param inputInfo - input 요소들을 만들기 위한 데이터를 Object로 이루어진 Array로 전달받음
+ * @param activeStatus - input의 활성화 여부
+ * @param inactiveMessage - inActive 상태 시 placeholder로 표시되는 값
+ * @param dropdownList - input 목록이 2개 이상 있을 때에 선택할 수 있는 title 목록을 표시하는 dropdown List
  * @param children - input 요소들 이후에 추가할 element
  * @returns input 요소로 이루어진 목록과 해당 목록을 대표하는 title이 포함된 JSX 요소
  */
@@ -43,7 +46,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
   const classes = cx('wrapper', className, { able: activeStatus ?? true });
 
   return (
-    <div className={cx(classes)}>
+    <div className={classes}>
       <p>{inputTitle}</p>
       <div>
         {inputInfo &&
@@ -57,7 +60,7 @@ const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle
               defaultValue={info.defaultValue}
               decimalDigit={info.decimalDigit}
               handleBlur={info.handleBlur}
-            ></AnimationInput>
+            />
           ))}
         {children}
       </div>

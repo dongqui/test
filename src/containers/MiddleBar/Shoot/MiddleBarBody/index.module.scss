@@ -1,7 +1,11 @@
 .body {
+  width: calc(100% - 240px);
+  height: 100%;
+}
+
+.inner {
+  padding: 4px 16px;
+  height: 100%;
   display: flex;
   justify-content: space-between;
-  flex: auto;
-  height: 100%;
-  padding: 4px 16px;
 }

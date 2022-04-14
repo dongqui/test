@@ -41,7 +41,7 @@ const DropdownMenu: FunctionComponent<Props> = (props) => {
       };
 
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (isEqual(event.key, 'Escape' && autoClose)) {
+        if (isEqual(event.key, 'Escape') && autoClose) {
           dispatch('changeIsOpenMenu', { isOpenMenu: false });
           onClose && onClose();
         }

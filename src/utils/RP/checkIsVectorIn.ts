@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Matrix, Scene, Vector3 } from '@babylonjs/core';
 import { ScreenXY } from 'types/common';
 
 /**
@@ -9,10 +9,10 @@ import { ScreenXY } from 'types/common';
  * @param vector - target vector
  * @param scene - scene which contains the dragBox and the pointer
  */
-const checkIsVectorIn = (start: ScreenXY, end: ScreenXY, vector: BABYLON.Vector3, scene: BABYLON.Scene) => {
-  const vectorScreenPosition = BABYLON.Vector3.Project(
+const checkIsVectorIn = (start: ScreenXY, end: ScreenXY, vector: Vector3, scene: Scene) => {
+  const vectorScreenPosition = Vector3.Project(
     vector,
-    BABYLON.Matrix.IdentityReadOnly,
+    Matrix.IdentityReadOnly,
     scene.getTransformMatrix(),
     scene.activeCamera!.viewport.toGlobal(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight()),
   );

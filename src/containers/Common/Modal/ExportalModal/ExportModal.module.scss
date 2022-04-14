@@ -1,5 +1,6 @@
-@import 'styles/libraries/_responsive';
-@import 'styles/libraries/_mixins';
+@import "styles/libraries/_responsive";
+@import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
 
 .wrapper {
   position: fixed;
@@ -16,13 +17,13 @@
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgb(255 255 255 / 20%);
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
   padding: 28px 24px;
   min-width: 256px;
   max-width: 60%;
   outline: 0;
-  background-color: #202122;
+  background-color: $bg-elevated;
 
   &.icon {
     padding-top: 16px;
@@ -34,7 +35,7 @@
 }
 
 .title {
-  color: #fff;
+  color: $content-active;
   font-size: 12px;
   font-weight: 700;
   margin-bottom: 28px;
@@ -55,7 +56,7 @@
 
 .field-label {
   font-size: 11px;
-  color: var(--gray600);
+  color: $content-active;
   margin-right: 4px;
 }
 
@@ -77,17 +78,25 @@
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 11px;
-  color: var(--gray700);
+  color: $content-active;
 
   &:first-child {
     margin-right: 4px;
   }
 
   &.cancel {
-    border: 1px solid var(--gray300);
+    border: 1px solid $outline;
+
+    &:hover {
+      background-color: $overlay-hover;
+    }
   }
 
   &.positive {
-    background-color: var(--blue200);
+    background-color: $primary;
+
+    &:hover {
+      background-color: $overlay-hover;
+    }
   }
 }
