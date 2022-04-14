@@ -12,7 +12,7 @@ import { Mesh, TransformNode } from '@babylonjs/core';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { updateEntity } from 'actions/selectingDataAction';
+import { addEntity } from 'actions/selectingDataAction';
 import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 const cx = classNames.bind(styles);

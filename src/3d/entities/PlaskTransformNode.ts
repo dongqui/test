@@ -25,7 +25,7 @@ export class PlaskTransformNode extends PlaskEntity {
         this.type = 'joint';
       }
 
-      this.fromTransformNode();
+      this.fromTransformNode(transformNode);
     }
   }
   public transformNodeId: string = '';
@@ -63,8 +63,8 @@ export class PlaskTransformNode extends PlaskEntity {
     return this._reference;
   }
 
-  public fromTransformNode() {
-    const transformNode = this.reference;
+  public fromTransformNode(unintializedTransformNode?: TransformNode) {
+    const transformNode = unintializedTransformNode || this.reference;
 
     transformNode.position.toArray(this.position);
     this.rotation.length = 0;
@@ -114,7 +114,7 @@ export class PlaskTransformNode extends PlaskEntity {
 
   public async onInitialize(): Promise<void> {
     // We must sync with babylon
-    this.toTransformNode();
+    // this.toTransformNode();
   }
 
   /**

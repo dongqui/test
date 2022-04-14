@@ -6,6 +6,8 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
+import { PlaskAsset } from '3d/entities/PlaskAsset';
 
 const clickJointChannel = channel();
 
@@ -26,14 +28,35 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
   try {
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
+    const visualizedAssets = plaskEngine.getEntitiesByPredicate((entity) => entity.className == 'PlaskAsset' && (entity as PlaskAsset).assetId === visualizedAssetIds[0]);
+
+    // TODO : redundant with what's below
+    let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
+    if (!currentVisualizedAsset) {
+      currentVisualizedAsset = new PlaskAsset();
+    } else {
+      currentVisualizedAsset = currentVisualizedAsset.clone();
+    }
+    currentVisualizedAsset.assetId = assetId;
+
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
-      plaskEngine.assetModule.clearAssetFromScene(prevAssetId);
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
+      yield put(plaskProjectActions.unrenderAsset({ assetId }));
     }
+
     // visualize new asset
+    yield put(selectingDataActions.addEntity({ targets: [currentVisualizedAsset] }));
+
     if (assetId && !visualizedAssetIds.includes(assetId)) {
-      plaskEngine.assetModule.visualizeModel(assetId, clickJointChannel);
+      // TODO: simplify call with asset from assetList
+      const plaskTransformNodes = plaskEngine.assetModule.generatePlaskTransformNodes(assetId);
+      yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
+      // This appends PlaskTransformNodes to state.selectableObjects
+      yield put(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
+
+      // This only sets state.visualizedAssetIds
+      yield put(plaskProjectActions.renderAsset({ assetId }));
     }
     action.payload.onSuccess();
   } catch (e) {

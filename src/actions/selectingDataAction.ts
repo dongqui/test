@@ -12,7 +12,8 @@ export type SelectingDataAction =
   | ReturnType<typeof ctrlKeyMultiSelect>
   | ReturnType<typeof selectAllSelectableObjects>
   | ReturnType<typeof resetSelectedTargets>
-  | ReturnType<typeof updateEntity>;
+  | ReturnType<typeof addEntity>
+  | ReturnType<typeof removeEntity>;
 
 const UPDATE_SELECTABLE_OBJECTS = 'selectingDataAction/UPDATE_SELECTABLE_OBJECTS' as const;
 const REMOVE_SELECTABLE_CONTROLLERS = 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS' as const;
@@ -27,7 +28,8 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
-const UPDATE_ENTITY = 'selectingDataAction/UPDATE_ENTITY' as const;
+const ADD_ENTITIES = 'selectingDataAction/ADD_ENTITIES' as const;
+const REMOVE_ENTITIES = 'selectingDataAction/REMOVE_ENTITIES' as const;
 
 interface AddSelectableObjects {
   objects: Array<PlaskTransformNode>;
@@ -175,10 +177,20 @@ export const selectAllSelectableObjects = () => ({
 });
 
 /**
- * Moves the selected targets. Undoable
+ * Updates entities. TODO : should not be undoable
  */
-export const updateEntity = (params: UpdateSelectedTargets) => ({
-  type: UPDATE_ENTITY,
+export const addEntity = (params: UpdateSelectedTargets) => ({
+  type: ADD_ENTITIES,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * Removes entities.
+ */
+export const removeEntity = (params: UpdateSelectedTargets) => ({
+  type: REMOVE_ENTITIES,
   payload: {
     ...params,
   },

@@ -11,7 +11,7 @@ import {
   TransformNode,
   Vector3,
 } from '@babylonjs/core';
-import { updateEntity } from 'actions/selectingDataAction';
+import { addEntity } from 'actions/selectingDataAction';
 import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';

@@ -120,7 +120,7 @@ export class AssetModule extends Module {
   /**
    * Visualize a model from all the screens.
    */
-  public visualizeModel(assetId: string, clickJointChannel: Channel<unknown>) {
+  public visualizeModel(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
 
     if (targetAsset) {
@@ -163,12 +163,6 @@ export class AssetModule extends Module {
             transformNode.rotate(Axis.X, 0);
           });
 
-          const jointTransformNodes = jointBones.map((bone) => bone.getTransformNode()) as TransformNode[];
-          const plaskTransformNodes = jointTransformNodes.map((transformNode) => {
-            const ptn = new PlaskTransformNode(transformNode);
-            return ptn;
-          });
-
           const sphereBoneGroups = addJointSpheres(jointBones, meshes[0], scene, assetId);
           sphereBoneGroups.forEach(([jointSphere, bone]) => {
             if (targetVisibilityOption) {
@@ -184,19 +178,14 @@ export class AssetModule extends Module {
                 if (targetTransformNode) {
                   const sourceEvent: PointerEvent = event.sourceEvent;
                   if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                    clickJointChannel.put(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
+                    selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() });
                   } else {
-                    clickJointChannel.put(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
+                    selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() });
                   }
                 }
               }),
             );
           });
-
-          // This only sets state.visualizedAssetIds
-          this.plaskEngine.dispatch(plaskProjectActions.renderAsset({ assetId }));
-          // This appends PlaskTransformNodes to state.selectableObjects
-          this.plaskEngine.dispatch(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
         }
       }
       forceClickAnimationPlayAndStop();
@@ -217,24 +206,9 @@ export class AssetModule extends Module {
           removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers);
         });
     }
-    this.plaskEngine.dispatch(plaskProjectActions.unrenderAsset({ assetId }));
-    this.plaskEngine.dispatch(selectingDataActions.unrenderAsset({ assetId }));
   }
 
-  public visualizeAsset(assetId: string) {
-    const visualizedAssets = this.plaskEngine.getEntitiesByPredicate(
-      (entity) => entity.className == 'PlaskAsset' && (entity as PlaskAsset).assetId === this.currentVisualizedAssetId,
-    );
-
-    let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
-    if (!currentVisualizedAsset) {
-      currentVisualizedAsset = new PlaskAsset();
-    } else {
-      currentVisualizedAsset = currentVisualizedAsset.clone();
-    }
-    currentVisualizedAsset.assetId = assetId;
-    this.plaskEngine.dispatch(selectingDataActions.updateEntity({ targets: [currentVisualizedAsset] }));
-
+  public generatePlaskTransformNodes(assetId: string) {
     // Add PTNs
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
     if (targetAsset) {
@@ -253,8 +227,10 @@ export class AssetModule extends Module {
         const ptn = new PlaskTransformNode(transformNode);
         return ptn;
       });
-      this.plaskEngine.dispatch(selectingDataActions.updateEntity({ targets: plaskTransformNodes }));
+      return plaskTransformNodes;
     }
+
+    throw new Error('Cannot find target asset in asset list');
   }
 
   public initialize() {}

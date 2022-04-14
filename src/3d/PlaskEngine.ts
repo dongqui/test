@@ -30,7 +30,7 @@ import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
 import { EntityStore, PlaskSpec } from './entities/EntityStore';
-import { updateEntity } from 'actions/selectingDataAction';
+import { addEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
 import { AnimationModule } from './modules/animation/AnimationModule';
@@ -120,6 +120,12 @@ export class PlaskEngine {
     this._engine.runRenderLoop(() => {
       this._scene.render();
     });
+
+    // Debug
+    (window as any).printEntities = () => {
+      console.log('Entities length : ', Object.keys(this._entityStore.entities).length);
+      console.log(this._entityStore.entities);
+    };
   }
 
   /**
@@ -157,31 +163,29 @@ export class PlaskEngine {
     const entityOrder = ['PlaskAsset', 'PlaskTransformNode'];
 
     // Entities update
-    for (const entityClass of entityOrder) {
-      for (const entityId in this.state.selectingData.present.allEntitiesMap) {
-        const currentEntity = this.state.selectingData.present.allEntitiesMap[entityId];
-        const previousEntity = previousState.selectingData.present.allEntitiesMap[entityId];
-        if (currentEntity.className === entityClass && currentEntity !== previousEntity) {
-          // Entity is dirty
-          await this._entityStore.registerEntity(this.state.selectingData.present.allEntitiesMap[entityId]);
-
-          if (entityClass === 'PlaskAsset') {
-            console.log((this.state.selectingData.present.allEntitiesMap[entityId] as any).assetId);
-            console.log(
-              this.state.selectingData.past.length ? (this.state.selectingData.past[this.state.selectingData.past.length - 1].allEntitiesMap[entityId] as any).assetId : 0,
-            );
+    if (this.state.selectingData.present.allEntitiesMap !== previousState.selectingData.present.allEntitiesMap) {
+      const currentEntities = this.state.selectingData.present.allEntitiesMap;
+      const previousEntities = previousState.selectingData.present.allEntitiesMap;
+      console.log('Length diff : ', Object.keys(currentEntities).length, Object.keys(previousEntities).length);
+      for (const entityClass of entityOrder) {
+        for (const entityId in currentEntities) {
+          const currentEntity = currentEntities[entityId];
+          const previousEntity = previousEntities[entityId];
+          if (currentEntity.className === entityClass && currentEntity !== previousEntity) {
+            // Entity is dirty
+            await this._entityStore.registerEntity(currentEntities[entityId]);
           }
         }
       }
-    }
 
-    // // Remove any entity that is not present in the new state
-    // for (const entityId in previousState.selectingData.present.allEntitiesMap) {
-    //   if (!this.state.selectingData.present.allEntitiesMap[entityId]) {
-    //     console.log('entity disposed');
-    //     this._entityStore.unregisterEntity(previousState.selectingData.present.allEntitiesMap[entityId]);
-    //   }
-    // }
+      // Remove any entity that is not present in the new state
+      for (const entityId in previousEntities) {
+        if (!currentEntities[entityId]) {
+          console.log('entity disposed');
+          this._entityStore.unregisterEntity(previousEntities[entityId]);
+        }
+      }
+    }
   }
 
   /**
@@ -244,7 +248,7 @@ export class PlaskEngine {
       'Entities updated ',
       entities.map((entity) => entity.clone()),
     );
-    this.dispatch(updateEntity({ targets: entities.map((entity) => entity.clone()) }));
+    this.dispatch(addEntity({ targets: entities.map((entity) => entity.clone()) }));
   }
 
   public get currentScreenId() {

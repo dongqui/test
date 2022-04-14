@@ -82,12 +82,23 @@ export const selectingData = undoable(
         });
       }
       // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
-      case 'selectingDataAction/UPDATE_ENTITY': {
+      case 'selectingDataAction/ADD_ENTITIES': {
         const obj = {} as { [key: string]: PlaskEntity };
         for (const entity of action.payload.targets) {
           obj[entity.entityId] = entity;
         }
         return Object.assign({}, state, { allEntitiesMap: { ...state.allEntitiesMap, ...obj } });
+      }
+      // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
+      case 'selectingDataAction/REMOVE_ENTITIES': {
+        const obj = {} as { [key: string]: PlaskEntity };
+        for (const entityId in state) {
+          if (entityId in action.payload.targets) {
+            obj[entityId] = state.allEntitiesMap[entityId];
+          }
+        }
+        state.allEntitiesMap = obj;
+        return state;
       }
       default: {
         return state;
@@ -102,7 +113,7 @@ export const selectingData = undoable(
       'selectingDataAction/CTRL_KEY_MULTI_SELECT',
       'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
       'selectingDataAction/RESET_SELECTED_TARGETS',
-      'selectingDataAction/UPDATE_ENTITY',
+      'selectingDataAction/ADD_ENTITIES', // TODO : this is not a user action
     ]),
     ignoreInitialState: true,
   },

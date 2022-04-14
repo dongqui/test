@@ -59,7 +59,8 @@ const ModelNode = ({ node }: Props) => {
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId, plaskEngine }));
     }
-    plaskEngine.assetModule.visualizeAsset(assetId);
+    // plaskEngine.assetModule.visualizeAsset(assetId);
+    dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine, onSuccess: () => {} }));
   };
 
   const handleEditName = (newName: string) => {

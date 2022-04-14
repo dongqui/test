@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { visualizeNode } from 'actions/LP/lpNodeAction';
+import { cancelVisulization, visualizeNode } from 'actions/LP/lpNodeAction';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
 export interface PlaskAssetSpec extends PlaskEntitySpec {
@@ -23,12 +23,19 @@ export class PlaskAsset extends PlaskEntity {
     return this;
   }
 
+  public onDispose(): void {
+    const engine = PlaskEngine.GetInstance();
+    engine.assetModule.unvisualizeModel(this.assetId);
+  }
+
   public async onUpdate() {
     const engine = PlaskEngine.GetInstance();
 
     return new Promise<void>((resolve, reject) => {
       console.log(this.assetId, 'visualized');
-      engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
+      engine.assetModule.visualizeModel(this.assetId);
+      // engine.dispatch(cancelVisulization({ assetId: this.assetId, plaskEngine: engine }));
+      // engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
     });
   }
 
@@ -36,7 +43,9 @@ export class PlaskAsset extends PlaskEntity {
     const engine = PlaskEngine.GetInstance();
 
     return new Promise<void>((resolve, reject) => {
-      engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
+      engine.assetModule.visualizeModel(this.assetId);
+
+      // engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));
     });
   }
 }

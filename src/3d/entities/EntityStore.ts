@@ -44,6 +44,7 @@ export class EntityStore {
 
   public async registerEntity(entity: PlaskEntity) {
     if (this._entities[entity.entityId]) {
+      this._entities[entity.entityId].onDispose();
       this._entities[entity.entityId].copyFrom(entity);
       await this._entities[entity.entityId].onUpdate();
     } else {

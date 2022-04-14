@@ -1,7 +1,7 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
-import { defaultMultiSelect, updateEntity } from 'actions/selectingDataAction';
+import { defaultMultiSelect, addEntity } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -50,7 +50,7 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData.present.selectedTargets'/* , 'selectingData.present.selectableObjects' */];
+  public reduxObservedStates = ['selectingData.present.selectedTargets' /* , 'selectingData.present.selectableObjects' */];
   public onStateChanged(key: string, previousState: any) {
     if (key === 'selectingData.present.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
