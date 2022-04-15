@@ -14,4 +14,5 @@ PrefixInput.args = {
   placeholder: 'placeholder',
   value: '',
   prefix: 'pre',
+  type: 'text',
 };
