@@ -2,7 +2,7 @@ import AlertModal from './AlertModal';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 export default {
-  title: 'Modalss',
+  title: 'Modals (Test)',
   component: AlertModal,
 } as ComponentMeta<typeof AlertModal>;
 
