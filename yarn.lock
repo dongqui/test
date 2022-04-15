@@ -475,7 +475,6 @@
     "@babel/helper-plugin-utils" "^7.16.7"
     "@babel/plugin-syntax-object-rest-spread" "^7.8.3"
     "@babel/plugin-transform-parameters" "^7.16.7"
-<<<<<<< HEAD
 
 "@babel/plugin-proposal-optional-catch-binding@^7.16.7":
   version "7.16.7"
@@ -520,52 +519,6 @@
     "@babel/helper-create-regexp-features-plugin" "^7.16.7"
     "@babel/helper-plugin-utils" "^7.16.7"
 
-=======
-
-"@babel/plugin-proposal-optional-catch-binding@^7.16.7":
-  version "7.16.7"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-optional-catch-binding/-/plugin-proposal-optional-catch-binding-7.16.7.tgz#c623a430674ffc4ab732fd0a0ae7722b67cb74cf"
-  integrity sha512-eMOH/L4OvWSZAE1VkHbr1vckLG1WUcHGJSLqqQwl2GaUqG6QjddvrOaTUMNYiv77H5IKPMZ9U9P7EaHwvAShfA==
-  dependencies:
-    "@babel/helper-plugin-utils" "^7.16.7"
-    "@babel/plugin-syntax-optional-catch-binding" "^7.8.3"
-
-"@babel/plugin-proposal-optional-chaining@^7.12.7", "@babel/plugin-proposal-optional-chaining@^7.16.7":
-  version "7.16.7"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-optional-chaining/-/plugin-proposal-optional-chaining-7.16.7.tgz#7cd629564724816c0e8a969535551f943c64c39a"
-  integrity sha512-eC3xy+ZrUcBtP7x+sq62Q/HYd674pPTb/77XZMb5wbDPGWIdUbSr4Agr052+zaUPSb+gGRnjxXfKFvx5iMJ+DA==
-  dependencies:
-    "@babel/helper-plugin-utils" "^7.16.7"
-    "@babel/helper-skip-transparent-expression-wrappers" "^7.16.0"
-    "@babel/plugin-syntax-optional-chaining" "^7.8.3"
-
-"@babel/plugin-proposal-private-methods@^7.12.1", "@babel/plugin-proposal-private-methods@^7.16.11":
-  version "7.16.11"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-private-methods/-/plugin-proposal-private-methods-7.16.11.tgz#e8df108288555ff259f4527dbe84813aac3a1c50"
-  integrity sha512-F/2uAkPlXDr8+BHpZvo19w3hLFKge+k75XUprE6jaqKxjGkSYcK+4c+bup5PdW/7W/Rpjwql7FTVEDW+fRAQsw==
-  dependencies:
-    "@babel/helper-create-class-features-plugin" "^7.16.10"
-    "@babel/helper-plugin-utils" "^7.16.7"
-
-"@babel/plugin-proposal-private-property-in-object@^7.12.1", "@babel/plugin-proposal-private-property-in-object@^7.16.7":
-  version "7.16.7"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-private-property-in-object/-/plugin-proposal-private-property-in-object-7.16.7.tgz#b0b8cef543c2c3d57e59e2c611994861d46a3fce"
-  integrity sha512-rMQkjcOFbm+ufe3bTZLyOfsOUOxyvLXZJCTARhJr+8UMSoZmqTe1K1BgkFcrW37rAchWg57yI69ORxiWvUINuQ==
-  dependencies:
-    "@babel/helper-annotate-as-pure" "^7.16.7"
-    "@babel/helper-create-class-features-plugin" "^7.16.7"
-    "@babel/helper-plugin-utils" "^7.16.7"
-    "@babel/plugin-syntax-private-property-in-object" "^7.14.5"
-
-"@babel/plugin-proposal-unicode-property-regex@^7.16.7", "@babel/plugin-proposal-unicode-property-regex@^7.4.4":
-  version "7.16.7"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-unicode-property-regex/-/plugin-proposal-unicode-property-regex-7.16.7.tgz#635d18eb10c6214210ffc5ff4932552de08188a2"
-  integrity sha512-QRK0YI/40VLhNVGIjRNAAQkEHws0cswSdFFjpFyt943YmJIU1da9uW63Iu6NFV6CxTZW5eTDCrwZUstBWgp/Rg==
-  dependencies:
-    "@babel/helper-create-regexp-features-plugin" "^7.16.7"
-    "@babel/helper-plugin-utils" "^7.16.7"
-
->>>>>>> storybook-setup
 "@babel/plugin-syntax-async-generators@^7.8.4":
   version "7.8.4"
   resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-async-generators/-/plugin-syntax-async-generators-7.8.4.tgz#a983fb1aeb2ec3f6ed042a210f640e90e786fe0d"
@@ -2387,7 +2340,6 @@
     "@types/webpack-env" "^1.16.0"
     core-js "^3.8.2"
     global "^4.4.0"
-<<<<<<< HEAD
     regenerator-runtime "^0.13.7"
 
 "@storybook/addons@6.5.0-alpha.61":
@@ -2407,27 +2359,6 @@
     global "^4.4.0"
     regenerator-runtime "^0.13.7"
 
-=======
-    regenerator-runtime "^0.13.7"
-
-"@storybook/addons@6.5.0-alpha.61":
-  version "6.5.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@storybook/addons/-/addons-6.5.0-alpha.61.tgz#39fde90809a6639d5163811c9abfd9204e72f97b"
-  integrity sha512-XueY7eDM3Kh+N0xFpF0qaiJ8IsC16p5AEnchk1ONUIVuywBTYveswM65pQHDxHqQM/TwZdqv629Fx6WOfzSu7A==
-  dependencies:
-    "@storybook/api" "6.5.0-alpha.61"
-    "@storybook/channels" "6.5.0-alpha.61"
-    "@storybook/client-logger" "6.5.0-alpha.61"
-    "@storybook/core-events" "6.5.0-alpha.61"
-    "@storybook/csf" "0.0.2--canary.7c6c115.0"
-    "@storybook/router" "6.5.0-alpha.61"
-    "@storybook/theming" "6.5.0-alpha.61"
-    "@types/webpack-env" "^1.16.0"
-    core-js "^3.8.2"
-    global "^4.4.0"
-    regenerator-runtime "^0.13.7"
-
->>>>>>> storybook-setup
 "@storybook/api@6.4.21":
   version "6.4.21"
   resolved "https://registry.yarnpkg.com/@storybook/api/-/api-6.4.21.tgz#efee41ae7bde37f6fe43ee960fef1a261b1b1dd6"
@@ -2646,7 +2577,6 @@
   dependencies:
     core-js "^3.8.2"
     global "^4.4.0"
-<<<<<<< HEAD
 
 "@storybook/client-logger@6.5.0-alpha.61":
   version "6.5.0-alpha.61"
@@ -2698,59 +2628,6 @@
   resolved "https://registry.yarnpkg.com/@storybook/core-common/-/core-common-6.5.0-alpha.61.tgz#95309dcc3e8ada74afac8cb12b8dea3b39eedf14"
   integrity sha512-LcZQyDS+DGsFgsT35EXQeunLQtR5urLwoK9SVewUuNvS4pFc/lsB19jeu6W+H7BsOkB0xjJB6jCtacNmBvQCBA==
   dependencies:
-=======
-
-"@storybook/client-logger@6.5.0-alpha.61":
-  version "6.5.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@storybook/client-logger/-/client-logger-6.5.0-alpha.61.tgz#f472534fb37ae78e1a276b92bee8e888da99b3e8"
-  integrity sha512-aBUDpNvnkmzOvPOyuWM+DR35SCEhe2jnvjF1hNpNA/OcQJtJwsBdIfC4BiebDgeRZhSTKXPwlZF8RYYhSfHyqg==
-  dependencies:
-    core-js "^3.8.2"
-    global "^4.4.0"
-
-"@storybook/components@6.5.0-alpha.61":
-  version "6.5.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@storybook/components/-/components-6.5.0-alpha.61.tgz#9a69f4335e50b1720a9d7b2f28107a442b9202a8"
-  integrity sha512-Gdy1OE1NqLDSl2ORRNdHWHJ4e+50HRx5OJCmHA7KlQxxzQnl1+mRinY2tJr089U8F3SVbcwnF3NGtAa6W/ZQzQ==
-  dependencies:
-    "@storybook/client-logger" "6.5.0-alpha.61"
-    "@storybook/csf" "0.0.2--canary.7c6c115.0"
-    "@storybook/theming" "6.5.0-alpha.61"
-    core-js "^3.8.2"
-    regenerator-runtime "^0.13.7"
-
-"@storybook/core-client@6.5.0-alpha.61":
-  version "6.5.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@storybook/core-client/-/core-client-6.5.0-alpha.61.tgz#15ad18bccdf13d1d5bf532d05713e51fe2f27386"
-  integrity sha512-djZ/CUmEJsJmTqajfvnBe52VWfbjde+/pmy0Y2v6Ox4JhYMHbkud28W+zQjWLpzc2AEoE7vzFqjLOUoA1xAjyg==
-  dependencies:
-    "@storybook/addons" "6.5.0-alpha.61"
-    "@storybook/channel-postmessage" "6.5.0-alpha.61"
-    "@storybook/channel-websocket" "6.5.0-alpha.61"
-    "@storybook/client-api" "6.5.0-alpha.61"
-    "@storybook/client-logger" "6.5.0-alpha.61"
-    "@storybook/core-events" "6.5.0-alpha.61"
-    "@storybook/csf" "0.0.2--canary.7c6c115.0"
-    "@storybook/preview-web" "6.5.0-alpha.61"
-    "@storybook/store" "6.5.0-alpha.61"
-    "@storybook/ui" "6.5.0-alpha.61"
-    airbnb-js-shims "^2.2.1"
-    ansi-to-html "^0.6.11"
-    core-js "^3.8.2"
-    global "^4.4.0"
-    lodash "^4.17.21"
-    qs "^6.10.0"
-    regenerator-runtime "^0.13.7"
-    ts-dedent "^2.0.0"
-    unfetch "^4.2.0"
-    util-deprecate "^1.0.2"
-
-"@storybook/core-common@6.5.0-alpha.61":
-  version "6.5.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@storybook/core-common/-/core-common-6.5.0-alpha.61.tgz#95309dcc3e8ada74afac8cb12b8dea3b39eedf14"
-  integrity sha512-LcZQyDS+DGsFgsT35EXQeunLQtR5urLwoK9SVewUuNvS4pFc/lsB19jeu6W+H7BsOkB0xjJB6jCtacNmBvQCBA==
-  dependencies:
->>>>>>> storybook-setup
     "@babel/core" "^7.12.10"
     "@babel/plugin-proposal-class-properties" "^7.12.1"
     "@babel/plugin-proposal-decorators" "^7.12.12"
@@ -2898,7 +2775,6 @@
   version "0.0.2--canary.7c6c115.0"
   resolved "https://registry.yarnpkg.com/@storybook/csf/-/csf-0.0.2--canary.7c6c115.0.tgz#91724e34be7b168acddb8df7e7821ed371ce31ff"
   integrity sha512-LRIDJp2JionBqZ4/c2DncDk5jGzd3sua92jGbQVRtVyIGdaAVDuNtqXY9Fh+yzO7QE03Cm+BEs59Yat5J7EdEQ==
-<<<<<<< HEAD
   dependencies:
     lodash "^4.17.15"
 
@@ -2909,18 +2785,6 @@
   dependencies:
     lodash "^4.17.15"
 
-=======
-  dependencies:
-    lodash "^4.17.15"
-
-"@storybook/csf@0.0.2--canary.87bc651.0":
-  version "0.0.2--canary.87bc651.0"
-  resolved "https://registry.yarnpkg.com/@storybook/csf/-/csf-0.0.2--canary.87bc651.0.tgz#c7b99b3a344117ef67b10137b6477a3d2750cf44"
-  integrity sha512-ajk1Uxa+rBpFQHKrCcTmJyQBXZ5slfwHVEaKlkuFaW77it8RgbPJp/ccna3sgoi8oZ7FkkOyvv1Ve4SmwFqRqw==
-  dependencies:
-    lodash "^4.17.15"
-
->>>>>>> storybook-setup
 "@storybook/docs-tools@6.5.0-alpha.61":
   version "6.5.0-alpha.61"
   resolved "https://registry.yarnpkg.com/@storybook/docs-tools/-/docs-tools-6.5.0-alpha.61.tgz#306c80e7178379e00cc7c6c8c6ea91ee548a6b3a"
