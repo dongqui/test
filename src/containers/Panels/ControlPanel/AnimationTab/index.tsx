@@ -1,5 +1,4 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import * as BABYLON from '@babylonjs/core';
 import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
 
@@ -10,11 +9,10 @@ import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/commo
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 import { Mesh, TransformNode } from '@babylonjs/core';
+import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { updateEntity } from 'actions/selectingDataAction';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
 
 const cx = classNames.bind(styles);
 

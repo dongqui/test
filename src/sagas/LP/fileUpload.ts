@@ -9,7 +9,7 @@ import * as animationDataActions from 'actions/animationDataAction';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils/RP';
+import { getRecurrentRotationQuaternion } from 'utils/RP';
 import { IMPORT_ERROR_UNKNOWN, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
