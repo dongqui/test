@@ -9,13 +9,14 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import { Mesh, TransformNode } from '@babylonjs/core';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
   const { plaskProject, selectingData, animationData, lpNode }: RootState = yield select();
   const { animationTransformNodes } = animationData;
   const { visualizedAssetIds } = plaskProject;
   const { selectableObjects } = selectingData.present;
-  const { assetId, nodeId, plaskEngine } = action.payload;
+  const { assetId, nodeId } = action.payload;
 
   if (assetId) {
     const cloneLPNode = cloneDeep(lpNode.nodes);
