@@ -4,6 +4,7 @@ import { SelectingDataAction } from 'actions/selectingDataAction';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import undoable, { excludeAction, includeAction } from 'redux-undo';
 import { combineReducers } from 'redux';
+import { PlaskEntity } from '3d/entities/PlaskEntity';
 
 type State = SelectingData;
 
@@ -82,7 +83,7 @@ export const selectingData = undoable(
       }
       // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
       case 'selectingDataAction/UPDATE_ENTITY': {
-        const obj = {} as { [key: string]: PlaskTransformNode };
+        const obj = {} as { [key: string]: PlaskEntity };
         for (const entity of action.payload.targets) {
           obj[entity.entityId] = entity;
         }
