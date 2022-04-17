@@ -33,12 +33,12 @@
 
   &.primary {
     background-color: #fff;
-    color: var(--gray100);
+    color: var(--grey100);
 
     &:focus,
     &:hover {
-      background-color: var(--gray600);
-      color: var(--gray100);
+      background-color: var(--grey600);
+      color: var(--grey100);
     }
   }
 
@@ -54,7 +54,7 @@
 
   &.error {
     background-color: var(--vivid-red);
-    color: var(--gray700);
+    color: var(--grey700);
   }
 }
 
@@ -75,31 +75,31 @@
   }
 
   &.primary {
-    border: 1px solid var(--gray500);
+    border: 1px solid var(--grey500);
     background-color: transparent;
-    color: var(--gray600);
+    color: var(--grey600);
 
     &:focus,
     &:hover {
-      border: 1px solid var(--gray800);
-      color: var(--gray800);
+      border: 1px solid var(--grey800);
+      color: var(--grey800);
     }
   }
 
   &.secondary {
     border: 1px solid var(--blue200);
     background-color: transparent;
-    color: var(--gray700);
+    color: var(--grey700);
 
     &:focus,
     &:hover {
       border: 1px solid var(--blue300);
-      color: var(--gray800);
+      color: var(--grey800);
     }
   }
 
   &.error {
     background-color: var(--vivid-red);
-    color: var(--gray700);
+    color: var(--grey700);
   }
 }
