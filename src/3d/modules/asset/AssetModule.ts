@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
+import { ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Mesh, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
 import { convertModel } from 'api';
 import { PlaskScreen } from 'types/common';
@@ -22,6 +22,7 @@ const EXPORT_OPTIONS = {
 };
 
 export class AssetModule extends Module {
+  private _sphereHandles: Mesh[] = [];
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
   }
@@ -71,23 +72,6 @@ export class AssetModule extends Module {
       });
       scene.animationGroups = [];
     });
-  }
-
-  /**
-   * Clear a asset and its helper objects from all the scenes.
-   */
-  public clearAssetFromScene(assetId: string) {
-    const targetAsset = this.assetList.find((asset) => asset.id === assetId);
-    const targetJointTransformNodes = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
-    const targetControllers = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
-
-    if (targetAsset) {
-      this.screenList
-        .map((screen) => screen.scene)
-        .forEach((scene) => {
-          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers);
-        });
-    }
   }
 
   /**
@@ -171,6 +155,8 @@ export class AssetModule extends Module {
             if (!jointSphere.actionManager) {
               jointSphere.actionManager = new ActionManager(scene);
             }
+            this._sphereHandles.push(jointSphere);
+
             jointSphere.actionManager.registerAction(
               // register action that enable for user to select transformNode by clicking joint
               new ExecuteCodeAction(ActionManager.OnPickDownTrigger, (event: ActionEvent) => {
@@ -197,13 +183,13 @@ export class AssetModule extends Module {
    */
   public unvisualizeModel(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
-    const targetJointTransformNodes = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'joint');
+    const sphereHandles = this._sphereHandles.filter((object) => object.id.includes(assetId));
     const targetControllers = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
     if (targetAsset) {
       this.screenList
         .map((screen) => screen.scene)
         .forEach((scene) => {
-          removeAssetFromScene(scene, targetAsset, targetJointTransformNodes, targetControllers);
+          removeAssetFromScene(scene, targetAsset, sphereHandles, targetControllers);
         });
     }
   }

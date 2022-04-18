@@ -28,7 +28,6 @@ export class PlaskTransformNode extends PlaskEntity {
       this.fromTransformNode(transformNode);
     }
   }
-  public transformNodeId: string = '';
   public position: number[] = [];
   public rotation: number[] = [];
   public scaling: number[] = [];

@@ -7,8 +7,9 @@ export type PlaskSpec = {
   [key: string]: PlaskEntitySpec;
 };
 
+export type EntityMap = { [id: string]: PlaskEntity };
 export class EntityStore {
-  private _entities: { [id: string]: PlaskEntity } = {};
+  private _entities: EntityMap = {};
   public get entities() {
     return this._entities;
   }

@@ -92,13 +92,16 @@ export const selectingData = undoable(
       // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
       case 'selectingDataAction/REMOVE_ENTITIES': {
         const obj = {} as { [key: string]: PlaskEntity };
-        for (const entityId in state) {
-          if (entityId in action.payload.targets) {
+        const removedIds = action.payload.targets.map((entity) => entity.entityId);
+        console.log('removed', removedIds);
+        for (const entityId in state.allEntitiesMap) {
+          if (!removedIds.includes(entityId)) {
             obj[entityId] = state.allEntitiesMap[entityId];
           }
         }
-        state.allEntitiesMap = obj;
-        return state;
+
+        console.log('after remove ; ', obj, Object.keys(obj).length);
+        return Object.assign({}, state, { allEntitiesMap: obj });
       }
       default: {
         return state;

@@ -29,7 +29,7 @@ import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
 import { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
-import { EntityStore, PlaskSpec } from './entities/EntityStore';
+import { EntityMap, EntityStore, PlaskSpec } from './entities/EntityStore';
 import { addEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
@@ -158,14 +158,14 @@ export class PlaskEngine {
         }
       }
     }
+  }
 
+  public async onEntitiesChanged(currentEntities: EntityMap, previousEntities: EntityMap) {
     // TODO : make it a static prop
     const entityOrder = ['PlaskAsset', 'PlaskTransformNode'];
 
     // Entities update
-    if (this.state.selectingData.present.allEntitiesMap !== previousState.selectingData.present.allEntitiesMap) {
-      const currentEntities = this.state.selectingData.present.allEntitiesMap;
-      const previousEntities = previousState.selectingData.present.allEntitiesMap;
+    if (currentEntities !== previousEntities) {
       console.log('Length diff : ', Object.keys(currentEntities).length, Object.keys(previousEntities).length);
       for (const entityClass of entityOrder) {
         for (const entityId in currentEntities) {
@@ -211,14 +211,6 @@ export class PlaskEngine {
   /**
    * Entity accessors
    */
-
-  /**
-   * Registers an entity
-   * @param entity
-   */
-  public registerEntity(entity: PlaskEntity) {
-    this._entityStore.registerEntity(entity);
-  }
 
   /**
    * Retrieves an entity with its entity id

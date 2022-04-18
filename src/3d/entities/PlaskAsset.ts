@@ -32,7 +32,6 @@ export class PlaskAsset extends PlaskEntity {
     const engine = PlaskEngine.GetInstance();
 
     return new Promise<void>((resolve, reject) => {
-      console.log(this.assetId, 'visualized');
       engine.assetModule.visualizeModel(this.assetId);
       // engine.dispatch(cancelVisulization({ assetId: this.assetId, plaskEngine: engine }));
       // engine.dispatch(visualizeNode({ assetId: this.assetId, plaskEngine: engine, onSuccess: () => resolve() }));

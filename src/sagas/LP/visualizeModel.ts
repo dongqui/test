@@ -8,6 +8,7 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import { PlaskAsset } from '3d/entities/PlaskAsset';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 const clickJointChannel = channel();
 
@@ -41,6 +42,10 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
+      // Find transform node
+      const ptns = plaskEngine.getEntitiesByPredicate((entity) => entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).id.includes(prevAssetId));
+      yield put(selectingDataActions.removeEntity({ targets: ptns }));
+
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
       yield put(plaskProjectActions.unrenderAsset({ assetId }));
     }

@@ -2,7 +2,7 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { Mesh, Scene } from '@babylonjs/core';
 import { PlaskAsset } from 'types/common';
 
-const removeAssetFromScene = (scene: Scene, asset: PlaskAsset, joints: PlaskTransformNode[], controllers: PlaskTransformNode[]) => {
+const removeAssetFromScene = (scene: Scene, asset: PlaskAsset, joints: Mesh[], controllers: PlaskTransformNode[]) => {
   const { id: assetId, meshes, geometries, skeleton, transformNodes } = asset;
 
   meshes.forEach((mesh) => {
@@ -25,10 +25,7 @@ const removeAssetFromScene = (scene: Scene, asset: PlaskAsset, joints: PlaskTran
   }
 
   joints.forEach((joint) => {
-    const mesh = scene.getMeshById(joint.id.replace('transformNode', 'joint'));
-    if (mesh) {
-      scene.removeMesh(mesh);
-    }
+    scene.removeMesh(joint);
   });
 
   controllers.forEach((controller) => {
