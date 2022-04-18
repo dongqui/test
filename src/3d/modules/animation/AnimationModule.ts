@@ -255,7 +255,7 @@ export class AnimationModule extends Module {
 
   /**
    * create BABYLON.AnimationGroup with our custom animation data(animationIngredient)
-   * @param animationIngredient
+   * @param animationIngredient - ingredient for animationGroup
    * @param fps - fps of the animationGroup
    */
   public createAnimationGroupFromIngredient(animationIngredient: AnimationIngredient, fps: number): AnimationGroup {
