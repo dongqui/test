@@ -4,15 +4,11 @@
 
 .menu-item {
   @include reset-list-style();
-  padding: 5.5px 8px;
+  padding: 5.5px 16px 5.5px 8px;
   cursor: pointer;
   border-radius: 6px;
-  //margin-bottom: 4px;
   color: $content-active;
-
-  //&:last-child {
-  //  margin: 0;
-  //}
+  width: max-content;
 
   &,
   a {
@@ -20,6 +16,7 @@
     line-height: 13px;
     color: $content-active;
     text-decoration: none;
+    font-family: "Inter", "Noto Sans KR", Arial, sans-serif;
   }
 
   &:not(.disabled) {
