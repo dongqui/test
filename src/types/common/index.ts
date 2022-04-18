@@ -64,6 +64,48 @@ export interface PlaskAsset {
   retargetMapId: string;
 }
 
+export interface ServerAnimation {
+  id: string; // uid -> id
+  // don't know what is scenes_library_id
+  name: string;
+  fps: number;
+  isMocapAnimation: boolean;
+  isDeleted: boolean;
+}
+
+export interface ServerAnimationLayer {
+  id: string; // uid -> id
+  animationId: string; // scenes_library_model_animation_id -> animationId
+  name: string;
+  isLocked: boolean;
+  isDeleted: boolean;
+  nameTracks: ServerAnimationTrack[]; // boneTracks -> nameTracks
+}
+
+// BoneTrack -> NameTrack
+export interface ServerAnimationTrack {
+  targetId: string; // boneId -> targetId
+  isShown: boolean; // isShow -> isShown
+  isLocked: boolean;
+  useFilter: boolean; // destructure filter related data
+  filterBeta: number;
+  filterMinCutoff: number;
+  frameTransformKeyMap: Map<number, Map<PlaskProperty, ServerTransformKey>>; // boneFrameMap -> frameTrackMap
+}
+
+interface VectorTransformKey {
+  x: number;
+  y: number;
+  z: number;
+}
+type QuaternionTransformKey = { w: number } & VectorTransformKey;
+export interface ServerTransformKey {
+  type: PlaskProperty; // quaternion -> rotationQuaternion
+  transformKey: VectorTransformKey | QuaternionTransformKey;
+  isIncluded: boolean;
+  isLocked: boolean;
+}
+
 export interface AnimationIngredient {
   id: string;
   name: string;

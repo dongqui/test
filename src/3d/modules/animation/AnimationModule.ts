@@ -1,8 +1,7 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
-import { AnimationIngredient, PlaskLayer, PlaskMocapData, PlaskPose, PlaskProperty, PlaskRetargetMap, PlaskTrack } from 'types/common';
-import { PlayDirection, PlayState } from 'types/RP';
+import { AnimationIngredient, PlaskLayer, PlaskMocapData, PlaskPose, PlaskProperty, PlaskRetargetMap, PlaskTrack, ServerAnimation, ServerAnimationLayer } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF } from 'utils/const';
 import OneEuroFilterForQuaternion from 'utils/RP/OneEuroFilterForQuaternion';
@@ -23,6 +22,9 @@ export class AnimationModule extends Module {
     this._currentAnimationGroup = null;
     this.onAnimationDataChangeObservable = new Observable();
   }
+
+  // static ingredientToServerData(animationIngredient: AnimationIngredient): [ServerAnimation, ServerAnimationLayer[]] {}
+  // static serverDataToIngredient(serverAnimation: ServerAnimation, serverAnimationLayers: ServerAnimationLayer[]): AnimationIngredient {}
 
   /**
    * Initialize observables
