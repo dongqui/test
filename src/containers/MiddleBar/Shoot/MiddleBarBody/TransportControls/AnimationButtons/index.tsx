@@ -1,4 +1,4 @@
-import { useEffect, useRef, Fragment, useCallback } from 'react';
+import { useEffect, useRef, Fragment, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as animatingControlsActions from 'actions/animatingControlsAction';
@@ -6,6 +6,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
 import { PlayDirection } from 'types/RP';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
+import plaskEngine from '3d/PlaskEngine';
 
 import Record from './Record';
 import Stop from './Stop';
@@ -19,13 +20,9 @@ const Buttons = () => {
   const dispatch = useDispatch();
 
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
   const _playState = useSelector((state) => state.animatingControls.playState);
-  const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
-  const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
-  const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
 
   const requestAnimationFrameId = useRef(0);
 
@@ -50,15 +47,18 @@ const Buttons = () => {
       const scrubber = document.getElementById('scrubber');
       const scrubberInput = scrubber?.querySelector('input');
       const scaleX = ScaleLinear.getScaleX();
-      if (scrubber && scrubberInput && _currentAnimationGroup) {
-        const nextFrame = _currentAnimationGroup.animatables.length !== 0 ? _currentAnimationGroup.animatables[0].masterFrame : clampNextFrame(playDirection);
+      if (scrubber && scrubberInput && plaskEngine.animationModule.currentAnimationGroup) {
+        const nextFrame =
+          plaskEngine.animationModule.currentAnimationGroup.animatables.length !== 0
+            ? plaskEngine.animationModule.currentAnimationGroup.animatables[0].masterFrame
+            : clampNextFrame(playDirection);
         const digitedNextFrame = playDirection === PlayDirection.forward ? Math.floor(nextFrame) : Math.ceil(nextFrame);
         scrubber.setAttribute('transform', `translate(${scaleX(digitedNextFrame) - 3}, 0)`);
         scrubberInput.value = `${digitedNextFrame}`;
         TimeIndex.setCurrentTimeIndex(nextFrame);
       }
     },
-    [_currentAnimationGroup, clampNextFrame],
+    [clampNextFrame],
   );
 
   // animation 재생 시 함수 loop
@@ -72,47 +72,33 @@ const Buttons = () => {
 
   // 애니메이션 앞으로 재생 제어
   const editAnimationPlay = useCallback(() => {
-    if (_currentAnimationGroup) {
-      if (_currentAnimationGroup.isPlaying && _currentAnimationGroup.speedRatio < 0) {
-        _currentAnimationGroup.speedRatio = _playSpeed;
-      } else if (_currentAnimationGroup.isStarted) {
-        _currentAnimationGroup.speedRatio = _playSpeed;
-        _currentAnimationGroup.play().goToFrame(_currentTimeIndex);
-      } else {
-        _currentAnimationGroup.start(true, _playSpeed, _startTimeIndex, _endTimeIndex).goToFrame(_currentTimeIndex - _startTimeIndex);
-      }
+    if (plaskEngine.animationModule.currentAnimationGroup) {
+      plaskEngine.animationModule.playCurrentAnimationGroup();
       window.cancelAnimationFrame(requestAnimationFrameId.current);
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.forward }));
     }
-  }, [_currentAnimationGroup, _currentTimeIndex, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+  }, [dispatch]);
 
   // 애니메이션 뒤로 재생 제어
   const editAnimationRewind = useCallback(() => {
-    if (_currentAnimationGroup) {
-      if (_currentAnimationGroup.isPlaying && _currentAnimationGroup.speedRatio >= 0) {
-        _currentAnimationGroup.speedRatio = -1 * _playSpeed;
-      } else if (_currentAnimationGroup.isStarted) {
-        _currentAnimationGroup.speedRatio = -1 * _playSpeed;
-        _currentAnimationGroup.play().goToFrame(_currentTimeIndex);
-      } else {
-        _currentAnimationGroup.start(true, -1 * _playSpeed, _startTimeIndex, _endTimeIndex).goToFrame(_currentTimeIndex - _startTimeIndex);
-      }
+    if (plaskEngine.animationModule.currentAnimationGroup) {
+      plaskEngine.animationModule.rewindCurrentAnimationGroup();
       window.cancelAnimationFrame(requestAnimationFrameId.current);
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.backward }));
     }
-  }, [_currentAnimationGroup, _currentTimeIndex, _endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
+  }, [dispatch]);
 
   // 애니메이션 일시정지 제어
   const editAnimationPause = useCallback(() => {
-    if (_currentAnimationGroup && _currentAnimationGroup.isPlaying) {
-      const masterFrame = Math.floor(_currentAnimationGroup.animatables[0].masterFrame);
-      _currentAnimationGroup.pause();
+    if (plaskEngine.animationModule.currentAnimationGroup && plaskEngine.animationModule.currentAnimationGroup.isPlaying) {
+      const masterFrame = Math.floor(plaskEngine.animationModule.currentAnimationGroup.animatables[0].masterFrame);
+      plaskEngine.animationModule.pauseCurrentAnimationGroup();
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'pause', currentTimeIndex: masterFrame }));
     } else {
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'pause', currentTimeIndex: TimeIndex.getCurrentTimeIndex() }));
     }
     window.cancelAnimationFrame(requestAnimationFrameId.current);
-  }, [_currentAnimationGroup, dispatch]);
+  }, [dispatch]);
 
   // play 버튼 클릭
   const handlePlayButtonClick = useCallback(() => {
@@ -156,7 +142,7 @@ const Buttons = () => {
     };
   }, [_playDirection, _playState, _visualizedAssetIds, dispatch, editAnimationPause, editAnimationPlay, editAnimationRewind, loopAnimation]);
 
-  const ButtonState = () => {
+  const ButtonState = useCallback(() => {
     if (_playState === 'play') {
       if (_playDirection === PlayDirection.forward) {
         return (
@@ -181,7 +167,7 @@ const Buttons = () => {
         </Fragment>
       );
     }
-  };
+  }, [_playDirection, _playState, handlePauseButtonClick, handlePlayButtonClick, handleRewindButtonClick]);
 
   return (
     <div className={cx('animation-buttons')}>

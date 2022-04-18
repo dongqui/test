@@ -11,8 +11,8 @@ import {
   clickDropdown,
   clickConfirmOnModal,
 } from '../helper';
+import { TransformNode, Mesh } from '@babylonjs/core';
 import { skipOn } from '@cypress/skip-test';
-import * as BABYLON from '@babylonjs/core';
 
 describe.skip('CP 테스트', () => {
   before(() => {
@@ -111,7 +111,7 @@ function typeValueOnAnimationInput(inputTitle: string, position: position, value
 
 function getVisualizedTransformNodesCount() {
   // utils에 있는 거 쓸 수 있는 방법이 없을까...?
-  const checkIsTargetMesh = (target: BABYLON.TransformNode | BABYLON.Mesh): target is BABYLON.Mesh => {
+  const checkIsTargetMesh = (target: TransformNode | Mesh): target is Mesh => {
     return target.getClassName() === 'Mesh';
   };
   return cy.getStoreState('selectingData.selectableObjects').then((selectableObjects) => {

@@ -3,13 +3,13 @@ import { select, put, all, takeLatest } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
 import { RootState } from 'reducers';
-import { removeAssetThingsFromScene } from 'utils/RP';
 import { filterDeletedNode } from 'utils/LP/FileSystem';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import plaskEngine from '3d/PlaskEngine';
 
 // export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
 //   const { lpNode, plaskProject, animationData, selectingData }: RootState = yield select();
@@ -63,7 +63,6 @@ function handeDeleteMotionSend(action: ReturnType<typeof lpNodeActions.deleteMot
 }
 function* handeDeleteMotionReceive(action: ReturnType<typeof lpNodeActions.deleteMotionSocket.receive>) {
   const { lpNode, plaskProject, animationData, selectingData }: RootState = yield select();
-
   const motionId = action.payload.data.animationId;
   const targetMotion = find(lpNode.nodes, { id: motionId });
 
@@ -76,7 +75,7 @@ function* handeDeleteMotionReceive(action: ReturnType<typeof lpNodeActions.delet
 
   const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(asset.id);
   if (isVisualizedAsset) {
-    removeAssetThingsFromScene(plaskProject, selectingData.present, asset.id);
+    plaskEngine.assetModule.clearAssetFromScene(asset.id);
 
     yield put(plaskProjectActions.unrenderAsset({}));
     yield put(selectingDataActions.unrenderAsset({ assetId: asset.id }));
@@ -87,6 +86,7 @@ function* handeDeleteMotionReceive(action: ReturnType<typeof lpNodeActions.delet
   yield put(lpNodeActions.deleteMotionSocket.update(nextNodes));
   yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));
   yield put(plaskProjectActions.removeAnimationIngredient({ assetId: asset.id, animationIngredientId: targetAnimationIngredient.id }));
+
   forceClickAnimationPlayAndStop();
 }
 

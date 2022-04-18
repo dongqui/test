@@ -70,7 +70,6 @@ interface FileUploadParams {
   file: File | string;
   showLoading: boolean;
 }
-
 interface DeleteNodeReceiveParam {
   type: 'delete';
   scenesLibraryId: string;

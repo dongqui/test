@@ -1,11 +1,11 @@
-import * as BABYLON from '@babylonjs/core';
 import { AnimatingControlsAction } from 'actions/animatingControlsAction';
 import { TimeIndex } from 'utils/TP';
 import { PlayDirection, PlayState } from 'types/RP';
 import { Nullable } from 'types/common';
+import { AnimationGroup } from '@babylonjs/core';
 
 interface AnimatingContolsState {
-  currentAnimationGroup: Nullable<BABYLON.AnimationGroup>;
+  currentAnimationGroup: Nullable<AnimationGroup>;
   playState: PlayState;
   playDirection: PlayDirection;
   playSpeed: number;

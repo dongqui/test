@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Vector3 } from '@babylonjs/core';
 import { isNull } from 'lodash';
 
 /**
@@ -9,8 +9,8 @@ export default class OneEuroFilterForVector {
   private beta: number = 0.0;
   private dCutoff: number = 1.0;
 
-  private prevX: BABYLON.Vector3 | null = null;
-  private prevDx: BABYLON.Vector3 | null = null;
+  private prevX: Vector3 | null = null;
+  private prevDx: Vector3 | null = null;
   private prevT: number | null = null;
 
   constructor(minCutoff: number, beta: number) {
@@ -22,14 +22,14 @@ export default class OneEuroFilterForVector {
     const r = 2 * Math.PI * cutoff * te;
     return r / (r + 1);
   }
-  private _exponentialSmooth(a: number, x: BABYLON.Vector3, prevX: BABYLON.Vector3) {
+  private _exponentialSmooth(a: number, x: Vector3, prevX: Vector3) {
     return x.scale(a).add(prevX.scale(1 - a));
   }
 
-  public calculate(t: number, x: BABYLON.Vector3) {
+  public calculate(t: number, x: Vector3) {
     if (isNull(this.prevX) || isNull(this.prevDx) || isNull(this.prevT)) {
       this.prevX = x;
-      this.prevDx = BABYLON.Vector3.Zero();
+      this.prevDx = Vector3.Zero();
       this.prevT = t;
       return x;
     }

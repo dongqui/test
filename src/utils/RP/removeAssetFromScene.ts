@@ -25,7 +25,7 @@ const removeAssetFromScene = (scene: Scene, asset: PlaskAsset, joints: PlaskTran
   }
 
   joints.forEach((joint) => {
-    const mesh = scene.getMeshByID(joint.id.replace('transformNode', 'joint'));
+    const mesh = scene.getMeshById(joint.id.replace('transformNode', 'joint'));
     if (mesh) {
       scene.removeMesh(mesh);
     }

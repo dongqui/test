@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { SkeletonViewer } from '@babylonjs/core';
 
 export type ScreenDataAction =
   | ReturnType<typeof addScreen>
@@ -119,7 +119,7 @@ export const setGizmoVisibility = (params: SetGizmoVisibility) => ({
 
 interface AddSkeletonViewer {
   screenId: string;
-  skeletonViewer: BABYLON.SkeletonViewer;
+  skeletonViewer: SkeletonViewer;
 }
 
 export const addSkeletonViewer = (params: AddSkeletonViewer) => ({
