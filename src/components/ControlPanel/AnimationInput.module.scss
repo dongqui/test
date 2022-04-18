@@ -1,18 +1,20 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   position: relative;
   display: flex;
   align-items: center;
   height: 24px;
   margin-right: 4px;
-  color: #7a7a7b;
-  background-color: #353739;
+  color: $content-active;
+  background-color: $contentbg-base;
   border-radius: 6px;
 
   & > p {
     margin-left: 8px;
     font-size: 11px;
     line-height: 13px;
-    color: #4f4f4f;
+    color: $content-inactive;
   }
 
   & > input {
@@ -22,10 +24,10 @@
     width: 70%;
     border: none;
     background-color: transparent;
-    color: #4f4f4f;
+    color: $content-inactive;
 
     &::placeholder {
-      color: #4f4f4f;
+      color: $content-inactive;
     }
 
     &:focus {
@@ -51,14 +53,14 @@
 
   &.able {
     & > p {
-      color: #7a7a7b;
+      color: $content-active;
     }
 
     & > input {
-      color: #fff;
+      color: $content-active;
 
       &::placeholder {
-        color: #fff;
+        color: $content-active;
       }
     }
   }
@@ -75,8 +77,8 @@
   left: 16px;
   width: 70%;
   height: 100%;
-  color: #7a7a7b;
-  background-color: #353739;
+  color: $content-inactive;
+  background-color: $contentbg-base;
   border-radius: 6px;
   overflow: hidden;
   white-space: nowrap;

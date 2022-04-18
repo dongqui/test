@@ -11,18 +11,13 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
   const { plaskProject, animationData, lpNode }: RootState = yield select();
   const { animationIngredients } = animationData;
   const { screenList, assetList } = plaskProject;
-  const { assetId, nodeId, parentId } = action.payload;
+  const { assetId, nodeId, parentId, plaskEngine } = action.payload;
 
   if (!assetId) {
     return;
   }
 
-  screenList.forEach(({ scene }) => {
-    scene.animationGroups.forEach((animationGroup) => {
-      animationGroup.stop();
-      scene.removeAnimationGroup(animationGroup);
-    });
-  });
+  plaskEngine.assetModule.clearAnimationGroups(screenList);
 
   const parentModel = find(lpNode.nodes, { id: parentId });
   // TODO 선언적으로 수정
@@ -46,6 +41,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     }
   }
 
-  yield put(lpNodeActions.visualizeNode(assetId));
+  yield put(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
   forceClickAnimationPlayAndStop(50);
 }

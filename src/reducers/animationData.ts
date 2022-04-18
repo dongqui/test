@@ -1,10 +1,10 @@
-import * as BABYLON from '@babylonjs/core';
 import { AnimationDataAction } from 'actions/animationDataAction';
 import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
+import { TransformNode } from '@babylonjs/core';
 
 type State = {
-  animationTransformNodes: BABYLON.TransformNode[];
+  animationTransformNodes: TransformNode[];
   animationIngredients: AnimationIngredient[];
   retargetMaps: PlaskRetargetMap[];
 };
@@ -180,7 +180,7 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       return Object.assign({}, state, {
         retargetMaps: state.retargetMaps.map((retargetMap) => {
           if (retargetMap.assetId === action.payload.assetId) {
-            return { ...retargetMap, hipSpace: action.payload.hipSpaece };
+            return { ...retargetMap, hipSpace: action.payload.hipSpace };
           } else {
             return retargetMap;
           }

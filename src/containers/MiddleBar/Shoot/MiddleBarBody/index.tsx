@@ -1,3 +1,4 @@
+import Box from 'components/Layout/Box';
 import ChangeModes from './ChangeModes';
 import Loop from './Loop';
 import TransportControls from './TransportControls';
@@ -8,11 +9,13 @@ const cx = classNames.bind(styles);
 
 const MiddleBarBody = () => {
   return (
-    <div className={cx('body')}>
-      <Loop />
-      <TransportControls />
-      <ChangeModes />
-    </div>
+    <Box id="MB-Body" className={cx('body')} noResize>
+      <div className={cx('inner')}>
+        <Loop />
+        <TransportControls />
+        <ChangeModes />
+      </div>
+    </Box>
   );
 };
 

@@ -2,7 +2,6 @@ import { find } from 'lodash';
 import { select, put } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
-import { removeAssetThingsFromScene } from 'utils/RP';
 import { filterDeletedNode } from 'utils/LP/FileSystem';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -11,8 +10,8 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 
 export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
-  const { lpNode, plaskProject, animationData, selectingData }: RootState = yield select();
-  const { nodeId, assetId, parentId } = action.payload;
+  const { lpNode, plaskProject, animationData }: RootState = yield select();
+  const { nodeId, assetId, parentId, plaskEngine } = action.payload;
 
   const targetMotion = find(lpNode.nodes, { id: nodeId });
   const asset = find(plaskProject.assetList, { id: assetId });
@@ -24,7 +23,7 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
 
   const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(assetId);
   if (isVisualizedAsset) {
-    removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
+    plaskEngine.assetModule.clearAssetFromScene(assetId);
 
     yield put(plaskProjectActions.unrenderAsset({}));
     yield put(selectingDataActions.unrenderAsset({ assetId }));

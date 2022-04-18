@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .tab-header {
   padding: 12px 8px;
   cursor: default;
@@ -14,11 +16,11 @@
     line-height: 16px;
     font-weight: 500;
     vertical-align: text-top;
-    color: #7a7a7a;
+    color: $content-inactive;
     transition: color 0.15s;
 
     &:hover {
-      color: var(--gray700);
+      color: $content-active;
       transition: color 0.15s;
     }
   }
@@ -30,7 +32,7 @@
 
   span {
     font-weight: 700;
-    color: var(--gray700);
+    color: $content-active;
   }
 
   & > button {
@@ -43,10 +45,10 @@
 
   span {
     font-weight: 700;
-    color: #7a7a7a;
+    color: $content-inactive;
 
     &:hover {
-      color: #7a7a7a;
+      color: $content-inactive;
     }
   }
 

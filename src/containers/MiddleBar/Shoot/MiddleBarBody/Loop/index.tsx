@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, ChangeEvent, FocusEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { debounce } from 'lodash';
 
@@ -23,18 +23,18 @@ const Loop = () => {
   const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
 
   // start input에 debounce 적용
-  const handleStartInputChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStartInputChange = debounce((event: ChangeEvent<HTMLInputElement>) => {
     event.target.blur();
   }, 1500);
 
   // end input에 debounce 적용
-  const handleEndInputChange = debounce((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEndInputChange = debounce((event: ChangeEvent<HTMLInputElement>) => {
     event.target.blur();
   }, 1500);
 
   // start input에 blur 이벤트 발생
   const handleStartInputBlur = useCallback(
-    (event: React.FocusEvent<HTMLInputElement>) => {
+    (event: FocusEvent<HTMLInputElement>) => {
       const nextStartValue = parseInt(event.target.value);
       const isMinusZero = Object.is(-0, nextStartValue);
       if (isNaN(nextStartValue) || nextStartValue < 0 || _endTimeIndex <= nextStartValue) {
@@ -45,7 +45,7 @@ const Loop = () => {
       } else {
         const payload = {
           startTimeIndex: nextStartValue,
-          currentTimeIndex: _currentTimeIndex < nextStartValue ? nextStartValue : _currentTimeIndex,
+          currentTimeIndex: Math.max(_currentTimeIndex, nextStartValue),
         };
         dispatch(animatingControlsActions.blurStartInput(payload));
       }
@@ -57,14 +57,14 @@ const Loop = () => {
 
   // end input에 blur 이벤트 발생
   const handleEndInputBlur = useCallback(
-    (event: React.FocusEvent<HTMLInputElement>) => {
+    (event: FocusEvent<HTMLInputElement>) => {
       const nextEndValue = parseInt(event.target.value);
       if (isNaN(nextEndValue) || nextEndValue <= _startTimeIndex || 9999 < nextEndValue) {
         event.target.value = _endTimeIndex.toString();
       } else {
         const payload = {
           endTimeIndex: nextEndValue,
-          currentTimeIndex: nextEndValue < _currentTimeIndex ? nextEndValue : _currentTimeIndex,
+          currentTimeIndex: Math.min(nextEndValue, _currentTimeIndex),
         };
         dispatch(animatingControlsActions.blurEndInput(payload));
       }

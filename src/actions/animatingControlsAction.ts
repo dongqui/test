@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { AnimationGroup } from '@babylonjs/core';
 import { PlayDirection, PlayState } from 'types/RP';
 
 export type AnimatingControlsAction =
@@ -11,7 +11,7 @@ export type AnimatingControlsAction =
   | ReturnType<typeof clickAutoKeyButton>;
 
 interface SetCurrentAnimationGroup {
-  animationGroup: BABYLON.AnimationGroup;
+  animationGroup: AnimationGroup;
 }
 
 export const SET_CURRENT_ANIMATION_GROUP = 'animatingControls/SET_CURRENT_ANIMATION_GROUP' as const;

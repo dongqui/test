@@ -1,8 +1,6 @@
-import * as BABYLON from '@babylonjs/core';
 import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
-import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
@@ -11,8 +9,6 @@ import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { GizmoMode, GizmoSpace, PlaskView } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
-import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { checkIsTargetMesh, createAnimationGroupFromIngredient } from 'utils/RP';
 import { BabylonContext } from 'contexts/RP/BabylonContext';
 import ScreenVisibility from './ScreenVisibility';
 
@@ -466,32 +462,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   }, [plaskEngine.gizmoModule]);
 
   /******************************************************************************
-   * Animation related codes
-   *****************************************************************************/
-
-  /**
-   * Create animationGroup and normalize it
-   */
-  useEffect(() => {
-    const visualizedAnimationIngredients = _animationIngredients.filter(
-      (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
-    );
-
-    if (visualizedAnimationIngredients.length === 1) {
-      // @TODO need to change to apply filter only when the animationGroup is playing
-      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps);
-
-      newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
-
-      dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
-
-      return () => {
-        newAnimationGroup.stop();
-      };
-    }
-  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
-
-  /******************************************************************************
    * Related to RP's sub-containers
    * Including contextMenu and dropDown
    *****************************************************************************/
@@ -681,7 +651,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             plaskEngine.visibilityLayers.toggleVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isMeshVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
         },
         {
           value: 'Mesh',
@@ -689,7 +659,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             plaskEngine.visibilityLayers.toggleVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isBoneVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
         },
         {
           value: 'Gizmo',
@@ -707,7 +677,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   return (
     <div className={cx('wrapper')}>
-      <div id="rpDragBox" ref={rpDragBox}></div>
+      <div id="rpDragBox" ref={rpDragBox} />
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
       <ScreenVisibility itemList={screenVisibilityItemList} />
     </div>

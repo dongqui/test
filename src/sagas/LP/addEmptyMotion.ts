@@ -1,27 +1,26 @@
 import { find, cloneDeep } from 'lodash';
 import { select, put } from 'redux-saga/effects';
 import produce from 'immer';
-import * as BABYLON from '@babylonjs/core';
 
 import { RootState } from 'reducers';
-import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import { Mesh, TransformNode } from '@babylonjs/core';
 
 export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
   const { plaskProject, selectingData, animationData, lpNode }: RootState = yield select();
   const { animationTransformNodes } = animationData;
   const { visualizedAssetIds } = plaskProject;
   const { selectableObjects } = selectingData.present;
-  const { assetId, nodeId } = action.payload;
+  const { assetId, nodeId, plaskEngine } = action.payload;
 
   if (assetId) {
     const cloneLPNode = cloneDeep(lpNode.nodes);
 
-    let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
+    let targets: (TransformNode | Mesh)[] = [];
     if (visualizedAssetIds.includes(assetId)) {
       // if target model is already visualized, include its controllers
       targets = selectableObjects
@@ -47,7 +46,7 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
     const parentModel = find(cloneLPNode, { id: nodeId });
     const animationIngredientCurrent = parentModel?.childNodeIds.length === 0;
-    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
+    const nextAnimationIngredient = plaskEngine.animationModule.createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
       parentModel?.childNodeIds.push(nextAnimationIngredient.id);

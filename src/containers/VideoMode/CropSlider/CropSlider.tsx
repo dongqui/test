@@ -59,15 +59,15 @@ export const CropSlider: FunctionComponent<Props> = ({
       const value = Math.min(Number(event.target.value), endValue - 1);
       startRef.current = value;
       setStartValue(value);
-      if (videoRef.current!.currentTime <= Math.round(((duration * 100) / 100) * value) / 100) {
-        videoRef.current!.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
+      if (videoRef.current && videoRef.current.currentTime <= Math.round(((duration * 100) / 100) * value) / 100) {
+        videoRef.current.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
       }
     } else {
       const value = Math.max(Number(event.target.value), startValue + 1);
       endRef.current = value;
       setEndValue(value);
-      if (videoRef.current!.currentTime >= Math.round(((duration * 100) / 100) * value) / 100) {
-        videoRef.current!.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
+      if (videoRef.current && videoRef.current.currentTime >= Math.round(((duration * 100) / 100) * value) / 100) {
+        videoRef.current.currentTime = Math.round(((duration * 100) / 100) * value) / 100;
       }
     }
   };
@@ -97,22 +97,24 @@ export const CropSlider: FunctionComponent<Props> = ({
   }, [startValue, endValue, onChange]);
 
   useEffect(() => {
-    indicatorRef.current!.style.left = indicatorPosition + '%';
-  }, [indicatorPosition]);
+    if (indicatorRef.current) {
+      indicatorRef.current.style.left = indicatorPosition + '%';
+    }
+  }, [indicatorPosition, indicatorRef]);
 
   return (
     <Fragment>
       <input id="left" type="range" min={start} max={end} step={0.001} value={startValue} onChange={handleSlider} className={cx('thumb', 'thumb-left')} />
       <input id="right" type="range" min={start} max={end} step={0.001} value={endValue} onChange={handleSlider} className={cx('thumb', 'thumb-right')} />
       <div className={cx('slider')}>
-        <div className={cx('slider-track')}></div>
-        <div ref={cropRef} className={cx('slider-range')}></div>
+        <div className={cx('slider-track')} />
+        <div ref={cropRef} className={cx('slider-range')} />
         <span
           className={cx('slider-time-indicator', 'no-select')}
           onMouseDown={handleMouseDown}
           onMouseMove={(e) => {
-            if (isIndicatorClicked) {
-              handleMouseMove(e, thumbnailWrapRef.current!.getBoundingClientRect().width);
+            if (isIndicatorClicked && thumbnailWrapRef.current) {
+              handleMouseMove(e, thumbnailWrapRef.current.getBoundingClientRect().width);
             }
           }}
           onMouseUp={handleMouseUp}
