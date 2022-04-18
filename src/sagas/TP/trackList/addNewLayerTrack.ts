@@ -21,11 +21,15 @@ function getAnimationIngredients(state: RootState) {
 
 function filterLayerTrackNumbers(layerTrackList: LayerTrack[]) {
   const trackNumbers: number[] = [];
-  const numberRegex = /\d/;
-  for (let index = 0; index < layerTrackList.length; index++) {
-    const trackNumber = layerTrackList[index].trackName.match(numberRegex);
-    if (trackNumber) trackNumbers.push(parseInt(trackNumber[0]));
-  }
+  layerTrackList.forEach((layerTrack) => {
+    const LAYER_REGEX = /^Layer (\d*)$/;
+    if (LAYER_REGEX.test(layerTrack.trackName)) {
+      const trackNumber = layerTrack.trackName.replace(LAYER_REGEX, '$1');
+      if (trackNumber) {
+        trackNumbers.push(parseInt(trackNumber));
+      }
+    }
+  });
   return trackNumbers.sort((a, b) => a - b);
 }
 
