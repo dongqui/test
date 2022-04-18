@@ -7,9 +7,10 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>) {
-  const { nodeId, assetId, parentId, plaskEngine } = action.payload;
+  const { nodeId, assetId, parentId } = action.payload;
   const { lpNode }: RootState = yield select();
 
   plaskEngine.assetModule.clearAssetFromScene(assetId);

@@ -144,7 +144,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
       } else if (mappedTargetTransformNodeId !== null) {
         const transformNode = visualizedTransformNodes.find((visualizedTransformNode) => visualizedTransformNode.id === mappedTargetTransformNodeId);
         if (transformNode) {
-          setCurrentTargetTransformNode({ id: transformNode.id, name: transformNode.name });
+          setCurrentTargetTransformNode({ id: transformNode.id, name: transformNode.reference.name });
           dispatch(selectingDataActions.defaultSingleSelect({ target: transformNode }));
         }
       }

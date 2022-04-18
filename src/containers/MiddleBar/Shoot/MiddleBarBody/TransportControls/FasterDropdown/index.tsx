@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { isEqual } from 'lodash';
 import { Dropdown } from 'components/Dropdown';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -16,8 +16,6 @@ interface Props {}
 const FasterDropdown: FunctionComponent<Props> = () => {
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
 
-  const { plaskEngine } = useContext(BabylonContext);
-
   const dispatch = useDispatch();
 
   const handleFasterSelect = useCallback(
@@ -26,7 +24,7 @@ const FasterDropdown: FunctionComponent<Props> = () => {
 
       dispatch(animatingControlsActions.selectFasterDropdown({ playSpeed: Number(key) }));
     },
-    [dispatch, plaskEngine.animationModule],
+    [dispatch],
   );
 
   const fasterList = [

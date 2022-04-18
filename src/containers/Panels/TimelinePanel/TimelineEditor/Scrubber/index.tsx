@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, FunctionComponent, useContext } from 'react';
+import { useCallback, useEffect, useRef, useState, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
@@ -8,7 +8,7 @@ import { useSelector } from 'reducers';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { BaseInput } from 'components/Input';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -22,8 +22,6 @@ interface Props {
 const Scrubber: FunctionComponent<Props> = (props) => {
   const { isFocusedTimelineEditor } = props;
   const dispatch = useDispatch();
-
-  const { plaskEngine } = useContext(BabylonContext);
 
   const _currentTimeIndex = useSelector((state) => state.animatingControls.currentTimeIndex);
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
@@ -80,7 +78,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
       }
       setFocusScrubber(false);
     },
-    [dispatch, plaskEngine.animationModule],
+    [dispatch],
   );
 
   // currentTimeIndex 변경 시, now value와 scrubber 위치 변경
@@ -129,7 +127,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     const scrubber = d3.select(scrubberRef.current);
     const dragBehavior = setDragBehavior();
     scrubber.call(dragBehavior as any);
-  }, [_endTimeIndex, _playSpeed, _startTimeIndex, dispatch, plaskEngine.animationModule]);
+  }, [_endTimeIndex, _playSpeed, _startTimeIndex, dispatch]);
 
   // A 키 입력 시, 오른쪽으로 scrubber 1frame 이동
   const pressAKey = useCallback(() => {
@@ -137,7 +135,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     const clampedTimeIndex = clampTimeIndex(currentTimeIndex - 1);
     dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
     plaskEngine.animationModule.moveCurrentAnimationGroup(clampedTimeIndex);
-  }, [dispatch, plaskEngine.animationModule]);
+  }, [dispatch]);
 
   // S 키 입력 시, 왼쪽으로 scrubber 1frame 이동
   const pressSKey = useCallback(() => {
@@ -145,7 +143,7 @@ const Scrubber: FunctionComponent<Props> = (props) => {
     const clampedTimeIndex = clampTimeIndex(currentTimeIndex + 1);
     dispatch(animatingControlsActions.moveScrubber({ currentTimeIndex: clampedTimeIndex }));
     plaskEngine.animationModule.moveCurrentAnimationGroup(clampedTimeIndex);
-  }, [dispatch, plaskEngine.animationModule]);
+  }, [dispatch]);
 
   // scrubber 키 입력 이벤트
   const keydownListener = useCallback(

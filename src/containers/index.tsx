@@ -1,8 +1,6 @@
-import { FunctionComponent, memo, useState } from 'react';
+import { FunctionComponent, memo } from 'react';
 
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
-import { BabylonProvider } from 'contexts/RP/BabylonContext';
-import { PlaskEngine } from '3d/PlaskEngine';
 
 import Plask from './Plask';
 
@@ -13,14 +11,10 @@ interface Props {
 }
 
 const Index: FunctionComponent<Props> = ({ browserType }) => {
-  const [plaskEngine] = useState(new PlaskEngine());
-
   return (
     <main>
       <ResizeProvider>
-        <BabylonProvider plaskEngine={plaskEngine}>
-          <Plask browserType={browserType} />
-        </BabylonProvider>
+        <Plask browserType={browserType} />
       </ResizeProvider>
     </main>
   );

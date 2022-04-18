@@ -8,10 +8,11 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
-  const { nodeId, assetId, parentId, plaskEngine } = action.payload;
+  const { nodeId, assetId, parentId } = action.payload;
 
   const targetMotion = find(lpNode.nodes, { id: nodeId });
   const asset = find(plaskProject.assetList, { id: assetId });

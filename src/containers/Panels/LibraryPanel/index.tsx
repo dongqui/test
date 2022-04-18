@@ -14,7 +14,7 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -25,7 +25,6 @@ const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
   const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
-  const { plaskEngine } = useContext(BabylonContext);
 
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
@@ -37,12 +36,11 @@ const LibraryPanel: FunctionComponent = () => {
           lpNodeActions.fileUpload({
             file,
             showLoading,
-            plaskEngine,
           }),
         );
       }
     },
-    [dispatch, plaskEngine],
+    [dispatch],
   );
 
   const handleDrop = useCallback(

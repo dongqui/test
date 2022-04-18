@@ -9,14 +9,15 @@ import { PlaskBvhMap } from 'types/common';
 import { convertModel } from 'api';
 import { Scene } from '@babylonjs/core';
 import { GLTFData } from '@babylonjs/serializers';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>) {
   const { lpNode, plaskProject, animationData, screenData }: RootState = yield select();
-  const { plaskSkeletonViewers, visibilityOptions } = screenData;
+  const { visibilityOptions } = screenData;
   const { nodes } = lpNode;
   const { screenList, fps, assetList } = plaskProject;
   const { animationIngredients, retargetMaps } = animationData;
-  const { parentId, type, assetId, nodeName, motion, format, plaskEngine } = action.payload;
+  const { parentId, type, assetId, nodeName, motion, format } = action.payload;
 
   const baseScreen = screenList[0];
   const baseScene = baseScreen.scene;
