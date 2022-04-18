@@ -8,7 +8,8 @@
   cursor: pointer;
   border-radius: 6px;
   color: $content-active;
-  width: max-content;
+  width: auto;
+  white-space: nowrap;
 
   &,
   a {
