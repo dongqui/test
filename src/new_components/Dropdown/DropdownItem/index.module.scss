@@ -4,19 +4,20 @@
 
 .menu-item {
   @include reset-list-style();
-  padding: 6px 8px;
+  padding: 5.5px 8px;
   cursor: pointer;
   border-radius: 6px;
-  margin-bottom: 4px;
+  //margin-bottom: 4px;
   color: $content-active;
 
-  &:last-child {
-    margin: 0;
-  }
+  //&:last-child {
+  //  margin: 0;
+  //}
 
   &,
   a {
     font-size: 11px;
+    line-height: 13px;
     color: $content-active;
     text-decoration: none;
   }
