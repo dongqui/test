@@ -217,10 +217,6 @@ export class PlaskEngine {
    * @param entities Updated entities
    */
   public userAction(entities: PlaskEntity[]) {
-    console.log(
-      'Entities updated ',
-      entities.map((entity) => entity.clone()),
-    );
     this.dispatch(updateEntity({ targets: entities.map((entity) => entity.clone()) }));
   }
 
