@@ -17,7 +17,7 @@ const FolderNode = ({ node }: Props) => {
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     dispatch(lpNodeActions.selectNode({ nodeId: id }));
     dispatch(
-      globalUIActions.openContextMenu('FolderContextMenu', e, {
+      globalUIActions.openContextMenu('DirectoryContextMenu', e, {
         nodeId: id,
       }),
     );

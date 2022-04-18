@@ -107,7 +107,7 @@ export function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActio
     return;
   }
 
-  if (targetNode.type === 'Motion') {
+  if (targetNode.type === 'MOTION') {
     const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode.id === animationIngredient.id);
     if (!animationIngredient) {
       // TODO: error

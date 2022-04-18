@@ -5,7 +5,7 @@ export as namespace LP;
 
 declare namespace LP {
   type View = 'List' | 'Gallery';
-  type NodeType = 'Folder' | 'Model' | 'Motion' | 'Mocap';
+  type NodeType = 'DIRECTORY' | 'MODEL' | 'MOTION' | 'MOCAP';
 
   interface Node {
     id: string;

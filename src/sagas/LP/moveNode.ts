@@ -105,7 +105,7 @@ function* handleMoveNodeRequest(action: ReturnType<typeof lpNodeActions.moveNode
   const directoryId = action.payload;
 
   const isAlreadyContainedInThePath = draggedNode?.parentId === directoryId;
-  if (!draggedNode || directoryId === draggedNode.id || (draggedNode?.type === 'Motion' && !draggedNode?.mocapData) || isAlreadyContainedInThePath) {
+  if (!draggedNode || directoryId === draggedNode.id || (draggedNode?.type === 'MOTION' && !draggedNode?.mocapData) || isAlreadyContainedInThePath) {
     yield put(lpNodeActions.setDraggedNode(null));
     return;
   }

@@ -28,7 +28,7 @@ function* handleDeleteNodeReceive(action: ReturnType<typeof lpNodeActions.delete
     return;
   }
 
-  if (targetNode.type === 'Model' && targetNode.assetId) {
+  if (targetNode.type === 'MODEL' && targetNode.assetId) {
     yield put(plaskProjectActions.removeAsset({ assetId: targetNode?.assetId }));
     yield put(animationDataActions.removeAsset({ assetId: targetNode?.assetId }));
     yield put(selectingDataActions.unrenderAsset({ assetId: targetNode?.assetId }));

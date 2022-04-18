@@ -8,13 +8,13 @@ interface Props {
   nodeId: string;
 }
 
-const FolderContextMenu = ({ nodeId }: Props) => {
+const DirectoryContextMenu = ({ nodeId }: Props) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
-        title: 'Delete Folder',
+        title: 'Delete Directory',
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
           dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
@@ -57,4 +57,4 @@ const FolderContextMenu = ({ nodeId }: Props) => {
   );
 };
 
-export default FolderContextMenu;
+export default DirectoryContextMenu;
