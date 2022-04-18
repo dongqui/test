@@ -221,7 +221,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             id: uuidv4(),
             parentId: '',
             name: fileName,
-            filePath: '\\root',
             childNodeIds: [],
             extension: '',
             type: 'Mocap',
@@ -235,7 +234,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           const newFolderNode: LP.Node = {
             id: uuidv4(),
             parentId: '',
-            filePath: '\\root',
             name: fileName,
             extension: '',
             type: 'Folder',
@@ -248,7 +246,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               id: uuidv4(),
               parentId: newFolderNode.id,
               name: `${fileName}_${item.motionNumber}`,
-              filePath: '\\root' + `\\${fileName}`,
               childNodeIds: [],
               extension: '',
               type: 'Mocap',

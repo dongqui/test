@@ -57,7 +57,6 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
         assetId: assetId,
         parentId: nodeId,
         name: nextAnimationIngredient.name,
-        filePath: parentModel?.filePath + `\\${parentModel?.name}`,
         childNodeIds: [],
         extension: '',
         type: 'Motion',

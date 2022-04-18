@@ -14,7 +14,6 @@ interface AddEmptyMotionParams {
 }
 interface AddDirectoryParams {
   nodeId: string;
-  filePath: string;
 }
 interface DuplicateMotionParams {
   parentId: string;
@@ -34,13 +33,11 @@ interface SelectNodeParams {
 }
 
 interface MoveNodeParams {
-  filePath: string;
   nodeId: string;
 }
 
 interface DropMocapOnModelParams {
   nodeId: string;
-  filePath: string;
   assetId?: string;
 }
 

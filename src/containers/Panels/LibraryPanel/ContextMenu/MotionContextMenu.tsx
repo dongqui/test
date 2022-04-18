@@ -60,7 +60,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   const handleCancelVisualization = () => {
     if (assetId) {
-      dispatch(lpNodeActions.cancelVisulization({ assetId }));
+      dispatch(lpNodeActions.cancelVisulization(assetId));
     }
   };
 

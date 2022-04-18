@@ -2110,7 +2110,6 @@
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-0.14.0.tgz"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-<<<<<<< HEAD
 "@socket.io/base64-arraybuffer@~1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@socket.io/base64-arraybuffer/-/base64-arraybuffer-1.0.2.tgz#568d9beae00b0d835f4f8c53fd55714986492e61"
@@ -2121,23 +2120,6 @@
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.0.0.tgz#8863915676f837d9dad7b76f50cb500c1e9422e9"
   integrity sha512-2pTGuibAXJswAPJjaKisthqS/NOK5ypG4LYT6tEAV0S/mxW0zOIvYvGK0V8w8+SHxAm6vRMSjqSalFXeBAqs+Q==
 
-"@storybook/addon-actions@6.1.15", "@storybook/addon-actions@^6.1.15":
-  version "6.1.15"
-  resolved "https://registry.npmjs.org/@storybook/addon-actions/-/addon-actions-6.1.15.tgz"
-  integrity sha512-Mw0wlF3a2OHmI/HyHTbLxRWKCrdRIkKcLHTLptMi/9sOHcPRniwB2jTD1hdzwZrQCPbvvAkYBntVYH0XkNkGEA==
-  dependencies:
-    "@storybook/addons" "6.1.15"
-    "@storybook/api" "6.1.15"
-    "@storybook/client-api" "6.1.15"
-    "@storybook/components" "6.1.15"
-    "@storybook/core-events" "6.1.15"
-    "@storybook/theming" "6.1.15"
-    core-js "^3.0.1"
-    fast-deep-equal "^3.1.1"
-    global "^4.3.2"
-    lodash "^4.17.15"
-    polished "^3.4.4"
-=======
 "@storybook/addon-actions@6.5.0-alpha.61", "@storybook/addon-actions@^6.5.0-alpha.61":
   version "6.5.0-alpha.61"
   resolved "https://registry.yarnpkg.com/@storybook/addon-actions/-/addon-actions-6.5.0-alpha.61.tgz#c8209d1ac05eadc0fb39d1843546e3eb5a51f8cf"
@@ -2155,7 +2137,6 @@
     global "^4.4.0"
     lodash "^4.17.21"
     polished "^4.2.2"
->>>>>>> export-engine
     prop-types "^15.7.2"
     react-inspector "^5.1.0"
     regenerator-runtime "^0.13.7"
@@ -15818,19 +15799,17 @@ ws@~7.4.2:
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
 
-<<<<<<< HEAD
 ws@~8.2.3:
   version "8.2.3"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.2.3.tgz#63a56456db1b04367d0b721a0b80cae6d8becbba"
   integrity sha512-wBuoj1BDpC6ZQ1B7DWQBYVLphPWkm8i9Y0/3YdHjHKHiohOJ1ws+3OccDWtH+PoC9DZD5WOTrJvNbWvjS6JWaA==
-=======
+
 x-default-browser@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/x-default-browser/-/x-default-browser-0.4.0.tgz#70cf0da85da7c0ab5cb0f15a897f2322a6bdd481"
   integrity sha1-cM8NqF2nwKtcsPFaiX8jIqa91IE=
   optionalDependencies:
     default-browser-id "^1.0.4"
->>>>>>> export-engine
 
 xdg-basedir@^4.0.0:
   version "4.0.0"

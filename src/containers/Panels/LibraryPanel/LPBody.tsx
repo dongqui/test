@@ -28,7 +28,6 @@ const LPBody: FunctionComponent<Props> = () => {
     dispatch(
       globalUIActions.openContextMenu('LPBodyContextMenu', e, {
         nodeId: '',
-        filePath: '\\root',
       }),
     );
   };

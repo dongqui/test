@@ -52,7 +52,7 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { retargetMaps } = animationData;
-  const { nodeId, filePath, assetId } = action.payload;
+  const { nodeId, assetId } = action.payload;
 
   /**
    * @TODO 리타겟 및 하위로 모션 추가

@@ -122,7 +122,7 @@ const LibraryPanel: FunctionComponent = () => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }

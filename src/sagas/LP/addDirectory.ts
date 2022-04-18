@@ -28,7 +28,7 @@ function generateFolderName(nodes: LP.Node[], nodeId: string) {
 
 export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectoryAsync.request>) {
   const { lpNode }: RootState = yield select();
-  const { nodeId, filePath } = action.payload;
+  const { nodeId } = action.payload;
 
   try {
     const parentNode = find(lpNode.nodes, { id: nodeId });
@@ -39,7 +39,7 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
     };
 
     const res: RequestNodeResponse = yield call(api.createFolderOrMocap, lpNode.sceneId, data, parentNode?.id);
-    yield put(lpNodeActions.addDirectoryAsync.success(createFolderNode(res.uid, res.name, filePath, res.parentUid)));
+    yield put(lpNodeActions.addDirectoryAsync.success(createFolderNode(res.uid, res.name, res.parentUid)));
   } catch (e) {
     // yield put(lpNodeActions.addDirectoryAsync.failure(e));
   }

@@ -13,7 +13,7 @@ interface Props {
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, filePath, extension, name, parentId, type, childNodeIds } = node;
+  const { id, assetId, extension, name, parentId, type, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
 
@@ -42,7 +42,6 @@ const ModelNode = ({ node }: Props) => {
     dispatch(
       lpNodeActions.dropMocapOnModel({
         nodeId: id,
-        filePath,
         assetId,
       }),
     );

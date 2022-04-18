@@ -54,7 +54,6 @@ export default function* handleDropNodeOnRoot() {
     }
 
     _draggedNode.parentId = '';
-    _draggedNode.filePath = '\\root';
 
     if (_draggedNode.childNodeIds.length > 0) {
       _draggedNode.childNodeIds.map((child) => changeNodeDepthById(draft, child, _draggedNode));

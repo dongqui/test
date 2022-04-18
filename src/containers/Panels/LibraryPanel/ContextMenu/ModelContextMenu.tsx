@@ -49,7 +49,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
 
   const handleCancelVisualization = () => {
     if (assetId) {
-      dispatch(lpNodeActions.cancelVisulization({ assetId }));
+      dispatch(lpNodeActions.cancelVisulization(assetId));
     }
   };
 

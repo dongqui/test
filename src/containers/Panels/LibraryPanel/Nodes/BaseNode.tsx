@@ -17,7 +17,7 @@ interface Props {
 }
 
 const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }: Props) => {
-  const { id, assetId, name, type, filePath, childNodeIds, extension } = node;
+  const { id, assetId, name, type, childNodeIds, extension } = node;
   const dispatch = useDispatch();
   const [showChildren, setShowChildren] = useState(false);
 
