@@ -53,6 +53,7 @@ export class IKModule extends Module {
   private _pickedIkMesh: Mesh | undefined;
   private _blendSlider: Slider = new Slider();
   private _poleAngleSlider: Slider = new Slider();
+  private _ikMeshes: Mesh[] = [];
 
   private get _allTransformNodes() {
     return this.plaskEngine.selectorModule.allTransformNodes;
@@ -172,10 +173,18 @@ export class IKModule extends Module {
       if (slidePanel.isVisible){
         button_SH.color = "teal";
         button_SH.background = "white";    
-      } else {
+        this._ikMeshes.forEach(elem => {
+          elem.isVisible = true;
+        });
+        this._gizmoManager.attachToNode(this._pickedIkMesh);
+        } else {
         button_SH.color = "white";
         button_SH.background = "teal";    
-      }
+        this._ikMeshes.forEach(elem => {
+          elem.isVisible = false;
+        });
+        this._gizmoManager.attachToNode(null);
+        }
     });
     advancedTexture.addControl(button_SH);
 
@@ -433,8 +442,10 @@ export class IKModule extends Module {
     scene.onReadyObservable.addOnce(() => {
       // Adjusting transparency of the Cloned meshes    
       scene.meshes.forEach(m => {
-        if (m.name.includes('Clone of'))
-            m.visibility = 0.25;
+        if (m.name.includes('Clone of')){
+          m.visibility = 0.25;
+          this._ikMeshes.push(m);
+        }
       })
     })
     const bodyClone = scene.getMeshByName('Clone of __root__') as Mesh;
@@ -581,6 +592,7 @@ export class IKModule extends Module {
 
       const {controller, controllerClone} = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(controllerClone);
+      this._ikMeshes.push(controllerClone);
 
       // Creating IK Controllers
       //const ikCtrl = new BoneIKController(transformNode, bone, {
@@ -595,13 +607,7 @@ export class IKModule extends Module {
 
       controllerClone.metadata.ikController = ikCtrl;
 
-      const controllerOrig = MeshBuilder.CreateBox(
-                                'orig_' + elem.name,
-                                {
-                                  size: 2,
-                                },
-                                scene,
-                              );
+      const controllerOrig = MeshBuilder.CreateBox('orig_' + elem.name, { size: 2 }, scene);
       controllerOrig.isVisible = false;
       const ikCtrlClone = new BoneIKController(bodyClone, skeletonClone.bones[bone.getIndex()], {
         targetMesh: controllerOrig,
