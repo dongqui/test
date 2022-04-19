@@ -13,7 +13,7 @@ declare namespace LP {
     parentId: string;
     type: NodeType;
     name: string;
-    fileUrl?: string | File;
+    modelUrl?: string | File;
     childNodeIds: string[];
     extension: string;
     mocapData?: PlaskMocapData;
