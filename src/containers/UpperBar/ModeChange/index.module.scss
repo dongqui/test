@@ -1,4 +1,5 @@
 @import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
 
 .wrapper {
   display: flex;
@@ -20,18 +21,18 @@
     }
 
     &:hover {
-      background-color: var(--gray400);
-      color: var(--gray600);
+      background-color: $overlay-hover;
+      color: $content-active;
     }
 
     &:active {
-      background-color: #0f88ff;
-      color: #fff;
+      background-color: $primary;
+      color: $content-active;
     }
 
     &.selected {
-      background-color: #0f88ff;
-      color: #fff;
+      background-color: $primary;
+      color: $content-active;
     }
 
     &:focus {

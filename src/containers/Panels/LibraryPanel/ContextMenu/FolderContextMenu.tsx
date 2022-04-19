@@ -6,10 +6,9 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
   nodeId: string;
-  filePath: string;
 }
 
-const FolderContextMenu = ({ nodeId, filePath }: Props) => {
+const FolderContextMenu = ({ nodeId }: Props) => {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
@@ -33,7 +32,6 @@ const FolderContextMenu = ({ nodeId, filePath }: Props) => {
     dispatch(
       lpNodeActions.addDirectoryAsync.request({
         nodeId,
-        filePath,
       }),
     );
   };

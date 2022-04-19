@@ -1,4 +1,4 @@
-import { FunctionComponent, Dispatch, SetStateAction, useRef, useCallback, useEffect, useState, ChangeEvent } from 'react';
+import { FunctionComponent, useRef, useCallback, useEffect, useState, ChangeEvent } from 'react';
 import classNames from 'classnames/bind';
 import styles from './AnimationRangeInput.module.scss';
 
@@ -46,8 +46,10 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   // text input을 focus하면 text 전체를 선택하는 함수 (한 번에 해당 input의 모든 값을 변경하기 위함)
   const handleSelectText = useCallback(() => {
     setIsFocused(true);
-    inputRef.current!.select();
-  }, []);
+    if (inputRef.current) {
+      inputRef.current.select();
+    }
+  }, [inputRef]);
 
   // baseNum은 input으로 전달받은 value
   // multiNum은 range input의 새로운 최대값을 구하기 위해서 곱해줄 숫자 (1, 2, 5. 10 중 하나를 전달받음)
@@ -179,7 +181,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
 
   return (
-    <div className={cx(classes)}>
+    <div className={classes}>
       <p>{text}</p>
       <div className={cx('input-container', { able: activeStatus === undefined ? true : activeStatus })}>
         {/* slide를 통해서 값을 변경 할 수 있는 range input */}

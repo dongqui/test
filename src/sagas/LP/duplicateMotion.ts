@@ -44,7 +44,6 @@ export default function* handleDuplicateMotion(action: ReturnType<typeof lpNodeA
             assetId: draftParentModel.assetId,
             parentId: draftParentModel.id,
             name: _nodeName,
-            filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
             childNodeIds: [],
             extension: '',
             type: 'Motion',

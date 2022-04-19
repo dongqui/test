@@ -1,6 +1,6 @@
-import * as BABYLON from '@babylonjs/core';
+import { TransformNode } from '@babylonjs/core';
 
-const filterAnimatableTransformNodes = (transformNodes: BABYLON.TransformNode[]) => {
+const filterAnimatableTransformNodes = (transformNodes: TransformNode[]) => {
   return transformNodes.filter(
     (transformNode) =>
       !transformNode.name.toLowerCase().includes('camera') &&

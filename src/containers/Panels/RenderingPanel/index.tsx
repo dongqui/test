@@ -1,19 +1,15 @@
-import * as BABYLON from '@babylonjs/core';
-import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback, useContext } from 'react';
+import { FunctionComponent, useRef, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
-import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
-import { GizmoMode, GizmoSpace, PlaskView } from 'types/common';
+import { GizmoMode, GizmoSpace } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
-import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { checkIsTargetMesh, createAnimationGroupFromIngredient } from 'utils/RP';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 import ScreenVisibility from './ScreenVisibility';
 
 import classNames from 'classnames/bind';
@@ -76,7 +72,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * create scene and add default settings
    */
-  const { plaskEngine } = useContext(BabylonContext);
 
   useEffect(() => {
     if (renderingCanvas1.current) {
@@ -123,7 +118,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         resizeMutationObserver.disconnect();
       };
     }
-  }, [plaskEngine, dispatch]);
+  }, [dispatch]);
 
   const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
   const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
@@ -151,7 +146,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       plaskEngine.selectorModule.onEndSelectBox.remove(endSelectBoxObserver);
       plaskEngine.selectorModule.onSelectBoxUpdated.remove(selectBoxUpdatedObserver);
     };
-  }, [_screenList, dispatch, plaskEngine]);
+  }, [_screenList, dispatch]);
 
   /**
    * shortcuts related to camera navigation, viewport changes
@@ -289,7 +284,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [_screenList, dispatch, multiKeyController, plaskEngine]);
+  }, [_screenList, dispatch, multiKeyController]);
 
   /**
    * shortcuts related to editing keyframes
@@ -417,7 +412,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [dispatch, plaskEngine.gizmoModule]);
+  }, [dispatch]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -444,33 +439,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [plaskEngine.gizmoModule]);
-
-  /******************************************************************************
-   * Animation related codes
-   *****************************************************************************/
-
-  /**
-   * Create animationGroup and normalize it
-   */
-  useEffect(() => {
-    const visualizedAnimationIngredients = _animationIngredients.filter(
-      (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
-    );
-
-    if (visualizedAnimationIngredients.length === 1) {
-      // @TODO need to change to apply filter only when the animationGroup is playing
-      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps);
-
-      newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
-
-      dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
-
-      return () => {
-        newAnimationGroup.stop();
-      };
-    }
-  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
+  }, []);
 
   /******************************************************************************
    * Related to RP's sub-containers
@@ -619,7 +588,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         },
       },
     ],
-    [_playState, _selectedTargets.length, dispatch, orientChildren, transformChildren, plaskEngine],
+    [_playState, _selectedTargets.length, dispatch, orientChildren, transformChildren],
   );
 
   useEffect(() => {
@@ -648,7 +617,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         dispatch(screenDataActions.removeSkeletonViewer({ screenId: targetScreen.id }));
       };
     }
-  }, [_screenList, _visualizedAssetIds, dispatch, plaskEngine]);
+  }, [_screenList, _visualizedAssetIds, dispatch]);
 
   const screenVisibilityItemList: ScreenVisivilityItem[] = useMemo(() => {
     const targetScreen = _screenList[0];
@@ -662,7 +631,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             plaskEngine.visibilityLayers.toggleVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isMeshVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
         },
         {
           value: 'Mesh',
@@ -670,7 +639,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             plaskEngine.visibilityLayers.toggleVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isBoneVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
         },
         {
           value: 'Gizmo',
@@ -684,11 +653,11 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_visibilityOptions, _screenList, plaskEngine]);
+  }, [_visibilityOptions, _screenList]);
 
   return (
     <div className={cx('wrapper')}>
-      <div id="rpDragBox" ref={rpDragBox}></div>
+      <div id="rpDragBox" ref={rpDragBox} />
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
       <ScreenVisibility itemList={screenVisibilityItemList} />
     </div>

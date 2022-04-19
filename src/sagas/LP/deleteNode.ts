@@ -4,7 +4,6 @@ import _ from 'lodash';
 
 import { RootState } from 'reducers';
 import { filterDeletedNode } from 'utils/LP/FileSystem';
-import { removeAssetThingsFromScene } from 'utils/RP';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -30,7 +29,6 @@ function* handleDeleteNodeReceive(action: ReturnType<typeof lpNodeActions.delete
   }
 
   if (targetNode.type === 'Model' && targetNode.assetId) {
-    removeAssetThingsFromScene(plaskProject, selectingData.present, targetNode.assetId);
     yield put(plaskProjectActions.removeAsset({ assetId: targetNode?.assetId }));
     yield put(animationDataActions.removeAsset({ assetId: targetNode?.assetId }));
     yield put(selectingDataActions.unrenderAsset({ assetId: targetNode?.assetId }));

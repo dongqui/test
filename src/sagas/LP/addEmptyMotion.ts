@@ -1,15 +1,15 @@
 import { find, cloneDeep } from 'lodash';
 import { select, put } from 'redux-saga/effects';
 import produce from 'immer';
-import * as BABYLON from '@babylonjs/core';
 
 import { RootState } from 'reducers';
-import { createAnimationIngredient } from 'utils/RP';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import { Mesh, TransformNode } from '@babylonjs/core';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
   const { plaskProject, selectingData, animationData, lpNode }: RootState = yield select();
@@ -21,10 +21,12 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
   if (assetId) {
     const cloneLPNode = cloneDeep(lpNode.nodes);
 
-    let targets: (BABYLON.TransformNode | BABYLON.Mesh)[] = [];
+    let targets: (TransformNode | Mesh)[] = [];
     if (visualizedAssetIds.includes(assetId)) {
       // if target model is already visualized, include its controllers
-      targets = selectableObjects.filter((object) => object.id.split('//')[0] === assetId && !object.name.toLowerCase().includes('armature')).map((object) => object.reference);
+      targets = selectableObjects
+        .filter((object) => object.id.split('//')[0] === assetId && !object.reference.name.toLowerCase().includes('armature'))
+        .map((object) => object.reference);
     } else {
       // if target model is not visualized yet, include only transformNodes
       targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
@@ -45,7 +47,7 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
     const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
     const parentModel = find(cloneLPNode, { id: nodeId });
     const animationIngredientCurrent = parentModel?.childNodeIds.length === 0;
-    const nextAnimationIngredient = createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
+    const nextAnimationIngredient = plaskEngine.animationModule.createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
 
     const afterNodes = produce(cloneLPNode, (draft) => {
       parentModel?.childNodeIds.push(nextAnimationIngredient.id);
@@ -55,7 +57,6 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
         assetId: assetId,
         parentId: nodeId,
         name: nextAnimationIngredient.name,
-        filePath: parentModel?.filePath + `\\${parentModel?.name}`,
         childNodeIds: [],
         extension: '',
         type: 'Motion',

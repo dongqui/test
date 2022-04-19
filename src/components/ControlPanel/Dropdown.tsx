@@ -22,7 +22,7 @@ const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, 
 
   return (
     <Fragment>
-      <div className={cx(classes)}>
+      <div className={classes}>
         <div className={cx('dropdown-button')} onClick={() => setActiveDropdown(!activeDropdown)}>
           <div className={cx('dropdown-text')}>{currentValue ?? 'Select Option'}</div>
           <IconWrapper className={cx('arrow-down-icon')} icon={SvgPath.EmptyDownArrow} />
@@ -49,7 +49,7 @@ const Dropdown: FunctionComponent<Props> = ({ className, options, currentValue, 
         {/* 드랍다운 버튼 자체의 비활성화를 위한 overlay (내부 텍스트 변경 시 표시되는 텍스트 변경 가능) */}
         {!activeStatus && <div className={cx('dropdown-inactive-overlay')}>{inactiveMessage ?? DEFAULT_INACTIVE_MESSAGE}</div>}
       </div>
-      {activeDropdown && <div className={cx('dropdown-overlay')} onClick={() => setActiveDropdown(false)}></div>}
+      {activeDropdown && <div className={cx('dropdown-overlay')} onClick={() => setActiveDropdown(false)} />}
     </Fragment>
   );
 };

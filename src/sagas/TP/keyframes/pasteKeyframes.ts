@@ -2,7 +2,6 @@ import { call, put, select, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { isUndefined } from 'lodash';
-import * as BABYLON from '@babylonjs/core';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframesAction from 'actions/keyframes';
 import { PlaskTrack } from 'types/common';
@@ -11,6 +10,7 @@ import { RootState } from 'reducers';
 import { getValueInsertedTransformKeys } from 'utils/RP';
 
 import setUpdatedPropertyKeyframes from './setUpdatedPropertyKeyframes';
+import { Vector3 } from '@babylonjs/core';
 
 function getCurrentTimeIndex(state: RootState) {
   return state.animatingControls.currentTimeIndex;
@@ -64,12 +64,12 @@ function* worker() {
               targetTrack = targetLayer.tracks.find((track) => track.id === trackId);
             }
             if (targetTrack) {
-              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z));
+              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new Vector3(value.x, value.y, value.z));
 
               if (targetTrack.property === 'rotation') {
                 const peerTrack = targetLayer.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
                 if (peerTrack) {
-                  peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new BABYLON.Vector3(value.x, value.y, value.z).toQuaternion());
+                  peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new Vector3(value.x, value.y, value.z).toQuaternion());
                 }
               }
             }

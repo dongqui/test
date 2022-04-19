@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 export default function getFilePathDepth(nodes: LP.Node[], targetNode: LP.Node) {
-  let count = 1;
+  let count = 0;
   let node = targetNode;
   while (node.parentId) {
     count += 1;

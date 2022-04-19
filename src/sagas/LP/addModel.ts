@@ -1,6 +1,5 @@
 import { RootState } from 'reducers';
 import { select, put, call } from 'redux-saga/effects';
-import { v4 as uuid } from 'uuid';
 import produce from 'immer';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -12,10 +11,11 @@ import * as api from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
-import { createAnimationIngredient, getRecurrentRotationQuaternion } from 'utils/RP';
+import { getRecurrentRotationQuaternion } from 'utils/RP';
 import { WARNING_07, WARNING_01 } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { AddModelResponse } from 'types/LP';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -60,7 +60,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       const newModelNode: LP.Node = {
         id: uid,
         parentId: '',
-        filePath: '\\root',
         name: nodeName,
         extension,
         type: 'Model',
@@ -75,7 +74,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
           // parentId: ingredient.assetId,
           parentId: newModelNode.id,
           assetId: ingredient.assetId,
-          filePath: '\\root' + `\\${nodeName}`,
           name: ingredient.name,
           extension: '',
           type: 'Motion',
@@ -151,7 +149,7 @@ function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.
      * create our custom data(animationIngredient) with asset's animationGroups
      * and set the first one as current animationIngredient
      */
-    const animationIngredient = createAnimationIngredient(
+    const animationIngredient = plaskEngine.animationModule.createAnimationIngredient(
       assetId,
       animationGroup.name,
       animationGroup.targetedAnimations,

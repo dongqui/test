@@ -1,8 +1,9 @@
-import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+import { partition } from 'lodash';
 
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -12,6 +13,7 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -28,8 +30,9 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      const videos = files.filter((file) => file.type.includes('video'));
-      const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
+      const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
+      // const videos = files.filter((file) => file.type.includes('video'));
+      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
       const isError = videos.length > 1;
 
@@ -119,7 +122,7 @@ const LibraryPanel: FunctionComponent = () => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }

@@ -5,7 +5,6 @@ import produce from 'immer';
 
 import { RootState } from 'reducers';
 import { beforeMove } from 'utils/LP/FileSystem';
-import { createAnimationIngredientFromMocapData } from 'utils/LP/Retarget';
 import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
@@ -13,6 +12,7 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
+import plaskEngine from '3d/PlaskEngine';
 
 function handleDuplicateName(nodes: LP.Node[], mocapName: string, modelId: string): string {
   const currentPathNodeName = nodes
@@ -52,7 +52,7 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { retargetMaps } = animationData;
-  const { nodeId, filePath, assetId } = action.payload;
+  const { nodeId, assetId } = action.payload;
 
   /**
    * @TODO 리타겟 및 하위로 모션 추가
@@ -91,8 +91,8 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
       );
 
       const nodeName = handleDuplicateName(lpNode.nodes, draggedNode.name, nodeId);
-      const mocapAnimationIngredient: SagaReturnType<typeof createAnimationIngredientFromMocapData> = yield call(
-        createAnimationIngredientFromMocapData,
+      const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
+        [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
         dropNode.assetId!,
         draggedNode.name,
         targetRetargetMap,
@@ -109,7 +109,6 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
           clonedMocap.assetId = mocapAnimationIngredient.assetId;
           clonedMocap.id = mocapAnimationIngredient.id;
           clonedMocap.parentId = nodeId;
-          clonedMocap.filePath = filePath + `\\${nodeName}`;
           clonedMocap.name = nodeName;
           clonedMocap.type = 'Motion';
 

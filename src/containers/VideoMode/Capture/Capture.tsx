@@ -43,17 +43,17 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentDevice, setCurrentDevice] = useState<string>('');
-  const [currnetDeviceId, setCurrentDeviceId] = useState<string>('');
+  const [currentDeviceId, setCurrentDeviceId] = useState<string>('');
   const [srcAddress, setSrcAddress] = useState<string>('');
-  const [thumbnailList, setThumbnailList] = useState([]);
+  const [thumbnailList, setThumbnailList] = useState<string[]>([]);
   const [duration, setDuration] = useState<number>(0);
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
   const [indicatorPosition, setIndicatorPosition] = useState<number>(0);
   const [playState, setPlayState] = useState<boolean>(false);
-  const [recordState, setRecordState] = useState<boolean>(false);
-  const [recording, setRecording] = useState<boolean>(false);
-  const [standbyState, setStandbyState] = useState<boolean>(false);
-  const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false);
+  const [recordState, setRecordState] = useState<boolean>(false); // 영상의 thumbnail이 생성되었는지 여부를 확인하는 flag
+  const [recording, setRecording] = useState<boolean>(false); // 녹화를 하기 전 standby 상태와 녹화 중 상태를 나타내는 flag
+  const [standbyState, setStandbyState] = useState<boolean>(false); // standby 상태를 나타내는 flag
+  const [recordOverTwice, setRecordOverTwice] = useState<boolean>(false); // 비디오가 존재하는지 여부를 확인하는 flag
   const [cameraDropdownState, setCameraDropdownState] = useState<boolean>(false);
   const [readyExtract, setReadyExtract] = useState<boolean>(false);
   const [basicExtractName, setBasicExtractName] = useState<string>('');
@@ -82,12 +82,12 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     handleChangeCamera,
     stopStream,
   } = useMediaStream({
-    ref: videoRef,
+    videoRef: videoRef,
     start: start,
     end: end,
     canvasRef: canvasRef,
     recording: recording,
-    currentDeviceId: currnetDeviceId,
+    currentDeviceId: currentDeviceId,
     recordOverTwice: recordOverTwice,
     setThumbnailList: setThumbnailList,
     setDuration: setDuration,
@@ -137,20 +137,24 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const handleTimeline = useCallback(
     (e) => {
-      videoRef.current!.currentTime = e.target.value;
-      if (e.target.value < start) {
-        videoRef.current!.currentTime = start;
-      } else if (e.target.value > end) {
-        videoRef.current!.currentTime = end;
+      if (videoRef.current) {
+        videoRef.current.currentTime = e.target.value;
+        if (e.target.value < start) {
+          videoRef.current.currentTime = start;
+        } else if (e.target.value > end) {
+          videoRef.current.currentTime = end;
+        }
       }
     },
-    [start, end],
+    [start, end, videoRef],
   );
 
   const handleCurrentTime = useCallback(() => {
-    setCurrentVideoTime(videoRef.current!.currentTime);
-    setIndicatorPosition((videoRef.current!.currentTime / videoRef.current!.duration) * 100);
-  }, []);
+    if (videoRef.current) {
+      setCurrentVideoTime(videoRef.current.currentTime);
+      setIndicatorPosition((videoRef.current.currentTime / videoRef.current.duration) * 100);
+    }
+  }, [videoRef]);
 
   const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
     const response = await fetch(url);
@@ -217,7 +221,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             id: uuidv4(),
             parentId: '',
             name: fileName,
-            filePath: '\\root',
             childNodeIds: [],
             extension: '',
             type: 'Mocap',
@@ -231,7 +234,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           const newFolderNode: LP.Node = {
             id: uuidv4(),
             parentId: '',
-            filePath: '\\root',
             name: fileName,
             extension: '',
             type: 'Folder',
@@ -244,7 +246,6 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               id: uuidv4(),
               parentId: newFolderNode.id,
               name: `${fileName}_${item.motionNumber}`,
-              filePath: '\\root' + `\\${fileName}`,
               childNodeIds: [],
               extension: '',
               type: 'Mocap',
@@ -283,45 +284,47 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const handleDeleteRecord = useCallback(
     (e) => {
-      if (videoRef.current!.src) {
+      if (videoRef.current && videoRef.current.src) {
         setTurnStandbyPhase(true);
       } else {
         startRecordingDelay();
       }
     },
-    [startRecordingDelay, stopRecording],
+    [startRecordingDelay, stopRecording, videoRef],
   );
 
   // 단축키 이벤트의 연속발생을 위한 keydown 이벤트(버튼을 누르고 있다면 연속으로 프레임이 넘어가야함)
   const handleHotkeys = useCallback(
     (e: KeyboardEvent) => {
-      const currentTime = videoRef.current!.currentTime;
+      if (videoRef.current) {
+        const currentTime = videoRef.current.currentTime;
 
-      if (!videoRef.current!.src) {
-        return;
-      }
-      if (!turnStandbyPhase && !readyExtract && !onExtract) {
-        if (e.key === 's') {
-          if (currentTime >= end) {
-            return;
-          } else if (currentTime <= end && currentTime > end - 0.1) {
-            videoRef.current!.currentTime = end;
-          } else if (currentTime < end) {
-            videoRef.current!.currentTime += 0.1;
-          }
-        } else if (e.key === 'a') {
-          if (currentTime <= start) {
-            return;
-          } else if (currentTime >= start && currentTime < start + 0.1) {
-            videoRef.current!.currentTime = start;
-          } else if (currentTime > start) {
-            videoRef.current!.currentTime -= 0.1;
-          }
-        } else if (e.key === ' ') {
-          if (videoRef.current!.paused) {
-            playRecording();
-          } else {
-            pauseRecording();
+        if (!videoRef.current.src) {
+          return;
+        }
+        if (!turnStandbyPhase && !readyExtract && !onExtract) {
+          if (e.key === 's') {
+            if (currentTime >= end) {
+              return;
+            } else if (currentTime <= end && currentTime > end - 0.1) {
+              videoRef.current.currentTime = end;
+            } else if (currentTime < end) {
+              videoRef.current.currentTime += 0.1;
+            }
+          } else if (e.key === 'a') {
+            if (currentTime <= start) {
+              return;
+            } else if (currentTime >= start && currentTime < start + 0.1) {
+              videoRef.current.currentTime = start;
+            } else if (currentTime > start) {
+              videoRef.current.currentTime -= 0.1;
+            }
+          } else if (e.key === ' ') {
+            if (videoRef.current.paused) {
+              playRecording();
+            } else {
+              pauseRecording();
+            }
           }
         }
       }
@@ -334,16 +337,18 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       // e.preventDefault();
       if (isIndicatorClicked) {
         setIndicatorPosition(indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100);
-        if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 < start) {
-          videoRef.current!.currentTime = start;
-        } else if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100 > end) {
-          videoRef.current!.currentTime = end;
-        } else {
-          videoRef.current!.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current!.duration) / 100;
+        if (videoRef.current) {
+          if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current.duration) / 100 < start) {
+            videoRef.current.currentTime = start;
+          } else if (((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current.duration) / 100 > end) {
+            videoRef.current.currentTime = end;
+          } else {
+            videoRef.current.currentTime = ((indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100) * videoRef.current.duration) / 100;
+          }
         }
       }
     },
-    [prevX, isIndicatorClicked],
+    [prevX, isIndicatorClicked, videoRef],
   );
 
   const handleMouseUp = useCallback((e) => {
@@ -402,17 +407,17 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   // LP에서 비디오가 넘어올 경우를 위한 분기
   useEffect(() => {
     if (videoURL) {
-      videoRef.current!.src = videoURL;
+      if (videoRef.current) videoRef.current.src = videoURL;
       handleMetaData();
       setRecordOverTwice(true);
     }
-  }, []);
+  }, [videoRef]);
 
   useEffect(() => {
-    if (currentVideoTime >= end - 0.25 && recordState && playState) {
-      videoRef.current!.currentTime = start;
+    if (currentVideoTime >= end - 0.25 && recordState && playState && videoRef.current) {
+      videoRef.current.currentTime = start;
     }
-  }, [currentVideoTime, end]);
+  }, [currentVideoTime, end, videoRef]);
 
   const playBox = [
     { id: 'startRecording', icon: SvgPath.VideoRecord, fn: stopRecording },
@@ -445,10 +450,10 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         />
       </Box>
       <div className={cx('video-wrap')}>
-        <canvas className={cx('thumbnail-canvas')} ref={canvasRef}></canvas>
+        <canvas className={cx('thumbnail-canvas')} ref={canvasRef} />
         <video
           ref={videoRef}
-          className={cx('video', { mirror: videoRef.current && !videoRef.current!.src })}
+          className={cx('video', { mirror: videoRef.current && !videoRef.current.src })}
           {...videoOptions}
           onTimeUpdate={handleCurrentTime}
           onEnded={handleVideoEnd}
@@ -463,7 +468,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
         {!currentDevice && !videoURL && (
           <div className={cx('countdown-overlay')}>
             <div className={cx('notification-wrapper')}>
-              <IconWrapper className={cx('camera-icon')} icon={SvgPath.NoCamera}></IconWrapper>
+              <IconWrapper className={cx('camera-icon')} icon={SvgPath.NoCamera} />
               <p className={cx('no-camera-notification')}>There is No Connected Camera</p>
             </div>
           </div>
@@ -503,7 +508,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                 />
               );
             })}
-            {!recordState && <div className={cx('disable-control')}></div>}
+            {!recordState && <div className={cx('disable-control')} />}
           </div>
           {/* api 연동 */}
           {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />}
@@ -519,7 +524,11 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div
             className={cx('thumbnail-wrap')}
             onMouseUp={handleMouseUp}
-            onMouseMove={(e) => handleMouseMove(e, thumbnailWrapRef.current!.getBoundingClientRect().width - 32)}
+            onMouseMove={(e) => {
+              if (thumbnailWrapRef.current) {
+                handleMouseMove(e, thumbnailWrapRef.current.getBoundingClientRect().width - 32);
+              }
+            }}
             ref={thumbnailWrapRef}
           >
             <CropSlider
@@ -548,12 +557,13 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           </div>
         </Fragment>
       )}
+      {/*Extract Motion 버튼을 누르고 난 후 뜨는 Modal*/}
       {readyExtract && (
         <BaseModal>
           <p className={cx('extract-name-paragraph')}>Enter the name of the mocap to extract.</p>
           <input type="text" className={cx('extract-name-input')} placeholder="Extracted mocap" onChange={(e) => handleChange(e)} value={basicExtractName} />
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)} />
             <FilledButton
               text="Ok"
               className={cx('extract-button')}
@@ -566,14 +576,15 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                   end: end,
                   startTime: start,
                   endTime: end,
-                  url: videoRef.current!.src,
-                  duration: videoRef.current!.duration,
+                  url: videoRef.current && videoRef.current.src,
+                  duration: videoRef.current && videoRef.current.duration,
                 })
               }
-            ></FilledButton>
+            />
           </div>
         </BaseModal>
       )}
+      {/*영상이 이미 있는 상태에서 다시 녹화를 누를 경우 뜨는 Modal*/}
       {turnStandbyPhase && (
         <BaseModal>
           <h4 className={cx('modal-heading')}>Delete Previous Video Taken?</h4>
@@ -581,24 +592,27 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             Your video will be <strong>deleted</strong> to take a new video.
           </p>
           <div className={cx('extract-name-wrapper')}>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setTurnStandbyPhase(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setTurnStandbyPhase(false)} />
             <FilledButton
               text="Delete"
               className={cx('extract-button')}
               onClick={() => {
                 startRecordingDelay();
                 setTurnStandbyPhase(false);
-                URL.revokeObjectURL(videoRef.current!.src);
-                videoRef.current!.removeAttribute('src');
+                if (videoRef.current) {
+                  URL.revokeObjectURL(videoRef.current.src);
+                  videoRef.current.removeAttribute('src');
+                }
               }}
-            ></FilledButton>
+            />
           </div>
         </BaseModal>
       )}
+      {/*Extract Motion이 진행되는 중에 뜨는 Modal*/}
       {onExtract && (
         <BaseModal>
           <div className={cx('loading-modal')}>
-            <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner}></IconWrapper>
+            <IconWrapper className={cx('loading-spinner')} icon={SvgPath.Spinner} />
             <h4 className={cx('modal-heading', 'loading')}>Extracting mocap</h4>
             <p className={cx('extract-name-paragraph', 'loading')}>
               It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}
@@ -610,7 +624,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
                 setOnExtract(false);
                 cancelTokenSource.current && cancelTokenSource.current();
               }}
-            ></FilledButton>
+            />
           </div>
         </BaseModal>
       )}
@@ -622,7 +636,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
               Mocap export<strong> failed</strong>.<br />
               The uploaded video doesn't meet the motion capture requirement
             </p>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)} />
           </div>
         </BaseModal>
       )}
@@ -631,7 +645,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Server update in progress.</h4>
             <p className={cx('extract-name-paragraph')}>Mocap extraction is available after the time below. (2022-01-13, 01:00 AM ~ 04:00 AM, PST)</p>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsServerUpdating(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsServerUpdating(false)} />
           </div>
         </BaseModal>
       )}
@@ -640,7 +654,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Caution</h4>
             <p className={cx('extract-name-paragraph')}>In this free version, you can only extract videos for less than 5 minutes long.</p>
-            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsTimeout(false)}></FilledButton>
+            <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsTimeout(false)} />
           </div>
         </BaseModal>
       )}

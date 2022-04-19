@@ -1,8 +1,6 @@
-import { FunctionComponent, memo, useState } from 'react';
+import { FunctionComponent, memo } from 'react';
 
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
-import { BabylonProvider } from 'contexts/RP/BabylonContext';
-import { PlaskEngine } from '3d/PlaskEngine';
 
 import { Authentication } from 'containers/Error';
 
@@ -19,18 +17,16 @@ interface Props {
 }
 
 const Index: FunctionComponent<Props> = ({ browserType, error }) => {
-  const [plaskEngine] = useState(new PlaskEngine());
-
   if (error) {
     return <Authentication statusCode={error.statusCode} message={error.message} />;
   }
 
   return (
-    <ResizeProvider>
-      <BabylonProvider plaskEngine={plaskEngine}>
+    <main>
+      <ResizeProvider>
         <Plask browserType={browserType} />
-      </BabylonProvider>
-    </ResizeProvider>
+      </ResizeProvider>
+    </main>
   );
 };
 
