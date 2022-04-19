@@ -25,6 +25,7 @@ import {
   Control,
   TextBlock,
   Slider,
+  Button
 } from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
@@ -81,10 +82,13 @@ export class IKModule extends Module {
   }
 
   public tick(elapsed: number) {
-    //for (const ikController of this._activeIkControllers) {
-    for (const ikController of this._ikControllers) {
+    if (this._pickedIkMesh)
+      this._pickedIkMesh.metadata.ikController.update();
+    /*
+    for (const ikController of this._activeIkControllers) {
         ikController.update();
     }
+    */
   }
 
   private _onSelectionChange(objects: TransformNode[]) {
@@ -131,9 +135,14 @@ export class IKModule extends Module {
     // Clone addition
     const controllerClone = controller.clone('cln_'+controller.name);
     controllerClone.metadata = {
+      boneName: bone.name,
+      boneIndex: bone.getIndex(),
+      transformNode: bone.getTransformNode(),
+      transformNodeClone: scene.getTransformNodeByName('Clone of '+bone.name),
       controller: controller,
       ikController: undefined,
-      transformNodeClone: scene.getTransformNodeByName('Clone of '+bone.name),
+      controllerOrig: undefined,
+      ikControllerOrig: undefined,
       blend: 1,
     };
     controller.setParent(controllerClone);
@@ -149,12 +158,33 @@ export class IKModule extends Module {
     const scene = this.plaskEngine.scene;
 
     // IK PANELS ///////////////////////////////////////////////////////////////////
+    // Show/Hide Button
+    const button_SH = Button.CreateSimpleButton("but_IKtoFK", "IK Show/Hide");
+    button_SH.width = "200px";
+    button_SH.height = "30px";
+    button_SH.left = "300px";
+    button_SH.top = "-250px";
+    button_SH.color = "teal";
+    button_SH.background = "white";
+    button_SH.paddingTop = "5px";
+    button_SH.onPointerClickObservable.add(() => {
+      slidePanel.isVisible = !slidePanel.isVisible;
+      if (slidePanel.isVisible){
+        button_SH.color = "teal";
+        button_SH.background = "white";    
+      } else {
+        button_SH.color = "white";
+        button_SH.background = "teal";    
+      }
+    });
+    advancedTexture.addControl(button_SH);
+
     const slidePanel = new StackPanel();
     slidePanel.width = "220px";
     slidePanel.left = "300px";
     slidePanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    advancedTexture.addControl(slidePanel);
     //slidePanel.isVisible = false;
+    advancedTexture.addControl(slidePanel);
 
     const header_Title = new TextBlock();
     header_Title.text = "IK ADJUSTS";
@@ -319,7 +349,48 @@ export class IKModule extends Module {
     header_fingers_2.height = "30px";
     header_fingers_2.color = "white";
     fingersBackPanel.addControl(header_fingers_2);
-    
+
+    // FK to IK Button
+    const button_FK_IK = Button.CreateSimpleButton("but_FKtoIK", "Set FK to IK");
+    button_FK_IK.width = "200px";
+    button_FK_IK.height = "30px";
+    button_FK_IK.color = "white";
+    button_FK_IK.background = "teal";
+    button_FK_IK.paddingTop = "5px";
+    button_FK_IK.onPointerClickObservable.add(() => {
+      // Evaluate if a IK Controller is selected
+      if (this._pickedIkMesh) {
+        let controller = this._pickedIkMesh.metadata.controller;
+        let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
+        controllerOrig.setAbsolutePosition(controller.absolutePosition);
+        let ikcontrollerOrig = this._pickedIkMesh.metadata.ikControllerOrig;
+        ikcontrollerOrig.poleAngle = this._pickedIkMesh.metadata.ikController.poleAngle;
+        ikcontrollerOrig.update();
+      }
+    });
+    slidePanel.addControl(button_FK_IK);
+
+    // IK to FK Button
+    const button_IK_FK = Button.CreateSimpleButton("but_IKtoFK", "Set IK to FK");
+    button_IK_FK.width = "200px";
+    button_IK_FK.height = "30px";
+    button_IK_FK.color = "white";
+    button_IK_FK.background = "teal";
+    button_IK_FK.paddingTop = "5px";
+    button_IK_FK.onPointerClickObservable.add(() => {
+      // Evaluate if a IK Controller is selected
+      if (this._pickedIkMesh) {
+        this._gizmoManager.attachToNode(null);
+        let controller = this._pickedIkMesh.metadata.controller;
+        let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
+        controller.setAbsolutePosition(controllerOrig.absolutePosition);
+        let ikcontroller = this._pickedIkMesh.metadata.ikController;
+        ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
+        ikcontroller.update();
+        this._gizmoManager.attachToNode(this._pickedIkMesh);
+      }
+    });
+    slidePanel.addControl(button_IK_FK);
   }
 
   // public get assetList() {
@@ -338,7 +409,11 @@ export class IKModule extends Module {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
     const scene = this.plaskEngine.scene;
 
-    //const targetAsset = this.assetList.find((asset) => asset.id ===   this.currentVisualizedAssetId);
+    //console.log(this.plaskEngine.state.plaskProject.assetList);
+    //console.log(this.plaskEngine.state.animationData);
+    //console.log(this.plaskEngine.state.keyframes);
+
+    //const targetAsset = this.assetList.find((asset) => asset.id === this.currentVisualizedAssetId);
     // if (targetAsset) {
     //   const { meshes, geometries, skeleton, bones, transformNodes } = targetAsset;
     //   container.meshes = meshes;
@@ -361,7 +436,9 @@ export class IKModule extends Module {
         if (m.name.includes('Clone of'))
             m.visibility = 0.25;
       })
-  })
+    })
+    const bodyClone = scene.getMeshByName('Clone of __root__') as Mesh;
+    const skeletonClone = scene.skeletons[1];
 
     this._createGUIElement();
 
@@ -369,6 +446,8 @@ export class IKModule extends Module {
     //const body = scene.getMeshByName('Body') as Mesh; // store body mesh
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
+
+    //console.log(body);
 
   // Trying to Realign some Skeleton Bones
     /*
@@ -469,8 +548,8 @@ export class IKModule extends Module {
     const bonesSelection = [
       { name: 'rightFoot', controllerSize: 0.2, poleAngle: -Math.PI / 2 },
       { name: 'leftFoot', controllerSize: 0.2,  poleAngle: Math.PI / 2 },
-      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0 },
-      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0 },
+      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, },
+      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, },
     ] as BoneIKParams[];
 
     let activeIkControllers: BoneIKController[] = this._activeIkControllers;
@@ -515,6 +594,24 @@ export class IKModule extends Module {
       ikControllers.push(ikCtrl);
 
       controllerClone.metadata.ikController = ikCtrl;
+
+      const controllerOrig = MeshBuilder.CreateBox(
+                                'orig_' + elem.name,
+                                {
+                                  size: 2,
+                                },
+                                scene,
+                              );
+      controllerOrig.isVisible = false;
+      const ikCtrlClone = new BoneIKController(bodyClone, skeletonClone.bones[bone.getIndex()], {
+        targetMesh: controllerOrig,
+        //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
+        poleAngle: elem.poleAngle,
+      });
+      //ikControllers.push(ikCtrlClone);
+
+      controllerClone.metadata.controllerOrig = controllerOrig;
+      controllerClone.metadata.ikControllerOrig = ikCtrlClone;
     });
 
     // Starting IK movement
@@ -524,7 +621,7 @@ export class IKModule extends Module {
     gizmoManager.gizmos.positionGizmo!.onDragStartObservable.add(() => {
       if (pickedIkCtrl) {
         // Storing IK Controller to being updated
-        activeIkControllers.push(ikControllers.find((ctrl) => ctrl.targetMesh === pickedIkCtrl) as BoneIKController);
+        this._activeIkControllers.push(ikControllers.find((ctrl) => ctrl.targetMesh === pickedIkCtrl) as BoneIKController);
       }
     });
 
@@ -532,7 +629,7 @@ export class IKModule extends Module {
     gizmoManager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
       if (pickedIkCtrl) {
         // Releasing IK Controller of being updated
-        activeIkControllers.length = 0;
+        this._activeIkControllers.length = 0;
       }
     });
 
