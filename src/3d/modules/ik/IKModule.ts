@@ -176,15 +176,17 @@ export class IKModule extends Module {
         this._ikMeshes.forEach(elem => {
           elem.isVisible = true;
         });
-        this._gizmoManager.attachToNode(this._pickedIkMesh);
-        } else {
+        if (this._pickedIkMesh) {
+          this._gizmoManager.attachToNode(this._pickedIkMesh);
+        }
+      } else {
         button_SH.color = "white";
         button_SH.background = "teal";    
         this._ikMeshes.forEach(elem => {
           elem.isVisible = false;
         });
         this._gizmoManager.attachToNode(null);
-        }
+      }
     });
     advancedTexture.addControl(button_SH);
 
@@ -390,10 +392,10 @@ export class IKModule extends Module {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
         this._gizmoManager.attachToNode(null);
-        let controller = this._pickedIkMesh.metadata.controller;
-        let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
-        controller.setAbsolutePosition(controllerOrig.absolutePosition);
+        let transfNodeClone = this._pickedIkMesh.metadata.transformNodeClone;
+        this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
         let ikcontroller = this._pickedIkMesh.metadata.ikController;
+        console.log(ikcontroller.poleAngle, this._pickedIkMesh.metadata.ikControllerOrig.poleAngle);
         ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
         ikcontroller.update();
         this._gizmoManager.attachToNode(this._pickedIkMesh);
