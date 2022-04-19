@@ -3,6 +3,8 @@
 @mixin button-size-large() {
   width: 156px;
   height: 56px;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 @mixin button-size-medium() {
@@ -33,12 +35,12 @@
 
   &.primary {
     background-color: #fff;
-    color: var(--grey100);
+    color: var(--grey010);
 
     &:focus,
     &:hover {
-      background-color: var(--grey600);
-      color: var(--grey100);
+      background-color: var(--grey060);
+      color: var(--grey010);
     }
   }
 
@@ -54,7 +56,7 @@
 
   &.error {
     background-color: var(--vivid-red);
-    color: var(--grey700);
+    color: var(--grey070);
   }
 }
 
@@ -75,31 +77,19 @@
   }
 
   &.primary {
-    border: 1px solid var(--grey500);
+    border: 1px solid var(--grey050);
     background-color: transparent;
-    color: var(--grey600);
-
-    &:focus,
-    &:hover {
-      border: 1px solid var(--grey800);
-      color: var(--grey800);
-    }
+    color: var(--grey060);
   }
 
   &.secondary {
     border: 1px solid var(--blue200);
     background-color: transparent;
-    color: var(--grey700);
-
-    &:focus,
-    &:hover {
-      border: 1px solid var(--blue300);
-      color: var(--grey800);
-    }
+    color: var(--grey070);
   }
 
   &.error {
     background-color: var(--vivid-red);
-    color: var(--grey700);
+    color: var(--grey070);
   }
 }

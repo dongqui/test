@@ -1,5 +1,7 @@
 import { Fragment } from 'react';
-import { LinkedButton } from 'components/Button';
+import { useRouter } from 'next/router';
+
+import { LinkedButton, FilledButton } from 'components/Button';
 
 import styles from './Authentication.module.scss';
 import classNames from 'classnames/bind';
@@ -19,6 +21,8 @@ interface Props {
 }
 
 const Authentication = ({ statusCode, message }: Props) => {
+  const router = useRouter();
+
   const isRedirectSignin = statusCode === 401.1 || statusCode === 401.2;
 
   /**
@@ -33,6 +37,10 @@ const Authentication = ({ statusCode, message }: Props) => {
     }
   }
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <div className={cx('wrapper')}>
       <div className={cx('headline')}>
@@ -41,10 +49,10 @@ const Authentication = ({ statusCode, message }: Props) => {
       </div>
       <div className={cx('paragraph')}>The link you followed may be broken or the page may have been removed.</div>
       <div className={cx('button-group')}>
-        <LinkedButton href="javascript:window.history.back();" variant="filled" size="large">
+        <button className={cx('button-back')} onClick={handleBack}>
           Go Back
-        </LinkedButton>
-        <LinkedButton href={`${process.env.NEXT_PUBLIC_HOMEPAGE_URL}/signin`} variant="outlined" size="large">
+        </button>
+        <LinkedButton href={`${process.env.NEXT_PUBLIC_HOMEPAGE_URL}/signin`} variant="outlined" size="large" color="secondary">
           Home
         </LinkedButton>
       </div>
