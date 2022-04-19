@@ -66,7 +66,7 @@ export interface PlaskAsset {
 
 export interface ServerAnimation {
   id: string; // uid -> id
-  // don't know what is scenes_library_id
+  libraryId: string; // don't know what is
   name: string;
   fps: number;
   isMocapAnimation: boolean;
@@ -77,20 +77,22 @@ export interface ServerAnimationLayer {
   id: string; // uid -> id
   animationId: string; // scenes_library_model_animation_id -> animationId
   name: string;
-  isLocked: boolean;
+  // isLocked: boolean; // related to TP node not the animation itself
+  isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
   isDeleted: boolean;
-  nameTracks: ServerAnimationTrack[]; // boneTracks -> nameTracks
+  tracks: ServerAnimationTrack[]; // boneTracks -> tracks
 }
 
 // BoneTrack -> NameTrack
 export interface ServerAnimationTrack {
   targetId: string; // boneId -> targetId
-  isShown: boolean; // isShow -> isShown
-  isLocked: boolean;
+  property: PlaskProperty; // to identify a track by combine targetId and property + should be able to control tracks independantly
+  // isShown: boolean; // isShow -> isShown + related to TP node not the animation itself
+  // isLocked: boolean; // related to TP node not the animation itself
   useFilter: boolean; // destructure filter related data
   filterBeta: number;
   filterMinCutoff: number;
-  frameTransformKeyMap: Map<number, Map<PlaskProperty, ServerTransformKey>>; // boneFrameMap -> frameTrackMap
+  transformKeysMap: Map<number, ServerTransformKey>; // boneFrameMap -> transformKeysMap
 }
 
 interface VectorTransformKey {
@@ -100,10 +102,9 @@ interface VectorTransformKey {
 }
 type QuaternionTransformKey = { w: number } & VectorTransformKey;
 export interface ServerTransformKey {
-  type: PlaskProperty; // quaternion -> rotationQuaternion
+  property: PlaskProperty; // quaternion -> rotationQuaternion
   transformKey: VectorTransformKey | QuaternionTransformKey;
-  isIncluded: boolean;
-  isLocked: boolean;
+  // isLocked: boolean;
 }
 
 export interface AnimationIngredient {

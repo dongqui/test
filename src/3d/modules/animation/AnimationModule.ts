@@ -1,7 +1,19 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
-import { AnimationIngredient, PlaskLayer, PlaskMocapData, PlaskPose, PlaskProperty, PlaskRetargetMap, PlaskTrack, ServerAnimation, ServerAnimationLayer } from 'types/common';
+import {
+  AnimationIngredient,
+  PlaskLayer,
+  PlaskMocapData,
+  PlaskPose,
+  PlaskProperty,
+  PlaskRetargetMap,
+  PlaskTrack,
+  ServerAnimation,
+  ServerAnimationLayer,
+  ServerAnimationTrack,
+  ServerTransformKey,
+} from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF } from 'utils/const';
 import OneEuroFilterForQuaternion from 'utils/RP/OneEuroFilterForQuaternion';
@@ -23,7 +35,60 @@ export class AnimationModule extends Module {
     this.onAnimationDataChangeObservable = new Observable();
   }
 
-  // static ingredientToServerData(animationIngredient: AnimationIngredient): [ServerAnimation, ServerAnimationLayer[]] {}
+  static ingredientToServerData(animationIngredient: AnimationIngredient, libraryId: string, fps: number, isMocapAnimation: boolean): [ServerAnimation, ServerAnimationLayer[]] {
+    const serverAnimation: ServerAnimation = {
+      id: animationIngredient.id,
+      libraryId,
+      name: animationIngredient.name,
+      fps,
+      isMocapAnimation,
+      isDeleted: false,
+    };
+
+    const serverAnimationLayers: ServerAnimationLayer[] = [];
+    animationIngredient.layers.forEach((layer) => {
+      const { useFilter } = layer;
+
+      const serverAnimationTracks: ServerAnimationTrack[] = [];
+      layer.tracks.forEach((track) => {
+        const transformKeysMap = new Map<number, ServerTransformKey>();
+        track.transformKeys.forEach((transformKey) => {
+          const serverTransformKey: ServerTransformKey = {
+            property: track.property,
+            transformKey:
+              track.property === 'rotationQuaternion'
+                ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+          };
+
+          transformKeysMap.set(transformKey.frame, serverTransformKey);
+        });
+
+        const serverAnimationTrack: ServerAnimationTrack = {
+          targetId: track.targetId,
+          property: track.property,
+          useFilter,
+          filterBeta: track.filterBeta,
+          filterMinCutoff: track.filterMinCutoff,
+          transformKeysMap,
+        };
+        serverAnimationTracks.push(serverAnimationTrack);
+      });
+
+      const serverAnimationLayer: ServerAnimationLayer = {
+        id: layer.id,
+        animationId: serverAnimation.id,
+        name: layer.name,
+        isIncluded: layer.isIncluded,
+        isDeleted: false,
+        tracks: serverAnimationTracks,
+      };
+      serverAnimationLayers.push(serverAnimationLayer);
+    });
+
+    return [serverAnimation, serverAnimationLayers];
+  }
+
   // static serverDataToIngredient(serverAnimation: ServerAnimation, serverAnimationLayers: ServerAnimationLayer[]): AnimationIngredient {}
 
   /**
