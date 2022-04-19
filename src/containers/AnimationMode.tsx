@@ -12,7 +12,6 @@ import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-import HotKeyOrder from './HotKeyOrder';
 import Modal from 'containers/Common/Modal/Modal';
 import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
 
@@ -303,7 +302,6 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
   }, [dispatch]);
 
   return (
-    // <HotKeyOrder className={className}>
     <div className={className}>
       <ContextMenuProvider>
         <Fragment>
