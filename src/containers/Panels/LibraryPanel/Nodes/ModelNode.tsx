@@ -34,7 +34,7 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) {
+    if (draggedNode?.type !== 'MOCAP' || !draggedNode?.mocapData) {
       return;
     }
 

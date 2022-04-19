@@ -71,7 +71,7 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
         parentId: '',
         name: nodeName,
         extension,
-        type: 'Model',
+        type: 'MODEL',
         assetId: newAsset.id,
         childNodeIds: animationIngredientIds,
       };
@@ -84,7 +84,7 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
           assetId: ingredient.assetId,
           name: ingredient.name,
           extension: '',
-          type: 'Motion',
+          type: 'MOTION',
           childNodeIds: [],
         };
 

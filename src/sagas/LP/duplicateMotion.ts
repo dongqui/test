@@ -46,7 +46,7 @@ export default function* handleDuplicateMotion(action: ReturnType<typeof lpNodeA
             name: _nodeName,
             childNodeIds: [],
             extension: '',
-            type: 'Motion',
+            type: 'MOTION',
           };
 
           tempAnimationIngredient = animationIngredient;

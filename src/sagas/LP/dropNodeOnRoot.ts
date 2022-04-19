@@ -16,7 +16,7 @@ export default function* handleDropNodeOnRoot() {
   }
   let nodeName = draggedNode.name;
 
-  if (draggedNode?.type === 'Folder') {
+  if (draggedNode?.type === 'DIRECTORY') {
     const currentPathNodeName = nodes
       .filter((node) => {
         if (node.parentId === '') {
@@ -36,7 +36,7 @@ export default function* handleDropNodeOnRoot() {
     });
   }
 
-  if (draggedNode?.type === 'Model') {
+  if (draggedNode?.type === 'MODEL') {
     const extension = getFileExtension(draggedNode.name).toLowerCase();
     const fileName = draggedNode.name.split('.').slice(0, -1).join('.');
 

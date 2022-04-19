@@ -59,7 +59,7 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
         name: nextAnimationIngredient.name,
         childNodeIds: [],
         extension: '',
-        type: 'Motion',
+        type: 'MOTION',
       };
 
       draft.push(motion);

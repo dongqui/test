@@ -110,7 +110,7 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
           clonedMocap.id = mocapAnimationIngredient.id;
           clonedMocap.parentId = nodeId;
           clonedMocap.name = nodeName;
-          clonedMocap.type = 'Motion';
+          clonedMocap.type = 'MOTION';
 
           targetModel.childNodeIds.push(clonedMocap.id);
 

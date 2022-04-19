@@ -1,7 +1,7 @@
 import { FunctionComponent, memo, Fragment } from 'react';
 
 import ModelNode from '../Nodes/ModelNode';
-import FolderNode from '../Nodes/FolderNode';
+import FolderNode from '../Nodes/DirectoryNode';
 import MotionNode from '../Nodes/MotionNode';
 import MocapNode from '../Nodes/MocapNode';
 
@@ -12,10 +12,10 @@ interface Props {
 const ListNode: FunctionComponent<Props> = ({ node }) => {
   return (
     <Fragment>
-      {node.type === 'Model' && <ModelNode node={node} />}
-      {node.type === 'Folder' && <FolderNode node={node} />}
-      {node.type === 'Motion' && <MotionNode node={node} />}
-      {node.type === 'Mocap' && <MocapNode node={node} />}
+      {node.type === 'MODEL' && <ModelNode node={node} />}
+      {node.type === 'DIRECTORY' && <FolderNode node={node} />}
+      {node.type === 'MOTION' && <MotionNode node={node} />}
+      {node.type === 'MOCAP' && <MocapNode node={node} />}
     </Fragment>
   );
 };

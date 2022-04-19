@@ -37,7 +37,7 @@ const LPBody: FunctionComponent<Props> = () => {
   };
 
   const handleDrop = () => {
-    if (!draggedNode?.parentId || draggedNode.type === 'Motion') {
+    if (!draggedNode?.parentId || draggedNode.type === 'MOTION') {
       return;
     }
 

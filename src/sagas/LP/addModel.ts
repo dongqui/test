@@ -62,7 +62,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
         parentId: '',
         name: nodeName,
         extension,
-        type: 'Model',
+        type: 'MODEL',
         assetId: newAsset.id,
         childNodeIds: animationIngredientIds,
       };
@@ -76,7 +76,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
           assetId: ingredient.assetId,
           name: ingredient.name,
           extension: '',
-          type: 'Motion',
+          type: 'MOTION',
           childNodeIds: [],
         };
         draft.push(motion);
