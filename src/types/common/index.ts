@@ -66,7 +66,7 @@ export interface PlaskAsset {
 
 export interface ServerAnimation {
   id: string; // uid -> id
-  libraryId: string; // don't know what is
+  scenesLibraryId: string; // don't know what is
   name: string;
   fps: number;
   isMocapAnimation: boolean;
@@ -80,27 +80,29 @@ export interface ServerAnimationLayer {
   // isLocked: boolean; // related to TP node not the animation itself
   isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
   isDeleted: boolean;
+  useFilter: boolean; // destructure filter related data
   tracks: ServerAnimationTrack[]; // boneTracks -> tracks
 }
 
 // BoneTrack -> NameTrack
 export interface ServerAnimationTrack {
+  id: string;
   targetId: string; // boneId -> targetId
+  name: string;
   property: PlaskProperty; // to identify a track by combine targetId and property + should be able to control tracks independantly
   // isShown: boolean; // isShow -> isShown + related to TP node not the animation itself
   // isLocked: boolean; // related to TP node not the animation itself
-  useFilter: boolean; // destructure filter related data
   filterBeta: number;
   filterMinCutoff: number;
   transformKeysMap: Map<number, ServerTransformKey>; // boneFrameMap -> transformKeysMap
 }
 
-interface VectorTransformKey {
+export interface VectorTransformKey {
   x: number;
   y: number;
   z: number;
 }
-type QuaternionTransformKey = { w: number } & VectorTransformKey;
+export type QuaternionTransformKey = { w: number } & VectorTransformKey;
 export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
   transformKey: VectorTransformKey | QuaternionTransformKey;
