@@ -36,7 +36,7 @@ interface Props {
   stopStream?: () => void;
 }
 
-type HelpDropdownItem = 'Onboarding' | 'Tutorial' | 'Manual' | 'Contact us';
+type HelpDropdownItem = 'Onboarding' | 'Tutorial' | 'Help center' | 'Contact us';
 
 const UpperBar: FunctionComponent<Props> = ({
   sceneName,
@@ -129,11 +129,12 @@ const UpperBar: FunctionComponent<Props> = ({
                 Tutorial
               </a>
             </Dropdown.Item>
-            <Dropdown.Item menuItem="Manual" onClick={handleSelectDropdown}>
-              <a href="https://plasticmask.notion.site/User-guide-ac4bba1b75384c309e7a24e6542454ba" target="_blank" rel="noreferrer">
-                Manual
+            <Dropdown.Item menuItem="Help center" onClick={handleSelectDropdown}>
+              <a href="https://knowledge.plask.ai/en" target="_blank" rel="noreferrer">
+                Help center
               </a>
             </Dropdown.Item>
+            <Dropdown.Divider />
             <Dropdown.Item menuItem="Contact us" onClick={handleSelectDropdown}>
               <a href="mailto:support@plask.ai" target="_blank" rel="noreferrer">
                 Contact us
