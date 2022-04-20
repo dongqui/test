@@ -27,7 +27,7 @@ const defaultState: State = {
   editingNodeId: null,
 
   // For test
-  sceneId: 'q0j0y8dzoq9xmv7gn4n526ger3lkp1m6',
+  sceneId: 'ezl1xkrzgyd8n64dm4p9q2o03em5jv6j',
 };
 
 export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeActions>) => {

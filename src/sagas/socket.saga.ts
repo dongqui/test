@@ -8,9 +8,9 @@ import * as socketActions from 'actions/Common/socket';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import { execPath } from 'process';
 
-const TEMP_SCENE_ID = 'q0j0y8dzoq9xmv7gn4n526ger3lkp1m6';
+const TEMP_SCENE_ID = 'ezl1xkrzgyd8n64dm4p9q2o03em5jv6j';
 const TEMP_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwcjA4a2wybXZkOW5lN29scWoxcXozcHlyNDV4ZzZwbCIsImVtYWlsIjoiemwwNzU5dmtAbmF2ZXIuY29tIiwiand0VHlwZSI6ImxvZ2luIiwiaWF0IjoxNjQ1MTQyMzAzLCJleHAiOjE2NTAzMjYzMDN9.Ut8mlSSK6b_VZnJ9tZ0uvcsH9-zrbIMU8fRupG7OFqI';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ6OWtnengycDlubXJsNGprcDZ3Nzg1MXlkZTBxMzZ2ayIsImVtYWlsIjoiZ3lvQHBsYXNrLmFpIiwiand0VHlwZSI6ImxvZ2luIiwiaWF0IjoxNjUwNDMwNDk2LCJleHAiOjE3MjgxOTA0OTZ9.fpw55EMP1ABmK9BGun1r02reYS42JR-SUlBoHm2CNRw';
 
 type LibraryEventType = 'update' | 'delete' | 'move' | 'apply-mocap-to-model' | 'modify-retarget-map';
 type AnimationEventType =
