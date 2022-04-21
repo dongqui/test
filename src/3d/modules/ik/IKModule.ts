@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import {
-  TransformNode,
   BoneIKController,
   Color3,
   GizmoManager,
@@ -19,6 +18,7 @@ import {
   AssetContainer,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { 
   AdvancedDynamicTexture,
   StackPanel,
@@ -34,6 +34,7 @@ type BoneIKParams = {
   name: string;
   controllerSize: number;
   poleAngle: number;
+  poleTargetDirection: Vector3;
 };
 
 type FingersSliderParams = {
@@ -194,7 +195,7 @@ export class IKModule extends Module {
 
     // Pole Angles Title
     const header_PoleAngle = new TextBlock();
-    header_PoleAngle.text = "Pole Angle: 90 deg";
+    header_PoleAngle.text = "Pole Angle: 0 deg";
     header_PoleAngle.height = "30px";
     header_PoleAngle.color = "white";
     slidePanel.addControl(header_PoleAngle); 
@@ -322,23 +323,23 @@ export class IKModule extends Module {
       slider_finger.onValueChangedObservable.add(function(value) {          
         if (finger_1) {
           if (!finger_1.name.includes('Thumb')) {
-            finger_1.rotationQuaternion.x = value;
+            finger_1.rotationQuaternion!.x = value;
           } else if (finger_1.name.includes('Left')){
-            finger_1.rotationQuaternion.z = -value;
+            finger_1.rotationQuaternion!.z = -value;
           } else 
-            finger_1.rotationQuaternion.z = value;
+            finger_1.rotationQuaternion!.z = value;
         }
 
         if (finger_2) {
          if (!finger_2.name.includes('Thumb')) {
-            finger_2.rotationQuaternion.x = value;
+            finger_2.rotationQuaternion!.x = value;
           } else {
-            finger_2.rotationQuaternion.x = -value;
+            finger_2.rotationQuaternion!.x = -value;
           }
         }
 
         if (finger_3)
-          finger_3.rotationQuaternion.x = value;
+          finger_3.rotationQuaternion!.x = value;
       });
       fingersPanel.addControl(slider_finger);  
     });
@@ -546,10 +547,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { name: 'rightFoot', controllerSize: 0.2, poleAngle: -Math.PI / 2 },
-      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: Math.PI / 2 },
-      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, },
-      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, },
+      { name: 'rightFoot', controllerSize: 0.2, poleAngle: 0, poleTargetDirection: new Vector3(0, 0, 1) },
+      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: 0, poleTargetDirection: new Vector3(0, 0, 1)  },
+      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, poleTargetDirection: new Vector3(0, -1, 0) },
+      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, poleTargetDirection: new Vector3(0, -1, 0) },
     ] as BoneIKParams[];
 
     let activeIkControllers: BoneIKController[] = this._activeIkControllers;
@@ -586,11 +587,36 @@ export class IKModule extends Module {
       //const ikCtrl = new BoneIKController(transformNode, bone, {
       //const ikCtrl = new BoneIKController(body, bone, {
       //const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex() - 1], {
+      const toLocalSpace = bone.getInvertedAbsoluteTransform();
+      const pole = new TransformNode("test", scene);
+      pole.position.copyFrom(bone.getAbsolutePosition(body));
+      pole.position.addInPlace(elem.poleTargetDirection.scale(15));
+      pole.setParent(body);
+
+      const parentBone = bone.getParent()!;
+      const toParent = bone.getAbsolutePosition().subtract(parentBone.getAbsolutePosition()).normalize();
+      const bendAxis = Vector3.Cross(toParent, elem.poleTargetDirection);
+      console.log("normal for " + elem.name, bendAxis);
       const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
         targetMesh: controller,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
         poleAngle: elem.poleAngle,
+        // bendAxis: bendAxis,
+        poleTargetMesh: pole
       });
+      // (ikCtrl as any)._adjustRoll = 0;
+      // (ikCtrl as any)._bendAxis.x = 0;
+      // (ikCtrl as any)._bendAxis.y = 0;
+      // (ikCtrl as any)._bendAxis.z = -1;      
+
+      // if (elem.name.includes('Foot')) {
+      //   // (ikCtrl as any)._bendAxis.x = -1;
+      //   // (ikCtrl as any)._bendAxis.z = 0;
+      // } else {
+      //   // (ikCtrl as any)._adjustRoll = Math.PI / 2;
+      //   // (ikCtrl as any)._bendAxis.x = 0;
+      //   // (ikCtrl as any)._bendAxis.z = -1;
+      // }
       ikControllers.push(ikCtrl);
 
       controllerClone.metadata.ikController = ikCtrl;
