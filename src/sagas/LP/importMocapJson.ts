@@ -45,3 +45,29 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
 
   reader.readAsText(mocapJsonFile);
 }
+
+function checkMocapJson(json: MocapJson) {
+  if (!json.data?.result?.length) {
+    new Error();
+  }
+
+  for (const mocapResult of json.data.result) {
+    for (const trackData of mocapResult.trackData) {
+      const isInvalidBoneName = !BONE_NAMES.includes(trackData.boneName);
+      const isInvalidFpps = trackData.fps !== 30;
+      const isInvalidProperty = !TRACK_DATA_PROPERTY.includes(trackData.property);
+
+      if (isInvalidBoneName) {
+        throw new Error(`${trackData.boneName} is an invalid bone name`);
+      }
+
+      if (isInvalidFpps) {
+        throw new Error('FPS has to be 30');
+      }
+
+      if (isInvalidProperty) {
+        throw new Error(`${trackData.property} is an invalid property`);
+      }
+    }
+  }
+}
