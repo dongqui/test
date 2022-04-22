@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { channel } from 'redux-saga';
 import { select, put, SagaReturnType, take } from 'redux-saga/effects';
 import produce from 'immer';
+import { isEqual } from 'lodash';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -22,24 +23,31 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
   const mocapJsonFile = action.payload.mocapJson;
 
   const reader = new FileReader();
+
   reader.onload = function (e) {
     if (typeof e?.target?.result === 'string') {
       const json = JSON.parse(e.target.result);
-      const nodes = produce(lpNode.nodes, (draft) => {
-        const newMocapNode: LP.Node = {
-          // parentid, filepath 수정
-          id: uuidv4(),
-          parentId: '__root__',
-          name: mocapJsonFile.name,
-          filePath: '\\root',
-          childNodeIds: [],
-          extension: 'json',
-          type: 'Mocap',
-          mocapData: json.data.result[0].trackData,
-        };
-        draft.push(newMocapNode);
-      });
-      readJsonChannel.put(lpNodeActions.changeNode({ nodes }));
+      try {
+        checkMocapJson(json);
+
+        const nodes = produce(lpNode.nodes, (draft) => {
+          const newMocapNode: LP.Node = {
+            // parentid, filepath 수정
+            id: uuidv4(),
+            parentId: '__root__',
+            name: mocapJsonFile.name,
+            filePath: '\\root',
+            childNodeIds: [],
+            extension: 'json',
+            type: 'Mocap',
+            mocapData: json.data.result[0].trackData,
+          };
+          draft.push(newMocapNode);
+        });
+        readJsonChannel.put(lpNodeActions.changeNode({ nodes }));
+      } catch (e) {
+        alert(e);
+      }
     }
   };
 
@@ -48,18 +56,19 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
 
 function checkMocapJson(json: MocapJson) {
   if (!json.data?.result?.length) {
-    new Error();
+    new Error('This json is invalid');
   }
 
   for (const mocapResult of json.data.result) {
+    const hasInvalidBoneName = !isEqual(['hips', ...BONE_NAMES].sort(), mocapResult.trackData.map((data) => data.boneName).sort());
+
+    if (hasInvalidBoneName) {
+      throw new Error('This json has invalid bone names');
+    }
     for (const trackData of mocapResult.trackData) {
-      const isInvalidBoneName = !BONE_NAMES.includes(trackData.boneName);
       const isInvalidFpps = trackData.fps !== 30;
       const isInvalidProperty = !TRACK_DATA_PROPERTY.includes(trackData.property);
-
-      if (isInvalidBoneName) {
-        throw new Error(`${trackData.boneName} is an invalid bone name`);
-      }
+      const hasInvalidTransformKey = trackData.transformKeys.some((key) => isInvalidTransformKey(key, trackData.property === 'position'));
 
       if (isInvalidFpps) {
         throw new Error('FPS has to be 30');
@@ -68,6 +77,22 @@ function checkMocapJson(json: MocapJson) {
       if (isInvalidProperty) {
         throw new Error(`${trackData.property} is an invalid property`);
       }
+
+      if (hasInvalidTransformKey) {
+        throw new Error('This json has invalid transformkey');
+      }
     }
   }
+}
+
+interface TransfromKey {
+  frame: number;
+  time: number;
+  value: number[];
+}
+
+function isInvalidTransformKey(transformKey: TransfromKey, isPosition: boolean = false) {
+  return typeof transformKey?.frame !== 'number' || typeof transformKey?.time !== 'number' || isPosition
+    ? transformKey?.value.length !== 3
+    : transformKey?.value.length !== 4 || transformKey?.value.some((key) => typeof key !== 'number');
 }
