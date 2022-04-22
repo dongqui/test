@@ -15,6 +15,7 @@ import handleDeleteModel from './deleteModel';
 import handleDeleteFolderOrMocap from './deleteFolderOrMocap';
 import handleFileUpload from './fileUpload';
 import handleDropNodeOnRoot from './dropNodeOnRoot';
+import importMocapJson, { watchReadJsonChannel } from './importMocapJson';
 
 export default function* LPSaga() {
   yield all([
@@ -33,6 +34,8 @@ export default function* LPSaga() {
     takeLatest(lpNodeActions.DELETE_FOLDER_OR_MOCAP, handleDeleteFolderOrMocap),
     takeEvery(lpNodeActions.FILE_UPLOAD, handleFileUpload),
     takeEvery(lpNodeActions.DROP_NODE_ON_ROOT, handleDropNodeOnRoot),
+    takeEvery(lpNodeActions.IMPORT_MOCAP_JSON, importMocapJson),
     watchClickJointChannel(),
+    watchReadJsonChannel(),
   ]);
 }

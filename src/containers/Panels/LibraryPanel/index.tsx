@@ -31,13 +31,18 @@ const LibraryPanel: FunctionComponent = () => {
 
   const onNodeChange = useCallback(
     (files: File[] | string[], showLoading: boolean = true) => {
+      // TODO: clean up
       for (const file of files) {
-        dispatch(
-          lpNodeActions.fileUpload({
-            file,
-            showLoading,
-          }),
-        );
+        if (typeof file !== 'string' && file.type.includes('json')) {
+          dispatch(lpNodeActions.importMocapJson(file));
+        } else {
+          dispatch(
+            lpNodeActions.fileUpload({
+              file,
+              showLoading,
+            }),
+          );
+        }
       }
     },
     [dispatch],
