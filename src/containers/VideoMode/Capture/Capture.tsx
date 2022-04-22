@@ -18,6 +18,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
 import { BaseModal } from 'components/Modal';
 import { PlaskMocapData } from 'types/common';
+import { addMocap } from 'api/LP';
 
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
@@ -32,6 +33,7 @@ interface Props {
 export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
+  const sceneId = useSelector((state) => state.lpNode.sceneId);
   const lpNode = useSelector((state) => state.lpNode.nodes);
   const { mode, videoURL } = useSelector((state) => state.modeSelection);
   const cameraListRef = useRef<HTMLDivElement>(null);
@@ -193,25 +195,19 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     const formData = new FormData();
     const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
       formData.append('file', response);
-      formData.append('type', type);
-      formData.append('id', id);
-      formData.append('start', start.toString());
-      formData.append('end', end.toString());
-      formData.append('startTime', startTime.toString());
-      formData.append('endTime', endTime.toString());
-      formData.append('duration', duration);
+      formData.append('name', fileName);
+      // formData.append('type', type);
+      // formData.append('id', id);
+      // formData.append('start', start.toString());
+      // formData.append('end', end.toString());
+      // formData.append('startTime', startTime.toString());
+      // formData.append('endTime', endTime.toString());
+      // formData.append('duration', duration);
     });
 
-    const result = await axios({
-      method: 'POST',
-      url: 'https://shootapi.myplask.com:6500/mocap-upload-api-common',
-      data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-      cancelToken: new axios.CancelToken((cancel) => {
-        cancelTokenSource.current = cancel;
-      }),
-    })
+    const result = await addMocap(sceneId, formData, cancelTokenSource)
       .then((response) => {
+        console.log(response);
         const mocapCount = response.data.result.length;
 
         let nextNodes: LP.Node[];
