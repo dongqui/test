@@ -1,13 +1,27 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
-import { AnimationIngredient, PlaskLayer, PlaskMocapData, PlaskPose, PlaskProperty, PlaskRetargetMap, PlaskTrack } from 'types/common';
-import { PlayDirection, PlayState } from 'types/RP';
+import {
+  AnimationIngredient,
+  PlaskLayer,
+  PlaskMocapData,
+  PlaskPose,
+  PlaskProperty,
+  PlaskRetargetMap,
+  PlaskTrack,
+  QuaternionTransformKey,
+  ServerAnimation,
+  ServerAnimationLayer,
+  ServerAnimationTrack,
+  ServerTransformKey,
+  VectorTransformKey,
+} from 'types/common';
 import { getRandomStringKey } from 'utils/common';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF } from 'utils/const';
 import OneEuroFilterForQuaternion from 'utils/RP/OneEuroFilterForQuaternion';
 import OneEuroFilterForVector from 'utils/RP/OneEuroFilterForVector';
 import { Module } from '../Module';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 
@@ -22,6 +36,125 @@ export class AnimationModule extends Module {
 
     this._currentAnimationGroup = null;
     this.onAnimationDataChangeObservable = new Observable();
+  }
+
+  static ingredientToServerData(animationIngredient: AnimationIngredient, fps: number, isMocapAnimation: boolean): [ServerAnimation, ServerAnimationLayer[]] {
+    const serverAnimation: ServerAnimation = {
+      id: animationIngredient.id,
+      scenesLibraryId: animationIngredient.assetId,
+      name: animationIngredient.name,
+      fps,
+      isMocapAnimation,
+      isDeleted: false,
+    };
+
+    const serverAnimationLayers: ServerAnimationLayer[] = [];
+    animationIngredient.layers.forEach((layer) => {
+      const serverAnimationTracks: ServerAnimationTrack[] = [];
+      layer.tracks.forEach((track) => {
+        const transformKeysMap = new Map<number, ServerTransformKey>();
+        track.transformKeys.forEach((transformKey) => {
+          const serverTransformKey: ServerTransformKey = {
+            property: track.property,
+            transformKey:
+              track.property === 'rotationQuaternion'
+                ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+          };
+
+          transformKeysMap.set(transformKey.frame, serverTransformKey);
+        });
+
+        const serverAnimationTrack: ServerAnimationTrack = {
+          id: track.id,
+          targetId: track.targetId,
+          name: track.name,
+          property: track.property,
+          filterBeta: track.filterBeta,
+          filterMinCutoff: track.filterMinCutoff,
+          transformKeysMap,
+        };
+        serverAnimationTracks.push(serverAnimationTrack);
+      });
+
+      const { id, name, isIncluded, useFilter } = layer;
+      const serverAnimationLayer: ServerAnimationLayer = {
+        id,
+        animationId: serverAnimation.id,
+        name,
+        isIncluded,
+        isDeleted: false,
+        useFilter,
+        tracks: serverAnimationTracks,
+      };
+      serverAnimationLayers.push(serverAnimationLayer);
+    });
+
+    return [serverAnimation, serverAnimationLayers];
+  }
+
+  static serverDataToIngredient(
+    serverAnimation: ServerAnimation,
+    serverAnimationLayers: ServerAnimationLayer[],
+    isMocapAnimation: boolean,
+    selectableObjects: PlaskTransformNode[],
+    current: boolean,
+  ): AnimationIngredient {
+    const layers: PlaskLayer[] = [];
+    serverAnimationLayers.forEach((serverAnimationLayer) => {
+      const { id: layerId, name: layerName, isIncluded, useFilter, tracks: serverTracks } = serverAnimationLayer;
+      const tracks: PlaskTrack[] = [];
+      serverTracks.forEach((serverTrack) => {
+        const transformKeys: IAnimationKey[] = [];
+        if (serverTrack.property === 'rotationQuaternion') {
+          for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
+            const quaternionKey = transformKey.transformKey as QuaternionTransformKey;
+            transformKeys.push({ frame, value: new Quaternion(quaternionKey.x, quaternionKey.y, quaternionKey.z, quaternionKey.w) });
+          }
+        } else {
+          for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
+            const vectorKey = transformKey.transformKey as VectorTransformKey;
+            transformKeys.push({ frame, value: new Vector3(vectorKey.x, vectorKey.y, vectorKey.z) });
+          }
+        }
+
+        const track: PlaskTrack = {
+          id: serverTrack.id,
+          targetId: serverTrack.targetId,
+          layerId,
+          name: serverTrack.name,
+          property: serverTrack.property,
+          target: selectableObjects.find((object) => object.id === serverTrack.targetId)!.reference,
+          transformKeys,
+          interpolationType: 'linear',
+          isMocapAnimation,
+          filterBeta: serverTrack.filterBeta,
+          filterMinCutoff: serverTrack.filterMinCutoff,
+          isLocked: false,
+        };
+        tracks.push(track);
+      });
+
+      const layer: PlaskLayer = {
+        id: layerId,
+        name: layerName,
+        isIncluded,
+        useFilter,
+        tracks,
+      };
+
+      layers.push(layer);
+    });
+
+    const animationIngredient: AnimationIngredient = {
+      id: serverAnimation.id,
+      name: serverAnimation.name,
+      assetId: serverAnimation.scenesLibraryId,
+      current,
+      layers,
+    };
+
+    return animationIngredient;
   }
 
   /**
@@ -255,7 +388,7 @@ export class AnimationModule extends Module {
 
   /**
    * create BABYLON.AnimationGroup with our custom animation data(animationIngredient)
-   * @param animationIngredient
+   * @param animationIngredient - ingredient for animationGroup
    * @param fps - fps of the animationGroup
    */
   public createAnimationGroupFromIngredient(animationIngredient: AnimationIngredient, fps: number): AnimationGroup {
