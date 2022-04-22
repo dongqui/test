@@ -107,6 +107,16 @@ interface DeleteNodeSendParams {
   scenesLibraryId: string;
 }
 
+interface ApplyMocapToModelRequestParams {
+  nodeId: string;
+  assetId?: string;
+}
+interface ApplyMocapToModelSendParams {}
+interface ApplyMocapToModelReceiveParams {
+  type: 'apply-mocap-to-model';
+  data: {};
+}
+
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
@@ -168,7 +178,7 @@ export const applyMocapToModelSocket = createSocketActions(
   'node/APPLY_MOCAP_TO_MODEL_RECEIVE',
   'node/APPLY_MOCAP_TO_MODEL_UPDATE',
   'node/APPLY_MOCAP_TO_MODEL_FAILURE',
-)<EditNodeNameRequestParams, EditNodeNameRequestParams, EditNodeNameReceiveParam, LP.Node[], string>();
+)<ApplyMocapToModelRequestParams, ApplyMocapToModelSendParams, ApplyMocapToModelReceiveParams, LP.Node[], string>();
 
 export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
 export const deleteMotionSocket = createSocketActions(

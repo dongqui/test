@@ -1,4 +1,4 @@
-import { editNodeNameSocket } from './../actions/LP/lpNodeAction';
+import { editNodeNameSocket, applyMocapToModelSocket } from './../actions/LP/lpNodeAction';
 import { eventChannel, EventChannel } from 'redux-saga';
 import { call, fork, put, take, takeLatest, ChannelTakeEffect, all } from 'redux-saga/effects';
 import { io, Socket } from 'socket.io-client';
@@ -39,14 +39,20 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
   });
 }
 
-type LibraryEventPayload = ReturnType<typeof lpActions.deleteNodeSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive>['payload'];
+type LibraryEventPayload = ReturnType<
+  | typeof lpActions.deleteNodeSocket.receive
+  | typeof lpActions.editNodeNameSocket.receive
+  | typeof lpActions.moveNodeSocket.receive
+  | typeof lpActions.applyMocapToModelSocket.receive
+>['payload'];
 function createEventChannel(socket: Socket) {
   return eventChannel((emit) => {
     const libraryEvent = (payload: LibraryEventPayload) => {
       switch (payload.type) {
-        // case 'apply-mocap-to-model': {
-        //   break;
-        // }
+        case 'apply-mocap-to-model': {
+          emit(lpActions.applyMocapToModelSocket.receive(payload));
+          break;
+        }
         case 'delete': {
           emit(lpActions.deleteNodeSocket.receive(payload));
           break;
@@ -146,6 +152,7 @@ function* handleIO(socket: Socket) {
     sendSocketEmit(socket, 'library', lpActions.deleteNodeSocket.send),
     sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send),
     sendSocketEmit(socket, 'library', lpActions.moveNodeSocket.send),
+    sendSocketEmit(socket, 'library', lpActions.applyMocapToModelSocket.send),
   ]);
 }
 
