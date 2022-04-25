@@ -38,7 +38,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     });
 
-  if (error.statusCode === 401.2) {
+  if (error && error.statusCode === 401.2) {
     Cookies.remove('authToken');
   }
 
