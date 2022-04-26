@@ -595,8 +595,9 @@ export class IKModule extends Module {
 
       const parentBone = bone.getParent()!;
       const toParent = bone.getAbsolutePosition().subtract(parentBone.getAbsolutePosition()).normalize();
+      const toParentLocal = new Vector3(bone.getBaseMatrix().m[12], bone.getBaseMatrix().m[13], bone.getBaseMatrix().m[14]);
       const bendAxis = Vector3.Cross(toParent, elem.poleTargetDirection);
-      console.log("normal for " + elem.name, bendAxis);
+      console.log("normal for " + elem.name, toParentLocal);
       const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
         targetMesh: controller,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
@@ -604,10 +605,11 @@ export class IKModule extends Module {
         // bendAxis: bendAxis,
         poleTargetMesh: pole
       });
-      // (ikCtrl as any)._adjustRoll = 0;
-      // (ikCtrl as any)._bendAxis.x = 0;
-      // (ikCtrl as any)._bendAxis.y = 0;
-      // (ikCtrl as any)._bendAxis.z = -1;      
+      (ikCtrl as any)._adjustRoll = 0;
+      (ikCtrl as any)._bendAxis.x = 0;
+      (ikCtrl as any)._bendAxis.y = 0;
+      (ikCtrl as any)._bendAxis.z = 1;
+      (ikCtrl as any).setIKtoRest();
 
       // if (elem.name.includes('Foot')) {
       //   // (ikCtrl as any)._bendAxis.x = -1;
