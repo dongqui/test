@@ -1,5 +1,17 @@
-import { AbstractMesh, AxisDragGizmo, Color3, GizmoManager, Nullable, Observer, PointerEventTypes, TransformNode, Vector3 } from '@babylonjs/core';
-import { updateTransform } from 'actions/selectingDataAction';
+import {
+  AbstractMesh,
+  AxisDragGizmo,
+  AxisScaleGizmo,
+  Color3,
+  GizmoManager,
+  Nullable,
+  Observer,
+  PlaneRotationGizmo,
+  PointerEventTypes,
+  TransformNode,
+  Vector3,
+} from '@babylonjs/core';
+import { updateEntity } from 'actions/selectingDataAction';
 import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
@@ -39,13 +51,6 @@ export class GizmoModule extends Module {
         z: null as GizmoDragObserver,
       },
     },
-    dragStart: {
-      rotation: {
-        x: null as GizmoDragStartObserver,
-        y: null as GizmoDragStartObserver,
-        z: null as GizmoDragStartObserver,
-      },
-    },
   };
 
   public initialize() {
@@ -69,7 +74,6 @@ export class GizmoModule extends Module {
   private _onSelectionChange(selectedTargets: TransformNode[]) {
     // Clear previous outline
     this._clearOutline();
-    this._clearObservers();
 
     // Update active targets
     this._activeTargets.length = 0;
@@ -93,31 +97,8 @@ export class GizmoModule extends Module {
   }
 
   public changeGizmoMode(mode: GizmoMode) {
-    switch (mode) {
-      // Enable gizmo for the current mode
-      case GizmoMode.POSITION: {
-        this._gizmoManager.positionGizmoEnabled = true;
-        this._gizmoManager.rotationGizmoEnabled = false;
-        this._gizmoManager.scaleGizmoEnabled = false;
-        break;
-      }
-      case GizmoMode.ROTATION: {
-        this._gizmoManager.positionGizmoEnabled = false;
-        this._gizmoManager.rotationGizmoEnabled = true;
-        this._gizmoManager.scaleGizmoEnabled = false;
-        break;
-      }
-      case GizmoMode.SCALE: {
-        this._gizmoManager.positionGizmoEnabled = false;
-        this._gizmoManager.rotationGizmoEnabled = false;
-        this._gizmoManager.scaleGizmoEnabled = true;
-        break;
-      }
-      default: {
-        break;
-      }
-    }
     this._currentGizmoMode = mode;
+    this._attachGizmo(this._activeTargets);
   }
 
   public updateVisibility() {
@@ -224,17 +205,9 @@ export class GizmoModule extends Module {
         yGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.rotation.y);
         zGizmo.dragBehavior.onDragEndObservable.remove(this._observers.dragEnd.rotation.z);
 
-        xGizmo.dragBehavior.onDragStartObservable.remove(this._observers.dragStart.rotation.x);
-        yGizmo.dragBehavior.onDragStartObservable.remove(this._observers.dragStart.rotation.y);
-        zGizmo.dragBehavior.onDragStartObservable.remove(this._observers.dragStart.rotation.z);
-
         this._observers.dragEnd.rotation.x = null;
         this._observers.dragEnd.rotation.y = null;
         this._observers.dragEnd.rotation.z = null;
-
-        this._observers.dragStart.rotation.x = null;
-        this._observers.dragStart.rotation.y = null;
-        this._observers.dragStart.rotation.z = null;
       }
     }
 
@@ -292,6 +265,7 @@ export class GizmoModule extends Module {
   }
 
   private _attachGizmo(selectedTargets: TransformNode[]) {
+    this._clearObservers();
     if (selectedTargets.length === 0) {
       // Deselection
       this._gizmoManager.attachToNode(null);
@@ -330,7 +304,7 @@ export class GizmoModule extends Module {
         if (!checkIsTargetMesh(selectedTargets[0])) {
           // transformNode single selection
           this._gizmoManager.attachToNode(selectedTargets[0]);
-          this._addPositionObservables(selectedTargets[0]);
+          this._addObservables(selectedTargets[0]);
         } else {
           this._gizmoManager.attachToMesh(selectedTargets[0]);
         }
@@ -343,17 +317,33 @@ export class GizmoModule extends Module {
     }
   }
 
-  private _addPositionObservables(linkedTransformNode: TransformNode) {
-    const addPositionDragEndObservable = (target: TransformNode, gizmo: AxisDragGizmo) => {
+  private _addObservables(linkedTransformNode: TransformNode) {
+    const addDragEndObservable = (target: TransformNode, gizmo: AxisDragGizmo | PlaneRotationGizmo | AxisScaleGizmo) => {
       return gizmo.dragBehavior.onDragEndObservable.add(() => {
-        target.position.toArray(target.getPlaskEntity().position);
-        this.plaskEngine.dispatch(updateTransform({ targets: [target.getPlaskEntity().clone()] }));
+        target.getPlaskEntity().fromTransformNode();
+        this.plaskEngine.userAction([target.getPlaskEntity()]);
       });
     };
 
-    const { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.positionGizmo!;
-    this._observers.dragEnd.position.x = addPositionDragEndObservable(linkedTransformNode, xGizmo);
-    this._observers.dragEnd.position.y = addPositionDragEndObservable(linkedTransformNode, yGizmo);
-    this._observers.dragEnd.position.z = addPositionDragEndObservable(linkedTransformNode, zGizmo);
+    if (this._gizmoManager.gizmos.positionGizmo) {
+      const { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.positionGizmo;
+      this._observers.dragEnd.position.x = addDragEndObservable(linkedTransformNode, xGizmo);
+      this._observers.dragEnd.position.y = addDragEndObservable(linkedTransformNode, yGizmo);
+      this._observers.dragEnd.position.z = addDragEndObservable(linkedTransformNode, zGizmo);
+    }
+
+    if (this._gizmoManager.gizmos.rotationGizmo) {
+      const { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.rotationGizmo;
+      this._observers.dragEnd.rotation.x = addDragEndObservable(linkedTransformNode, xGizmo);
+      this._observers.dragEnd.rotation.y = addDragEndObservable(linkedTransformNode, yGizmo);
+      this._observers.dragEnd.rotation.z = addDragEndObservable(linkedTransformNode, zGizmo);
+    }
+
+    if (this._gizmoManager.gizmos.scaleGizmo) {
+      const { xGizmo, yGizmo, zGizmo } = this._gizmoManager.gizmos.scaleGizmo;
+      this._observers.dragEnd.scale.x = addDragEndObservable(linkedTransformNode, xGizmo);
+      this._observers.dragEnd.scale.y = addDragEndObservable(linkedTransformNode, yGizmo);
+      this._observers.dragEnd.scale.z = addDragEndObservable(linkedTransformNode, zGizmo);
+    }
   }
 }
