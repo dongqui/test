@@ -1,6 +1,7 @@
 import { GetServerSideProps } from 'next';
 import dynamic from 'next/dynamic';
 import requestApi from 'api/requestApi';
+import Cookies from 'js-cookie';
 
 const DynamicWithNoSSR = dynamic(() => import('containers/index'), { ssr: false });
 
@@ -36,6 +37,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         error: error,
       };
     });
+
+  if (error && error.statusCode === 401.2) {
+    Cookies.remove('authToken');
+  }
 
   return {
     props: {
