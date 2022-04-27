@@ -12,6 +12,7 @@ import {
   Vector3,
 } from '@babylonjs/core';
 import { updateEntity } from 'actions/selectingDataAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
@@ -27,6 +28,7 @@ type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; point
 
 export class GizmoModule extends Module {
   public state = {};
+  private _isAutokeyMode: boolean = false;
   private _gizmoManager!: GizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _currentGizmoMode: GizmoMode = GizmoMode.POSITION;
@@ -112,6 +114,14 @@ export class GizmoModule extends Module {
 
   public get currentGizmoMode() {
     return this._currentGizmoMode;
+  }
+
+  public get isAutokeyMode() {
+    return this._isAutokeyMode;
+  }
+
+  public set isAutokeyMode(value: boolean) {
+    this._isAutokeyMode = value;
   }
 
   private _isTargetGizmoMesh = (target: AbstractMesh) => {
@@ -320,6 +330,10 @@ export class GizmoModule extends Module {
   private _addObservables(linkedTransformNode: TransformNode) {
     const addDragEndObservable = (target: TransformNode, gizmo: AxisDragGizmo | PlaneRotationGizmo | AxisScaleGizmo) => {
       return gizmo.dragBehavior.onDragEndObservable.add(() => {
+        if (this._isAutokeyMode) {
+          this.plaskEngine.dispatch(animationDataActions.editKeyframes());
+        }
+
         target.getPlaskEntity().fromTransformNode();
         this.plaskEngine.userAction([target.getPlaskEntity()]);
       });
