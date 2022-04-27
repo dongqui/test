@@ -189,7 +189,7 @@ export type RetargetMapValue = {
   targetTransformNodeId: Nullable<string>;
 };
 
-type ArrayOfThreeNumbers = [number, number, number];
+export type ArrayOfThreeNumbers = [number, number, number];
 export type ArrayOfFourNumbers = [number, number, number, number];
 
 export type PlaskMocapData = Array<{
