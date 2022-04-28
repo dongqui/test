@@ -22,7 +22,6 @@ import {
   ServerTransformKey,
   VectorTransformKey,
 } from 'types/common';
-import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 import { getRandomStringKey } from 'utils/common';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF } from 'utils/const';
@@ -202,7 +201,7 @@ export class AnimationModule extends Module {
    * @param targetFrameIndex - index of frame to edit
    * @param keyframeDataList - list of data that is used to edit keyframes, including targetId, property, value
    */
-  public editKeyframes(
+  public editKeyframesWithParams(
     targetAnimationIngredientId: string,
     targetLayerId: string,
     targetFrameIndex: number,
@@ -211,12 +210,6 @@ export class AnimationModule extends Module {
     const targetAnimationIngredient = this.animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
 
     if (targetAnimationIngredient) {
-      const updatedPropertyKeyframes: UpdatedPropertyKeyframes = {
-        animationIngredientId: targetAnimationIngredientId,
-        layerId: targetLayerId,
-        transformKeys: [],
-      };
-
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
         const targetLayer = draft.layers.find((layer) => layer.id === targetLayerId);
         const otherLayers = draft.layers.filter((layer) => layer.id !== targetLayerId && layer.isIncluded);
@@ -238,11 +231,6 @@ export class AnimationModule extends Module {
                   });
 
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newPosition);
-                  updatedPropertyKeyframes.transformKeys.push({
-                    trackId: targetTrack.id,
-                    to: targetFrameIndex,
-                    value: newPosition,
-                  });
                   break;
                 }
                 case 'rotationQuaternion': {
@@ -278,11 +266,6 @@ export class AnimationModule extends Module {
                     });
 
                     peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, targetFrameIndex, newRotation);
-                    updatedPropertyKeyframes.transformKeys.push({
-                      trackId: peerTrack.id,
-                      to: targetFrameIndex,
-                      value: newRotation,
-                    });
                   }
 
                   break;
@@ -298,11 +281,6 @@ export class AnimationModule extends Module {
                   });
 
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newRotation);
-                  updatedPropertyKeyframes.transformKeys.push({
-                    trackId: targetTrack.id,
-                    to: targetFrameIndex,
-                    value: newRotation,
-                  });
 
                   const peerTrack = targetLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
                   if (peerTrack) {
@@ -346,11 +324,6 @@ export class AnimationModule extends Module {
                   });
 
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newScaling);
-                  updatedPropertyKeyframes.transformKeys.push({
-                    trackId: targetTrack.id,
-                    to: targetFrameIndex,
-                    value: newScaling,
-                  });
                   break;
                 }
                 default: {
@@ -368,8 +341,6 @@ export class AnimationModule extends Module {
           animationIngredient: newAnimationIngredient,
         }),
       );
-      // update TimelinePanel
-      this.plaskEngine.dispatch(keyframesActions.addKeyframes(updatedPropertyKeyframes));
     }
   }
 
