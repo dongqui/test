@@ -550,8 +550,8 @@ export class IKModule extends Module {
     const bonesSelection = [
       { name: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), poleDirection: new Vector3(0, 0, 1) },
       { name: 'leftFoot', controllerSize: 0.2,  poleAngle: 0, bendAxis: new Vector3(0, 0, 1), poleDirection: new Vector3(0, 0, 1)  },
-      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), poleDirection: new Vector3(1, 0, 0) },
-      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), poleDirection: new Vector3(1, 0, 0) },
+      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), poleDirection: new Vector3(0, 1, 0) },
+      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), poleDirection: new Vector3(0, -1, 0) },
     ] as BoneIKParams[];
 
     let activeIkControllers: BoneIKController[] = this._activeIkControllers;
