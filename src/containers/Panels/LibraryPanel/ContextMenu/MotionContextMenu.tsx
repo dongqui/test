@@ -6,7 +6,7 @@ import { ExportFormat } from 'types/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { useContext } from 'react';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 interface Props {
   nodeId: string;
   parentId: string;
@@ -19,7 +19,6 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
   const dispatch = useDispatch();
   const { lpNode, plaskProject, animationData } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
-  const { plaskEngine } = useContext(BabylonContext);
 
   const handleDelete = () => {
     dispatch(
@@ -28,7 +27,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
         // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteMotion({ nodeId, parentId, assetId, plaskEngine }));
+          dispatch(lpNodeActions.deleteMotion({ nodeId, parentId, assetId }));
         },
         onCancel: () => {},
       }),
@@ -55,14 +54,13 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
         nodeId,
         parentId,
         assetId,
-        plaskEngine,
       }),
     );
   };
 
   const handleCancelVisualization = () => {
     if (assetId) {
-      dispatch(lpNodeActions.cancelVisulization({ assetId, plaskEngine }));
+      dispatch(lpNodeActions.cancelVisulization({ assetId }));
     }
   };
 
@@ -80,7 +78,6 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
               nodeName,
               assetId,
               type,
-              plaskEngine,
             }),
           );
         },

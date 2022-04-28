@@ -1,5 +1,4 @@
 import { useCallback, useContext, FunctionComponent } from 'react';
-import _ from 'lodash';
 
 import { DropdownContext } from '../DropdownProvider';
 
