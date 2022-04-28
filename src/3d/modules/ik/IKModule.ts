@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import {
-  BoneIKController,
   Color3,
   GizmoManager,
   Mesh,
@@ -19,6 +18,7 @@ import {
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { 
   AdvancedDynamicTexture,
   StackPanel,
@@ -35,7 +35,7 @@ type BoneIKParams = {
   controllerSize: number;
   poleAngle: number;
   bendAxis: Vector3;
-  poleDirection: Vector3;
+  upVector: Vector3;
 };
 
 type FingersSliderParams = {
@@ -548,10 +548,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { name: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), poleDirection: new Vector3(0, 0, 1) },
-      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: 0, bendAxis: new Vector3(0, 0, 1), poleDirection: new Vector3(0, 0, 1)  },
-      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), poleDirection: new Vector3(0, 1, 0) },
-      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), poleDirection: new Vector3(0, -1, 0) },
+      { name: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
+      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1)  },
+      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0) },
+      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0) },
     ] as BoneIKParams[];
 
     let activeIkControllers: BoneIKController[] = this._activeIkControllers;
@@ -593,11 +593,11 @@ export class IKModule extends Module {
       const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
         targetMesh: controller,
         poleAngle: elem.poleAngle,
-        bendAxis: elem.bendAxis,
-        bendUpAxis: elem.poleDirection
-      } as any);
+        bendAxis: elem.bendAxis
+      });
+      ikCtrl.upVector = elem.upVector;
       (ikCtrl as any)._adjustRoll = 0;
-      (ikCtrl as any).setIKtoRest();
+      ikCtrl.setIKtoRest();
 
       // if (elem.name.includes('Foot')) {
       //   // (ikCtrl as any)._bendAxis.x = -1;
