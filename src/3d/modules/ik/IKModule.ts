@@ -36,6 +36,8 @@ type BoneIKParams = {
   poleAngle: number;
   bendAxis: Vector3;
   upVector: Vector3;
+  parent_1: string;
+  parent_2: string;
 };
 
 type FingersSliderParams = {
@@ -55,6 +57,7 @@ export class IKModule extends Module {
   private _pickedIkMesh: Mesh | undefined;
   private _blendSlider: Slider = new Slider();
   private _poleAngleSlider: Slider = new Slider();
+  private _ikMeshes: Mesh[] = [];
 
   private get _allTransformNodes() {
     return this.plaskEngine.selectorModule.allTransformNodes;
@@ -84,13 +87,12 @@ export class IKModule extends Module {
   }
 
   public tick(elapsed: number) {
-    if (this._pickedIkMesh)
-      this._pickedIkMesh.metadata.ikController.update();
-    /*
+    //if (this._pickedIkMesh)
+    //  this._pickedIkMesh.metadata.ikController.update();
     for (const ikController of this._activeIkControllers) {
+    //for (const ikController of this._ikControllers) {
         ikController.update();
     }
-    */
   }
 
   private _onSelectionChange(objects: TransformNode[]) {
@@ -101,7 +103,8 @@ export class IKModule extends Module {
   public onStateChanged(key: string, previousState: any) {
     // TODO : when assets module is live, use its observable
     if (key === 'selectingData.present.allObjectsMap') {
-      this._playgroundCode();
+      if (this._ikControllers.length === 0)
+        this._playgroundCode();
     }
   }
 
@@ -139,7 +142,10 @@ export class IKModule extends Module {
     controllerClone.metadata = {
       boneName: bone.name,
       boneIndex: bone.getIndex(),
+      boneId: bone.id,
       transformNode: bone.getTransformNode(),
+      transformNode_1: scene.getTransformNodeByName(params.parent_1),
+      transformNode_2: scene.getTransformNodeByName(params.parent_2),
       transformNodeClone: scene.getTransformNodeByName('Clone of '+bone.name),
       controller: controller,
       ikController: undefined,
@@ -174,9 +180,19 @@ export class IKModule extends Module {
       if (slidePanel.isVisible){
         button_SH.color = "teal";
         button_SH.background = "white";    
+        this._ikMeshes.forEach(elem => {
+          elem.isVisible = true;
+        });
+        if (this._pickedIkMesh) {
+          this._gizmoManager.attachToNode(this._pickedIkMesh);
+        }
       } else {
         button_SH.color = "white";
         button_SH.background = "teal";    
+        this._ikMeshes.forEach(elem => {
+          elem.isVisible = false;
+        });
+        this._gizmoManager.attachToNode(null);
       }
     });
     advancedTexture.addControl(button_SH);
@@ -383,9 +399,8 @@ export class IKModule extends Module {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
         this._gizmoManager.attachToNode(null);
-        let controller = this._pickedIkMesh.metadata.controller;
-        let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
-        controller.setAbsolutePosition(controllerOrig.absolutePosition);
+        let transfNodeClone = this._pickedIkMesh.metadata.transformNodeClone;
+        this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
         let ikcontroller = this._pickedIkMesh.metadata.ikController;
         ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
         ikcontroller.update();
@@ -393,6 +408,26 @@ export class IKModule extends Module {
       }
     });
     slidePanel.addControl(button_IK_FK);
+
+    // Bake
+    const button_Bake = Button.CreateSimpleButton("but_Bake", "Set Bake");
+    button_Bake.width = "200px";
+    button_Bake.height = "30px";
+    button_Bake.color = "white";
+    button_Bake.background = "teal";
+    button_Bake.paddingTop = "5px";
+    button_Bake.onPointerClickObservable.add(() => {
+      // Evaluate if a IK Controller is selected
+      if (this._pickedIkMesh) {
+        //console.log(this.plaskEngine.state.keyframes);
+        //console.log(this.plaskEngine.state.trackList.selectedLayer);
+        console.log(this.plaskEngine.state.selectingData.present.selectedTargets);
+        // console.log(this.plaskEngine.state.trackList.propertyTrackList);
+        // console.log(this.plaskEngine.state.animationData.animationIngredients);
+        // console.log(this.plaskEngine.state.animatingControls.currentTimeIndex);    
+      }
+    });
+    slidePanel.addControl(button_Bake);
   }
 
   // public get assetList() {
@@ -435,8 +470,10 @@ export class IKModule extends Module {
     scene.onReadyObservable.addOnce(() => {
       // Adjusting transparency of the Cloned meshes    
       scene.meshes.forEach(m => {
-        if (m.name.includes('Clone of'))
-            m.visibility = 0.25;
+        if (m.name.includes('Clone of')){
+          m.visibility = 0.25;
+          this._ikMeshes.push(m);
+        }
       })
     })
     const bodyClone = scene.getMeshByName('Clone of __root__') as Mesh;
@@ -449,112 +486,15 @@ export class IKModule extends Module {
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
 
-    //console.log(body);
-
-  // Trying to Realign some Skeleton Bones
-    /*
-    if (skeleton.name === 'Armature') {
-      // This show Mannequin model Matrix
-      const mannequin = [
-        { name: 'leftArm' },
-        { name: 'leftForeArm' },
-        { name: 'leftHand' },
-        { name: 'leftUpLeg' },
-        { name: 'leftLeg' },
-        { name: 'leftFoot' },
-        { name: 'rightArm' },
-        { name: 'rightForeArm' },
-        { name: 'rightHand' },
-        { name: 'rightUpLeg' },
-        { name: 'rightLeg' },
-        { name: 'rightFoot' },
-      ];
-
-      mannequin.forEach((elem) => {
-        let pos = new Vector3();
-        let rot = new Quaternion();
-        let sca = new Vector3();
-        let mtx = new Matrix();
-
-        let tr = scene.getTransformNodeByName(elem.name) || undefined;
-        let bn = scene.getBoneByName(elem.name);
-
-        //console.log(bn?.getRotation(2, tr));
-        //console.log(bn?.getDirection(new Vector3(0, 0, 1), tr));
-
-        console.log(bn?.getRotationQuaternion(0, tr));
-        console.log(bn?.getBaseMatrix());
-        //bn?.setAxisAngle(new Vector3(0, 0, 1), 2 * Math.PI, 0, tr);
-        //bn?.setRotation(new Vector3(0, 0, -180), 2, tr);
-        //bn?.setRotationQuaternion(new Quaternion(0, 0, -Math.PI), 2, tr);
-        //bn?.setYawPitchRoll(0, 0, -Math.PI, 0, tr);
-
-        console.log(bn?.getRotationQuaternion(0, tr));
-
-        //bn?.computeWorldMatrix(true);
-        //bn?.computeAbsoluteTransforms();
-        //bn?.getWorldMatrix().decompose(sca, rot, pos);
-        //console.table(elem.name, rot);
-
-        //console.log(tr?.rotationQuaternion);
-        //tr?.addRotation(0, 0, -180);
-        //console.log(tr?.rotationQuaternion);
-
-        //tr?.setDirection(new Vector3(0, 0, 1), undefined, undefined, -Math.PI);
-        //tr?.rotate(new Vector3(0, 0, 1), -180);
-
-        //tr?.computeWorldMatrix(true);
-
-        //tr?.getWorldMatrix().decompose(sca, rot, pos);
-        //tr?.getPoseMatrix().decompose(sca, rot, pos);
-        //console.table(elem.name, rot);
-      });
-    } else if (skeleton.name === 'Xbot') {
-      // This show Xbot model Matrix
-      const xbot = [
-        { name: 'LeftArm' },
-        { name: 'LeftForeArm' },
-        { name: 'LeftHand' },
-        { name: 'LeftUpLeg' },
-        { name: 'LeftLeg' },
-        { name: 'LeftFoot' },
-        { name: 'RightArm' },
-        { name: 'RightForeArm' },
-        { name: 'RightHand' },
-        { name: 'RightUpLeg' },
-        { name: 'RightLeg' },
-        { name: 'RightFoot' },
-      ];
-
-      xbot.forEach((elem) => {
-        let pos = new Vector3();
-        let rot = new Quaternion();
-        let sca = new Vector3();
-        let mtx = new Matrix();
-
-        let bn = scene.getBoneByName('mixamorig:' + elem.name);
-        // bn?.getWorldMatrix().decompose(sca, rot, pos);
-        // console.table(elem.name, rot);
-
-        let tr = scene.getTransformNodeByName('mixamorig:' + elem.name) || undefined;
-        //tr?.getWorldMatrix().decompose(sca, rot, pos);
-        //tr?.getPoseMatrix().decompose(sca, rot, pos);
-        //console.table(elem.name, rot);
-
-        console.log(bn?.getRotation(2, tr));
-      });
-    }
-    */
-
     // Defining bones to be used in IK
     const bonesSelection = [
-      { name: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1)  },
-      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0) },
-      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0) },
+      { name: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1), parent_1: 'rightLeg', parent_2: 'rightUpLeg' },
+      { name: 'leftFoot', controllerSize: 0.2,  poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1), parent_1: 'leftLeg', parent_2: 'leftUpLeg' },
+      { name: 'rightHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0), parent_1: 'rightForeArm', parent_2: 'rightArm'},
+      { name: 'leftHand', controllerSize: 0.15, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0), parent_1: 'leftForeArm', parent_2: 'leftArm'},
     ] as BoneIKParams[];
 
-    let activeIkControllers: BoneIKController[] = this._activeIkControllers;
+    //let activeIkControllers: BoneIKController[] = this._activeIkControllers;
 
     // Creating IK controls
     bonesSelection.forEach((elem) => {
@@ -583,6 +523,7 @@ export class IKModule extends Module {
 
       const {controller, controllerClone} = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(controllerClone);
+      this._ikMeshes.push(controllerClone);
 
       // Creating IK Controllers
       //const ikCtrl = new BoneIKController(transformNode, bone, {
@@ -611,13 +552,7 @@ export class IKModule extends Module {
 
       controllerClone.metadata.ikController = ikCtrl;
 
-      const controllerOrig = MeshBuilder.CreateBox(
-                                'orig_' + elem.name,
-                                {
-                                  size: 2,
-                                },
-                                scene,
-                              );
+      const controllerOrig = MeshBuilder.CreateBox('orig_' + elem.name, { size: 2 }, scene);
       controllerOrig.isVisible = false;
       const ikCtrlClone = new BoneIKController(bodyClone, skeletonClone.bones[bone.getIndex()], {
         targetMesh: controllerOrig,
@@ -633,7 +568,7 @@ export class IKModule extends Module {
     // Starting IK movement
     // TODO : link to GizmoModule
     const gizmoManager = this._gizmoManager;
-
+    /*
     gizmoManager.gizmos.positionGizmo!.onDragStartObservable.add(() => {
       if (pickedIkCtrl) {
         // Storing IK Controller to being updated
@@ -648,15 +583,17 @@ export class IKModule extends Module {
         this._activeIkControllers.length = 0;
       }
     });
-
+    */
     let pickedIkCtrl: Nullable<Mesh> = null;
 
-    // Evaluating the pick of red spheres to enable IK on related bones
+    // Evaluating the pick of blue torus to enable IK on related bones
     this.plaskEngine.onPickObservable.add((pickedMesh) => {
       if (pickedIkCtrl) {
         pickedIkCtrl.renderOutline = false;
       }
       gizmoManager.attachToNode(null);
+      this._activeTransformNodes.length = 0;
+      this._activeIkControllers.length = 0;
       if (this._ikControllerMeshes.includes(pickedMesh)) {
         pickedIkCtrl = pickedMesh;
         pickedIkCtrl.renderOutline = true;
@@ -665,10 +602,19 @@ export class IKModule extends Module {
 
         gizmoManager.attachToMesh(pickedMesh);
 
+        this._activeIkControllers.push(pickedIkCtrl.metadata.ikController);
+
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
+
+        //console.log(this._activeTransformNodes);
+
         this._pickedIkMesh = pickedIkCtrl;
         this._blendSlider.value = pickedIkCtrl.metadata.blend;
         this._poleAngleSlider.value = pickedIkCtrl.metadata.ikController.poleAngle;
       }
+      //console.log(pickedIkCtrl?.metadata);
     });
   }
 }
