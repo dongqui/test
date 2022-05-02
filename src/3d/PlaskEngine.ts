@@ -340,10 +340,9 @@ export class PlaskEngine {
           break;
         }
       }
-
-      if (pickInfo && pickInfo.hit) {
-        this.onPickObservable.notifyObservers(pickInfo.pickedMesh as Mesh);
-      }
+    }
+    if (pickInfo && pickInfo.hit) {
+      this.onPickObservable.notifyObservers(pickInfo.pickedMesh as Mesh);
     }
   }
 }
