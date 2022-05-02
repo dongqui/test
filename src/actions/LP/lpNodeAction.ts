@@ -1,5 +1,6 @@
 import { createAction, createAsyncAction } from 'typesafe-actions';
 
+import { RequestNodeResponse } from 'types/LP';
 import { ExportFormat } from 'types/common';
 import { createSocketActions } from '../helper';
 
@@ -107,6 +108,16 @@ interface DeleteNodeSendParams {
   scenesLibraryId: string;
 }
 
+interface ApplyMocapToModelRequestParams {
+  nodeId: string;
+  assetId?: string;
+}
+interface ApplyMocapToModelSendParams {}
+interface ApplyMocapToModelReceiveParams {
+  type: 'apply-mocap-to-model';
+  data: {};
+}
+
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
@@ -116,12 +127,13 @@ export const setDraggedNode = createAction('node/SET_DRAGGED_NODE', (node: LP.No
 export const setEditingNodeId = createAction('node/SET_EDITING_NODE_ID', (nodeId: string | null) => ({ nodeId }))();
 export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
 export const exportAsset = createAction('node/EXPORT', (params: ExportAssetParams) => ({ ...params }))();
+export const setSceneId = createAction('node/SET_SCENE_ID', (sceneId: string) => sceneId)();
 
 export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
 export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
+export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: RequestNodeResponse[]) => nodesFromServer)();
 
-export const getNodesAsync = createAsyncAction('node/GET_NODE_REQUEST', 'node/GET_NODE_SUCCESS', 'node/GET_NODE_FAILURE')<undefined, LP.Node[], Error>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
 
@@ -168,7 +180,7 @@ export const applyMocapToModelSocket = createSocketActions(
   'node/APPLY_MOCAP_TO_MODEL_RECEIVE',
   'node/APPLY_MOCAP_TO_MODEL_UPDATE',
   'node/APPLY_MOCAP_TO_MODEL_FAILURE',
-)<EditNodeNameRequestParams, EditNodeNameRequestParams, EditNodeNameReceiveParam, LP.Node[], string>();
+)<ApplyMocapToModelRequestParams, ApplyMocapToModelSendParams, ApplyMocapToModelReceiveParams, LP.Node[], string>();
 
 export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
 export const deleteMotionSocket = createSocketActions(
