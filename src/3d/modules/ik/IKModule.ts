@@ -99,10 +99,10 @@ export class IKModule extends Module {
     this._activeTransformNodes = objects;
   }
 
-  public reduxObservedStates = ['selectingData.present.allObjectsMap'];
+  public reduxObservedStates = ['selectingData.present.selectableObjects'];
   public onStateChanged(key: string, previousState: any) {
     // TODO : when assets module is live, use its observable
-    if (key === 'selectingData.present.allObjectsMap') {
+    if (key === 'selectingData.present.selectableObjects') {
       if (this._ikControllers.length === 0)
         this._playgroundCode();
     }
