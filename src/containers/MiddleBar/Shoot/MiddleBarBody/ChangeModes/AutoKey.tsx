@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
-import { TextButton } from 'components/Button';
+import { GhostButton } from 'components/Button';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -24,7 +24,7 @@ const AutoKey = () => {
     }
   }, [_playState, dispatch]);
 
-  return <TextButton text="Autokey" className={cx({ active: _isAutokeyOn, disabled: _visualizedAssetIds.length === 0 || _playState === 'play' })} onClick={handleAutoKeyButton} />;
+  return <GhostButton text="Autokey" className={cx({ active: _isAutokeyOn, disabled: _visualizedAssetIds.length === 0 || _playState === 'play' })} onClick={handleAutoKeyButton} />;
 };
 
 export default AutoKey;
