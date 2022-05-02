@@ -128,11 +128,13 @@ export const setEditingNodeId = createAction('node/SET_EDITING_NODE_ID', (nodeId
 export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
 export const exportAsset = createAction('node/EXPORT', (params: ExportAssetParams) => ({ ...params }))();
 export const setSceneId = createAction('node/SET_SCENE_ID', (sceneId: string) => sceneId)();
+export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
+export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
+export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: RequestNodeResponse[]) => nodesFromServer)();
 
 export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
 export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
-export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: RequestNodeResponse[]) => nodesFromServer)();
 
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
@@ -144,15 +146,6 @@ export const deleteNodeSocket = createSocketActions(
   'node/DELETE_NODE_RECEIVE',
   'node/DELETE_NODE_UPDATE',
   'node/DELETE_NODE_FAILURE',
-)<string, DeleteNodeSendParams, DeleteNodeReceiveParam, LP.Node[], string>();
-
-export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
-export const deleteModelSocket = createSocketActions(
-  'node/DELETE_MODEL_REQUEST',
-  'node/DELETE_MODEL_SEND',
-  'node/DELETE_MODEL_RECEIVE',
-  'node/DELETE_MODEL_UPDATE',
-  'node/DELETE_MODEL_FAILURE',
 )<string, DeleteNodeSendParams, DeleteNodeReceiveParam, LP.Node[], string>();
 
 export const dropNodeOnFolderOrRoot = createAction('node/MOVE_NODE', (params: MoveNodeParams) => ({ ...params }))();
@@ -181,12 +174,3 @@ export const applyMocapToModelSocket = createSocketActions(
   'node/APPLY_MOCAP_TO_MODEL_UPDATE',
   'node/APPLY_MOCAP_TO_MODEL_FAILURE',
 )<ApplyMocapToModelRequestParams, ApplyMocapToModelSendParams, ApplyMocapToModelReceiveParams, LP.Node[], string>();
-
-export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
-export const deleteMotionSocket = createSocketActions(
-  'node/DELETE_MOTION_REQUEST',
-  'node/DELETE_MOTION_SEND',
-  'node/DELETE_MOTION_RECEIVE',
-  'node/DELETE_MOTION_UPDATE',
-  'node/DELETE_MOTION_FAILURE',
-)<string, string, DeleteMotionReceiveParam, LP.Node[], string>();

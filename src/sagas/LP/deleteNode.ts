@@ -4,11 +4,7 @@ import _ from 'lodash';
 
 import { RootState } from 'reducers';
 import { filterDeletedNode } from 'utils/LP/FileSystem';
-import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as plaskProjectActions from 'actions/plaskProjectAction';
-import * as animationDataActions from 'actions/animationDataAction';
-import * as selectingDataActions from 'actions/selectingDataAction';
 
 function* handleDeleteNodeRequest(action: ReturnType<typeof lpNodeActions.deleteNodeSocket.request>) {
   const nodeId = action.payload;
@@ -29,15 +25,13 @@ function* handleDeleteNodeReceive(action: ReturnType<typeof lpNodeActions.delete
   }
 
   if (targetNode.type === 'MODEL' && targetNode.assetId) {
-    yield put(plaskProjectActions.removeAsset({ assetId: targetNode?.assetId }));
-    yield put(animationDataActions.removeAsset({ assetId: targetNode?.assetId }));
-    yield put(selectingDataActions.unrenderAsset({ assetId: targetNode?.assetId }));
-
-    forceClickAnimationPlayAndStop();
+    yield put(lpNodeActions.deleteModel({ nodeId: targetNode.id, assetId: targetNode.assetId }));
+  } else if (targetNode.type === 'MOTION' && targetNode.assetId) {
+    yield put(lpNodeActions.deleteMotion(targetNode.id));
+  } else {
+    const nextNodes = filterDeletedNode(lpNode.nodes, targetNode);
+    yield put(lpNodeActions.deleteNodeSocket.update(nextNodes));
   }
-
-  const nextNodes = filterDeletedNode(lpNode.nodes, targetNode);
-  yield put(lpNodeActions.deleteNodeSocket.update(nextNodes));
 }
 
 export default function* watchdeleteNodeSocketActions() {
