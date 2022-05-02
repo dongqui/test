@@ -252,6 +252,6 @@ export type SelectingData = {
   allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
-export type ButtonColor = 'primary' | 'secondary' | 'negative';
+export type ButtonColor = 'default' | 'primary' | 'negative';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
