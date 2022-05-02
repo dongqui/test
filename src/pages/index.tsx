@@ -16,9 +16,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
    * 400 - No permission scene
    * 400.7 - Invalid scene uid
    */
+
   const { loaded, data, error } = await requestApi({
     method: 'GET',
-    url: `library/${sceneUid}`,
+    url: `/library/get/${sceneUid}/library`,
     headers: {
       Authorization: `bearer ${token}`,
     },
@@ -47,6 +48,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       loaded,
       data,
       error,
+      ...(error ? {} : { token, sceneId: sceneUid }),
     },
   };
 };

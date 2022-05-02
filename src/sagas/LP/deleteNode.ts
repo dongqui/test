@@ -21,7 +21,7 @@ function* handleDeleteNodeRequest(action: ReturnType<typeof lpNodeActions.delete
 }
 
 function* handleDeleteNodeReceive(action: ReturnType<typeof lpNodeActions.deleteNodeSocket.receive>) {
-  const { lpNode, plaskProject, selectingData }: RootState = yield select();
+  const { lpNode }: RootState = yield select();
   const targetNode = _.find(lpNode.nodes, { id: action.payload.scenesLibraryId });
 
   if (!targetNode) {

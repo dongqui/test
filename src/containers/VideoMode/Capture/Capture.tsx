@@ -200,14 +200,13 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       // formData.append('id', id);
       // formData.append('start', start.toString());
       // formData.append('end', end.toString());
-      // formData.append('startTime', startTime.toString());
-      // formData.append('endTime', endTime.toString());
-      // formData.append('duration', duration);
+      formData.append('startTime', startTime.toString());
+      formData.append('endTime', endTime.toString());
+      formData.append('duration', duration);
     });
 
     const result = await addMocap(sceneId, formData, cancelTokenSource)
       .then((response) => {
-        console.log(response);
         const mocapCount = response.data.result.length;
 
         let nextNodes: LP.Node[];
