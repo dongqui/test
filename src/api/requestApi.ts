@@ -13,7 +13,17 @@ interface Payload {
   [key: string]: any;
 }
 
-const requestApi = async (payload: Payload) => {
+export const tokenManager = {
+  token: '',
+  get() {
+    return this.token;
+  },
+  set(token: string) {
+    this.token = token;
+  },
+};
+
+const requestApi = async (payload: Payload, hasToken = true) => {
   const { base, url, headers = {}, ...rest } = payload;
 
   const isServer = typeof window === 'undefined';
@@ -55,7 +65,9 @@ const requestApi = async (payload: Payload) => {
   // axios.defaults.withCredentials = true;
   options.headers['Accept'] = 'application/json';
   options.headers['Content-Type'] = 'application/json; charset=utf-8';
-
+  if (hasToken && tokenManager.get()) {
+    options.headers['authorization'] = `Bearer ${tokenManager.get()}`;
+  }
   // if (isServer) {
   //   const token = Cookie.load('token');
 
