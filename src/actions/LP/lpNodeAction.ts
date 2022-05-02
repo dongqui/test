@@ -24,6 +24,7 @@ export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
 export const ADD_NODES = 'node/ADD_NODES' as const;
 export const DELETE_MODEL = 'node/DELETE_MODEL' as const;
 export const DROP_NODE_ON_ROOT = 'node/DROP_NODE_ON_ROOT' as const;
+export const IMPORT_MOCAP_JSON = 'node/IMPORT_MOCAP_JSON' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -61,6 +62,10 @@ interface AddDirectoryParams {
   filePath: string;
   extension: string;
 }
+
+interface VisualizeNodeParams {
+  assetId: string;
+}
 interface DuplicateMotionParams {
   parentId: string;
   nodeName: string;
@@ -71,6 +76,10 @@ interface VisualizeMotionParams {
   parentId: string;
   assetId?: string;
   nodeId: string;
+}
+
+interface CancelVisualizationParams {
+  assetId: string;
 }
 
 interface SelectNodeParams {
@@ -155,17 +164,17 @@ export const addDirectory = (params: AddDirectoryParams) => ({
   },
 });
 
-export const visualizeNode = (assetId: string) => ({
+export const visualizeNode = (params: VisualizeNodeParams) => ({
   type: VISUALIZE_NODE,
   payload: {
-    assetId,
+    ...params,
   },
 });
 
-export const cancelVisulization = (assetId: string) => ({
+export const cancelVisulization = (params: CancelVisualizationParams) => ({
   type: CANCEL_VISUALIZATION,
   payload: {
-    assetId,
+    ...params,
   },
 });
 
@@ -263,6 +272,13 @@ export const addNodes = (nodes: LP.Node[]) => ({
 export const dropNodeOnRoot = () => ({
   type: DROP_NODE_ON_ROOT,
   payload: {},
+});
+
+export const importMocapJson = (json: File) => ({
+  type: IMPORT_MOCAP_JSON,
+  payload: {
+    mocapJson: json,
+  },
 });
 
 export type LPNodeAction =

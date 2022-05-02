@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { ArcRotateCamera, Scene, Vector3 } from '@babylonjs/core';
 import PlaskArcRotateCameraPointersInput from './PlaskArcRotateCameraPointersInput';
 
 const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
@@ -9,9 +9,9 @@ const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
  * @param scene - scene where the camera and camera controls will be added
  * @param initialPosition - camera's initial position
  */
-const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) => {
-  const arcRotateCamera = new BABYLON.ArcRotateCamera('arcRotateCamera', 0, 6, 10, BABYLON.Vector3.Zero(), scene);
-  arcRotateCamera.setPosition((initialPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY)));
+const createCamera = (scene: Scene, initialPosition?: Vector3) => {
+  const arcRotateCamera = new ArcRotateCamera('arcRotateCamera', 0, 6, 10, Vector3.Zero(), scene);
+  arcRotateCamera.setPosition((initialPosition = Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY)));
   arcRotateCamera.attachControl(scene.getEngine().getRenderingCanvas(), false);
   arcRotateCamera.allowUpsideDown = false;
   arcRotateCamera.minZ = 0.1;
@@ -21,7 +21,7 @@ const createCamera = (scene: BABYLON.Scene, initialPosition?: BABYLON.Vector3) =
   arcRotateCamera.lowerRadiusLimit = 0.1;
   arcRotateCamera.upperRadiusLimit = 100;
   arcRotateCamera.pinchPrecision = 50;
-  arcRotateCamera.panningAxis = new BABYLON.Vector3(1, 1, 0);
+  arcRotateCamera.panningAxis = new Vector3(1, 1, 0);
   arcRotateCamera.panningInertia = 0.5;
   arcRotateCamera.panningDistanceLimit = 100;
 

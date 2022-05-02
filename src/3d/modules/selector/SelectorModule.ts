@@ -54,17 +54,8 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects', 'selectingData.present.allObjectsMap'];
+  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects'];
   public onStateChanged(key: string, previousState: any) {
-    if (key === 'selectingData.present.allObjectsMap') {
-      for (const entityId in this.plaskEngine.state.selectingData.present.allObjectsMap) {
-        if (previousState[entityId] !== this.plaskEngine.state.selectingData.present.allObjectsMap[entityId]) {
-          this.plaskEngine.state.selectingData.present.allObjectsMap[entityId].markDirty();
-        }
-      }
-      return;
-    }
-
     if (key === 'selectingData.present.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedTargets);
       return;

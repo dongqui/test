@@ -8,6 +8,7 @@ import { D3ScaleLinear, D3ZoomDatum } from 'types/TP/d3';
 import { useSelector } from 'reducers';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
 import { DragBox } from 'components/DragBox';
+import Box from 'components/Layout/Box';
 import { detectSafari } from 'utils/common';
 
 import { TopRuler } from './Ruler';
@@ -273,17 +274,19 @@ const TimelineEditor = () => {
   }, [_playState, dispatch, multiKeyController]);
 
   return (
-    <div className={cx('timeline-editor')}>
-      <svg id="timeline-editor-svg" ref={timelineEditorRef}>
-        <GridLine />
-        <g className={cx('editor-body')} id="editor-body">
-          <TimelineEditorMode />
-        </g>
-        <TopRuler />
-        {_visualizedAssetIds.length && <Scrubber isFocusedTimelineEditor={isFocused} />}
-      </svg>
-      <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
-    </div>
+    <Box id="TimelineEditor" className={cx('wrapper')} noResize>
+      <div className={cx('timeline-editor')}>
+        <svg id="timeline-editor-svg" ref={timelineEditorRef}>
+          <GridLine />
+          <g className={cx('editor-body')} id="editor-body">
+            <TimelineEditorMode />
+          </g>
+          <TopRuler />
+          {_visualizedAssetIds.length && <Scrubber isFocusedTimelineEditor={isFocused} />}
+        </svg>
+        <DragBox areaRef={timelineEditorRef} onDragEnd={handleDragEnd} selectableId="selectable" selectedId="keyframe-selected" />
+      </div>
+    </Box>
   );
 };
 

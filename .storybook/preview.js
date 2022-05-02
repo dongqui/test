@@ -1,26 +1,13 @@
-import { addParameters } from '@storybook/react';
-import { themes } from '@storybook/theming';
-import '../src/styles/core.scss';
+import "../src/styles/core.scss";
+import "../src/styles/libraries/_font.scss";
+import "./globalStoryStyle.scss";
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
-  docs: {
-    theme: themes.light,
-    // page: null,
+  controls: {
+    matchers: {
+      color: /(background|color)$/i,
+      date: /Date$/,
+    },
   },
 }
-
-addParameters({
-  previewTabs: {
-    canvas: {
-      // hidden: true,
-    }
-  },
-  options: {
-    showPanel: true,
-    isFullscreen: false,
-    storySort: undefined,
-    isToolshown: true,
-    panelPosition: 'bottom',
-  },
-})

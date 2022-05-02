@@ -1,0 +1,29 @@
+@import "../../../styles/libraries/colors";
+@import "../../../styles/libraries/mixins";
+
+.outline {
+  @include reset-button-style();
+  @include basic-button-style();
+  background-color: inherit;
+
+  &:active,
+  &:hover {
+    filter: brightness(110%);
+  }
+
+  &.disabled {
+    filter: none;
+  }
+}
+
+.border-color {
+  &-default {
+    border: 1px solid var(--grey030);
+  }
+}
+
+.text-color {
+  &-light {
+    color: $content-active;
+  }
+}

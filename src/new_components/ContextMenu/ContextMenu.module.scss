@@ -1,10 +1,12 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   z-index: 999;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid $outline;
   padding: 4px;
-  background-color: #202122;
-  color: #fff;
+  background-color: $bg-elevated;
+  color: $content-active;
   font-size: 11px;
   min-width: 144px;
   position: absolute;
@@ -12,7 +14,7 @@
 
 .inner {
   &.disabled {
-    color: #7a7a7b;
+    color: $content-inactive;
   }
 
   &.invisible {
@@ -38,19 +40,19 @@
   }
 
   &.focus-children {
-    background-color: #4f4f4f !important;
+    background-color: $primary;
   }
 
   &:not(.disabled) {
     &:hover {
-      background-color: #0f88ff;
+      background-color: $primary;
     }
   }
 }
 
 .separator {
   margin: 6px;
-  border-bottom: 1px solid #4f4f4f;
+  border-bottom: 1px solid $outline;
 }
 
 .sub-menu {
@@ -59,8 +61,8 @@
   left: 130px;
   padding: 4px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background-color: #202122;
+  border: 1px solid $outline;
+  background-color: $bg-elevated;
 
   .sub-item {
     padding: 6px 12px;
@@ -68,12 +70,12 @@
     white-space: nowrap;
 
     &.disabled {
-      color: #7a7a7b;
+      color: $content-inactive;
     }
 
     &:not(.disabled) {
       &:hover {
-        background-color: #0f88ff;
+        background-color: $primary;
       }
     }
   }

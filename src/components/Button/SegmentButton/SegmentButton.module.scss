@@ -1,0 +1,52 @@
+@import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
+
+.segment-group {
+  display: flex;
+  align-items: center;
+}
+
+.segment {
+  @include reset-button-style();
+  border-radius: 4px;
+  transition: background-color 0.25s;
+
+  &.fullSize {
+    width: 100%;
+  }
+}
+
+.icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: #7a7a7a;
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+  }
+
+  &:hover {
+    background-color: var(--gray400);
+    color: var(--gray600);
+  }
+
+  &:active {
+    background-color: $primary;
+    color: $content-active;
+  }
+
+  &.selected {
+    background-color: $primary;
+    color: $content-active;
+  }
+
+  &:focus {
+    border: none;
+  }
+}

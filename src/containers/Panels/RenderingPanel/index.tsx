@@ -1,31 +1,21 @@
-import * as BABYLON from '@babylonjs/core';
-import { FunctionComponent, useRef, useEffect, useMemo, useState, useCallback, useContext } from 'react';
+import { FunctionComponent, useRef, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useContextMenu } from 'new_components/ContextMenu/ContextMenu';
-import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
-import { GizmoMode, GizmoSpace, PlaskView } from 'types/common';
+import { GizmoMode, GizmoSpace } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
-import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { checkIsTargetMesh, createAnimationGroupFromIngredient } from 'utils/RP';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 import ScreenVisibility from './ScreenVisibility';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
-
-/**
- * consts
- */
-const DEFAULT_CAMERA_POSITION_ARRAY = [0, 6, 10];
-const DEFAULT_CAMERA_TARGET_ARRAY = [0, 0, 0];
 
 interface Props {}
 
@@ -82,7 +72,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * create scene and add default settings
    */
-  const { plaskEngine } = useContext(BabylonContext);
 
   useEffect(() => {
     if (renderingCanvas1.current) {
@@ -129,7 +118,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         resizeMutationObserver.disconnect();
       };
     }
-  }, [plaskEngine, dispatch]);
+  }, [dispatch]);
 
   const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
   const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
@@ -157,29 +146,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       plaskEngine.selectorModule.onEndSelectBox.remove(endSelectBoxObserver);
       plaskEngine.selectorModule.onSelectBoxUpdated.remove(selectBoxUpdatedObserver);
     };
-  }, [_screenList, dispatch, plaskEngine]);
+  }, [_screenList, dispatch]);
 
   /**
    * shortcuts related to camera navigation, viewport changes
    */
   useEffect(() => {
-    const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-      camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-      camera.orthoTop = 2;
-      camera.orthoBottom = -2;
-      camera.orthoLeft = -2 * (canvas.width / canvas.height);
-      camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-      const grounds = scene.getMeshesByTags('ground');
-      grounds.forEach((ground) => {
-        if (ground.id.split('//')[1] === view) {
-          ground.isVisible = true;
-        } else {
-          ground.isVisible = false;
-        }
-      });
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
       // shortcuts don't work while user is typing on input elements
       const target = event.target as Element;
@@ -192,11 +164,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
         const focusedScene = focusedPlaskScreen?.scene;
 
-        if (focusedScene && focusedScene.activeCamera) {
-          const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-          const { position, target } = activeCamera;
-          let distance: number;
-
+        if (focusedScene) {
           switch (event.key) {
             case 'v':
             case 'V':
@@ -208,41 +176,17 @@ const RenderingPanel: FunctionComponent<Props> = () => {
             case 't':
             case 'T':
             case 'ㅅ': // t (top)
-              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'top');
-
-              if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-              }
-
-              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
-              activeCamera.setPosition(new BABYLON.Vector3(target.x, distance + 10, target.z));
+              plaskEngine.cameraModule.toOrthographic('top');
               break;
             case 'b':
             case 'B':
             case 'ㅠ': // b (bottom)
-              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'bottom');
-
-              if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-              }
-
-              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
-              activeCamera.setPosition(new BABYLON.Vector3(target.x, -(distance + 10), target.z));
+              plaskEngine.cameraModule.toOrthographic('bottom');
               break;
             case 'l':
             case 'L':
             case 'ㅣ': // l (left)
-              switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'left');
-
-              if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-              }
-
-              distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
-              activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), target.y, target.z));
+              plaskEngine.cameraModule.toOrthographic('left');
               break;
             case 'r':
             case 'R':
@@ -251,15 +195,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 multiKeyController[event.key].pressed = true;
               }
               if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
-
-                if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                  prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                }
-
-                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
-                activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
+                plaskEngine.cameraModule.toOrthographic('right');
               }
 
               break;
@@ -270,15 +206,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
                 multiKeyController[event.key].pressed = true;
               }
               if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'front');
-
-                if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                  prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                  prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                }
-
-                distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, distance + 10));
+                plaskEngine.cameraModule.toOrthographic('front');
               }
               break;
             case 'k':
@@ -290,87 +218,19 @@ const RenderingPanel: FunctionComponent<Props> = () => {
               if (multiKeyController[event.key].pressed) {
                 // k with v
                 if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
+                  plaskEngine.cameraModule.toOrthographic('back');
                 }
               }
               break;
             case 'p':
             case 'P':
             case 'ㅔ': // p (perspective)
-              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                const prevCameraPosition = prevCameraPositions[focusedCanvas.id]?.clone();
-                const prevCameraTarget = prevCameraTargets[focusedCanvas.id]?.clone();
-                if (prevCameraPosition && prevCameraTarget) {
-                  activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
-                  activeCamera.setPosition(prevCameraPosition);
-                  activeCamera.setTarget(prevCameraTarget);
-
-                  prevCameraPositions[focusedCanvas.id] = null;
-                  prevCameraTargets[focusedCanvas.id] = null;
-                }
-
-                const grounds = focusedScene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === 'top') {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              }
+              plaskEngine.cameraModule.toPerspective();
               break;
             case 'h':
             case 'H':
             case 'ㅗ': // h (camera reset)
-              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-                activeCamera.orthoTop = 2;
-                activeCamera.orthoBottom = -2;
-                activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
-                activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
-
-                const grounds = focusedScene.getMeshesByTags('ground');
-                const visibleGround = grounds.find((ground) => ground.isVisible);
-                if (visibleGround) {
-                  const currentView = visibleGround.id.split('//')[1];
-                  const defaultPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY);
-                  const defaultTarget = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY);
-
-                  let distance: number;
-
-                  if (currentView === 'front') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, distance + 10));
-                  } else if (currentView === 'back') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, -(distance + 10)));
-                  } else if (currentView === 'top') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, distance + 10, defaultTarget.z));
-                  } else if (currentView === 'bottom') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, -(distance + 10), defaultTarget.z));
-                  } else if (currentView === 'left') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), defaultTarget.y, defaultTarget.z));
-                  } else if (currentView === 'right') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(distance + 10, defaultTarget.y, defaultTarget.z));
-                  }
-                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-                }
-              } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
-                activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-              }
+              plaskEngine.cameraModule.resetView();
               break;
             case 'a':
             case 'A':
@@ -424,7 +284,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [_screenList, dispatch, multiKeyController, prevCameraPositions, prevCameraTargets]);
+  }, [_screenList, dispatch, multiKeyController]);
 
   /**
    * shortcuts related to editing keyframes
@@ -552,7 +412,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [dispatch, plaskEngine.gizmoModule]);
+  }, [dispatch]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -579,33 +439,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [plaskEngine.gizmoModule]);
-
-  /******************************************************************************
-   * Animation related codes
-   *****************************************************************************/
-
-  /**
-   * Create animationGroup and normalize it
-   */
-  useEffect(() => {
-    const visualizedAnimationIngredients = _animationIngredients.filter(
-      (animationIngredient) => _visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
-    );
-
-    if (visualizedAnimationIngredients.length === 1) {
-      // @TODO need to change to apply filter only when the animationGroup is playing
-      const newAnimationGroup = createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], _fps);
-
-      newAnimationGroup.normalize(_startTimeIndex, _endTimeIndex);
-
-      dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
-
-      return () => {
-        newAnimationGroup.stop();
-      };
-    }
-  }, [_animationIngredients, _endTimeIndex, _fps, _startTimeIndex, _visualizedAssetIds, dispatch]);
+  }, []);
 
   /******************************************************************************
    * Related to RP's sub-containers
@@ -693,56 +527,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       {
         label: 'Camera reset',
         onClick: () => {
-          document.getElementById('renderingCanvas1')?.focus();
-          const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-          if (focusedCanvas) {
-            const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-            const focusedScene = focusedPlaskScreen?.scene;
-            if (focusedScene && focusedScene.activeCamera) {
-              const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-              if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-                activeCamera.orthoTop = 2;
-                activeCamera.orthoBottom = -2;
-                activeCamera.orthoLeft = -2 * (focusedCanvas!.width / focusedCanvas!.height);
-                activeCamera.orthoRight = 2 * (focusedCanvas!.width / focusedCanvas!.height);
-
-                const grounds = focusedScene.getMeshesByTags('ground');
-                const visibleGround = grounds.find((ground) => ground.isVisible);
-                if (visibleGround) {
-                  const currentView = visibleGround.id.split('//')[1];
-                  const defaultPosition = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY);
-                  const defaultTarget = BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY);
-
-                  let distance: number;
-
-                  if (currentView === 'front') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, distance + 10));
-                  } else if (currentView === 'back') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, defaultPosition.z), new BABYLON.Vector3(0, 0, defaultTarget.z));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, defaultTarget.y, -(distance + 10)));
-                  } else if (currentView === 'top') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, distance + 10, defaultTarget.z));
-                  } else if (currentView === 'bottom') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, defaultPosition.y, 0), new BABYLON.Vector3(0, defaultTarget.y, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(defaultTarget.x, -(distance + 10), defaultTarget.z));
-                  } else if (currentView === 'left') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), defaultTarget.y, defaultTarget.z));
-                  } else if (currentView === 'right') {
-                    distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(defaultPosition.x, 0, 0), new BABYLON.Vector3(defaultTarget.x, 0, 0));
-                    activeCamera.setPosition(new BABYLON.Vector3(distance + 10, defaultTarget.y, defaultTarget.z));
-                  }
-                  activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-                }
-              } else if (activeCamera.mode === BABYLON.Camera.PERSPECTIVE_CAMERA) {
-                activeCamera.setPosition(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_POSITION_ARRAY));
-                activeCamera.setTarget(BABYLON.Vector3.FromArray(DEFAULT_CAMERA_TARGET_ARRAY));
-              }
-            }
-          }
+          plaskEngine.cameraModule.resetView();
         },
       },
       {
@@ -752,277 +537,43 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           {
             label: 'Perspective',
             onClick: () => {
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  if (activeCamera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
-                    const prevCameraPosition = prevCameraPositions[focusedCanvas.id]?.clone();
-                    const prevCameraTarget = prevCameraTargets[focusedCanvas.id]?.clone();
-                    if (prevCameraPosition && prevCameraTarget) {
-                      activeCamera.mode = BABYLON.Camera.PERSPECTIVE_CAMERA;
-                      activeCamera.setPosition(prevCameraPosition);
-                      activeCamera.setTarget(prevCameraTarget);
-
-                      prevCameraPositions[focusedCanvas.id] = null;
-                      prevCameraTargets[focusedCanvas.id] = null;
-                    }
-
-                    const grounds = focusedScene.getMeshesByTags('ground');
-                    grounds.forEach((ground) => {
-                      if (ground.id.split('//')[1] === 'top') {
-                        ground.isVisible = true;
-                      } else {
-                        ground.isVisible = false;
-                      }
-                    });
-                  }
-                }
-              }
+              plaskEngine.cameraModule.toPerspective();
             },
           },
           {
             label: 'Front',
             onClick: () => {
-              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                camera.orthoTop = 2;
-                camera.orthoBottom = -2;
-                camera.orthoLeft = -2 * (canvas.width / canvas.height);
-                camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-                const grounds = scene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === view) {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              };
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  const { position, target } = activeCamera;
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'front');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, distance + 10));
-                }
-              }
+              plaskEngine.cameraModule.toOrthographic('front');
             },
           },
           {
             label: 'Back',
             onClick: () => {
-              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                camera.orthoTop = 2;
-                camera.orthoBottom = -2;
-                camera.orthoLeft = -2 * (canvas.width / canvas.height);
-                camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-                const grounds = scene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === view) {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              };
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  const { position, target } = activeCamera;
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'back');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, 0, position.z), new BABYLON.Vector3(0, 0, target.z));
-                  activeCamera.setPosition(new BABYLON.Vector3(target.x, target.y, -(distance + 10)));
-                }
-              }
+              plaskEngine.cameraModule.toOrthographic('back');
             },
           },
           {
             label: 'Top',
             onClick: () => {
-              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                camera.orthoTop = 2;
-                camera.orthoBottom = -2;
-                camera.orthoLeft = -2 * (canvas.width / canvas.height);
-                camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-                const grounds = scene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === view) {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              };
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  const { position, target } = activeCamera;
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'top');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
-                  activeCamera.setPosition(new BABYLON.Vector3(target.x, distance + 10, target.z));
-                }
-              }
+              plaskEngine.cameraModule.toOrthographic('top');
             },
           },
           {
             label: 'Bottom',
             onClick: () => {
-              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                camera.orthoTop = 2;
-                camera.orthoBottom = -2;
-                camera.orthoLeft = -2 * (canvas.width / canvas.height);
-                camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-                const grounds = scene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === view) {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              };
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  const { position, target } = activeCamera;
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'bottom');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(0, position.y, 0), new BABYLON.Vector3(0, target.y, 0));
-                  activeCamera.setPosition(new BABYLON.Vector3(target.x, -(distance + 10), target.z));
-                }
-              }
+              plaskEngine.cameraModule.toOrthographic('bottom');
             },
           },
           {
             label: 'Right',
             onClick: () => {
-              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                camera.orthoTop = 2;
-                camera.orthoBottom = -2;
-                camera.orthoLeft = -2 * (canvas.width / canvas.height);
-                camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-                const grounds = scene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === view) {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              };
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  const { position, target } = activeCamera;
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'right');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
-                  activeCamera.setPosition(new BABYLON.Vector3(distance + 10, target.y, target.z));
-                }
-              }
+              plaskEngine.cameraModule.toOrthographic('right');
             },
           },
           {
             label: 'Left',
             onClick: () => {
-              const switchToOrthoGraphic = (canvas: HTMLCanvasElement, camera: BABYLON.ArcRotateCamera, scene: BABYLON.Scene, view: PlaskView) => {
-                camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-                camera.orthoTop = 2;
-                camera.orthoBottom = -2;
-                camera.orthoLeft = -2 * (canvas.width / canvas.height);
-                camera.orthoRight = 2 * (canvas.width / canvas.height);
-
-                const grounds = scene.getMeshesByTags('ground');
-                grounds.forEach((ground) => {
-                  if (ground.id.split('//')[1] === view) {
-                    ground.isVisible = true;
-                  } else {
-                    ground.isVisible = false;
-                  }
-                });
-              };
-              document.getElementById('renderingCanvas1')?.focus();
-              const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-              if (focusedCanvas) {
-                const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-                const focusedScene = focusedPlaskScreen?.scene;
-                if (focusedScene && focusedScene.activeCamera) {
-                  const activeCamera = focusedScene.activeCamera as BABYLON.ArcRotateCamera;
-                  const { position, target } = activeCamera;
-
-                  switchToOrthoGraphic(focusedCanvas, activeCamera, focusedScene, 'left');
-
-                  if (!prevCameraPositions[focusedCanvas.id] && !prevCameraTargets[focusedCanvas.id]) {
-                    prevCameraPositions[focusedCanvas.id] = activeCamera.position.clone();
-                    prevCameraTargets[focusedCanvas.id] = activeCamera.target.clone();
-                  }
-
-                  const distance = BABYLON.Vector3.Distance(new BABYLON.Vector3(position.x, 0, 0), new BABYLON.Vector3(target.x, 0, 0));
-                  activeCamera.setPosition(new BABYLON.Vector3(-(distance + 10), target.y, target.z));
-                }
-              }
+              plaskEngine.cameraModule.toOrthographic('left');
             },
           },
         ],
@@ -1037,34 +588,20 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         },
       },
     ],
-    [_playState, _screenList, _selectedTargets.length, dispatch, orientChildren, transformChildren, prevCameraPositions, prevCameraTargets],
+    [_playState, _selectedTargets.length, dispatch, orientChildren, transformChildren],
   );
 
   useEffect(() => {
-    const targetScreen = _screenList.find((screen) => screen.canvasId === renderingCanvas1.current?.id); // 단일 캔버스 상황
+    const observer = plaskEngine.onContextMenuOpenObservable.add((position) => {
+      onContextMenuClose();
+      onContextMenuOpen({ top: position.y, left: position.x, menu: contextMenuList });
+    });
 
-    if (targetScreen) {
-      const { scene } = targetScreen;
-
-      const contextMenuObserver = scene.onPointerObservable.add((pointerInfo, eventState) => {
-        // camera panning 시에는 발생하지 않도록하기 위함
-        if (pointerInfo.event.button === 2 && !pointerInfo.event.altKey) {
-          switch (pointerInfo.type) {
-            case BABYLON.PointerEventTypes.POINTERDOWN: {
-              onContextMenuClose();
-              onContextMenuOpen({ top: scene.pointerY, left: scene.pointerX, menu: contextMenuList });
-              break;
-            }
-          }
-        }
-      });
-
-      return () => {
-        scene.onPointerObservable.remove(contextMenuObserver);
-      };
-    }
+    return () => {
+      plaskEngine.onContextMenuOpenObservable.remove(observer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_screenList, contextMenuList]);
+  }, [plaskEngine, contextMenuList]);
 
   /**
    * screenVisibilityMenu
@@ -1072,155 +609,42 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   // use skeletonViewer only for debugging purpose
   useEffect(() => {
     const targetScreen = _screenList[0];
-    const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-    if (targetScreen && visualizedAsset) {
-      const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
-      const { skeleton, meshes } = visualizedAsset;
-      const skeletonViewer = new BABYLON.SkeletonViewer(skeleton, meshes[0], targetScreen.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
-      skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
-      if (targetVisibilityOption) {
-        skeletonViewer.isEnabled = targetVisibilityOption.isBoneVisible;
-      }
-      dispatch(screenDataActions.addSkeletonViewer({ screenId: targetScreen.id, skeletonViewer: skeletonViewer }));
+    if (targetScreen) {
+      // TODO : babylon non-persistent entity, shouldn't be in the state (kept for now for compatibility)
+      dispatch(screenDataActions.addSkeletonViewer({ screenId: targetScreen.id, skeletonViewer: plaskEngine.visibilityLayers.skeletonViewer! }));
 
       return () => {
-        skeletonViewer.dispose();
         dispatch(screenDataActions.removeSkeletonViewer({ screenId: targetScreen.id }));
       };
     }
-  }, [_assetList, _screenList, _visibilityOptions, _visualizedAssetIds, dispatch]);
+  }, [_screenList, _visualizedAssetIds, dispatch]);
 
   const screenVisibilityItemList: ScreenVisivilityItem[] = useMemo(() => {
     const targetScreen = _screenList[0];
     if (targetScreen) {
       const targetVisibilityOption = _visibilityOptions.find((visibilityOption) => visibilityOption.screenId === targetScreen.id);
-      const targetSkeletonViewer = _plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === targetScreen.id)?.skeletonViewer;
 
       return [
         {
           value: 'Bone',
           onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isBoneVisible) {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  const { id: assetId, meshes, skeleton } = visualizedAsset;
-                  // joints
-                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
-                  transformNodes.forEach((transformNode) => {
-                    const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
-                    if (joint) {
-                      joint.isVisible = false;
-                    }
-                  });
-                  // skeletonView
-                  if (targetSkeletonViewer) {
-                    targetSkeletonViewer.isEnabled = false;
-                  }
-                }
-
-                dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  const { id: assetId, meshes, skeleton } = visualizedAsset;
-                  // joints
-                  const transformNodes = _selectableObjects.filter((object) => object.type === 'joint' && object.id.includes(assetId)).map((entity) => entity.reference);
-                  transformNodes.forEach((transformNode) => {
-                    const joint = targetScreen.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
-                    if (joint) {
-                      joint.isVisible = true;
-                    }
-                  });
-                  // skeletonView
-                  if (targetSkeletonViewer) {
-                    targetSkeletonViewer.isEnabled = true;
-                  }
-                }
-
-                dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
+            plaskEngine.visibilityLayers.toggleVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isMeshVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
         },
         {
           value: 'Mesh',
           onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isMeshVisible) {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  visualizedAsset.meshes.forEach((mesh) => {
-                    if (mesh.getScene().uid === targetScreen.id) {
-                      mesh.isVisible = false;
-                    }
-                  });
-                }
-
-                dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-                if (visualizedAsset) {
-                  visualizedAsset.meshes.forEach((mesh) => {
-                    if (mesh.getScene().uid === targetScreen.id) {
-                      mesh.isVisible = true;
-                    }
-                  });
-                }
-
-                dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
+            plaskEngine.visibilityLayers.toggleVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
-          active: targetVisibilityOption && !targetVisibilityOption.isBoneVisible ? false : true,
+          active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
         },
-        // {
-        //   value: 'Controller',
-        //   onSelect: () => {
-        //     if (targetVisibilityOption) {
-        //       if (targetVisibilityOption.isControllerVisible) {
-        //         const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-        //         if (visualizedAsset) {
-        //           const controllers = _selectableObjects.filter((object) => object.id.includes(visualizedAsset.id) && checkIsTargetMesh(object)) as BABYLON.Mesh[];
-        //           controllers.forEach((controller) => {
-        //             if (controller.getScene().uid === targetScreen.id) {
-        //               controller.isVisible = false;
-        //             }
-        //           });
-        //         }
-
-        //         dispatch(screenDataActions.setControllerVisibility({ screenId: targetScreen.id, value: false }));
-        //       } else {
-        //         const visualizedAsset = _assetList.find((asset) => _visualizedAssetIds.includes(asset.id));
-        //         if (visualizedAsset) {
-        //           const controllers = _selectableObjects.filter((object) => object.id.includes(visualizedAsset.id) && checkIsTargetMesh(object)) as BABYLON.Mesh[];
-        //           controllers.forEach((controller) => {
-        //             if (controller.getScene().uid === targetScreen.id) {
-        //               controller.isVisible = true;
-        //             }
-        //           });
-        //         }
-
-        //         dispatch(screenDataActions.setControllerVisibility({ screenId: targetScreen.id, value: true }));
-        //       }
-        //     }
-        //   },
-        //   checked: targetVisibilityOption ? targetVisibilityOption.isControllerVisible : true,
-        //   active: true,
-        // },
         {
           value: 'Gizmo',
           onSelect: () => {
-            if (targetVisibilityOption) {
-              if (targetVisibilityOption.isGizmoVisible) {
-                dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: false }));
-              } else {
-                dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: true }));
-              }
-            }
+            plaskEngine.visibilityLayers.toggleVisibility('Gizmo');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
@@ -1229,11 +653,11 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_assetList, _plaskSkeletonViewers, _screenList, _selectableObjects, _visibilityOptions, _visualizedAssetIds, dispatch]);
+  }, [_visibilityOptions, _screenList]);
 
   return (
     <div className={cx('wrapper')}>
-      <div id="rpDragBox" ref={rpDragBox}></div>
+      <div id="rpDragBox" ref={rpDragBox} />
       <canvas className={cx('rendering-canvas')} ref={renderingCanvas1} id="renderingCanvas1" />
       <ScreenVisibility itemList={screenVisibilityItemList} />
     </div>

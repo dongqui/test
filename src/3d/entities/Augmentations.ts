@@ -20,7 +20,7 @@ TransformNode.prototype.getPlaskEntity = function () {
     return engine.getEntity(this.metadata.__plaskEntityId) as PlaskTransformNode;
   }
   // Entity id is not yet cached, we must search all entities to match ids
-  const result = engine.getEntitiesByPredicate((entity) => entity.name === 'TransformNode' && (entity as PlaskTransformNode).id === this.id);
+  const result = engine.getEntitiesByPredicate((entity) => entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).id === this.id);
   if (!result[0]) {
     throw new Error('Cannot find entity.');
   }

@@ -10,7 +10,7 @@ type State = SelectingData;
 const defaultState: State = {
   selectableObjects: [],
   selectedTargets: [],
-  allObjectsMap: {},
+  allEntitiesMap: {},
 };
 
 // saga를 사용한 리팩토링은 추후에 진행할 계획입니다.
@@ -80,12 +80,13 @@ export const selectingData = undoable(
           selectedTargets: [],
         });
       }
-      case 'selectingDataAction/UPDATE_TRANSFORM': {
+      // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
+      case 'selectingDataAction/UPDATE_ENTITY': {
         const obj = {} as { [key: string]: PlaskTransformNode };
         for (const entity of action.payload.targets) {
           obj[entity.entityId] = entity;
         }
-        return Object.assign({}, state, { allObjectsMap: { ...state.allObjectsMap, ...obj } });
+        return Object.assign({}, state, { allEntitiesMap: { ...state.allEntitiesMap, ...obj } });
       }
       default: {
         return state;
@@ -100,7 +101,7 @@ export const selectingData = undoable(
       'selectingDataAction/CTRL_KEY_MULTI_SELECT',
       'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
       'selectingDataAction/RESET_SELECTED_TARGETS',
-      'selectingDataAction/UPDATE_TRANSFORM',
+      'selectingDataAction/UPDATE_ENTITY',
     ]),
     ignoreInitialState: true,
   },

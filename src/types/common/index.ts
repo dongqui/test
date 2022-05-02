@@ -1,5 +1,6 @@
+import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import * as BABYLON from '@babylonjs/core';
+import { AbstractMesh, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
 
 export enum GizmoMode {
   POSITION,
@@ -35,32 +36,77 @@ export interface PlaskProject {
 
 export interface PlaskScreen {
   id: string;
-  scene: BABYLON.Scene;
+  scene: Scene;
   canvasId: string;
   hasShadow: boolean;
   hasGroundTexture: boolean;
 }
 
 export type PlaskPose = {
-  target: BABYLON.TransformNode;
-  position: BABYLON.Vector3;
-  rotationQuaternion: BABYLON.Quaternion;
-  recurrentRotationQuaternion: BABYLON.Quaternion | null;
-  scaling: BABYLON.Vector3;
+  target: TransformNode;
+  position: Vector3;
+  rotationQuaternion: Quaternion;
+  recurrentRotationQuaternion: Quaternion | null;
+  scaling: Vector3;
 };
 
 export interface PlaskAsset {
   id: string;
   name: string;
   extension: string;
-  meshes: BABYLON.AbstractMesh[];
+  meshes: AbstractMesh[];
   initialPoses: PlaskPose[];
-  geometries: BABYLON.Geometry[];
-  skeleton: BABYLON.Skeleton;
-  bones: BABYLON.Bone[];
-  transformNodes: BABYLON.TransformNode[];
+  geometries: Geometry[];
+  skeleton: Skeleton;
+  bones: Bone[];
+  transformNodes: TransformNode[];
   animationIngredientIds: string[];
   retargetMapId: string;
+}
+
+export interface ServerAnimation {
+  id: string; // uid -> id
+  scenesLibraryId: string; // don't know what is
+  name: string;
+  fps: number;
+  isMocapAnimation: boolean;
+  isDeleted: boolean;
+}
+
+export interface ServerAnimationLayer {
+  id: string; // uid -> id
+  animationId: string; // scenes_library_model_animation_id -> animationId
+  name: string;
+  // isLocked: boolean; // related to TP node not the animation itself
+  isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
+  isDeleted: boolean;
+  useFilter: boolean; // destructure filter related data
+  tracks: ServerAnimationTrack[]; // boneTracks -> tracks
+}
+
+// BoneTrack -> NameTrack
+export interface ServerAnimationTrack {
+  id: string;
+  targetId: string; // boneId -> targetId
+  name: string;
+  property: PlaskProperty; // to identify a track by combine targetId and property + should be able to control tracks independantly
+  // isShown: boolean; // isShow -> isShown + related to TP node not the animation itself
+  // isLocked: boolean; // related to TP node not the animation itself
+  filterBeta: number;
+  filterMinCutoff: number;
+  transformKeysMap: Map<number, ServerTransformKey>; // boneFrameMap -> transformKeysMap
+}
+
+export interface VectorTransformKey {
+  x: number;
+  y: number;
+  z: number;
+}
+export type QuaternionTransformKey = { w: number } & VectorTransformKey;
+export interface ServerTransformKey {
+  property: PlaskProperty; // quaternion -> rotationQuaternion
+  transformKey: VectorTransformKey | QuaternionTransformKey;
+  // isLocked: boolean;
 }
 
 export interface AnimationIngredient {
@@ -88,8 +134,8 @@ export interface PlaskTrack {
   layerId: string;
   name: string;
   property: PlaskProperty;
-  target: BABYLON.TransformNode | BABYLON.Mesh;
-  transformKeys: BABYLON.IAnimationKey[];
+  target: TransformNode | Mesh;
+  transformKeys: IAnimationKey[];
   interpolationType: 'linear' | 'bezier' | 'constant';
   bezierParams?: BezierParams;
   isMocapAnimation: boolean;
@@ -157,6 +203,19 @@ export type PlaskMocapData = Array<{
   }>;
 }>;
 
+export type MocapJson = {
+  data: {
+    id: string;
+    result: {
+      motionNumber: number;
+      trackData: PlaskMocapData;
+    }[];
+    workingtime: number;
+  };
+  message: string;
+  statusCode: number;
+};
+
 export type BvhBoneType =
   | 'Hips'
   | 'Chest'
@@ -190,9 +249,9 @@ export type ContextMenuClickItemHandlerProps = any;
 export type SelectingData = {
   selectableObjects: Array<PlaskTransformNode>;
   selectedTargets: Array<PlaskTransformNode>;
-  allObjectsMap: { [key: string]: PlaskTransformNode };
+  allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
-export type ButtonColor = 'primary' | 'secondary' | 'error';
+export type ButtonColor = 'default' | 'primary' | 'negative';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';

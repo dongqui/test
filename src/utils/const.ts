@@ -1,11 +1,11 @@
-import * as BABYLON from '@babylonjs/core';
+import { SkeletonViewer } from '@babylonjs/core';
 
 export const DEFAULT_SKELETON_VIEWER_OPTION = {
   pauseAnimations: false,
   returnToRest: false,
   computeBonesUsingShaders: true,
   useAllBones: true, // error with false
-  displayMode: BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS,
+  displayMode: SkeletonViewer.DISPLAY_SPHERE_AND_SPURS,
   displayOptions: {
     sphereBaseSize: 0.01,
     sphereScaleUnit: 15,

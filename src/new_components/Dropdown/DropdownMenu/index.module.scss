@@ -1,12 +1,13 @@
+@import "styles/libraries/_colors";
+
 .menu {
   position: absolute;
-  background-color: var(--gray200);
-  min-width: 72px;
-  padding: 6px;
+  background-color: $bg-elevated;
+  //min-width: 95px;
+  padding: 4px;
   margin: 4px 0 0;
-  max-height: 10rem;
   border-radius: 6px;
-  border: 1px solid var(--gray300);
+  border: 1px solid var(--grey030);
   overflow: hidden;
   z-index: 999;
   letter-spacing: 1px;
