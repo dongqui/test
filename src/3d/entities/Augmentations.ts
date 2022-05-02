@@ -49,6 +49,7 @@ BoneIKController.prototype.upVector = null;
 
 BoneIKController.prototype.setIKtoRest = function () {
   this._bendMatrixDirty = true;
+  this._bendMatrix = Matrix.Identity();
 };
 
 /**
@@ -163,7 +164,6 @@ BoneIKController.prototype.update = function () {
   this['_bone2'].setAxisAngle(Vector3.TransformNormal(this['_bendAxis'], this._bendMatrix), angC, Space.LOCAL);
   this['_updateLinkedTransformRotation'](this['_bone2']);
   this['_bone2Ang'] = angC;
-  console.log('USing right function');
 };
 
 BoneIKController['_tmpVecs'] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
