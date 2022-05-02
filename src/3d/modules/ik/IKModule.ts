@@ -472,7 +472,7 @@ export class IKModule extends Module {
       scene.meshes.forEach(m => {
         if (m.name.includes('Clone of')){
           m.visibility = 0.25;
-          this._ikMeshes.push(m);
+          this._ikMeshes.push(m as Mesh);
         }
       })
     })
