@@ -25,13 +25,16 @@ const defaultState: State = {
   selectedAssetId: null,
   draggedNode: null,
   editingNodeId: null,
-
-  // For test
-  sceneId: 'ezl1xkrzgyd8n64dm4p9q2o03em5jv6j',
+  sceneId: '',
 };
 
 export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeActions>) => {
   switch (action.type) {
+    case getType(LPNodeActions.setSceneId): {
+      return Object.assign({}, state, {
+        sceneId: action.payload,
+      });
+    }
     case 'node/CHANGE_NODE': {
       return Object.assign({}, state, {
         nodes: action.payload.nodes,
@@ -64,7 +67,7 @@ export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeAct
         nodes: [...state.nodes, action.payload],
       });
     }
-    case getType(LPNodeActions.getNodesAsync.success):
+    case getType(LPNodeActions.initNodes):
     case getType(LPNodeActions.addModelAsync.success):
     case getType(LPNodeActions.moveNodeSocket.update):
     case getType(LPNodeActions.editNodeNameSocket.update):

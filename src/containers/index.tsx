@@ -1,9 +1,8 @@
 import { FunctionComponent, memo } from 'react';
 
+import { RequestNodeResponse } from 'types/LP';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
-
 import { Authentication } from 'containers/Error';
-
 import Plask from './Plask';
 
 interface Props {
@@ -14,9 +13,12 @@ interface Props {
     timestamp: string;
     path: string;
   };
+  token: string;
+  sceneId: string;
+  data: RequestNodeResponse[];
 }
 
-const Index: FunctionComponent<Props> = ({ browserType, error }) => {
+const Index: FunctionComponent<Props> = ({ browserType, error, token, sceneId, data }) => {
   if (error) {
     return <Authentication statusCode={error.statusCode} message={error.message} />;
   }
@@ -24,7 +26,7 @@ const Index: FunctionComponent<Props> = ({ browserType, error }) => {
   return (
     <main>
       <ResizeProvider>
-        <Plask browserType={browserType} />
+        <Plask browserType={browserType} token={token} sceneId={sceneId} data={data} />
       </ResizeProvider>
     </main>
   );
