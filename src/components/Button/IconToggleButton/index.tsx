@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, FunctionComponent, memo, MouseEvent, useCallback, useState } from "react";
+import { ButtonHTMLAttributes, FunctionComponent, memo, MouseEvent, useCallback, useState } from 'react';
 import { ButtonColor } from 'types/common';
 import { IconWrapper } from 'components/Icon';
 

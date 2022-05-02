@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, ButtonHTMLAttributes, useCallback, MouseEvent } from "react";
+import { FunctionComponent, memo, ButtonHTMLAttributes, useCallback, MouseEvent } from 'react';
 import classNames from 'classnames/bind';
 import styles from './GhostButton.module.scss';
 
