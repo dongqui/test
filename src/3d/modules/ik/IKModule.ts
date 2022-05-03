@@ -89,8 +89,8 @@ export class IKModule extends Module {
   public tick(elapsed: number) {
     //if (this._pickedIkMesh)
     //  this._pickedIkMesh.metadata.ikController.update();
-    for (const ikController of this._activeIkControllers) {
-    //for (const ikController of this._ikControllers) {
+    // for (const ikController of this._activeIkControllers) {
+    for (const ikController of this._ikControllers) {
         ikController.update();
     }
   }
