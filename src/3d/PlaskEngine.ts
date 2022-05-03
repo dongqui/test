@@ -323,3 +323,5 @@ export class PlaskEngine {
     }
   }
 }
+
+export default new PlaskEngine();

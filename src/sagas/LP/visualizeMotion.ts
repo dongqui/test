@@ -6,12 +6,13 @@ import { goToSpecificPoses } from 'utils/RP';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualizeMotion>) {
   const { plaskProject, animationData, lpNode }: RootState = yield select();
   const { animationIngredients } = animationData;
   const { screenList, assetList } = plaskProject;
-  const { assetId, nodeId, parentId, plaskEngine } = action.payload;
+  const { assetId, nodeId, parentId } = action.payload;
 
   if (!assetId) {
     return;
@@ -41,6 +42,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     }
   }
 
-  yield put(lpNodeActions.visualizeNode({ assetId, plaskEngine }));
+  yield put(lpNodeActions.visualizeNode({ assetId }));
   forceClickAnimationPlayAndStop(50);
 }
