@@ -6,14 +6,15 @@ import { isEqual } from 'lodash';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import { MocapJson, RetargetSourceBoneType } from 'types/common';
+import * as globalUIActions from 'actions/Common/globalUI';
+import { MocapJson } from 'types/common';
 import { BONE_NAMES, TRACK_DATA_PROPERTY } from 'constants/index';
 
 const readJsonChannel = channel();
 
 export function* watchReadJsonChannel() {
   while (true) {
-    const action: SagaReturnType<typeof lpNodeActions.changeNode> = yield take(readJsonChannel);
+    const action: SagaReturnType<typeof globalUIActions.openModal> = yield take(readJsonChannel);
     yield put(action);
   }
 }
@@ -46,7 +47,16 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         });
         readJsonChannel.put(lpNodeActions.changeNode({ nodes }));
       } catch (e) {
-        alert(e);
+        readJsonChannel.put(
+          globalUIActions.openModal('_AlertModal', {
+            message: 'Please check the structure of the json file.',
+            title: 'Import failed',
+            footerButtonText: 'Learn More',
+            onClickFooterButton: function () {
+              window.open('https://knowledge.plask.ai/en/documentation', '_blank');
+            },
+          }),
+        );
       }
     }
   };

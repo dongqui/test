@@ -120,10 +120,10 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
     const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(
       globalUIActions.openModal(
-        'ImportErrorModal',
+        '_AlertModal',
         {
           message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNOWN,
-          fileName: rawFileName,
+          title: 'Import failed',
         },
         `import_error_${rawFileName}`,
       ),
