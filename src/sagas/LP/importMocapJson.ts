@@ -53,7 +53,7 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
             title: 'Import failed',
             footerButtonText: 'Learn More',
             onClickFooterButton: function () {
-              window.open('https://knowledge.plask.ai/en/documentation', '_blank');
+              window.open('https://plasticmask.notion.site/Plask-JSON-structure-2e9e24b944b64de38029b59b38f0a5ef', '_blank');
             },
           }),
         );

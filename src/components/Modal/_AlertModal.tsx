@@ -16,6 +16,7 @@ interface Props {
   footerButtonText?: string;
 }
 
+// TODO: naming component
 export default function _AlertModal({ onClose, message, title, onClickFooterButton, footerButtonText }: Props) {
   function handleClickFooterButton() {
     if (onClickFooterButton) {
