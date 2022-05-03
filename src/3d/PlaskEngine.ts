@@ -17,6 +17,8 @@ import {
   Vector2,
   Vector3,
 } from '@babylonjs/core';
+// import '@babylonjs/inspector';
+
 import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
 import { stateDiff } from 'utils/common';
@@ -72,6 +74,8 @@ export class PlaskEngine {
       module.dispose();
     }
     this._modules.length = 0;
+
+    this.onPickObservable.clear();
   }
 
   public get scene() {
@@ -96,6 +100,9 @@ export class PlaskEngine {
 
   private _entityStore!: EntityStore;
 
+  // OBSERVABLES
+  public onPickObservable: Observable<Mesh> = new Observable();
+
   constructor() {
     // allow animation interpolation using matrix
     Animation.AllowMatricesInterpolation = true;
@@ -117,8 +124,13 @@ export class PlaskEngine {
       module.initialize();
     }
 
+    let last = new Date();
     this._engine.runRenderLoop(() => {
       this._scene.render();
+
+      const current = new Date();
+      this.tick(current.getTime() - last.getTime());
+      last = current;
     });
 
     // Debug
@@ -126,6 +138,12 @@ export class PlaskEngine {
       console.log('Entities length : ', Object.keys(this._entityStore.entities).length);
       console.log(this._entityStore.entities);
     };
+  }
+
+  public tick(elapsed: number) {
+    for (const module of this._modules) {
+      module.tick(elapsed);
+    }
   }
 
   /**
@@ -278,6 +296,7 @@ export class PlaskEngine {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    this._modules.push((this.ikModule = new IKModule(this)));
     this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     this._modules.push((this.assetModule = new AssetModule(this)));
     // this._modules.push((this.ikModule = new IKModule(this)));
@@ -344,5 +363,10 @@ export class PlaskEngine {
         }
       }
     }
+    if (pickInfo && pickInfo.hit) {
+      this.onPickObservable.notifyObservers(pickInfo.pickedMesh as Mesh);
+    }
   }
 }
+
+export default new PlaskEngine();

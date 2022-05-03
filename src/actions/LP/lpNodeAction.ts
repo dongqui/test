@@ -1,4 +1,3 @@
-import { PlaskEngine } from '3d/PlaskEngine';
 import { ExportFormat } from 'types/common';
 
 export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
@@ -25,6 +24,7 @@ export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
 export const ADD_NODES = 'node/ADD_NODES' as const;
 export const DELETE_MODEL = 'node/DELETE_MODEL' as const;
 export const DROP_NODE_ON_ROOT = 'node/DROP_NODE_ON_ROOT' as const;
+export const IMPORT_MOCAP_JSON = 'node/IMPORT_MOCAP_JSON' as const;
 
 interface ChangeNodeParams {
   nodes: LP.Node[];
@@ -46,19 +46,16 @@ interface DeleteMotionParams {
   nodeId: string;
   assetId: string;
   parentId: string;
-  plaskEngine: PlaskEngine;
 }
 
 interface DeleteModelParams {
   nodeId: string;
   assetId: string;
   parentId?: string;
-  plaskEngine: PlaskEngine;
 }
 interface AddEmptyMotionParams {
   nodeId: string;
   assetId: string;
-  plaskEngine: PlaskEngine;
 }
 interface AddDirectoryParams {
   nodeId: string;
@@ -68,7 +65,6 @@ interface AddDirectoryParams {
 
 interface VisualizeNodeParams {
   assetId: string;
-  plaskEngine: PlaskEngine;
   onSuccess: () => void;
 }
 interface DuplicateMotionParams {
@@ -81,12 +77,10 @@ interface VisualizeMotionParams {
   parentId: string;
   assetId?: string;
   nodeId: string;
-  plaskEngine: PlaskEngine;
 }
 
 interface CancelVisualizationParams {
   assetId: string;
-  plaskEngine: PlaskEngine;
 }
 
 interface SelectNodeParams {
@@ -103,7 +97,6 @@ interface DropMocapOnModelParams {
   nodeId: string;
   filePath: string;
   assetId?: string;
-  plaskEngine: PlaskEngine;
 }
 
 interface EditNodeNameParams {
@@ -118,13 +111,11 @@ interface ExportAssetParams {
   nodeName: string;
   motion: string;
   format: ExportFormat;
-  plaskEngine: PlaskEngine;
 }
 
 interface FileUploadParams {
   file: File | string;
   showLoading: boolean;
-  plaskEngine: PlaskEngine;
 }
 
 export const changeNode = (params: ChangeNodeParams) => ({
@@ -282,6 +273,13 @@ export const addNodes = (nodes: LP.Node[]) => ({
 export const dropNodeOnRoot = () => ({
   type: DROP_NODE_ON_ROOT,
   payload: {},
+});
+
+export const importMocapJson = (json: File) => ({
+  type: IMPORT_MOCAP_JSON,
+  payload: {
+    mocapJson: json,
+  },
 });
 
 export type LPNodeAction =

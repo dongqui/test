@@ -9,6 +9,7 @@ import * as TEXT from 'constants/Text';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import { PlaskAsset } from '3d/entities/PlaskAsset';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import plaskEngine from '3d/PlaskEngine';
 
 const clickJointChannel = channel();
 
@@ -25,7 +26,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.
   const { plaskProject }: RootState = yield select();
   const { visualizedAssetIds } = plaskProject;
-  const { assetId, plaskEngine } = action.payload;
+  const { assetId } = action.payload;
 
   try {
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;

@@ -29,6 +29,9 @@ export class AssetModule extends Module {
 
   /**
    * Load the given file(.glb or .fbx) and return AssetContainer in Promise.
+   * @param file - target file
+   * @param extension - file format
+   * @param baseScene - base scene to use
    */
   public async getAssetContainer(file: File | string, extension: string, baseScene: Scene): Promise<AssetContainer | undefined> {
     if (extension === 'fbx' && file instanceof File) {
@@ -43,6 +46,8 @@ export class AssetModule extends Module {
 
   /**
    * Preprocess objects in assetContaienr including updating objects' ids.
+   * @param assetId - asset's id
+   * @param assetContainer - babylon custom object including asset's sub objects
    */
   public preprocessAssetContainerData(assetId: string, assetContainer: AssetContainer) {
     const { meshes, skeletons, transformNodes } = assetContainer;
@@ -62,6 +67,7 @@ export class AssetModule extends Module {
 
   /**
    * Stop all animationGroups in the project and clear them.
+   * @param screens - all screens(currently single screen only)
    */
   //TODO: should improve logic
   public clearAnimationGroups(screens: PlaskScreen[]) {
@@ -75,7 +81,8 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Turn skeletonViewer on in all screens.
+   * Turn skeletonViewer on the target screen.
+   * @param screenId - id of the screen
    */
   public powerSkeletonViewer(screenId: string) {
     const targetSkeletonViewer = this.plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === screenId);
@@ -85,7 +92,8 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Turn skeletonViewer off in all screens.
+   * Turn skeletonViewer off in the target screen.
+   * @param screenId - id of the screen
    */
   public unpowerSkeletonViewer(screenId: string) {
     const targetSkeletonViewer = this.plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === screenId);
@@ -96,6 +104,8 @@ export class AssetModule extends Module {
 
   /**
    * Export the given scene to a .glb format file.
+   * @param scene - base scene for exporting
+   * @param name - file name
    */
   public async sceneToGlb(scene: Scene, name: string) {
     return await GLTF2Export.GLBAsync(scene, name, EXPORT_OPTIONS);
@@ -103,6 +113,8 @@ export class AssetModule extends Module {
 
   /**
    * Visualize a model from all the screens.
+   * @param assetId - id of the target asset
+   * @param clickJointChannel
    */
   public visualizeModel(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
@@ -180,6 +192,7 @@ export class AssetModule extends Module {
 
   /**
    * Unvisualize a model from all the screens.
+   * @param assetId - id of the target asset
    */
   public unvisualizeModel(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);

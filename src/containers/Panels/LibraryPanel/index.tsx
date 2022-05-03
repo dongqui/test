@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+import { partition } from 'lodash';
 
 import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
@@ -13,7 +14,7 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -24,30 +25,34 @@ const LibraryPanel: FunctionComponent = () => {
   const dispatch = useDispatch();
   const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
-  const { plaskEngine } = useContext(BabylonContext);
 
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
   const onNodeChange = useCallback(
     (files: File[] | string[], showLoading: boolean = true) => {
+      // TODO: clean up
       for (const file of files) {
-        dispatch(
-          lpNodeActions.fileUpload({
-            file,
-            showLoading,
-            plaskEngine,
-          }),
-        );
+        if (typeof file !== 'string' && file.type.includes('json')) {
+          dispatch(lpNodeActions.importMocapJson(file));
+        } else {
+          dispatch(
+            lpNodeActions.fileUpload({
+              file,
+              showLoading,
+            }),
+          );
+        }
       }
     },
-    [dispatch, plaskEngine],
+    [dispatch],
   );
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      const videos = files.filter((file) => file.type.includes('video'));
-      const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
+      const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
+      // const videos = files.filter((file) => file.type.includes('video'));
+      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
       const isError = videos.length > 1;
 

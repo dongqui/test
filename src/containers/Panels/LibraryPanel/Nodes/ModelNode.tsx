@@ -5,8 +5,8 @@ import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
-import React, { useContext } from 'react';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import React from 'react';
+import plaskEngine from '3d/PlaskEngine';
 
 interface Props {
   node: LP.Node;
@@ -16,7 +16,6 @@ const ModelNode = ({ node }: Props) => {
   const { id, assetId, filePath, extension, name, parentId, type, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
-  const { plaskEngine } = useContext(BabylonContext);
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!assetId) return;
@@ -45,7 +44,6 @@ const ModelNode = ({ node }: Props) => {
         nodeId: id,
         filePath,
         assetId,
-        plaskEngine,
       }),
     );
   };
@@ -57,10 +55,10 @@ const ModelNode = ({ node }: Props) => {
 
     const hasMotions = childNodeIds.length !== 0;
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId, plaskEngine }));
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }
     // plaskEngine.assetModule.visualizeAsset(assetId);
-    dispatch(lpNodeActions.visualizeNode({ assetId, plaskEngine, onSuccess: () => {} }));
+    dispatch(lpNodeActions.visualizeNode({ assetId, onSuccess: () => {} }));
   };
 
   const handleEditName = (newName: string) => {

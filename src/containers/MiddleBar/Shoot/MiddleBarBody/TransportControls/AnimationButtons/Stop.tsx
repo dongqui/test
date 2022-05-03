@@ -5,7 +5,7 @@ import * as animatingControlsActions from 'actions/animatingControlsAction';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 
 interface Props {
   requestAnimationFrameId: MutableRefObject<number>;
@@ -18,8 +18,6 @@ const Stop: FunctionComponent<Props> = (props) => {
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
 
   const dispatch = useDispatch();
-
-  const { plaskEngine } = useContext(BabylonContext);
 
   const translateScrubber = useCallback(() => {
     const scrubber = document.getElementById('scrubber');
@@ -38,7 +36,7 @@ const Stop: FunctionComponent<Props> = (props) => {
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'stop', currentTimeIndex: _startTimeIndex }));
       window.cancelAnimationFrame(requestAnimationFrameId.current);
     }
-  }, [_playState, plaskEngine.animationModule, translateScrubber, dispatch, _startTimeIndex, requestAnimationFrameId]);
+  }, [_playState, translateScrubber, dispatch, _startTimeIndex, requestAnimationFrameId]);
 
   return <IconWrapper id="animationStopButton" onClick={handleStopButtonClick} icon={SvgPath.Stop} hasFrame={false} />;
 };

@@ -6,9 +6,14 @@
   @include basic-button-style();
   color: $content-active;
 
-  &:focus,
+  &:active,
   &:hover {
-    background-color: $overlay-hover;
+    filter: brightness(110%);
+  }
+
+  &.disabled {
+    filter: none;
+    background-color: var(--grey020);
   }
 }
 
@@ -18,4 +23,8 @@
 
 .negative {
   background-color: $negative;
+}
+
+.default {
+  background-color: var(--grey020);
 }

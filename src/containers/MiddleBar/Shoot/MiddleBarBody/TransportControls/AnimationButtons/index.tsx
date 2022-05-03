@@ -6,7 +6,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useSelector } from 'reducers';
 import { PlayDirection } from 'types/RP';
 import { ScaleLinear, TimeIndex } from 'utils/TP';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
+import plaskEngine from '3d/PlaskEngine';
 
 import Record from './Record';
 import Stop from './Stop';
@@ -17,8 +17,6 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const Buttons = () => {
-  const { plaskEngine } = useContext(BabylonContext);
-
   const dispatch = useDispatch();
 
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
@@ -60,7 +58,7 @@ const Buttons = () => {
         TimeIndex.setCurrentTimeIndex(nextFrame);
       }
     },
-    [clampNextFrame, plaskEngine.animationModule.currentAnimationGroup],
+    [clampNextFrame],
   );
 
   // animation 재생 시 함수 loop
@@ -79,7 +77,7 @@ const Buttons = () => {
       window.cancelAnimationFrame(requestAnimationFrameId.current);
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.forward }));
     }
-  }, [dispatch, plaskEngine.animationModule]);
+  }, [dispatch]);
 
   // 애니메이션 뒤로 재생 제어
   const editAnimationRewind = useCallback(() => {
@@ -88,7 +86,7 @@ const Buttons = () => {
       window.cancelAnimationFrame(requestAnimationFrameId.current);
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'play', playDirection: PlayDirection.backward }));
     }
-  }, [dispatch, plaskEngine.animationModule]);
+  }, [dispatch]);
 
   // 애니메이션 일시정지 제어
   const editAnimationPause = useCallback(() => {
@@ -100,7 +98,7 @@ const Buttons = () => {
       dispatch(animatingControlsActions.clickPlayStateButton({ playState: 'pause', currentTimeIndex: TimeIndex.getCurrentTimeIndex() }));
     }
     window.cancelAnimationFrame(requestAnimationFrameId.current);
-  }, [dispatch, plaskEngine.animationModule]);
+  }, [dispatch]);
 
   // play 버튼 클릭
   const handlePlayButtonClick = useCallback(() => {
@@ -144,7 +142,7 @@ const Buttons = () => {
     };
   }, [_playDirection, _playState, _visualizedAssetIds, dispatch, editAnimationPause, editAnimationPlay, editAnimationRewind, loopAnimation]);
 
-  const ButtonState = () => {
+  const ButtonState = useCallback(() => {
     if (_playState === 'play') {
       if (_playDirection === PlayDirection.forward) {
         return (
@@ -169,7 +167,7 @@ const Buttons = () => {
         </Fragment>
       );
     }
-  };
+  }, [_playDirection, _playState, handlePauseButtonClick, handlePlayButtonClick, handleRewindButtonClick]);
 
   return (
     <div className={cx('animation-buttons')}>

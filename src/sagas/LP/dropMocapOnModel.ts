@@ -11,13 +11,14 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as cpActions from 'actions/CP/cpModeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.dropMocapOnModel>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { retargetMaps } = animationData;
-  const { nodeId, filePath, assetId, plaskEngine } = action.payload;
+  const { nodeId, filePath, assetId } = action.payload;
 
   const draggedNodeClone = cloneDeep(draggedNode);
   /**
@@ -41,7 +42,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         onConfirm: function* () {
           if (assetId) {
             // TODO : will it work with PlaskAsset ?
-            yield put(lpNodeActions.visualizeNode({ assetId, plaskEngine, onSuccess: () => {} }));
+            yield put(lpNodeActions.visualizeNode({ assetId, onSuccess: () => {} }));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
@@ -75,7 +76,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
 
       try {
         const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
-          plaskEngine.animationModule.createAnimationIngredientFromMocapData,
+          [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
           dropNode.assetId!,
           nodeName,
           targetRetargetMap,
@@ -117,7 +118,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         if (dropNode.assetId) {
           yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
 
-          yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine, onSuccess: () => {} }));
+          yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, onSuccess: () => {} }));
         }
 
         return;
@@ -136,7 +137,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
       );
 
       const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
-        plaskEngine.animationModule.createAnimationIngredientFromMocapData,
+        [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
         dropNode.assetId!,
         draggedNode.name,
         targetRetargetMap,
@@ -193,7 +194,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
       if (dropNode.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
         // TODO : will it work with PlaskAsset ?
-        yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine, onSuccess: () => {} }));
+        yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, onSuccess: () => {} }));
         forceClickAnimationPlayAndStop();
       }
     } catch (error) {
@@ -218,7 +219,7 @@ export default function* handleDropMocapOnModel(action: ReturnType<typeof lpNode
         onConfirm: function* () {
           if (dropNode?.assetId) {
             // TODO : will it work with PlaskAsset ?
-            yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, plaskEngine, onSuccess: () => {} }));
+            yield put(lpNodeActions.visualizeNode({ assetId: dropNode.assetId, onSuccess: () => {} }));
             yield put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },

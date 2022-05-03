@@ -13,6 +13,10 @@ export class SelectorModule extends Module {
 
   public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
 
+  public get allTransformNodes() {
+    return this.plaskEngine.state.selectingData.present.selectableObjects.map((entity) => entity.reference);
+  }
+
   public get selectableObjects() {
     return this.plaskEngine.state.selectingData.present.selectableObjects;
   }
