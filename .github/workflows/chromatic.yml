@@ -16,3 +16,4 @@ jobs:
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.TOKEN_GITHUB }}
+          NODE_PATH: src
