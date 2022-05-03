@@ -61,15 +61,15 @@ export class SelectorModule extends Module {
       return;
     }
 
-    // if (key === 'selectingData.present.selectableObjects') {
-    //   if (this.selectableObjects !== previousState.selectableObjects) {
-    //     // TODO : we clear history here because we don't handle undoing/redoing a model change.
-    //     // It should be removed once we handle that
-    //     this.plaskEngine.clearHistory();
-    //     // Init positions
-    //   }
-    //   return;
-    // }
+    if (key === 'selectingData.present.selectableObjects') {
+      if (this.selectableObjects !== previousState.selectableObjects) {
+        // TODO : we clear history here because we don't handle undoing/redoing a model change.
+        // It should be removed once we handle that
+        this.plaskEngine.clearHistory();
+        // Init positions
+      }
+      return;
+    }
   }
 
   constructor(plaskEngine: PlaskEngine) {
