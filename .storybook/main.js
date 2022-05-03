@@ -46,7 +46,7 @@ module.exports = {
         }
       }
     }
-
+    config.resolve.modules.push(path.resolve(__dirname, '../src'));
     return config;
   }
 }
