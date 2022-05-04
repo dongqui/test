@@ -65,7 +65,6 @@ interface AddDirectoryParams {
 
 interface VisualizeNodeParams {
   assetId: string;
-  onSuccess: () => void;
 }
 interface DuplicateMotionParams {
   parentId: string;
