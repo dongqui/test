@@ -13,11 +13,6 @@ import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-<<<<<<< HEAD
-import { addEntity } from 'actions/selectingDataAction';
-import { BabylonContext } from 'contexts/RP/BabylonContext';
-=======
->>>>>>> undo-right-panel-fixmerge
 
 const cx = classNames.bind(styles);
 
