@@ -7,6 +7,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
+import { IconButton } from '../../../components/Button';
 
 const cx = classNames.bind(styles);
 
@@ -33,7 +34,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <IconWrapper className={cx('icon')} id={ONBOARDING_ID.IMPORT_FILE} icon={SvgPath.Plus} hasFrame={false} onClick={handleFileImportButtonClick} />
+      <IconButton icon={SvgPath.Plus} variant="ghost" id={ONBOARDING_ID.IMPORT_FILE} onClick={handleFileImportButtonClick} />
     </div>
   );
 };
