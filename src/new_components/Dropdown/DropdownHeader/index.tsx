@@ -4,6 +4,9 @@ import { DropdownContext } from '../DropdownProvider';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { SvgPath } from '../../../components/Icon';
+import { ONBOARDING_ID } from '../../../containers/Onboarding/id';
+import { ExpandButton } from '../../../components/Button';
 
 const cx = classNames.bind(styles);
 
@@ -24,11 +27,7 @@ const DropdownHeader: FunctionComponent<Props> = (props) => {
     }
   }, [isOpenMenu, dispatch, onClose]);
 
-  return (
-    <button className={cx('header', { expanded: isOpenMenu })} type="button" onClick={handleClickDropdownHeader}>
-      {children}
-    </button>
-  );
+  return <ExpandButton content={SvgPath.Support} variant="default" id={ONBOARDING_ID.HELP_BUTTON} onClick={handleClickDropdownHeader} />;
 };
 
 export default DropdownHeader;

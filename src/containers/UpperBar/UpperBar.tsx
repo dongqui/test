@@ -115,9 +115,7 @@ const UpperBar: FunctionComponent<Props> = ({
           </a>
         </Link>
         <Dropdown>
-          <Dropdown.Header onClose={handleDropdownClose}>
-            <ExpandButton content={SvgPath.Support} variant="default" id={ONBOARDING_ID.HELP_BUTTON} />
-          </Dropdown.Header>
+          <Dropdown.Header onClose={handleDropdownClose} />
           <Dropdown.Menu autoClose={onboardingStep !== 999}>
             <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>
               Onboarding

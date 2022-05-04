@@ -7,6 +7,7 @@ import * as animationDataActions from 'actions/animationDataAction';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { IconButton } from '../../../../../components/Button';
 
 const cx = classNames.bind(styles);
 
@@ -23,7 +24,8 @@ const InsertKeyframe = () => {
   }, [_playState, _selectedTargets.length, dispatch]);
 
   return (
-    <IconWrapper className={cx({ disabled: _selectedTargets.length === 0 || _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />
+    // <IconWrapper className={cx({ disabled: _selectedTargets.length === 0 || _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />
+    <IconButton variant="default" icon={SvgPath.InsertKeyframe} onClick={handleClickButton} disabled={_selectedTargets.length === 0 || _playState === 'play'} />
   );
 };
 
