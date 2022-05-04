@@ -141,19 +141,17 @@ const UpperBar: FunctionComponent<Props> = ({
         </Dropdown>
       </div>
       <div className={cx('right-upper')}>
-        {/*<IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />*/}
         <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />
-        {standbyState && <div className={cx('segment-disable')} />}
-        {mode === 'videoMode' && !recording && !recordOverTwice && (
-          <div className={cx('device-select')} onClick={handleCameraDropdown}>
-            Camera
-            <IconWrapper icon={SvgPath.EmptyDownArrow} />
-          </div>
-        )}
-        {mode === 'videoMode' && (recording || recordOverTwice) && (
-          <div className={cx('device-select', 'disable')}>
-            Camera
-            <IconWrapper icon={SvgPath.EmptyDownArrow} />
+        {/*{standbyState && <div className={cx('segment-disable')} />}*/}
+        {mode === 'videoMode' && (
+          <div className={cx('device-select')}>
+            <ExpandButton
+              className={cx({ disabled: recording || recordOverTwice })}
+              content="Camera"
+              variant="ghost"
+              disabled={recording || recordOverTwice}
+              onClick={handleCameraDropdown}
+            />
           </div>
         )}
         {cameraDropdownState && (
