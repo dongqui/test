@@ -9,11 +9,15 @@ import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/commo
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 import { Mesh, TransformNode } from '@babylonjs/core';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+<<<<<<< HEAD
 import { addEntity } from 'actions/selectingDataAction';
 import { BabylonContext } from 'contexts/RP/BabylonContext';
+=======
+>>>>>>> undo-right-panel-fixmerge
 
 const cx = classNames.bind(styles);
 
@@ -191,8 +195,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     }
   }, [_animationIngredients, _playDirection, _playState, _selectedLayer, dispatch, isFilterOn, selectedAssetId]);
 
-  const { plaskEngine } = useContext(BabylonContext);
-
   const positionInputData = [
     {
       text: 'X',
@@ -209,7 +211,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.x : 0), [controlTarget]),
       decimalDigit: 4,
@@ -230,7 +232,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.y : 0), [controlTarget]),
       decimalDigit: 4,
@@ -251,7 +253,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.z : 0), [controlTarget]),
       decimalDigit: 4,
@@ -280,7 +282,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => {
         if (controlTarget) {
@@ -313,7 +315,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => {
         if (controlTarget) {
@@ -346,7 +348,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => {
         if (controlTarget) {
@@ -377,7 +379,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 1), [controlTarget]),
       decimalDigit: 4,
@@ -398,7 +400,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.x : 0), [controlTarget]),
       decimalDigit: 4,
@@ -419,7 +421,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.y : 0), [controlTarget]),
       decimalDigit: 4,
@@ -440,11 +442,11 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.z : 0), [controlTarget]),
       decimalDigit: 4,
-      currnetValue: `${quaternionZ}`,
+      currentValue: `${quaternionZ}`,
     },
   ];
 
@@ -464,7 +466,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
@@ -485,7 +487,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
@@ -506,7 +508,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
             plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
-        [controlTarget, plaskEngine],
+        [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
