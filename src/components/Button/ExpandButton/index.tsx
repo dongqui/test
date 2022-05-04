@@ -38,7 +38,7 @@ const ExpandButton: FunctionComponent<Props> = ({ content, variant, color, fullS
   return (
     <button className={classes} onClick={handleClick} {...rest}>
       {typeof content === 'string' ? <span className={cx('button-content')}>{content}</span> : <IconWrapper className={cx('button-content')} icon={content} />}
-      <IconWrapper hasFrame={true} icon={SvgPath.EmptyDownArrow} />
+      <IconWrapper icon={SvgPath.EmptyDownArrow} className={cx('button-arrow')} />
     </button>
   );
 };
