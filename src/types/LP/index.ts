@@ -1,3 +1,5 @@
+import { PlaskMocapData } from 'types/common';
+
 export interface RequestNodeResponse {
   uid: string;
   type: 'MOCAP' | 'DIRECTORY' | 'MODEL';
@@ -10,6 +12,7 @@ export interface RequestNodeResponse {
   scenesUid: string;
   assetsUid: string;
   modelUrl?: string;
+  mocap?: PlaskMocapData;
 }
 export interface CreateFolderOrMocapBodyData {
   name: string;
