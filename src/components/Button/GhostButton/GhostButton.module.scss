@@ -1,0 +1,21 @@
+@import '../../../styles/libraries/mixins';
+
+.text {
+  @include reset-button-style();
+  @include basic-button-style();
+  color: $content-active;
+  background-color: inherit;
+
+  &:active,
+  &:hover {
+    filter: var(--button-filter);
+  }
+
+  &.disabled {
+    filter: none;
+  }
+}
+
+.default {
+
+}
