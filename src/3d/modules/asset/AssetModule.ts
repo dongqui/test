@@ -176,9 +176,9 @@ export class AssetModule extends Module {
                 if (targetTransformNode) {
                   const sourceEvent: PointerEvent = event.sourceEvent;
                   if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                    selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() });
+                    this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                   } else {
-                    selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() });
+                    this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                   }
                 }
               }),

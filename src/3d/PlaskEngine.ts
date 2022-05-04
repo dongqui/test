@@ -137,6 +137,8 @@ export class PlaskEngine {
     (window as any).printEntities = () => {
       console.log('Entities length : ', Object.keys(this._entityStore.entities).length);
       console.log(this._entityStore.entities);
+      console.log('Entities in redux state : ', Object.keys(this.state.selectingData.present.allEntitiesMap).length);
+      console.log(this.state.selectingData.present.allEntitiesMap);
     };
   }
 
