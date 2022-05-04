@@ -9,7 +9,7 @@
 
   &:active,
   &:hover {
-    filter: brightness(110%);
+    filter: var(--button-filter);
   }
 
   &.state {
