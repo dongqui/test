@@ -2,13 +2,12 @@ import { Children, useCallback, FunctionComponent, useState, useMemo, useRef } f
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import { find, isEqual } from 'lodash';
-import { Dropdown } from 'components/Dropdown';
+import { ExpandButton } from 'components/Button';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { IconWrapper, SvgPath } from 'components/Icon';
 
 const cx = classNames.bind(styles);
 
@@ -67,8 +66,6 @@ const FasterDropdown: FunctionComponent<Props> = () => {
     [dispatch],
   );
 
-  const arrowClasses = cx('arrow');
-
   const selectClasses = cx('select');
 
   return (
@@ -76,8 +73,9 @@ const FasterDropdown: FunctionComponent<Props> = () => {
       {/*Dropdown 버그를 수정하기 위해서 임시로 주석 처리.*/}
       {/*<Dropdown list={fasterList} onSelect={handleFasterSelect} fixed />*/}
       {/*리팩토링 이후에 select/option 코드 제거.*/}
-      <div className={cx('text')}>{selectedValue}</div>
-      <IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />
+      {/*<div className={cx('text')}>{selectedValue}</div>*/}
+      {/*<IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />*/}
+      <ExpandButton id="dropdown-button" className={cx('dropdown-button')} content={selectedValue} variant="ghost" />
       <select
         onChange={(e) => {
           const selectedIndex = e.currentTarget.selectedIndex;

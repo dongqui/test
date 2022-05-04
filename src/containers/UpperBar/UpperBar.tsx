@@ -116,10 +116,7 @@ const UpperBar: FunctionComponent<Props> = ({
         </Link>
         <Dropdown>
           <Dropdown.Header onClose={handleDropdownClose}>
-            {/*<div className={cx('support-icon-wrapper')} id={ONBOARDING_ID.HELP_BUTTON}>*/}
-            {/*  <IconWrapper icon={SvgPath.Support} />*/}
-            {/*</div>*/}
-            <ExpandButton content={SvgPath.Support} variant="default" />
+            <ExpandButton content={SvgPath.Support} variant="default" id={ONBOARDING_ID.HELP_BUTTON} />
           </Dropdown.Header>
           <Dropdown.Menu autoClose={onboardingStep !== 999}>
             <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>

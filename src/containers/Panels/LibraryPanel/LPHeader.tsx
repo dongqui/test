@@ -2,12 +2,12 @@ import { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
-import { IconWrapper, SvgPath } from 'components/Icon';
+import { SvgPath } from 'components/Icon';
+import { IconButton } from 'components/Button';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 import classNames from 'classnames/bind';
 import styles from './LPHeader.module.scss';
-import { IconButton } from '../../../components/Button';
 
 const cx = classNames.bind(styles);
 
