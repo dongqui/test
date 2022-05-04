@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 
 import * as commonActions from 'actions/Common/globalUI';
 import { changeMode } from 'actions/modeSelection';
-import { FilledButton } from 'components/Button';
+import { ExpandButton, FilledButton, IconButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
@@ -109,15 +109,17 @@ const UpperBar: FunctionComponent<Props> = ({
           <span className={cx('scene-name')}>{sceneName}</span>
         </div> */}
         <Link href="https://plask.ai">
-          <a target="_blank" className={cx('icon-logo-wrapper')}>
-            <IconWrapper className={cx('icon-logo')} icon={SvgPath.Logo} />
+          <a target="_blank" style={{ backgroundColor: 'inherit' }} className={cx('icon-logo-wrapper')}>
+            {/*https://nextjs.org/docs/api-reference/next/link#if-the-child-is-a-functional-component*/}
+            <IconButton icon={SvgPath.Logo} variant="ghost" />
           </a>
         </Link>
         <Dropdown>
           <Dropdown.Header onClose={handleDropdownClose}>
-            <div className={cx('support-icon-wrapper')} id={ONBOARDING_ID.HELP_BUTTON}>
-              <IconWrapper icon={SvgPath.Support} />
-            </div>
+            {/*<div className={cx('support-icon-wrapper')} id={ONBOARDING_ID.HELP_BUTTON}>*/}
+            {/*  <IconWrapper icon={SvgPath.Support} />*/}
+            {/*</div>*/}
+            <ExpandButton content={SvgPath.Support} variant="default" />
           </Dropdown.Header>
           <Dropdown.Menu autoClose={onboardingStep !== 999}>
             <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>
