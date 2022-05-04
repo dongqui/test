@@ -1,7 +1,7 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
-import { defaultMultiSelect, updateTransform } from 'actions/selectingDataAction';
+import { defaultMultiSelect, updateEntity } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -63,7 +63,7 @@ export class SelectorModule extends Module {
         // It should be removed once we handle that
         this.plaskEngine.clearHistory();
         // Init positions
-        this.plaskEngine.dispatch(updateTransform({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }));
+        this.plaskEngine.dispatch(updateEntity({ targets: this.plaskEngine.state.selectingData.present.selectableObjects.map((selectableObject) => selectableObject.clone()) }));
       }
       return;
     }
