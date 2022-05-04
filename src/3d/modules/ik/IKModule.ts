@@ -58,6 +58,10 @@ export class IKModule extends Module {
   private _blendSlider: Slider = new Slider();
   private _poleAngleSlider: Slider = new Slider();
   private _ikMeshes: Mesh[] = [];
+  private _ghost = {
+    skeleton: null as Nullable<Skeleton>,
+    rootMesh: null as Nullable<Mesh>
+  }
 
   private get _allTransformNodes() {
     return this.plaskEngine.selectorModule.allTransformNodes;
@@ -99,12 +103,22 @@ export class IKModule extends Module {
     this._activeTransformNodes = objects;
   }
 
-  public reduxObservedStates = ['selectingData.present.selectableObjects'];
+  public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
   public onStateChanged(key: string, previousState: any) {
-    // TODO : when assets module is live, use its observable
-    if (key === 'selectingData.present.selectableObjects') {
+    if (key === 'plaskProject.visualizedAssetIds') {
+      // TODO : when assets module is live, use its observable
+      if (previousState[0]) {
+        console.log("replacing a model, cleaning old assets");
+        this._ghost.skeleton?.dispose();
+        this._ghost.rootMesh?.dispose();
+
+        for (const controller of this._ikControllers) {
+          controller.mesh.dispose();
+        }
+        this._ikControllers.length = 0;
+      }
       if (this._ikControllers.length === 0)
-        this._playgroundCode();
+        this._playgroundCode(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
     }
   }
 
@@ -442,7 +456,7 @@ export class IKModule extends Module {
   //   return this.plaskEngine.state.plaskProject.visualizedAssetIds;
   // }
 
-  private _playgroundCode() {
+  private _playgroundCode(assetId: string) {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
     const scene = this.plaskEngine.scene;
 
@@ -461,25 +475,20 @@ export class IKModule extends Module {
     // }
 
     // Container created to generate the Clone of Character
-    const container = new AssetContainer(scene);
-    container.meshes = scene.meshes;
-    container.geometries = scene.geometries;
-    container.skeletons = scene.skeletons;
-    container.transformNodes = scene.transformNodes;
-    const clone = container.instantiateModelsToScene();
-    scene.onReadyObservable.addOnce(() => {
-      // Adjusting transparency of the Cloned meshes    
-      scene.meshes.forEach(m => {
-        if (m.name.includes('Clone of')){
-          m.visibility = 0.25;
-          this._ikMeshes.push(m as Mesh);
-        }
-      })
-    })
-    const bodyClone = scene.getMeshByName('Clone of __root__') as Mesh;
-    const skeletonClone = scene.skeletons[1];
+    const asset = this.plaskEngine.assetModule.assetList.find((asset) => asset.id === assetId);
+    if (!asset) {
+      console.warn("Could not find asset");
+      return;
+    }
+    for (const mesh of asset.meshes) {
+      if (mesh.name === "__root__") {
+        this._ghost.rootMesh = mesh.clone("ghost_root", null) as Mesh;
+        this._ghost.rootMesh.visibility = 0.25;
+      }
+    }
 
-    this._createGUIElement();
+    this._ghost.skeleton = asset.skeleton.clone("ghost_skeleton");
+    // this._createGUIElement();
 
     // TODO : retrieve skeleton and body
     //const body = scene.getMeshByName('Body') as Mesh; // store body mesh
@@ -554,7 +563,7 @@ export class IKModule extends Module {
 
       const controllerOrig = MeshBuilder.CreateBox('orig_' + elem.name, { size: 2 }, scene);
       controllerOrig.isVisible = false;
-      const ikCtrlClone = new BoneIKController(bodyClone, skeletonClone.bones[bone.getIndex()], {
+      const ikCtrlClone = new BoneIKController(this._ghost.rootMesh!, this._ghost.skeleton!.bones[bone.getIndex()], {
         targetMesh: controllerOrig,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
         poleAngle: elem.poleAngle,

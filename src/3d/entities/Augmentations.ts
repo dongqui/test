@@ -1,9 +1,10 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Quaternion } from '@babylonjs/core/Maths/math.vector';
-import { Bone, Matrix, Nullable, Space, Vector3 } from '@babylonjs/core';
+import { Matrix, Nullable, Space, Vector3 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { PlaskTransformNode } from './PlaskTransformNode';
 import { BoneIKController } from '@babylonjs/core/Bones';
+import { Bone } from '@babylonjs/core/Bones/bone';
 
 declare module '@babylonjs/core' {
   export interface TransformNode {
@@ -56,7 +57,36 @@ declare module '@babylonjs/core' {
     upVector: Nullable<Vector3>;
     setIKtoRest: () => void;
   }
+
+  // export interface Bone {
+  //   _getNegativeRotationToRef(rotMatInv: Matrix, tNode?: TransformNode): boolean
+  // }
 }
+
+Bone.prototype['_getNegativeRotationToRef'] = function (rotMatInv: Matrix, tNode?: TransformNode) {
+  const scaleMatrix = Bone['_tmpMats'][2];
+  rotMatInv.copyFrom(this.getAbsoluteTransform());
+
+  if (tNode) {
+    rotMatInv.multiplyToRef(tNode.getWorldMatrix(), rotMatInv);
+    Matrix.ScalingToRef(tNode.scaling.x, tNode.scaling.y, tNode.scaling.z, scaleMatrix);
+  } else {
+    Matrix.IdentityToRef(scaleMatrix);
+  }
+
+  rotMatInv.invert();
+  if (isNaN(rotMatInv.m[0])) {
+    // Matrix failed to invert.
+    // This can happen if scale is zero for example.
+    return false;
+  }
+
+  scaleMatrix.multiplyAtIndex(0, this['_scalingDeterminant']);
+  rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
+  rotMatInv.getRotationMatrixToRef(rotMatInv);
+
+  return true;
+};
 
 BoneIKController.prototype._bendMatrix = Matrix.Identity();
 BoneIKController.prototype._bendMatrixDirty = true;
@@ -170,7 +200,7 @@ BoneIKController.prototype.update = function () {
       this['_slerping'] = true;
     } else {
       this._bendMatrix.multiplyToRef(mat1, mat1);
-      this['_bone1'].setRotationMatrix(mat1, Space.WORLD, this.mesh);
+      this['_bone1'].setRotationMatrix(mat1.getRotationMatrix(), Space.WORLD, this.mesh);
       this['_bone1Mat'].copyFrom(mat1);
       this['_slerping'] = false;
     }
