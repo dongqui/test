@@ -42,7 +42,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     }
   }
 
-  yield put(lpNodeActions.visualizeNode({ assetId, onSuccess: () => {} }));
-  // plaskEngine.assetModule.visualizeAsset(assetId);
+  yield put(lpNodeActions.visualizeNode({ assetId }));
   forceClickAnimationPlayAndStop(50);
 }

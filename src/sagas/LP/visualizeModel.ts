@@ -64,7 +64,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       // This only sets state.visualizedAssetIds
       yield put(plaskProjectActions.renderAsset({ assetId }));
     }
-    action.payload.onSuccess();
   } catch (e) {
     yield put(
       globalUIActions.openModal('AlertModal', {

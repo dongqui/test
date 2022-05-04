@@ -46,7 +46,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
     }
     // TODO : replace with an engine call, add a callback to the payload ? so we can async await and know when the saga is done
     // plaskEngine.assetModule.visualizeAsset(assetId);
-    dispatch(lpNodeActions.visualizeNode({ assetId, onSuccess: () => {} }));
+    dispatch(lpNodeActions.visualizeNode({ assetId }));
   };
 
   const handleCancelVisualization = () => {

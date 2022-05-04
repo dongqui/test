@@ -296,10 +296,9 @@ export class PlaskEngine {
     this._modules.push((this.cameraModule = new CameraModule(this)));
     this._modules.push((this.selectorModule = new SelectorModule(this)));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
-    this._modules.push((this.ikModule = new IKModule(this)));
+    // this._modules.push((this.ikModule = new IKModule(this)));
     this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     this._modules.push((this.assetModule = new AssetModule(this)));
-    // this._modules.push((this.ikModule = new IKModule(this)));
     this._modules.push((this.animationModule = new AnimationModule(this)));
   }
 
