@@ -4,9 +4,9 @@ import { DropdownContext } from '../DropdownProvider';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { SvgPath } from '../../../components/Icon';
-import { ONBOARDING_ID } from '../../../containers/Onboarding/id';
-import { ExpandButton } from '../../../components/Button';
+import { SvgPath } from 'components/Icon';
+import { ExpandButton } from 'components/Button';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 const cx = classNames.bind(styles);
 

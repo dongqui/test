@@ -3,11 +3,11 @@ import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { IconButton } from 'components/Button';
 import * as animationDataActions from 'actions/animationDataAction';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { IconButton } from '../../../../../components/Button';
 
 const cx = classNames.bind(styles);
 
