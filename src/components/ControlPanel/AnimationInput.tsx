@@ -53,7 +53,7 @@ const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, tex
   const classes = cx('wrapper', className, { able: activeStatus ?? true });
 
   return (
-    <div className={cx(classes)}>
+    <div className={classes}>
       <p>{text}</p>
       <input
         type="number"
@@ -65,7 +65,7 @@ const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, tex
             setIsValueChanged(false);
           }
         }}
-        tabIndex={isUndefined(activeStatus) || activeStatus === true ? 0 : -1}
+        tabIndex={isUndefined(activeStatus) || activeStatus ? 0 : -1}
         ref={inputRef}
       />
       {/* activeStatus에 붙연놓은 input 비활성화 관련 div (placeholder의 역할) */}

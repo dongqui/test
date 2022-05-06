@@ -52,7 +52,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
                 dispatch(trackListActions.clickDeleteLayerTrackButton({ id: trackId }));
               },
               cancelText: 'Cancel',
-              // confirmColor: 'error',
+              confirmButtonColor: 'negative',
             }),
           );
         },

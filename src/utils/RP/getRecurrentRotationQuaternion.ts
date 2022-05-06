@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Bone, Quaternion } from '@babylonjs/core';
 
 /**
  * Return the quaternion value which is get by multiplying ancestral bones' rotations recurrently
@@ -6,11 +6,11 @@ import * as BABYLON from '@babylonjs/core';
  *
  * @param bone - target bone
  */
-const getRecurrentRotationQuaternion = (bone: BABYLON.Bone) => {
+const getRecurrentRotationQuaternion = (bone: Bone) => {
   let target = bone;
-  let result = BABYLON.Quaternion.Identity();
+  let result = Quaternion.Identity();
 
-  const quaternions: BABYLON.Quaternion[] = [];
+  const quaternions: Quaternion[] = [];
 
   quaternions.push(bone.getTransformNode()!.rotationQuaternion!.clone());
 
@@ -24,7 +24,7 @@ const getRecurrentRotationQuaternion = (bone: BABYLON.Bone) => {
     result = result.multiply(q);
   });
 
-  return new BABYLON.Quaternion(result.x, result.y, result.z, result.w);
+  return new Quaternion(result.x, result.y, result.z, result.w);
 };
 
 export default getRecurrentRotationQuaternion;

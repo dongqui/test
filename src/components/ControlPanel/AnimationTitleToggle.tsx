@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback, Dispatch, SetStateAction, RefObject } from 'react';
+import { FunctionComponent, useCallback } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import Switch from 'react-switch';
 import classnames from 'classnames/bind';
@@ -28,7 +28,7 @@ const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withS
   const classes = cx('wrapper', className, { able: activeStatus });
 
   return (
-    <div className={cx(classes)}>
+    <div className={classes}>
       <button className={cx('toggle')} onClick={handleSpread}>
         <IconWrapper className={cx('arrowdown-icon', { active: isSpread })} icon={SvgPath.EmptyDownArrow} /> {text}
       </button>
@@ -37,7 +37,7 @@ const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withS
           className={cx('toggle-switch', { inactive: !canToggle })}
           onChange={handleTogglePower}
           checked={activeStatus && isPowerOn}
-          onColor="#0F88FF"
+          onColor="#258CF4"
           checkedIcon={false}
           uncheckedIcon={false}
           width={24}

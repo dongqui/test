@@ -82,7 +82,7 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
         left: result.left,
       });
     }
-  }, [position.left, position.top, , isMounted, left, top]);
+  }, [position.left, position.top, isMounted, left, top]);
 
   useEffect(() => {
     const handleOutSideClick = (e: MouseEvent) => {
@@ -99,9 +99,10 @@ const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
 
   const initializeSubMenuVisible = useMemo(
     () =>
-      Array(menu.length)
-        .fill(0)
-        .map(() => false),
+      // Array(menu.length)
+      //   .fill(0)
+      //   .map(() => false),
+      Array(menu.length).fill(false),
     [menu.length],
   );
   const [subMenuVisibleController, setSubMenuVisibleController] = useState<boolean[]>(initializeSubMenuVisible);

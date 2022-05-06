@@ -6,6 +6,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
 import React from 'react';
+import plaskEngine from '3d/PlaskEngine';
 
 interface Props {
   node: LP.Node;
@@ -56,7 +57,7 @@ const ModelNode = ({ node }: Props) => {
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }
-    dispatch(lpNodeActions.visualizeNode(assetId));
+    dispatch(lpNodeActions.visualizeNode({ assetId }));
   };
 
   const handleEditName = (newName: string) => {

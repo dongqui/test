@@ -1,6 +1,5 @@
 import { select, put } from 'redux-saga/effects';
 import { RootState } from 'reducers';
-import { removeAssetThingsFromScene } from 'utils/RP';
 import { filterDeletedNode } from 'utils/LP/FileSystem';
 
 import { forceClickAnimationPlayAndStop } from 'utils/common';
@@ -8,12 +7,13 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleDeleteModel(action: ReturnType<typeof lpNodeActions.deleteModel>) {
   const { nodeId, assetId, parentId } = action.payload;
-  const { lpNode, plaskProject, selectingData }: RootState = yield select();
+  const { lpNode }: RootState = yield select();
 
-  removeAssetThingsFromScene(plaskProject, selectingData.present, assetId);
+  plaskEngine.assetModule.clearAssetFromScene(assetId);
 
   const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
 

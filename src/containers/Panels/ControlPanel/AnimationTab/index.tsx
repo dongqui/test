@@ -16,7 +16,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
-  const _seletedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
+  const _selectedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _playDirection = useSelector((state) => state.animatingControls.playDirection);
@@ -28,12 +28,12 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         isAllActive={isAllActive}
         visualizedAssetIds={_visualizedAssetIds}
         selectedTargets={_selectedTargets}
-        seletedLayer={_seletedLayer}
+        seletedLayer={_selectedLayer}
         animationIngredients={_animationIngredients}
         playState={_playState}
         playDirection={_playDirection}
       />
-      {/* <IKControllerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} /> */}
+      <IKControllerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
     </Fragment>
   );
 };

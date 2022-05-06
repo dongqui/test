@@ -1,8 +1,9 @@
-import { FunctionComponent, memo, useEffect, useState, useCallback } from 'react';
+import { FunctionComponent, memo, useEffect, useState, useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+import { partition } from 'lodash';
 
 import { getFileExtension } from 'utils/common';
 import * as TEXT from 'constants/Text';
@@ -13,6 +14,7 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -29,13 +31,18 @@ const LibraryPanel: FunctionComponent = () => {
 
   const onNodeChange = useCallback(
     (files: File[] | string[], showLoading: boolean = true) => {
+      // TODO: clean up
       for (const file of files) {
-        dispatch(
-          lpNodeActions.fileUpload({
-            file,
-            showLoading,
-          }),
-        );
+        if (typeof file !== 'string' && file.type.includes('json')) {
+          dispatch(lpNodeActions.importMocapJson(file));
+        } else {
+          dispatch(
+            lpNodeActions.fileUpload({
+              file,
+              showLoading,
+            }),
+          );
+        }
       }
     },
     [dispatch],
@@ -43,15 +50,9 @@ const LibraryPanel: FunctionComponent = () => {
 
   const handleDrop = useCallback(
     async (files: File[]) => {
-      const videos = files.filter((file) => file.type.includes('video'));
-      const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
-
-      const isInvalidFormat = filesExceptVideo.some((file) => {
-        const extension = getFileExtension(file.name).toLowerCase();
-        const isModelFormat = extension === 'glb' || extension === 'fbx';
-
-        return !isModelFormat;
-      });
+      const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
+      // const videos = files.filter((file) => file.type.includes('video'));
+      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
       const isError = videos.length > 1;
 
@@ -60,18 +61,6 @@ const LibraryPanel: FunctionComponent = () => {
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
             message: TEXT.WARNING_02,
-            confirmText: 'Close',
-          }),
-        );
-
-        return;
-      }
-
-      if (isInvalidFormat) {
-        dispatch(
-          globalUIActions.openModal('AlertModal', {
-            title: 'Warning',
-            message: TEXT.WARNING_03,
             confirmText: 'Close',
           }),
         );

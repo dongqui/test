@@ -1,0 +1,7 @@
+@import "styles/libraries/_colors";
+
+.next {
+  &:hover {
+    background-color: $primary;
+  }
+}

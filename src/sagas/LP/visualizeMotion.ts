@@ -6,6 +6,7 @@ import { goToSpecificPoses } from 'utils/RP';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualizeMotion>) {
   const { plaskProject, animationData, lpNode }: RootState = yield select();
@@ -17,12 +18,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     return;
   }
 
-  screenList.forEach(({ scene }) => {
-    scene.animationGroups.forEach((animationGroup) => {
-      animationGroup.stop();
-      scene.removeAnimationGroup(animationGroup);
-    });
-  });
+  plaskEngine.assetModule.clearAnimationGroups(screenList);
 
   const parentModel = find(lpNode.nodes, { id: parentId });
   // TODO 선언적으로 수정
@@ -46,6 +42,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     }
   }
 
-  yield put(lpNodeActions.visualizeNode(assetId));
+  yield put(lpNodeActions.visualizeNode({ assetId }));
   forceClickAnimationPlayAndStop(50);
 }

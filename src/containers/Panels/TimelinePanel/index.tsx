@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as trackListActions from 'actions/trackList';
 
+import Box from 'components/Layout/Box';
+
 import TrackList from './TrackList';
 import TimelineEditor from './TimelineEditor';
 

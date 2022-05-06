@@ -4,6 +4,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
+import plaskEngine from '3d/PlaskEngine';
 interface Props {
   node: LP.Node;
 }

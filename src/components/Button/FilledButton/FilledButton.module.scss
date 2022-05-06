@@ -1,0 +1,30 @@
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
+
+.filled {
+  @include reset-button-style();
+  @include basic-button-style();
+  color: $content-active;
+
+  &:active,
+  &:hover {
+    filter: brightness(110%);
+  }
+
+  &.disabled {
+    filter: none;
+    background-color: var(--grey020);
+  }
+}
+
+.primary {
+  background-color: $primary;
+}
+
+.negative {
+  background-color: $negative;
+}
+
+.default {
+  background-color: var(--grey020);
+}

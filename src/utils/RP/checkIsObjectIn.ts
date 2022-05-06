@@ -1,4 +1,4 @@
-import * as BABYLON from '@babylonjs/core';
+import { Mesh, Scene, TransformNode } from '@babylonjs/core';
 import { ScreenXY } from 'types/common';
 import { checkIsControllerIn, checkIsVectorIn } from '.';
 import checkIsTargetMesh from './checkIsTargetMesh';
@@ -13,7 +13,7 @@ import checkIsTargetMesh from './checkIsTargetMesh';
  * @param scene - scene which contains the dragBox and the pointer
  */
 
-const checkIsObjectIn = (startPointerPosition: ScreenXY, endPointerPosition: ScreenXY, object: BABYLON.Mesh | BABYLON.TransformNode, scene: BABYLON.Scene) => {
+const checkIsObjectIn = (startPointerPosition: ScreenXY, endPointerPosition: ScreenXY, object: Mesh | TransformNode, scene: Scene) => {
   if (object.getClassName() === 'TransformNode') {
     // select only if transformNode's corresponding joint is visible
     const joint = scene.getMeshById(object.id.replace('transformNode', 'joint'));
@@ -29,7 +29,7 @@ const checkIsObjectIn = (startPointerPosition: ScreenXY, endPointerPosition: Scr
       return false;
     }
     // checkout 9 points for controller
-    return checkIsControllerIn(startPointerPosition, endPointerPosition, object as BABYLON.Mesh, scene);
+    return checkIsControllerIn(startPointerPosition, endPointerPosition, object as Mesh, scene);
   }
 };
 
