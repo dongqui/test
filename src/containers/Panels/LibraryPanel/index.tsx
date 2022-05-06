@@ -5,10 +5,8 @@ import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
 import { partition } from 'lodash';
 
-import { getFileExtension } from 'utils/common';
-import * as TEXT from 'constants/Text';
+import { IMPORT_ERROR_INVALID_FORMAT, WARNING_02 } from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as modeSelectActions from 'actions/modeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
 import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
@@ -33,16 +31,12 @@ const LibraryPanel: FunctionComponent = () => {
     (files: File[] | string[], showLoading: boolean = true) => {
       // TODO: clean up
       for (const file of files) {
-        if (typeof file !== 'string' && file.type.includes('json')) {
-          dispatch(lpNodeActions.importMocapJson(file));
-        } else {
-          dispatch(
-            lpNodeActions.fileUpload({
-              file,
-              showLoading,
-            }),
-          );
-        }
+        dispatch(
+          lpNodeActions.fileUpload({
+            file,
+            showLoading,
+          }),
+        );
       }
     },
     [dispatch],
@@ -51,47 +45,32 @@ const LibraryPanel: FunctionComponent = () => {
   const handleDrop = useCallback(
     async (files: File[]) => {
       const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
-      // const videos = files.filter((file) => file.type.includes('video'));
-      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
-      const isError = videos.length > 1;
+      const hasMoreThanOneViedo = videos.length > 1;
+      const isInvalidFileFormat = !filesExceptVideo.every((file) => {
+        return file.name.toLocaleLowerCase().includes('glb') || file.name.toLocaleLowerCase().includes('fbx') || file.type.includes('json');
+      });
 
-      if (isError) {
+      if (hasMoreThanOneViedo) {
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
-            message: TEXT.WARNING_02,
+            message: WARNING_02,
             confirmText: 'Close',
           }),
         );
-
-        return;
-      }
-
-      onNodeChange(filesExceptVideo);
-
-      if (videos.length > 0) {
-        const videoBlobURL = URL.createObjectURL(videos[0]);
-
+      } else if (isInvalidFileFormat) {
         dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Extract',
-            message: TEXT.CONFIRM_01,
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            onConfirm: () => {
-              dispatch(
-                modeSelectActions.changeMode({
-                  mode: 'videoMode',
-                  videoURL: videoBlobURL,
-                }),
-              );
-            },
+          globalUIActions.openModal('_AlertModal', {
+            message: IMPORT_ERROR_INVALID_FORMAT,
+            title: 'Import failed',
           }),
         );
+      } else {
+        dispatch(lpNodeActions._fileUpload(files));
       }
     },
-    [dispatch, onNodeChange],
+    [dispatch],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
