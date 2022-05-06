@@ -63,9 +63,12 @@
   align-items: center;
   justify-content: flex-end;
   padding: 4px 16px;
+  background-color: inherit;
 
   .device-select {
     margin-right: 8px;
+    background-color: inherit;
+
     & > button {
       font-size: 11px;
       line-height: 13px;
@@ -74,6 +77,10 @@
 
     & > .disabled {
       cursor: not-allowed;
+    }
+
+    & > .active {
+      filter: var(--button-filter);
     }
   }
 

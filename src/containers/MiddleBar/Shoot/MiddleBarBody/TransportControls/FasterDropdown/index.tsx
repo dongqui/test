@@ -1,4 +1,4 @@
-import { Children, useCallback, FunctionComponent, useState, useMemo, useRef } from 'react';
+import { Children, useCallback, FunctionComponent, useState, useMemo, useRef, useEffect } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import { find, isEqual } from 'lodash';
@@ -14,6 +14,8 @@ const cx = classNames.bind(styles);
 interface Props {}
 
 const FasterDropdown: FunctionComponent<Props> = () => {
+  // variable for detecting mose hover selector.
+  const [onDropdown, setOnDropdown] = useState(false);
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);
   const fasterList = useMemo(
     () => [
@@ -75,12 +77,14 @@ const FasterDropdown: FunctionComponent<Props> = () => {
       {/*리팩토링 이후에 select/option 코드 제거.*/}
       {/*<div className={cx('text')}>{selectedValue}</div>*/}
       {/*<IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />*/}
-      <ExpandButton id="dropdown-button" className={cx('dropdown-button')} content={selectedValue} variant="ghost" />
+      <ExpandButton id="dropdown-button" className={cx('dropdown-button', { active: onDropdown })} content={selectedValue} variant="ghost" />
       <select
+        onMouseEnter={() => setOnDropdown(true)}
+        onMouseLeave={() => setOnDropdown(false)}
         onChange={(e) => {
           const selectedIndex = e.currentTarget.selectedIndex;
           handleFasterSelect(fasterList[selectedIndex].key, fasterList[selectedIndex].value);
-          e.target.blur();
+          setOnDropdown(false);
         }}
         className={selectClasses}
         defaultValue={defaultValue}

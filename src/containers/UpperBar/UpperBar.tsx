@@ -146,7 +146,7 @@ const UpperBar: FunctionComponent<Props> = ({
         {mode === 'videoMode' && (
           <div className={cx('device-select')}>
             <ExpandButton
-              className={cx({ disabled: recording || recordOverTwice })}
+              className={cx({ disabled: recording || recordOverTwice, active: cameraDropdownState })}
               content="Camera"
               variant="ghost"
               disabled={recording || recordOverTwice}
