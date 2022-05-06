@@ -2,11 +2,12 @@ import { useCallback, useContext, FunctionComponent } from 'react';
 
 import { DropdownContext } from '../DropdownProvider';
 
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { SvgPath } from 'components/Icon';
 import { ExpandButton } from 'components/Button';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
+
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
@@ -27,7 +28,15 @@ const DropdownHeader: FunctionComponent<Props> = (props) => {
     }
   }, [isOpenMenu, dispatch, onClose]);
 
-  return <ExpandButton content={SvgPath.Support} variant="default" id={ONBOARDING_ID.HELP_BUTTON} onClick={handleClickDropdownHeader} />;
+  return (
+    <ExpandButton
+      className={cx('expand-button', { active: isOpenMenu })}
+      content={SvgPath.Support}
+      variant="default"
+      id={ONBOARDING_ID.HELP_BUTTON}
+      onClick={handleClickDropdownHeader}
+    />
+  );
 };
 
 export default DropdownHeader;

@@ -2,19 +2,25 @@
 
 @import "styles/libraries/_functions";
 
-.header {
-  @include reset-button-style();
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 300;
-  min-width: 24px;
-  min-height: 24px;
-  border-radius: 6px;
-  padding: 0;
-  margin: 0;
+//.header {
+//  @include reset-button-style();
+//  display: flex;
+//  align-items: center;
+//  justify-content: center;
+//  font-weight: 300;
+//  min-width: 24px;
+//  min-height: 24px;
+//  border-radius: 6px;
+//  padding: 0;
+//  margin: 0;
+//
+//  &.expanded {
+//    background: var(--grey060-opacity01);
+//  }
+//}
 
-  &.expanded {
-    background: var(--grey060-opacity01);
+.expand-button {
+  &.active {
+    filter: var(--button-filter);
   }
 }

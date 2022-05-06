@@ -26,6 +26,10 @@
 .dropdown-button {
   font-size: 11px;
   line-height: 13px;
+
+  &.active {
+    filter: var(--button-filter);
+  }
 }
 
 .select {
