@@ -1,0 +1,20 @@
+@mixin common-section {
+  display: flex;
+  height: auto;
+  border-bottom: 1px solid #4f4f4f;
+  padding: 12px 0;
+  margin: 0 12px;
+}
+
+.container {
+  display: none;
+
+  &.active {
+    position: relative;
+    display: block;
+  }
+}
+.ik-section {
+  @include common-section;
+  flex-direction: column;
+}
