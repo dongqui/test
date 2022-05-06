@@ -19,3 +19,4 @@ export { default as goToSpecificPoses } from './goToSpecificPoses';
 export { default as getInterpolatedQuaternion } from './getInterpolatedQuaternion';
 export { default as getInterpolatedVector } from './getInterpolatedVector';
 export { default as getValueInsertedTransformKeys } from './getValueInsertedTransformKeys';
+export { default as getInitialPoses } from './getInitialPoses';

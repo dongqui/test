@@ -1,3 +1,4 @@
+import { convertServerResponseToNode } from 'utils/LP/converters';
 import { RootState } from 'reducers';
 import { select, put, call } from 'redux-saga/effects';
 import produce from 'immer';
@@ -11,11 +12,11 @@ import * as api from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
-import { getRecurrentRotationQuaternion } from 'utils/RP';
+import { getInitialPoses } from 'utils/RP';
 import { WARNING_07, WARNING_01 } from 'constants/Text';
 import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { AddModelResponse } from 'types/LP';
-import plaskEngine from '3d/PlaskEngine';
+import plaskEngine, { AnimationModule } from '3d/PlaskEngine';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -26,26 +27,38 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
-    const { uid, modelUrl, assetsUid, name }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
+    const response: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
+    const modelNode = convertServerResponseToNode(response);
 
+    if (!modelNode.assetId || !modelNode.modelUrl) {
+      return;
+    }
     // TODO: handling this in sever
-    const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelUrl, '', baseScene);
+    const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelNode.modelUrl, '', baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
     if (!skeletons?.length || !skeletons[0].bones?.length || !meshes?.length) {
       throw new Error('Load asset container failed');
     }
 
-    preprocessAssetContainerData(assetsUid, assetContainer);
+    preprocessAssetContainerData(modelNode?.assetId, assetContainer);
 
-    const { animationIngredientIds, animationIngredients } = getCustomAnimationIngredients(assetsUid, transformNodes, animationGroups);
-    const retargetMap: PlaskRetargetMap = yield call(_createRetargetMap, assetsUid, skeletons);
-    const extension = getFileExtension(name).toLowerCase();
-    const fileName = name.split('.').slice(0, -1).join('.');
+    const animationIngredients = getCustomAnimationIngredients(modelNode.assetId, transformNodes, animationGroups);
+
+    const retargetMap: PlaskRetargetMap = yield call(createRetargetMap, modelNode.assetId, skeletons);
+    const extension = getFileExtension(modelNode.name).toLowerCase();
+    const fileName = modelNode.name.split('.').slice(0, -1).join('.');
     const nodeName = getNodeName(lpNode.nodes, fileName, extension);
     const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
 
+    // TODO: animationIngredients로 모션 생성
+    const motionNodes = Promise.all([]);
+
+    const nextNodes = produce(lpNode.nodes, (draft) => {
+      draft.push(modelNode);
+    });
+
     const newAsset: PlaskAsset = {
-      id: assetsUid,
+      id: modelNode.assetId,
       name: nodeName,
       extension,
       meshes,
@@ -54,36 +67,10 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       skeleton: skeletons[0] ?? null,
       bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
       transformNodes,
-      animationIngredientIds,
+      // motionNodes에서 animationids 추가
+      animationIngredientIds: [],
       retargetMapId: retargetMap.id,
     };
-
-    const nextNodes = produce(lpNode.nodes, (draft) => {
-      const newModelNode: LP.Node = {
-        id: uid,
-        parentId: '',
-        name: nodeName,
-        extension,
-        type: 'MODEL',
-        assetId: newAsset.id,
-        childNodeIds: animationIngredientIds,
-      };
-      draft.push(newModelNode);
-
-      animationIngredients.forEach((ingredient) => {
-        const motion: LP.Node = {
-          id: ingredient.id,
-          // parentId: ingredient.assetId,
-          parentId: newModelNode.id,
-          assetId: ingredient.assetId,
-          name: ingredient.name,
-          extension: '',
-          type: 'MOTION',
-          childNodeIds: [],
-        };
-        draft.push(motion);
-      });
-    });
 
     yield put(plaskProjectActions.addAsset({ asset: newAsset }));
     yield put(
@@ -140,7 +127,6 @@ function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.A
 }
 
 function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.TransformNode[], animationGroups: BABYLON.AnimationGroup[]) {
-  const animationIngredientIds: string[] = [];
   const animationIngredients: AnimationIngredient[] = [];
 
   animationGroups.forEach((animationGroup, idx) => {
@@ -161,14 +147,13 @@ function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.
       idx === 0,
     );
 
-    animationIngredientIds.push(animationIngredient.id);
     animationIngredients.push(animationIngredient);
   });
 
-  return { animationIngredientIds, animationIngredients };
+  return animationIngredients;
 }
 
-async function _createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]) {
+async function createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]) {
   try {
     return await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000);
   } catch (e) {
@@ -183,18 +168,4 @@ function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {
   const check = checkCreateDuplicates(`${fileName}`, currentPathNodeNames);
 
   return check === '0' ? `${fileName}.${extension}` : `${fileName} (${check}).${extension}`;
-}
-
-function getInitialPoses(transformNodes: BABYLON.TransformNode[], skeletons: BABYLON.Skeleton[]) {
-  return filterAnimatableTransformNodes(transformNodes).map((transformNode) => {
-    const bone = skeletons[0].bones.find((bone) => bone.id === transformNode.id.replace('//transformNode', '//bone'))!;
-
-    return {
-      target: transformNode,
-      position: transformNode.position.clone(),
-      rotationQuaternion: transformNode.rotationQuaternion ? transformNode.rotationQuaternion.clone() : transformNode.rotation.clone().toQuaternion(),
-      recurrentRotationQuaternion: bone ? getRecurrentRotationQuaternion(bone) : null,
-      scaling: transformNode.scaling.clone(),
-    };
-  });
 }
