@@ -28,6 +28,9 @@
     span,
     svg {
       color: var(--grey030);
+      * {
+        stroke: var(--grey030);
+      }
     }
   }
 }

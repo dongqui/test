@@ -2,7 +2,8 @@ import { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
-import { IconWrapper, SvgPath } from 'components/Icon';
+import { SvgPath } from 'components/Icon';
+import { IconButton } from 'components/Button';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 import classNames from 'classnames/bind';
@@ -33,7 +34,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <IconWrapper className={cx('icon')} id={ONBOARDING_ID.IMPORT_FILE} icon={SvgPath.Plus} hasFrame={false} onClick={handleFileImportButtonClick} />
+      <IconButton icon={SvgPath.Plus} variant="ghost" id={ONBOARDING_ID.IMPORT_FILE} onClick={handleFileImportButtonClick} />
     </div>
   );
 };

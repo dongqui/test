@@ -2,12 +2,14 @@
   display: flex;
   justify-content: space-between;
   height: 100%;
+  background-color: inherit;
 }
 
 .left-upper {
   display: flex;
   align-items: center;
   padding: 6px 12px;
+  background-color: inherit;
 
   .left-upper-inner {
     max-width: 166px;
@@ -26,25 +28,9 @@
 }
 
 .icon-logo-wrapper {
-  display: block;
+  background-color: inherit;
   position: relative;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
   margin-right: 8px;
-
-  &:hover {
-    background-color: var(--gray400);
-  }
-}
-
-.icon-logo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 16px;
-  height: 16px;
 }
 
 .middle-upper {
@@ -79,34 +65,15 @@
   padding: 4px 16px;
 
   .device-select {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     margin-right: 8px;
-    width: 69px;
-    height: 24px;
-    font-size: 11px;
-    line-height: 13px;
-    border-radius: 6px;
-    padding: 0 8px;
-    color: #fff;
-    cursor: pointer;
+    & > button {
+      font-size: 11px;
+      line-height: 13px;
+    }
     order: -1;
 
-    &:hover {
-      background-color: #4f4f4f;
-    }
-
-    & > span {
-      margin-left: 4px;
-    }
-
-    &.disable {
+    & > .disabled {
       cursor: not-allowed;
-
-      &:hover {
-        background-color: transparent;
-      }
     }
   }
 

@@ -8,7 +8,7 @@ import styles from './IconToggleButton.module.scss';
 const cx = classNames.bind(styles);
 
 interface BaseProps {
-  variant: 'primary';
+  variant?: 'primary';
   icon: FunctionComponent;
   defaultState?: boolean;
 }

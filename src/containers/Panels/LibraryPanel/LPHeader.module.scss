@@ -7,30 +7,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: inherit;
 }
 
 .title {
   color: #fff;
   font: $header-title;
   text-transform: capitalize;
-}
-
-.icon {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  width: 24px;
-  height: 24px;
-  margin-right: -4px;
-  color: #fff;
-  border-radius: 6px;
-
-  svg {
-    width: 16px;
-  }
-
-  &:hover {
-    cursor: default;
-    background-color: var(--gray400);
-  }
 }
