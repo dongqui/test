@@ -69,8 +69,8 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
         title: 'Confirm',
         message: TEXT.CONFIRM_04,
         onConfirm: function () {
-          if (assetId) {
-            handleConfirmOnError.put(lpNodeActions.visualizeModel(assetId));
+          if (dropNode) {
+            handleConfirmOnError.put(lpNodeActions.visualizeModel(dropNode));
             handleConfirmOnError.put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
@@ -125,9 +125,9 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
       yield put(animationDataActions.addAnimationIngredient({ animationIngredient: mocapAnimationIngredient }));
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: dropNode.assetId!, animationIngredientId: mocapAnimationIngredient.id }));
 
-      if (dropNode.assetId) {
+      if (dropNode?.assetId) {
         yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: dropNode.assetId, animationIngredientId: mocapAnimationIngredient.id }));
-        yield put(lpNodeActions.visualizeModel(dropNode.assetId));
+        yield put(lpNodeActions.visualizeModel(dropNode));
         forceClickAnimationPlayAndStop();
       }
     } catch (error) {
@@ -150,8 +150,8 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
         confirmText: 'Confirm',
         cancelText: 'Cancel',
         onConfirm: function* () {
-          if (dropNode?.assetId) {
-            handleConfirmOnError.put(lpNodeActions.visualizeModel(dropNode.assetId));
+          if (dropNode) {
+            handleConfirmOnError.put(lpNodeActions.visualizeModel(dropNode));
             handleConfirmOnError.put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },
@@ -187,8 +187,8 @@ function* handleApplyMocapToModelRequest(action: ReturnType<typeof lpNodeActions
         title: 'Confirm',
         message: TEXT.CONFIRM_04,
         onConfirm: function () {
-          if (assetId) {
-            handleConfirmOnError.put(lpNodeActions.visualizeModel(assetId));
+          if (dropNode) {
+            handleConfirmOnError.put(lpNodeActions.visualizeModel(dropNode));
             handleConfirmOnError.put(cpActions.switchMode({ mode: 'Retargeting' }));
           }
         },

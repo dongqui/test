@@ -7,16 +7,12 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 
 interface Props {
-  nodeId: string;
-  assetId: string;
-  parentId: string;
-  type: string;
-  nodeName: string;
-  childNodeIds: string[];
+  node: LP.Node;
 }
 
-const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNodeIds }: Props) => {
+const ModelContextMenu = ({ node }: Props) => {
   const dispatch = useDispatch();
+  const { id, assetId, parentId, type, name, childNodeIds } = node;
   const { animationData, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
 
@@ -28,23 +24,23 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
         message: 'Are you sure? All files in the directory will be deleted.',
         confirmButtonColor: 'negative',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
+          dispatch(lpNodeActions.deleteNodeSocket.request(id));
         },
       }),
     );
   };
 
   const handleEditName = () => {
-    dispatch(lpNodeActions.setEditingNodeId(nodeId));
+    dispatch(lpNodeActions.setEditingNodeId(id));
   };
 
   const handleVisualize = () => {
     const hasMotions = childNodeIds.length !== 0;
 
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId, assetId }));
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId: assetId || '' }));
     }
-    dispatch(lpNodeActions.visualizeModel(assetId));
+    dispatch(lpNodeActions.visualizeModel(node));
   };
 
   const handleCancelVisualization = () => {
@@ -57,7 +53,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
     if (assetId) {
       dispatch(
         lpNodeActions.addEmptyMotion({
-          nodeId,
+          nodeId: id,
           assetId,
         }),
       );
@@ -75,7 +71,7 @@ const ModelContextMenu = ({ nodeId, assetId, parentId, type, nodeName, childNode
             lpNodeActions.exportAsset({
               ...data,
               parentId,
-              nodeName,
+              nodeName: name,
               assetId,
               type,
             }),

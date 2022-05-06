@@ -13,7 +13,7 @@ interface Props {
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, extension, name, parentId, type, childNodeIds } = node;
+  const { id, assetId, extension, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
 
@@ -23,12 +23,7 @@ const ModelNode = ({ node }: Props) => {
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('ModelContextMenu', e, {
-        nodeId: id,
-        assetId,
-        nodeName: name,
-        parentId,
-        type,
-        childNodeIds,
+        node,
       }),
     );
   };
@@ -56,7 +51,7 @@ const ModelNode = ({ node }: Props) => {
     if (!hasMotions) {
       dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
     }
-    dispatch(lpNodeActions.visualizeModel(assetId));
+    dispatch(lpNodeActions.visualizeModel(node));
   };
 
   const handleEditName = (newName: string) => {

@@ -14,34 +14,31 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
   const { screenList, assetList } = plaskProject;
   const { assetId, nodeId, parentId } = action.payload;
 
-  if (!assetId) {
+  plaskEngine.assetModule.clearAnimationGroups(screenList);
+  const parentModel = find(lpNode.nodes, { id: parentId });
+
+  if (!assetId || !parentModel) {
     return;
   }
 
-  plaskEngine.assetModule.clearAnimationGroups(screenList);
-
-  const parentModel = find(lpNode.nodes, { id: parentId });
-  // TODO 선언적으로 수정
-  if (parentModel) {
-    const motions = filter(animationIngredients, { assetId: parentModel.assetId });
-    if (motions && parentModel.assetId) {
-      const selectedMotion = find(motions, { id: nodeId });
-      if (selectedMotion) {
-        const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
-        if (currentAsset) {
-          goToSpecificPoses(currentAsset.initialPoses);
-        }
-
-        yield put(
-          animationDataActions.changeCurrentAnimationIngredient({
-            assetId: parentModel.assetId,
-            animationIngredientId: selectedMotion.id,
-          }),
-        );
+  const motions = filter(animationIngredients, { assetId: parentModel.assetId });
+  if (motions && parentModel.assetId) {
+    const selectedMotion = find(motions, { id: nodeId });
+    if (selectedMotion) {
+      const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
+      if (currentAsset) {
+        goToSpecificPoses(currentAsset.initialPoses);
       }
+
+      yield put(
+        animationDataActions.changeCurrentAnimationIngredient({
+          assetId: parentModel.assetId,
+          animationIngredientId: selectedMotion.id,
+        }),
+      );
     }
   }
 
-  yield put(lpNodeActions.visualizeModel(assetId));
+  yield put(lpNodeActions.visualizeModel(parentModel));
   forceClickAnimationPlayAndStop(50);
 }

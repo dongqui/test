@@ -8,7 +8,7 @@ export function convertServerResponseToNode(response: RequestNodeResponse): LP.N
     parentId: response.parentUid,
     type: response.type,
     name: response.name,
-    modelUrl: response.modelUrl,
+    modelUrl: response.modelUrl || '',
     childNodeIds: [],
     extension: response.type === 'MODEL' ? getFileExtension(response.name) : '',
     mocapData: response.mocap,

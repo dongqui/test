@@ -119,7 +119,8 @@ interface ApplyMocapToModelReceiveParams {
 }
 
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
-export const visualizeModel = createAction('node/VISUALIZE_MODEL', (assetId: string) => ({ assetId }))();
+export const visualizeModel = createAction('node/VISUALIZE_MODEL', (node: LP.Node) => node)();
+export const visualize = createAction('node/VISUALIZE_MODEL', (node: LP.Node) => node)();
 export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
 export const visualizeMotion = createAction('node/VISUALIZE_MOTION', (params: VisualizeMotionParams) => ({ ...params }))();
 export const selectNode = createAction('node/SELECT_NODE', (params: SelectNodeParams) => ({ ...params }))();
