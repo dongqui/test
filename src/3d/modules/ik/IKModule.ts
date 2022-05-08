@@ -565,7 +565,7 @@ export class IKModule extends Module {
       //const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex() - 1], {
 
 
-      const ikCtrl = new BoneIKController(body, skeleton.bones[bone.getIndex()], {
+      const ikCtrl = new BoneIKController(body, (bone as any)._parent as Bone, {
         targetMesh: controller,
         poleAngle: elem.poleAngle,
         bendAxis: elem.bendAxis
@@ -588,7 +588,7 @@ export class IKModule extends Module {
 
       const controllerOrig = MeshBuilder.CreateBox('orig_' + elem.name, { size: 2 }, scene);
       controllerOrig.isVisible = false;
-      const ikCtrlClone = new BoneIKController(this._ghost.rootMesh!, this._ghost.skeleton!.bones[bone.getIndex()], {
+      const ikCtrlClone = new BoneIKController(this._ghost.rootMesh!, (this._ghost.skeleton!.bones[skeleton.bones.indexOf(bone)] as any)._parent as Bone, {
         targetMesh: controllerOrig,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
         poleAngle: elem.poleAngle,
