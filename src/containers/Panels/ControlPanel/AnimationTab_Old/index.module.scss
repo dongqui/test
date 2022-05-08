@@ -6,6 +6,11 @@
   margin: 0 12px;
 }
 
+.transform-section {
+  @include common-section;
+  flex-direction: column;
+}
+
 .panel-toggle {
   display: flex;
   align-items: center;
@@ -41,6 +46,26 @@
       transform: rotate(90deg);
     }
   }
+}
+
+.visibility-section {
+  @include common-section;
+  flex-direction: column;
+}
+
+.fk-controller-section {
+  @include common-section;
+  flex-direction: column;
+}
+
+.filter-section {
+  @include common-section;
+  flex-direction: column;
+}
+
+.ik-section {
+  @include common-section;
+  flex-direction: column;
 }
 
 .inactive-overlay {
