@@ -81,6 +81,7 @@ export class IKModule extends Module {
 
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
+    this._disposeIK();
   }
 
   public initialize() {
@@ -107,37 +108,42 @@ export class IKModule extends Module {
   public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
   public onStateChanged(key: string, previousState: any) {
     if (key === 'plaskProject.visualizedAssetIds') {
-      if (this._ikControllers.length) {
-        console.log("replacing a model, cleaning old assets");
-        this._ghost.skeleton?.dispose();
-        this._ghost.rootMesh?.dispose();
-        this._ghost.skeleton = null;
-        this._ghost.rootMesh = null;
-
-        for (const controller of this._ghost.ikControllers) {
-          controller.targetMesh.dispose();
-        }
-        this._ghost.ikControllers.length = 0;
-        
-        for (const controller of this._ikControllers) {
-          controller.targetMesh.dispose();
-        }
-        this._ikControllers.length = 0;
-        
-        for (const mesh of this._ikMeshes) {
-          mesh.dispose();
-        }
-        this._ikMeshes.length = 0;
-
-        for (const mesh of this._ikControllerMeshes) {
-          mesh.dispose();
-        }
-        this._ikControllerMeshes.length = 0;
-
-        this._gizmoManager.attachToNode(null);
-      }
-      this._initializeControllers(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
+      this._disposeIK();
+      this._createIK();
     }
+  }
+
+  private _createIK() {
+    this._initializeControllers(this.plaskEngine.state.plaskProject.visualizedAssetIds[0])
+  }
+
+  private _disposeIK() {
+    this._ghost.skeleton?.dispose();
+    this._ghost.rootMesh?.dispose();
+    this._ghost.skeleton = null;
+    this._ghost.rootMesh = null;
+
+    for (const controller of this._ghost.ikControllers) {
+      controller.targetMesh.dispose();
+    }
+    this._ghost.ikControllers.length = 0;
+    
+    for (const controller of this._ikControllers) {
+      controller.targetMesh.dispose();
+    }
+    this._ikControllers.length = 0;
+    
+    for (const mesh of this._ikMeshes) {
+      mesh.dispose();
+    }
+    this._ikMeshes.length = 0;
+
+    for (const mesh of this._ikControllerMeshes) {
+      mesh.dispose();
+    }
+    this._ikControllerMeshes.length = 0;
+
+    this._gizmoManager.attachToNode(null);
   }
 
   private _createIKControllerMesh(params: BoneIKParams, bone: Bone, transformNode: TransformNode) {
