@@ -60,7 +60,8 @@ export class IKModule extends Module {
   private _ikMeshes: Mesh[] = [];
   private _ghost = {
     skeleton: null as Nullable<Skeleton>,
-    rootMesh: null as Nullable<Mesh>
+    rootMesh: null as Nullable<Mesh>,
+    ikControllers: [] as BoneIKController[]
   }
 
   private get _allTransformNodes() {
@@ -106,19 +107,36 @@ export class IKModule extends Module {
   public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
   public onStateChanged(key: string, previousState: any) {
     if (key === 'plaskProject.visualizedAssetIds') {
-      // TODO : when assets module is live, use its observable
-      if (previousState[0]) {
+      if (this._ikControllers.length) {
         console.log("replacing a model, cleaning old assets");
         this._ghost.skeleton?.dispose();
         this._ghost.rootMesh?.dispose();
+        this._ghost.skeleton = null;
+        this._ghost.rootMesh = null;
 
+        for (const controller of this._ghost.ikControllers) {
+          controller.targetMesh.dispose();
+        }
+        this._ghost.ikControllers.length = 0;
+        
         for (const controller of this._ikControllers) {
-          controller.mesh.dispose();
+          controller.targetMesh.dispose();
         }
         this._ikControllers.length = 0;
+        
+        for (const mesh of this._ikMeshes) {
+          mesh.dispose();
+        }
+        this._ikMeshes.length = 0;
+
+        for (const mesh of this._ikControllerMeshes) {
+          mesh.dispose();
+        }
+        this._ikControllerMeshes.length = 0;
+
+        this._gizmoManager.attachToNode(null);
       }
-      if (this._ikControllers.length === 0)
-        this._playgroundCode(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
+      this._initializeControllers(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
     }
   }
 
@@ -456,8 +474,9 @@ export class IKModule extends Module {
   //   return this.plaskEngine.state.plaskProject.visualizedAssetIds;
   // }
 
-  private _playgroundCode(assetId: string) {
+  private _initializeControllers(assetId: string) {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
+    const ikControllersGhosts = this._ghost.ikControllers; // to store IKBoneControllers
     const scene = this.plaskEngine.scene;
 
     //console.log(this.plaskEngine.state.plaskProject.assetList);
@@ -567,8 +586,12 @@ export class IKModule extends Module {
         targetMesh: controllerOrig,
         //poleAngle: 0, //elem.name.includes('Hand') ? 0 : elem.name.includes('Left') ? Math.PI / 2 : -Math.PI / 2,
         poleAngle: elem.poleAngle,
+        bendAxis: elem.bendAxis
       });
-      //ikControllers.push(ikCtrlClone);
+      ikCtrlClone.upVector = elem.upVector;
+      (ikCtrlClone as any)._adjustRoll = 0;
+      ikCtrlClone.setIKtoRest();
+      ikControllersGhosts.push(ikCtrlClone);
 
       controllerClone.metadata.controllerOrig = controllerOrig;
       controllerClone.metadata.ikControllerOrig = ikCtrlClone;
