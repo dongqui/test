@@ -20,34 +20,29 @@ const FasterDropdown: FunctionComponent<Props> = () => {
   const fasterList = useMemo(
     () => [
       {
-        key: '0.25',
-        value: '0.25X',
-        isSelected: isEqual(_playSpeed, 0.25),
-      },
-      {
         key: '0.5',
-        value: '0.5X',
+        value: '15fps',
         isSelected: isEqual(_playSpeed, 0.5),
       },
       {
+        key: '0.8',
+        value: '24fps',
+        isSelected: isEqual(_playSpeed, 0.8),
+      },
+      {
         key: '1',
-        value: '1X',
+        value: '30fps',
         isSelected: isEqual(_playSpeed, 1),
       },
       {
-        key: '1.25',
-        value: '1.25X',
-        isSelected: isEqual(_playSpeed, 1.25),
-      },
-      {
-        key: '1.75',
-        value: '1.75X',
-        isSelected: isEqual(_playSpeed, 1.75),
-      },
-      {
         key: '2',
-        value: '2X',
+        value: '60fps',
         isSelected: isEqual(_playSpeed, 2),
+      },
+      {
+        key: '3',
+        value: '90fps',
+        isSelected: isEqual(_playSpeed, 3),
       },
     ],
     [_playSpeed],
