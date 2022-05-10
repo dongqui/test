@@ -11,6 +11,7 @@ import { GizmoMode, GizmoSpace } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import plaskEngine from '3d/PlaskEngine';
 import ScreenVisibility from './ScreenVisibility';
+import '@babylonjs/inspector';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -261,6 +262,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           event.preventDefault();
           break;
         }
+        case 'p':
+        case 'P':
+        case 'ㅔ': // p (insPector)
+          if (event.ctrlKey || event.metaKey) {
+            plaskEngine.toggleInspector();
+            event.preventDefault();
+          }
+          break;
         default:
           break;
       }

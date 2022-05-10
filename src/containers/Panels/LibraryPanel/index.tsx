@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+
 import { partition } from 'lodash';
 
 import { getFileExtension } from 'utils/common';

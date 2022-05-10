@@ -53,6 +53,7 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+  private _inspectorActive = false;
 
   public dispatch!: Dispatch<any>;
 
@@ -292,6 +293,17 @@ export class PlaskEngine {
 
   public clearHistory() {
     this.dispatch(ActionCreators.clearHistory());
+  }
+
+  public toggleInspector() {
+    if (!this._inspectorActive) {
+      this.scene.debugLayer.show({overlay: true});
+      document.getElementById("scene-explorer-host")!.style.zIndex = "1000";
+      document.getElementById("inspector-host")!.style.zIndex = "1000";
+    } else {
+      this.scene.debugLayer.hide();
+    }
+    this._inspectorActive = !this._inspectorActive;
   }
 
   private _registerModules() {

@@ -506,14 +506,16 @@ export class IKModule extends Module {
       return;
     }
     for (const mesh of asset.meshes) {
-      if (mesh.name === "__root__") {
+      if (mesh.name === "__root__"){
         this._ghost.rootMesh = mesh.clone("ghost_root", null) as Mesh;
         this._ghost.rootMesh.visibility = 0.25;
+        this._ghost.rootMesh.setEnabled(true);
       }
     }
-
+    
     this._ghost.skeleton = asset.skeleton.clone("ghost_skeleton");
-    // this._createGUIElement();
+    this._ghost.rootMesh!.skeleton = this._ghost.skeleton
+    this._createGUIElement();
 
     // TODO : retrieve skeleton and body
     //const body = scene.getMeshByName('Body') as Mesh; // store body mesh
