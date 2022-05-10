@@ -111,7 +111,7 @@ const UpperBar: FunctionComponent<Props> = ({
         <Link href="https://plask.ai">
           <a target="_blank" style={{ backgroundColor: 'inherit' }} className={cx('icon-logo-wrapper')}>
             {/*https://nextjs.org/docs/api-reference/next/link#if-the-child-is-a-functional-component*/}
-            <IconButton icon={SvgPath.Logo} variant="ghost" />
+            <IconButton icon={SvgPath.Logo} type="ghost" />
           </a>
         </Link>
         <Dropdown>
@@ -148,7 +148,7 @@ const UpperBar: FunctionComponent<Props> = ({
             <ExpandButton
               className={cx({ disabled: recording || recordOverTwice, active: cameraDropdownState })}
               content="Camera"
-              variant="ghost"
+              type="ghost"
               disabled={recording || recordOverTwice}
               onClick={handleCameraDropdown}
             />

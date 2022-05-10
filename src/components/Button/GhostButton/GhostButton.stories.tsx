@@ -23,6 +23,6 @@ GhostButton.args = {
   text: 'Button',
   fullSize: false,
   disabled: false,
-  color: 'default',
+  type: 'default',
   size: 'small',
 };

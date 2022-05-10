@@ -39,7 +39,7 @@ const ScreenVisibility: FunctionComponent<Props> = ({ itemList }) => {
   return (
     <div id="screenVisibilityWrapper" className={cx('wrapper')} ref={wrapperRef}>
       <div className={cx('header', { open: isOpen })}>
-        <ExpandButton className={cx('toggle-button')} variant="ghost" onClick={handleToggleButtonClick} content={SvgPath.EyeOpenWhite} />
+        <ExpandButton className={cx('toggle-button')} type="ghost" onClick={handleToggleButtonClick} content={SvgPath.EyeOpenWhite} />
       </div>
       {isOpen && (
         <div className={cx('body')}>

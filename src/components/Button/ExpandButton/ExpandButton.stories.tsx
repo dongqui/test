@@ -45,6 +45,6 @@ export const ExpandButton = Template.bind({});
 ExpandButton.args = {
   fullSize: false,
   disabled: false,
-  variant: 'default',
+  type: 'default',
   content: SvgPath.EyeOpen,
 };

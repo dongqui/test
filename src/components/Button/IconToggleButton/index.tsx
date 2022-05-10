@@ -8,20 +8,20 @@ import styles from './IconToggleButton.module.scss';
 const cx = classNames.bind(styles);
 
 interface BaseProps {
-  variant?: 'primary';
+  type?: 'primary';
   icon: FunctionComponent;
   defaultState?: boolean;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  variant: 'primary',
+  type: 'primary',
 };
 
-const IconToggleButton: FunctionComponent<Props> = ({ variant, icon, disabled, defaultState, onClick, className, children, ...rest }) => {
+const IconToggleButton: FunctionComponent<Props> = ({ type, icon, disabled, defaultState, onClick, className, children, ...rest }) => {
   const [toggleState, setToggleState] = useState(defaultState ?? false);
-  const classes = cx('icon-toggle-button', className, variant, {
+  const classes = cx('icon-toggle-button', className, type, {
     disabled,
     state: toggleState,
   });

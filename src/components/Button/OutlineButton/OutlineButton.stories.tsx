@@ -19,7 +19,7 @@ OutlineButton.args = {
   text: 'Button',
   fullSize: false,
   disabled: false,
-  bolderColor: 'default',
+  type: 'default',
   textColor: 'light',
   size: 'small',
 };

@@ -12,7 +12,7 @@ const Template: ComponentStory<typeof _IconButton> = (args) => <_IconButton {...
 export const IconButton = Template.bind({});
 
 IconButton.args = {
-  variant: 'default',
+  type: 'default',
   disabled: false,
   icon: SvgPath.Search,
 };
