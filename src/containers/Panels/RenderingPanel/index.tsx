@@ -7,7 +7,7 @@ import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
-import { GizmoMode, GizmoSpace } from 'types/common';
+import { ArrayOfThreeNumbers, GizmoMode, GizmoSpace, PlaskProperty } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import plaskEngine from '3d/PlaskEngine';
 import ScreenVisibility from './ScreenVisibility';
