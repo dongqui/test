@@ -6,7 +6,6 @@
 
   header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
 
     h6 {
@@ -16,18 +15,24 @@
       font-style: normal;
       font-weight: 700;
       font-size: 16px;
+      margin-left: 14px;
+    }
+
+    button {
+      margin-left: auto;
     }
   }
 
   .body {
-    margin-top: 16px;
+    margin-top: 21px;
+    margin-left: 38px;
 
     div {
       font-style: normal;
-      font-weight: 300;
+      font-weight: 400;
       font-size: 14px;
       line-height: 21px;
-      color: $content-active;
+      color: $content-medium;
 
       b {
         font-weight: 600;
@@ -36,7 +41,7 @@
   }
 
   footer {
-    margin-top: 16px;
+    margin-top: 21px;
 
     button {
       float: right;

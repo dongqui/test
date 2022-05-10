@@ -2,20 +2,27 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import _FilledButton from './';
 
 export default {
-  /* 👇 The title prop is optional.
-   * See https://storybook.js.org/docs/react/configure/overview#configure-story-loading
-   * to learn how to generate automatic titles
-   */
   title: 'Buttons',
   component: _FilledButton,
+  argTypes: {
+    size: {
+      description: 'small option 만 가능',
+      control: false,
+    },
+    dataCy: {
+      description: '개발용 parameter',
+      control: false,
+    },
+  },
 } as ComponentMeta<typeof _FilledButton>;
 
 const Template: ComponentStory<typeof _FilledButton> = (args) => <_FilledButton {...args} />;
 export const FilledButton = Template.bind({});
 
 FilledButton.args = {
-  color: 'primary',
-  size: 'small',
   text: 'Button',
   fullSize: false,
+  disabled: false,
+  color: 'primary',
+  size: 'small',
 };
