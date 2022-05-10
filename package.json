@@ -16,7 +16,7 @@
     "clean": "rimraf dist main src/out out src/_next _next storybook-static",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run --browser chrome",
-    "storybook": "NODE_PATH=src start-storybook -p 6006",
+    "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
   "dependencies": {

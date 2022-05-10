@@ -16,6 +16,7 @@ import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from '
 import plaskEngine, { PlaskEngine } from '3d/PlaskEngine';
 import { AnimationGroup, AssetContainer, Scene, Skeleton, TransformNode } from '@babylonjs/core';
 
+// TODO: Change file name: import animation file
 export default function* handleFileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
   // TODO: reduce # of actions by handle multi-files at one action
   const { lpNode, plaskProject }: RootState = yield select();
@@ -119,10 +120,10 @@ export default function* handleFileUpload(action: ReturnType<typeof lpNodeAction
     const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(
       globalUIActions.openModal(
-        'ImportErrorModal',
+        '_AlertModal',
         {
           message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNOWN,
-          fileName: rawFileName,
+          title: 'Import failed',
         },
         `import_error_${rawFileName}`,
       ),

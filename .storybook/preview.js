@@ -1,5 +1,6 @@
 import "../src/styles/core.scss";
-import "../src/styles/libraries/_font.scss"
+import "../src/styles/libraries/_font.scss";
+import "./globalStoryStyle.scss";
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

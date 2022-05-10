@@ -1,6 +1,6 @@
 import { FunctionComponent, memo, ButtonHTMLAttributes, MouseEvent, useCallback } from 'react';
 import classNames from 'classnames/bind';
-import styles from './OutlineButton.module.scss';
+import styles from 'components/Button/OutlineButton/OutlineButton.module.scss';
 
 const cx = classNames.bind(styles);
 
