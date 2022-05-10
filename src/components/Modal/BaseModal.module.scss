@@ -19,7 +19,8 @@
   border-radius: 10px;
   border: 1px solid $outline;
   box-shadow: 0 0 12px rgb(0 0 0 / 25%);
-  padding: 28px 24px;
+  // padding 없애고 자식에서 정해야함.
+  padding: 20px;
   min-width: 280px;
   max-width: 60%;
   outline: 0;
