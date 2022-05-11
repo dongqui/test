@@ -301,13 +301,8 @@ export class GizmoModule extends Module {
       }
 
       if (this.plaskEngine.visibilityLayers.visibilityOptions.isGizmoVisible) {
-        if (!checkIsTargetMesh(selectedTargets[0])) {
-          // transformNode single selection
-          this._gizmoManager.attachToNode(selectedTargets[0]);
-          this._addObservables(selectedTargets[0]);
-        } else {
-          this._gizmoManager.attachToMesh(selectedTargets[0]);
-        }
+        this._gizmoManager.attachToNode(selectedTargets[0]);
+        this._addObservables(selectedTargets[0]);
       } else {
         this._gizmoManager.attachToNode(null);
       }
