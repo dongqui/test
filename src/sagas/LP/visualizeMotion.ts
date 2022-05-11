@@ -21,6 +21,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     return;
   }
 
+  // TODO: 애니메이션 node 조회시 animation ingredients에 넣어야할듯.
   const motions = filter(animationIngredients, { assetId: parentModel.assetId });
   if (motions && parentModel.assetId) {
     const selectedMotion = find(motions, { id: nodeId });
