@@ -3,6 +3,7 @@ import * as trackListActions from 'actions/trackList';
 import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
 import { AnimationIngredient, PlaskLayer, PlaskTrack } from 'types/common';
+import { readMetadata } from 'utils/RP/metadata';
 
 function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
@@ -40,13 +41,13 @@ function* filterPlaskTracks(layer: PlaskLayer) {
   const selectedTargets = getSelectedTargets(yield select());
   const filteredTracks: PlaskTrack[] = [];
 
-  selectedTargets.forEach((plaskTrack) => {
-    const { id, name } = plaskTrack.reference;
-    if (name !== 'Armature') {
+  selectedTargets.forEach((plaskTransformNode) => {
+    const { id } = plaskTransformNode.reference;
+    if (readMetadata("hasTracks", plaskTransformNode.reference)) {
       const selectedTrackIndex = layer.tracks.findIndex((track) => track.targetId === id && track.layerId === layer.id);
       for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {
         const propertyTrack = layer.tracks[propertyTrackIndex];
-        if (propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);
+        if (propertyTrack && propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);
       }
     }
   });

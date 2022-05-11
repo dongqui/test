@@ -46,6 +46,8 @@ export class SelectorModule extends Module {
     }
 
     if (differs) {
+      // TODO : 3D Modules should just use state as readonly
+      // See comment in POINTERUP callback
       this.plaskEngine.dispatch(defaultMultiSelect({ targets: targets.map((transformNode) => transformNode.getPlaskEntity()) }));
     }
   }
@@ -53,6 +55,8 @@ export class SelectorModule extends Module {
   private _startPosition: Nullable<Vector2> = null;
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+
+  public onUserSelectRequest : Observable<PlaskTransformNode[]> = new Observable();
 
   public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects'];
   public onStateChanged(key: string, previousState: any) {
@@ -130,6 +134,10 @@ export class SelectorModule extends Module {
             } else {
               // Click without ctrl or meta.
               this.onEndSelectBox.notifyObservers({ type: 'default', objects });
+
+              // TODO : 3D Modules should just use state as readonly
+              // Do not dispatch, but instead do :
+              // this.onUserSelectRequest.notifyObservers(objects.map(...));
               this.select(objects);
             }
 

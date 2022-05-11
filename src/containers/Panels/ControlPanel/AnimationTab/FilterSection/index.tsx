@@ -58,6 +58,12 @@ const FilterSection: FunctionComponent<Props> = ({ isAllActive, visualizedAssetI
     } else if (_selectedTargets.length === 1) {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId && animationIngredient.current);
+      if (!targetAnimationIngredient) {
+        // We selected a target without animation tracks
+        setControlLayer(null);
+        setControlTrack(null);
+        return;
+      }
       const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer)!;
       const targetTrack = targetLayer.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
 

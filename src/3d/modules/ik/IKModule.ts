@@ -15,6 +15,9 @@ import {
   Skeleton,
   Scalar,
   AssetContainer,
+  ExecuteCodeAction,
+  ActionManager,
+  ActionEvent,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -22,6 +25,8 @@ import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Slider, Button } from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import * as selectingDataActions from 'actions/selectingDataAction';
 
 type BoneIKParams = {
   name: string;
@@ -44,6 +49,7 @@ export class IKModule extends Module {
   private _activeTransformNodes: TransformNode[] = [];
   private _ikControllers: BoneIKController[] = [];
   private _ikControllerMeshes: Mesh[] = [];
+  private _TEMP_controllers: Mesh[] = [];
   private _activeIkControllers: BoneIKController[] = [];
   private _gizmoManager!: GizmoManager;
   private _advancedTexture!: AdvancedDynamicTexture;
@@ -61,8 +67,7 @@ export class IKModule extends Module {
     return this.plaskEngine.selectorModule.allTransformNodes;
   }
 
-  public get retargetMap() {
-    const assetId = this.plaskEngine.state.plaskProject.visualizedAssetIds[0];
+  public getRetargetMap(assetId: string) {
     const map = this.plaskEngine.state.animationData.retargetMaps.find((elt) => elt.assetId === assetId);
 
     if (map) {
@@ -74,7 +79,7 @@ export class IKModule extends Module {
 
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
-    this._disposeIK();
+    this.removeIK();
   }
 
   public initialize() {
@@ -98,19 +103,20 @@ export class IKModule extends Module {
     this._activeTransformNodes = objects;
   }
 
-  public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
-  public onStateChanged(key: string, previousState: any) {
-    if (key === 'plaskProject.visualizedAssetIds') {
-      this._disposeIK();
-      this._createIK();
-    }
+  // public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
+  // public onStateChanged(key: string, previousState: any) {
+  //   if (key === 'plaskProject.visualizedAssetIds') {
+  //     this.removeIK();
+  //     this.addIK(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
+  //   }
+  // }
+
+  public addIK(assetId: string) {
+    this._initializeControllers(assetId);
+    return this.generateIkPlaskTransformNodes(this._ikControllerMeshes);
   }
 
-  private _createIK() {
-    this._initializeControllers(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
-  }
-
-  private _disposeIK() {
+  public removeIK() {
     this._ghost.skeleton?.dispose();
     this._ghost.rootMesh?.dispose();
     this._ghost.skeleton = null;
@@ -186,7 +192,57 @@ export class IKModule extends Module {
     controller.isVisible = false;
     controller.isPickable = false;
 
+    let pickedIkCtrl: Nullable<Mesh> = null;
+
+    controllerClone.actionManager = new ActionManager(this.plaskEngine.scene);
+    controllerClone.actionManager.registerAction(
+      // register action that enable for user to select transformNode by clicking joint
+      new ExecuteCodeAction(ActionManager.OnPickDownTrigger, (event: ActionEvent) => {
+        if (pickedIkCtrl) {
+          pickedIkCtrl.renderOutline = false;
+        }
+        this._activeTransformNodes.length = 0;
+        this._activeIkControllers.length = 0;
+
+        pickedIkCtrl = controllerClone;
+        pickedIkCtrl.renderOutline = true;
+        pickedIkCtrl.outlineColor = Color3.White();
+        pickedIkCtrl.outlineWidth = 0.01;
+
+        this._activeIkControllers.push(pickedIkCtrl.metadata.ikController);
+
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
+
+        //console.log(this._activeTransformNodes);
+
+        this._pickedIkMesh = pickedIkCtrl;
+        this._blendSlider.value = pickedIkCtrl.metadata.blend;
+        this._poleAngleSlider.value = pickedIkCtrl.metadata.ikController.poleAngle;
+
+        const sourceEvent: PointerEvent = event.sourceEvent;
+        if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+          // TODO : 3D Modules should just use state as readonly
+          // Do not dispatch, but instead do :
+          // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
+          this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: pickedIkCtrl.getPlaskEntity() }));
+        } else {
+          this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: pickedIkCtrl.getPlaskEntity() }));
+        }
+      }),
+    );
+
     return { controller, controllerClone };
+  }
+
+  public generateIkPlaskTransformNodes(handles: Mesh[]) {
+    const result = [];
+    for (const mesh of handles) {
+      result.push(new PlaskTransformNode(mesh));
+    }
+
+    return result;
   }
 
   private _createGUIElement() {
@@ -493,15 +549,15 @@ export class IKModule extends Module {
     clone.rootNodes.forEach((node: TransformNode) => {
       const descendants = node.getDescendants();
       for (const descendant of descendants) {
-        if (descendant.getClassName() === "Mesh") {
+        if (descendant.getClassName() === 'Mesh') {
           (descendant as Mesh).visibility = 0.25;
         }
       }
       this._ikMeshes.push(node as Mesh);
-      if (node.name === "ghost___root__") {
+      if (node.name === 'ghost___root__') {
         this._ghost.rootMesh = node as Mesh;
       }
-    })
+    });
     this._ghost.skeleton = clone.skeletons[0];
 
     // const bodyClone = scene.getMeshByName('Clone of __root__') as Mesh;
@@ -537,11 +593,12 @@ export class IKModule extends Module {
     // Creating IK controls
     bonesSelection.forEach((elem) => {
       // Finding Bone
-      if (!this.retargetMap) {
+      const retargetMap = this.getRetargetMap(assetId);
+      if (!retargetMap) {
         console.warn('Cannot find retarget map');
         return;
       }
-      const retargetValue = this.retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem.name));
+      const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem.name));
       if (!retargetValue) {
         console.warn('Cannot find bone name, check boneSelection');
         return;
@@ -625,37 +682,5 @@ export class IKModule extends Module {
       }
     });
     */
-    let pickedIkCtrl: Nullable<Mesh> = null;
-
-    // Evaluating the pick of blue torus to enable IK on related bones
-    this.plaskEngine.onPickObservable.add((pickedMesh) => {
-      if (pickedIkCtrl) {
-        pickedIkCtrl.renderOutline = false;
-      }
-      gizmoManager.attachToNode(null);
-      this._activeTransformNodes.length = 0;
-      this._activeIkControllers.length = 0;
-      if (this._ikControllerMeshes.includes(pickedMesh)) {
-        pickedIkCtrl = pickedMesh;
-        pickedIkCtrl.renderOutline = true;
-        pickedIkCtrl.outlineColor = Color3.White();
-        pickedIkCtrl.outlineWidth = 0.01;
-
-        gizmoManager.attachToMesh(pickedMesh);
-
-        this._activeIkControllers.push(pickedIkCtrl.metadata.ikController);
-
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
-
-        //console.log(this._activeTransformNodes);
-
-        this._pickedIkMesh = pickedIkCtrl;
-        this._blendSlider.value = pickedIkCtrl.metadata.blend;
-        this._poleAngleSlider.value = pickedIkCtrl.metadata.ikController.poleAngle;
-      }
-      //console.log(pickedIkCtrl?.metadata);
-    });
   }
 }
