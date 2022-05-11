@@ -76,6 +76,7 @@ const FasterDropdown: FunctionComponent<Props> = () => {
       <select
         onMouseEnter={() => setOnDropdown(true)}
         onMouseLeave={() => setOnDropdown(false)}
+        onKeyDown={(e) => e.preventDefault()}
         onChange={(e) => {
           const selectedIndex = e.currentTarget.selectedIndex;
           handleFasterSelect(fasterList[selectedIndex].key, fasterList[selectedIndex].value);
