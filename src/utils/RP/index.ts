@@ -20,3 +20,4 @@ export { default as getInterpolatedQuaternion } from './getInterpolatedQuaternio
 export { default as getInterpolatedVector } from './getInterpolatedVector';
 export { default as getValueInsertedTransformKeys } from './getValueInsertedTransformKeys';
 export { default as getInitialPoses } from './getInitialPoses';
+export { default as getCustomAnimationIngredients } from './getCustomAnimationIngredients';
