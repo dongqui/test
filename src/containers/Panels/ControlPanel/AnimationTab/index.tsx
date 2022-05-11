@@ -2,6 +2,7 @@ import { Fragment, FunctionComponent } from 'react';
 import IKControllerSection from './IKControllerSection';
 import FilterSection from './FilterSection';
 import TransformSection from './TransformSection';
+import BoneTrackerSection from './BoneTrackerSection';
 
 import { useSelector } from 'reducers';
 
@@ -16,6 +17,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
+  const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _selectedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
   const _playState = useSelector((state) => state.animatingControls.playState);
@@ -23,6 +25,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   return (
     <Fragment>
+      <BoneTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
       <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
       <FilterSection
         isAllActive={isAllActive}
@@ -33,7 +36,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         playState={_playState}
         playDirection={_playDirection}
       />
-      <IKControllerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
+      <IKControllerSection isAllActive={isAllActive} retargetMaps={_retargetMaps} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
     </Fragment>
   );
 };

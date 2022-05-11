@@ -1,15 +1,16 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
-import { isNull, isUndefined } from 'lodash';
+import { isNull } from 'lodash';
 
-import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
+import { AnimationTitleToggle, StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
 import AnimationInputWrapper from '../AnimationInputWrapper';
-import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/common';
-import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
+import { Nullable, PlaskRetargetMap } from 'types/common';
+import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -19,15 +20,15 @@ interface Props {
   isAllActive: boolean;
   selectableObjects: Array<PlaskTransformNode>;
   selectedTargets: Array<PlaskTransformNode>;
+  retargetMaps: Array<PlaskRetargetMap>;
 }
 
-const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectableObjects, selectedTargets }) => {
+const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectableObjects, selectedTargets, retargetMaps }) => {
   const _selectableObjects = selectableObjects;
   const _selectedTargets = selectedTargets;
+  const _retargetMaps = retargetMaps;
 
   const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
-  const [controlLayer, setControlLayer] = useState<Nullable<PlaskLayer>>(null);
-  const [controlTrack, setControlTrack] = useState<Nullable<PlaskTrack>>(null);
 
   const dispatch = useDispatch();
 
@@ -73,64 +74,106 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
   // IK Valid
   const [isIKOn, setIsIKOn] = useState<boolean>(false);
 
-  const [chainValue, setChainValue] = useState<number>(3);
-  // useEffect(() => {
-  //   if (selectedAssetId) {
-  //     const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === selectedAssetId && animationIngredient.current);
-  //     const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _seletedLayer);
-
-  //     if (targetLayer) {
-  //       const useFilter = targetLayer.useFilter;
-  //       setIsFilterOn(useFilter);
-  //     } else {
-  //       setIsFilterOn(false);
-  //     }
-  //   } else {
-  //     setIsFilterOn(false);
-  //   }
-  // }, [_animationIngredients, _seletedLayer, selectedAssetId]);
+  const [poleAngleValue, setPoleAngleValue] = useState<number>(0);
+  const [blendValue, setBlendValue] = useState<number>(1);
 
   const IKControllerData = [
     {
-      text: 'Chain',
-      step: 0.01,
-      currentMax: 3,
-      currentValue: chainValue,
-      setCurrentValue: setChainValue,
-      decimalDigit: 2,
+      text: 'Blend',
+      step: 0.1,
+      min: 0,
+      max: 1,
+      showProgress: true,
+      currentValue: blendValue,
+      setCurrentValue: setBlendValue,
+      decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
-        // IK Module Call
-        console.log('CHANGED');
+        setBlendValue(parseFloat(event.target.value));
       },
       onChangeEnd: useCallback((inputValue: number) => {
-        console.log('change End');
-        // if (controlTrack) {
-        //   dispatch(animationDataActions.changeTrackFilterMinCutoff({ layerId: _seletedLayer, trackId: controlTrack.id, value: inputValue }));
-        //   // @TODO anti-pattern
-        //   // to use new animationGroup, click pause and play button
-        //   forceClickAnimationPauseAndPlay(_playState, _playDirection);
-        // }
+        // TODO: IK Module (Adjust Blend)
+      }, []),
+    },
+    {
+      text: 'Pole Angle',
+      step: 0.1,
+      min: -270,
+      max: 270,
+      currentValue: poleAngleValue,
+      setCurrentValue: setPoleAngleValue,
+      decimalDigit: 1,
+      handleChange: (event: ChangeEvent<HTMLInputElement>) => {
+        setPoleAngleValue(parseFloat(event.target.value));
+      },
+      onChangeEnd: useCallback((inputValue: number) => {
+        // TODO: IK Module (Adjust Pole Angle)
       }, []),
     },
   ];
+
+  const IKControllerButtons = [
+    {
+      text: 'Set IK Pose to FK',
+      onClick: () => {
+        console.log('Set IK Pose to FK');
+      },
+    },
+    {
+      text: 'Set FK Pose to IK',
+      onClick: () => {
+        console.log('Set FK Pose to IK');
+      },
+    },
+    {
+      text: 'Set Bake',
+      onClick: () => {
+        console.log('Set Bake');
+      },
+    },
+  ];
+
+  const handleSetupIK = useCallback(() => {
+    // TODO: IK Module (Create IK Controller)
+    if (isIKOn) {
+      setIsIKOn(false);
+    } else {
+      setIsIKOn(true);
+    }
+  }, [isIKOn]);
+
   return (
     <section className={cx('ik-section')}>
       <AnimationTitleToggle text="IK Controller" isSpread={isSectionSpread} handleSpread={handleSpreadTransform} activeStatus={isAllActive && !isNull(controlTarget)} />
       <div className={cx('container', { active: isSectionSpread })}>
-        {IKControllerData.map((info, idx) => (
-          <AnimationRangeInput
-            key={`${info.text}${idx}`}
-            text={info.text}
-            step={info.step}
-            currentMax={info.currentMax}
-            currentValue={info.currentValue}
-            decimalDigit={info.decimalDigit}
-            activeStatus={isAllActive}
-            handleChange={info.handleChange}
-            onChangeEnd={info.onChangeEnd}
-          />
-        ))}
-        <FilledButton text="Set Up IK" color="primary" disabled={!(isAllActive && !isNull(controlTarget))} fullSize={true} />
+        {plaskEngine.ikModule.retargetMap ? (
+          <div className={cx('inner-container')}>
+            {IKControllerData.map((info, idx) => (
+              <StaticRangeInput
+                key={`${info.text}${idx}`}
+                text={info.text}
+                step={info.step}
+                max={info.max}
+                min={info.min ?? 0}
+                showProgress={info.showProgress}
+                currentValue={info.currentValue}
+                decimalDigit={info.decimalDigit}
+                activeStatus={isAllActive && !isIKOn && !isNull(controlTarget)}
+                handleChange={info.handleChange}
+                onChangeEnd={info.onChangeEnd}
+              />
+            ))}
+
+            {IKControllerButtons.map((info, idx) => (
+              <FilledButton onClick={info.onClick} className={cx('button')} key={`${info.text}${idx}`} text={info.text} color="default" disabled={!isAllActive} fullSize={true} />
+            ))}
+          </div>
+        ) : (
+          <div className={cx('inner-container')}>
+            <div className={cx('text')}>Please complete retarget map to enable controllers</div>
+            <FilledButton onClick={handleSetupIK} className={cx('button')} text="Set Up IK" color="default" disabled={!(isAllActive && !isNull(controlTarget))} fullSize={true} />
+          </div>
+        )}
+
         {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
       </div>
     </section>
