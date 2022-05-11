@@ -75,7 +75,7 @@ export interface ServerAnimation {
 
 export interface ServerAnimationLayer {
   id: string; // uid -> id
-  animationId: string; // scenes_library_model_animation_id -> animationId
+  scenes_library_model_animation_id: string; // scenes_library_model_animation_id -> animationId but BE said it takes too much time.
   name: string;
   // isLocked: boolean; // related to TP node not the animation itself
   isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
