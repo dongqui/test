@@ -2,7 +2,6 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import _OutlineButton from './';
 
 export default {
-  title: 'Buttons',
   component: _OutlineButton,
   argTypes: {
     size: {

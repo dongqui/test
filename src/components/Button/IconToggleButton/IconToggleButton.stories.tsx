@@ -4,7 +4,6 @@ import _IconToggleButton from './';
 import { SvgPath } from 'components/Icon';
 
 export default {
-  title: 'Buttons',
   component: _IconToggleButton,
   argTypes: {
     variant: {
