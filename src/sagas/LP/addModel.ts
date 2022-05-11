@@ -10,13 +10,14 @@ import * as animationDataActions from 'actions/animationDataAction';
 import * as BABYLON from '@babylonjs/core';
 import * as api from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
-import { createAutoRetargetMap, createEmptyRetargetMap, isRetargetError } from 'utils/LP/Retarget';
+import { createRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
-import { getInitialPoses } from 'utils/RP';
+import { getInitialPoses, getCustomAnimationIngredients } from 'utils/RP';
 import { WARNING_07, WARNING_01 } from 'constants/Text';
-import { AnimationIngredient, PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
+import { PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { AddModelResponse } from 'types/LP';
-import plaskEngine, { AnimationModule } from '3d/PlaskEngine';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
+import PlaskEngine from '3d/PlaskEngine';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -42,15 +43,23 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
     preprocessAssetContainerData(modelNode?.assetId, assetContainer);
 
+    // TODO: remove id, assetId from retargetmap
     const animationIngredients = getCustomAnimationIngredients(modelNode.assetId, transformNodes, animationGroups);
-
     const retargetMap: PlaskRetargetMap = yield call(createRetargetMap, modelNode.assetId, skeletons);
+    yield call(api.createRetargetMap, lpNode.sceneId, modelNode.id, {
+      hipSpace: retargetMap.hipSpace,
+      values: retargetMap.values,
+    });
+
     const extension = getFileExtension(modelNode.name).toLowerCase();
     const fileName = modelNode.name.split('.').slice(0, -1).join('.');
     const nodeName = getNodeName(lpNode.nodes, fileName, extension);
     const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
 
     // TODO: animationIngredients로 모션 생성
+    animationIngredients.map((ingredient) => {
+      AnimationModule.ingredientToServerData(ingredient, 30, false);
+    });
     const motionNodes = Promise.all([]);
 
     const nextNodes = produce(lpNode.nodes, (draft) => {
@@ -124,41 +133,6 @@ function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.A
     // set transformNode's id with unique string using its name and the id of its' asset
     transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
   });
-}
-
-function getCustomAnimationIngredients(assetId: string, transformNodes: BABYLON.TransformNode[], animationGroups: BABYLON.AnimationGroup[]) {
-  const animationIngredients: AnimationIngredient[] = [];
-
-  animationGroups.forEach((animationGroup, idx) => {
-    // block auto play when loading assets
-    // @TODO need to find better ways to block
-    animationGroup.pause();
-
-    /**
-     * create our custom data(animationIngredient) with asset's animationGroups
-     * and set the first one as current animationIngredient
-     */
-    const animationIngredient = plaskEngine.animationModule.createAnimationIngredient(
-      assetId,
-      animationGroup.name,
-      animationGroup.targetedAnimations,
-      filterAnimatableTransformNodes(transformNodes),
-      false,
-      idx === 0,
-    );
-
-    animationIngredients.push(animationIngredient);
-  });
-
-  return animationIngredients;
-}
-
-async function createRetargetMap(assetId: string, skeletons: BABYLON.Skeleton[]) {
-  try {
-    return await createAutoRetargetMap(assetId, skeletons[0]?.bones, 3000);
-  } catch (e) {
-    return createEmptyRetargetMap(assetId);
-  }
 }
 
 function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {

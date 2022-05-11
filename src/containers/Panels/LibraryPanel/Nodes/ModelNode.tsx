@@ -29,13 +29,14 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    console.log(draggedNode);
     if (draggedNode?.type !== 'MOCAP' || !draggedNode?.mocapData) {
       return;
     }
-
+    console.log('d');
     e.stopPropagation();
     dispatch(
-      lpNodeActions.dropMocapOnModel({
+      lpNodeActions.applyMocapToModelSocket.request({
         nodeId: id,
         assetId,
       }),
@@ -47,10 +48,10 @@ const ModelNode = ({ node }: Props) => {
       return;
     }
 
-    const hasMotions = childNodeIds.length !== 0;
-    if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
-    }
+    // const hasMotions = childNodeIds.length !== 0;
+    // if (!hasMotions) {
+    //   dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
+    // }
     dispatch(lpNodeActions.visualizeModel(node));
   };
 

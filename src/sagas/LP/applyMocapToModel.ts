@@ -162,25 +162,18 @@ export function* handleDropMocapOnModel(action: ReturnType<typeof lpNodeActions.
   yield put(lpNodeActions.setDraggedNode(null));
 }
 
-export default function* watchDeleteMotionSocketActions() {
-  yield all([
-    takeLatest(getType(lpNodeActions.applyMocapToModelSocket.request), handleApplyMocapToModelRequest),
-    takeLatest(getType(lpNodeActions.applyMocapToModelSocket.receive), handleApplyMocapToModelReceive),
-  ]);
-}
-
 function* handleApplyMocapToModelRequest(action: ReturnType<typeof lpNodeActions.applyMocapToModelSocket.request>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { retargetMaps } = animationData;
-  const { nodeId, assetId } = action.payload;
+  const { nodeId } = action.payload;
 
   const dropNode = find(nodes, { id: nodeId });
   const targetAsset = assetList.find((asset) => asset.id === dropNode?.assetId);
   const targetRetargetMap = retargetMaps.find((retargetMap) => retargetMap.assetId === dropNode?.assetId);
   const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
-
+  console.log(isErrorRetargetMap);
   if (isErrorRetargetMap) {
     yield put(
       globalUIActions.openModal('ConfirmModal', {
@@ -201,7 +194,7 @@ function* handleApplyMocapToModelRequest(action: ReturnType<typeof lpNodeActions
     return;
   }
 
-  const nodeName = handleDuplicateName(lpNode.nodes, draggedNode.name, nodeId);
+  // const nodeName = handleDuplicateName(lpNode.nodes, draggedNode.name, nodeId); TODO: 중복 처리
   const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
     [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
     dropNode.assetId!,
@@ -214,6 +207,22 @@ function* handleApplyMocapToModelRequest(action: ReturnType<typeof lpNodeActions
   );
 
   const [serverAnimation, serverAnimationLayer] = AnimationModule.ingredientToServerData(mocapAnimationIngredient, 30, true);
-  // yield put(applyMocapToModelSocket.send({}));
+  yield put(
+    applyMocapToModelSocket.send({
+      type: 'apply-mocap-to-model',
+      scenesLibraryId: dropNode.id,
+      data: {
+        animation: serverAnimation,
+        animationLayer: serverAnimationLayer,
+      },
+    }),
+  );
 }
 function* handleApplyMocapToModelReceive() {}
+
+export default function* watchApplyMocapToModelSocketActions() {
+  yield all([
+    takeLatest(getType(lpNodeActions.applyMocapToModelSocket.request), handleApplyMocapToModelRequest),
+    takeLatest(getType(lpNodeActions.applyMocapToModelSocket.receive), handleApplyMocapToModelReceive),
+  ]);
+}

@@ -6,12 +6,15 @@ import { find } from 'lodash';
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
 import plaskEngine from '3d/PlaskEngine';
-import { PlaskAsset } from 'types/common';
-import { getFileExtension } from 'utils/common';
-import { getInitialPoses } from 'utils/RP';
+import { PlaskRetargetMap, PlaskAsset } from 'types/common';
+import { getFileExtension, filterAnimatableTransformNodes } from 'utils/common';
+import { getInitialPoses, getCustomAnimationIngredients } from 'utils/RP';
+import { createRetargetMap } from 'utils/LP/Retarget';
 
 const clickJointChannel = channel();
 
@@ -38,8 +41,15 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   try {
     const asset = find(assetList, { id: node.assetId });
     if (!asset) {
-      const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], node.modelUrl || '', '', baseScene);
+      const url = '/models/Zombie.glb';
+      const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], url || node.modelUrl || '', '', baseScene);
       const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
+
+      plaskEngine.assetModule.preprocessAssetContainerData(node.assetId, assetContainer);
+
+      const animationIngredients = getCustomAnimationIngredients(node.assetId, transformNodes, animationGroups);
+      const retargetMap: PlaskRetargetMap = yield call(createRetargetMap, node.assetId, skeletons);
+      // [POST] RETARGETMAP
       const newAsset: PlaskAsset = {
         id: node.assetId,
         name: node.name,
@@ -50,9 +60,17 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         skeleton: skeletons[0] ?? null,
         bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
         transformNodes,
-        animationIngredientIds: node.childNodeIds,
+        animationIngredientIds: [animationIngredients[0].id] || node.childNodeIds,
         retargetMapId: retargetMap.id,
       };
+      yield put(plaskProjectActions.addAsset({ asset: newAsset }));
+      yield put(
+        animationDataActions.addAsset({
+          transformNodes: filterAnimatableTransformNodes(transformNodes),
+          animationIngredients,
+          retargetMap,
+        }),
+      );
     }
 
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== node.assetId;
