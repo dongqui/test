@@ -1,17 +1,32 @@
+@import "styles/libraries/_typography";
+
 @mixin common-section {
   display: flex;
   height: auto;
   border-bottom: 1px solid #4f4f4f;
-  padding: 12px 0;
-  margin: 0 12px;
 }
 
 .container {
   display: none;
+  padding: 0 12px 12px;
 
   &.active {
     position: relative;
     display: block;
+  }
+
+  & > .inner-container {
+    position: relative;
+
+    & > .text {
+      margin: 4px 0;
+      font-size: 11px;
+      color: #7a7a7b;
+    }
+
+    & > .button {
+      margin: 4px 0;
+    }
   }
 }
 

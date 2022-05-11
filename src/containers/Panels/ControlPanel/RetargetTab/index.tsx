@@ -290,7 +290,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
           <AnimationRangeInput
             text="Hip space"
             step={0.01}
-            currentMax={10}
+            currentMax={1000}
             currentValue={hipSpace}
             decimalDigit={1}
             activeStatus={isAllActive}
