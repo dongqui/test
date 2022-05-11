@@ -80,7 +80,7 @@ export class AnimationModule extends Module {
       const { id, name, isIncluded, useFilter } = layer;
       const serverAnimationLayer: ServerAnimationLayer = {
         id,
-        animationId: serverAnimation.id,
+        scenes_library_model_animation_id: serverAnimation.id,
         name,
         isIncluded,
         isDeleted: false,
