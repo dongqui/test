@@ -22,6 +22,7 @@ import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Slider, Button } from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty } from 'types/common';
 
 type BoneIKParams = {
   name: string;
@@ -139,6 +140,61 @@ export class IKModule extends Module {
     this._gizmoManager.attachToNode(null);
   }
 
+  public pushDataList(pickedIkCtrl: Mesh) {
+    const targetDataList = [];
+    targetDataList.push(
+    {
+      targetId: pickedIkCtrl.metadata.transformNode.id, 
+      property: 'rotationQuaternion' as PlaskProperty,
+      value: pickedIkCtrl.metadata.transformNodeIk.rotationQuaternion as unknown as ArrayOfFourNumbers
+    },
+    {
+      targetId: pickedIkCtrl.metadata.transformNode.id, 
+      property: 'position' as PlaskProperty,
+      value: pickedIkCtrl.metadata.transformNodeIk.getAbsolutePosition() as unknown as ArrayOfThreeNumbers
+    },
+    // {
+    //   targetId: pickedIkCtrl.metadata.transformNode.id, 
+    //   property: 'scaling' as PlaskProperty,
+    //   value: pickedIkCtrl.metadata.transformNodeIk.scaling as unknown as ArrayOfThreeNumbers
+    // },
+    {
+      targetId: pickedIkCtrl.metadata.transformNode_1.id, 
+      property: 'rotationQuaternion' as PlaskProperty,
+      value: pickedIkCtrl.metadata.transformNodeIk_1.rotationQuaternion as unknown as ArrayOfFourNumbers
+    },
+    {
+      targetId: pickedIkCtrl.metadata.transformNode_1.id, 
+      property: 'position' as PlaskProperty,
+      value: pickedIkCtrl.metadata.transformNodeIk_1.getAbsolutePosition() as unknown as ArrayOfThreeNumbers
+    },
+    // {
+    //   targetId: pickedIkCtrl.metadata.transformNode_1.id, 
+    //   property: 'scaling' as PlaskProperty,
+    //   value: pickedIkCtrl.metadata.transformNodeIk_1.scaling as unknown as ArrayOfThreeNumbers
+    // },
+    {
+      targetId: pickedIkCtrl.metadata.transformNode_2.id, 
+      property: 'rotationQuaternion' as PlaskProperty,
+      value: pickedIkCtrl.metadata.transformNodeIk_2.rotationQuaternion as unknown as ArrayOfFourNumbers
+    },
+    {
+      targetId: pickedIkCtrl.metadata.transformNode_2.id, 
+      property: 'position' as PlaskProperty,
+      value: pickedIkCtrl.metadata.transformNodeIk_2.getAbsolutePosition() as unknown as ArrayOfThreeNumbers
+    },
+    // {
+    //   targetId: pickedIkCtrl.metadata.transformNode_2.id, 
+    //   property: 'scaling' as PlaskProperty,
+    //   value: pickedIkCtrl.metadata.transformNodeIk_2.scaling as unknown as ArrayOfThreeNumbers
+    // }
+    );
+
+    //console.log(targetDataList);
+
+    return targetDataList;
+  };
+
   private _createIKControllerMesh(params: BoneIKParams, bone: Bone, transformNode: TransformNode) {
     // Creating IK Target Meshes
     // TODO : make that generic (for now really name dependent)
@@ -164,6 +220,10 @@ export class IKModule extends Module {
     // TRICK to adjust Foot Controllers rotation to Leg instead of Foot
     controllerHidden.rotationQuaternion = params.name.includes('Hand') ? transformNode.absoluteRotationQuaternion : (transformNode.parent as Mesh).absoluteRotationQuaternion;
 
+    const tn_Ik = scene.getTransformNodeByName('ghost_' + bone.name);
+    const tn_1_Ik = tn_Ik?.parent;
+    const tn_2_Ik = tn_1_Ik?.parent;
+
     // TODO : make this a child class instead of storing in metadata
     // Or make a map that link ikctrlmesh / bone / transformNode
     // Clone addition
@@ -172,7 +232,9 @@ export class IKModule extends Module {
       transformNode: scene.getTransformNodeByName(params.name),
       transformNode_1: scene.getTransformNodeByName(params.parent_1),
       transformNode_2: scene.getTransformNodeByName(params.parent_2),
-      transformNodeOrig: scene.getTransformNodeByName('ghost_' + bone.name),
+      transformNodeIk: tn_Ik,
+      transformNodeIk_1: tn_1_Ik,
+      transformNodeIk_2: tn_2_Ik,
       controller: controllerHidden,
       ikController: undefined,
       controllerOrig: undefined,
@@ -280,7 +342,7 @@ export class IKModule extends Module {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
         let newPos = new Vector3();
-        Vector3.LerpToRef(this._pickedIkMesh.metadata.transformNodeOrig.absolutePosition, this._pickedIkMesh.absolutePosition, value, newPos);
+        Vector3.LerpToRef(this._pickedIkMesh.metadata.transformNode.absolutePosition, this._pickedIkMesh.absolutePosition, value, newPos);
         this._pickedIkMesh.metadata.controller.setAbsolutePosition(newPos);
         this._pickedIkMesh.metadata.blend = value;
 
@@ -351,12 +413,12 @@ export class IKModule extends Module {
 
       scene.transformNodes.forEach(transformNode => {
         if (transformNode.name.includes('ghost_')) {
-          if(transformNode.name.toLowerCase().includes(elem.name_1.toLowerCase())) {
+          if(!finger_1 && transformNode.name.toLowerCase().includes(elem.name_1.toLowerCase())) {
             finger_1 = transformNode;
             console.log(finger_1.name);
-          } else if (transformNode.name.toLowerCase().includes(elem.name_2.toLowerCase())) {
+          } else if (!finger_2 && transformNode.name.toLowerCase().includes(elem.name_2.toLowerCase())) {
             finger_2 = transformNode;
-          } else if (elem.name_3 && transformNode.name.toLowerCase().includes(elem.name_3.toLowerCase())) {
+          } else if (!finger_3 && elem.name_3 && transformNode.name.toLowerCase().includes(elem.name_3.toLowerCase())) {
             finger_3 = transformNode;
           }  
         }
@@ -422,7 +484,7 @@ export class IKModule extends Module {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
         this._gizmoManager.attachToNode(null);
-        let transfNodeClone = this._pickedIkMesh.metadata.transformNodeOrig;
+        let transfNodeClone = this._pickedIkMesh.metadata.transformNodeIk;
         this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
         let ikcontroller = this._pickedIkMesh.metadata.ikController;
         ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
@@ -432,8 +494,8 @@ export class IKModule extends Module {
     });
     slidePanel.addControl(button_IK_FK);
 
-    // Bake
-    const button_Bake = Button.CreateSimpleButton('but_Bake', 'Set Bake');
+    // Keyframe IK
+    const button_Bake = Button.CreateSimpleButton('but_Keyframe', 'Keyframe IK');
     button_Bake.width = '200px';
     button_Bake.height = '30px';
     button_Bake.color = 'white';
@@ -442,7 +504,14 @@ export class IKModule extends Module {
     button_Bake.onPointerClickObservable.add(() => {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
+        const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId));
+        const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+        const targetFrameIndex = 20;
 
+        if (targetAnimation) {
+          console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+          this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+        }
       }
     });
     slidePanel.addControl(button_Bake);
@@ -582,11 +651,11 @@ export class IKModule extends Module {
 
         gizmoManager.attachToMesh(pickedMesh);
 
-        this._activeIkControllers.push(pickedIkCtrl.metadata.ikController);
+        // this._activeIkControllers.push(pickedIkCtrl.metadata.ikController);
 
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
+        // this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
+        // this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
+        // this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
 
         this._pickedIkMesh = pickedIkCtrl;
         this._blendSlider.value = pickedIkCtrl.metadata.blend;
