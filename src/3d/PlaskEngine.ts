@@ -382,4 +382,6 @@ export class PlaskEngine {
   }
 }
 
-export default new PlaskEngine();
+const engine = new PlaskEngine();
+(window as any).engine = engine;
+export default engine;
