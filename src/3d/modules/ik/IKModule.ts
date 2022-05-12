@@ -27,7 +27,7 @@ import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty } from 'types/common';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap } from 'types/common';
 
 type BoneIKParams = {
   name: string;
@@ -46,6 +46,7 @@ type FingersSliderParams = {
   height: string;
 };
 export class IKModule extends Module {
+  public retargetMap: Nullable<PlaskRetargetMap> = null;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _ikControllers: BoneIKController[] = [];
@@ -581,17 +582,27 @@ export class IKModule extends Module {
     const clone = container.instantiateModelsToScene((name: string) => `ghost_${name}`);
     clone.rootNodes.forEach((node: TransformNode) => {
       const descendants = node.getDescendants();
-      for (const descendant of descendants) {
-        if (descendant.getClassName() === 'Mesh') {
-          (descendant as Mesh).visibility = 0.25;
-        }
-      }
+      // for (const descendant of descendants) {
+      //   if (descendant.getClassName() === 'Mesh') {
+      //     (descendant as Mesh).visibility = 0.25;
+      //   }
+      // }
       this._ikMeshes.push(node as Mesh);
       if (node.name === 'ghost___root__') {
         this._ghost.rootMesh = node as Mesh;
       }
     });
     this._ghost.skeleton = clone.skeletons[0];
+
+    // reduce visibility of FK meshes
+    // TODO : unclean, also reduces visibility of environment
+    for (const mesh of scene.meshes) {
+      if (mesh.name.includes('ghost_')) {
+        mesh.visibility = 1.0;
+      } else {
+        mesh.visibility = 0.25;
+      }
+    }
 
     this._createGUIElement();
 
@@ -618,6 +629,8 @@ export class IKModule extends Module {
         console.warn('Cannot find retarget map');
         return;
       }
+      this.retargetMap = retargetMap;
+
       const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem.name));
       if (!retargetValue) {
         console.warn('Cannot find bone name, check boneSelection');

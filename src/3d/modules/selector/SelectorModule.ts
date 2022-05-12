@@ -56,7 +56,7 @@ export class SelectorModule extends Module {
   private _currentPosition: Vector2 = new Vector2();
   private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
-  public onUserSelectRequest : Observable<PlaskTransformNode[]> = new Observable();
+  public onUserSelectRequest: Observable<PlaskTransformNode[]> = new Observable();
 
   public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects'];
   public onStateChanged(key: string, previousState: any) {

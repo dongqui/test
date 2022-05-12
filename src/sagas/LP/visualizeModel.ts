@@ -58,7 +58,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     if (assetId && !visualizedAssetIds.includes(assetId)) {
       // TODO: simplify call with asset from assetList
       let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(assetId);
-      plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(assetId))
+      plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(assetId));
       yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
       // This appends PlaskTransformNodes to state.selectableObjects
       yield put(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
