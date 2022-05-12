@@ -23,7 +23,7 @@ export class VisibilityLayersModule extends Module {
     super(plaskEngine);
   }
   public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
-  public onStateChanged(key: string, previousState: any) {
+  public _onStateChanged(key: string, previousState: any) {
     if (key === 'plaskProject.visualizedAssetIds') {
       this._updateSkeleton();
     }

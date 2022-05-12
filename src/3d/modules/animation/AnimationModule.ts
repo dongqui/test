@@ -899,7 +899,7 @@ export class AnimationModule extends Module {
     }
   }
 
-  public onStateChanged(key: string, previousState: any): void {
+  public _onStateChanged(key: string, previousState: any): void {
     switch (key) {
       case 'animationData.animationIngredients': {
         this.onAnimationDataChangeObservable.notifyObservers({

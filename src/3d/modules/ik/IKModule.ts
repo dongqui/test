@@ -63,10 +63,6 @@ export class IKModule extends Module {
     ikControllers: [] as BoneIKController[],
   };
 
-  private get _allTransformNodes() {
-    return this.plaskEngine.selectorModule.allTransformNodes;
-  }
-
   public getRetargetMap(assetId: string) {
     const map = this.plaskEngine.state.animationData.retargetMaps.find((elt) => elt.assetId === assetId);
 
