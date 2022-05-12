@@ -4,7 +4,6 @@ import _ExpandButton from './';
 import { SvgPath } from 'components/Icon';
 
 export default {
-  title: 'Buttons',
   component: _ExpandButton,
   argTypes: {
     content: {
@@ -30,6 +29,7 @@ const Template: ComponentStory<typeof _ExpandButton> = (args) => {
             color: 'white',
             textAlign: 'right',
             fontSize: '15px',
+            zIndex: 10,
           }}
           onClick={() => setOnDropdown(false)}
         >

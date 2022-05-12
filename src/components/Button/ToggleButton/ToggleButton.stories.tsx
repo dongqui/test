@@ -2,7 +2,6 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import _ToggleButton from './';
 
 export default {
-  title: 'Buttons',
   component: _ToggleButton,
   argTypes: {
     size: {
