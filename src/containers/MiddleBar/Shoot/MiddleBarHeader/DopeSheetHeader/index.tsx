@@ -25,7 +25,7 @@ const DopeSheetHeader = () => {
   return (
     <div className={cx('dope-sheet-header')}>
       <span id={ONBOARDING_ID.EDIT_KEYFRAME}>Layers</span>
-      <IconButton icon={SvgPath.Plus} variant="ghost" onClick={handleAddLayerTrackButton} />
+      <IconButton icon={SvgPath.Plus} type="ghost" onClick={handleAddLayerTrackButton} />
     </div>
   );
 };

@@ -32,7 +32,7 @@ const DropdownHeader: FunctionComponent<Props> = (props) => {
     <ExpandButton
       className={cx('expand-button', { active: isOpenMenu })}
       content={SvgPath.Support}
-      variant="default"
+      type="default"
       id={ONBOARDING_ID.HELP_BUTTON}
       onClick={handleClickDropdownHeader}
     />

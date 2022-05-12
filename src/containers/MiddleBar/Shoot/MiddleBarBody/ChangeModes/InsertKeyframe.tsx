@@ -25,7 +25,7 @@ const InsertKeyframe = () => {
 
   return (
     // <IconWrapper className={cx({ disabled: _selectedTargets.length === 0 || _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />
-    <IconButton variant="default" icon={SvgPath.InsertKeyframe} onClick={handleClickButton} disabled={_selectedTargets.length === 0 || _playState === 'play'} />
+    <IconButton type="default" icon={SvgPath.InsertKeyframe} onClick={handleClickButton} disabled={_selectedTargets.length === 0 || _playState === 'play'} />
   );
 };
 

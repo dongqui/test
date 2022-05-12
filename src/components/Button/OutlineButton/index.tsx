@@ -6,22 +6,22 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  bolderColor?: 'default';
+  type?: 'default';
   textColor?: 'light';
   text?: string;
   fullSize?: boolean;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  bolderColor: 'default',
+  type: 'default',
   textColor: 'light',
   size: 'small',
 };
 
-const OutlineButton: FunctionComponent<Props> = ({ size, text, fullSize, disabled, bolderColor, textColor, onClick, className, children, ...rest }) => {
-  const classes = cx('outline', className, size, `border-color-${bolderColor}`, `text-color-${textColor}`, {
+const OutlineButton: FunctionComponent<Props> = ({ size, text, fullSize, disabled, type, textColor, onClick, className, children, ...rest }) => {
+  const classes = cx('outline', className, size, `border-color-${type}`, `text-color-${textColor}`, {
     disabled,
     fullSize,
   });

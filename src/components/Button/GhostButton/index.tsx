@@ -6,21 +6,21 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  color?: 'default';
+  type?: 'default';
   text?: string;
   fullSize?: boolean;
   dataCy?: string;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  color: 'default',
+  type: 'default',
   size: 'small',
 };
 
-const GhostButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
-  const classes = cx('text', className, size, color, {
+const GhostButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
+  const classes = cx('text', className, size, type, {
     disabled,
     fullSize,
   });

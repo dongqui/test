@@ -23,6 +23,6 @@ ToggleButton.args = {
   text: 'Button',
   fullSize: false,
   disabled: false,
-  color: 'primary',
+  type: 'primary',
   size: 'small',
 };

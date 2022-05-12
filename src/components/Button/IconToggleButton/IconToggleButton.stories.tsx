@@ -24,5 +24,5 @@ export const IconToggleButton = Template.bind({});
 IconToggleButton.args = {
   disabled: false,
   icon: SvgPath.Search,
-  variant: 'primary',
+  type: 'primary',
 };
