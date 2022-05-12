@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 
 import * as commonActions from 'actions/Common/globalUI';
 import { changeMode } from 'actions/modeSelection';
-import { FilledButton } from 'components/Button';
+import { ExpandButton, FilledButton, IconButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
@@ -109,16 +109,13 @@ const UpperBar: FunctionComponent<Props> = ({
           <span className={cx('scene-name')}>{sceneName}</span>
         </div> */}
         <Link href="https://plask.ai">
-          <a target="_blank" className={cx('icon-logo-wrapper')}>
-            <IconWrapper className={cx('icon-logo')} icon={SvgPath.Logo} />
+          <a target="_blank" style={{ backgroundColor: 'inherit' }} className={cx('icon-logo-wrapper')}>
+            {/*https://nextjs.org/docs/api-reference/next/link#if-the-child-is-a-functional-component*/}
+            <IconButton icon={SvgPath.Logo} type="ghost" />
           </a>
         </Link>
         <Dropdown>
-          <Dropdown.Header onClose={handleDropdownClose}>
-            <div className={cx('support-icon-wrapper')} id={ONBOARDING_ID.HELP_BUTTON}>
-              <IconWrapper icon={SvgPath.Support} />
-            </div>
-          </Dropdown.Header>
+          <Dropdown.Header onClose={handleDropdownClose} />
           <Dropdown.Menu autoClose={onboardingStep !== 999}>
             <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>
               Onboarding
@@ -144,19 +141,17 @@ const UpperBar: FunctionComponent<Props> = ({
         </Dropdown>
       </div>
       <div className={cx('right-upper')}>
-        {/*<IconWrapper className={cx('reset-icon')} icon={SvgPath.CameraReset} />*/}
         <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />
-        {standbyState && <div className={cx('segment-disable')} />}
-        {mode === 'videoMode' && !recording && !recordOverTwice && (
-          <div className={cx('device-select')} onClick={handleCameraDropdown}>
-            Camera
-            <IconWrapper icon={SvgPath.EmptyDownArrow} />
-          </div>
-        )}
-        {mode === 'videoMode' && (recording || recordOverTwice) && (
-          <div className={cx('device-select', 'disable')}>
-            Camera
-            <IconWrapper icon={SvgPath.EmptyDownArrow} />
+        {/*{standbyState && <div className={cx('segment-disable')} />}*/}
+        {mode === 'videoMode' && (
+          <div className={cx('device-select')}>
+            <ExpandButton
+              className={cx({ disabled: recording || recordOverTwice, active: cameraDropdownState })}
+              content="Camera"
+              type="ghost"
+              disabled={recording || recordOverTwice}
+              onClick={handleCameraDropdown}
+            />
           </div>
         )}
         {cameraDropdownState && (

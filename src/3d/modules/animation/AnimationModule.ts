@@ -1,8 +1,14 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
+import produce from 'immer';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
+import * as animationDataActions from 'actions/animationDataAction';
+import * as keyframesActions from 'actions/keyframes';
 import {
   AnimationIngredient,
+  ArrayOfFourNumbers,
+  ArrayOfThreeNumbers,
   PlaskLayer,
   PlaskMocapData,
   PlaskPose,
@@ -17,13 +23,12 @@ import {
   VectorTransformKey,
 } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
+import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF } from 'utils/const';
 import OneEuroFilterForQuaternion from 'utils/RP/OneEuroFilterForQuaternion';
 import OneEuroFilterForVector from 'utils/RP/OneEuroFilterForVector';
 import { Module } from '../Module';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-
-import * as animatingControlsActions from 'actions/animatingControlsAction';
 
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
@@ -187,6 +192,156 @@ export class AnimationModule extends Module {
    */
   public dispose() {
     this.onAnimationDataChangeObservable.clear();
+  }
+
+  /**
+   * edit keyframes with params so that we don't need to select targets in RenderingPanel
+   * @param targetAnimationIngredientId - id of animationIngredent to edit
+   * @param targetLayerId - id of layer to edit
+   * @param targetFrameIndex - index of frame to edit
+   * @param keyframeDataList - list of data that is used to edit keyframes, including targetId, property, value
+   */
+  public editKeyframesWithParams(
+    targetAnimationIngredientId: string,
+    targetLayerId: string,
+    targetFrameIndex: number,
+    keyframeDataList: Array<{ targetId: string; property: PlaskProperty; value: ArrayOfThreeNumbers | ArrayOfFourNumbers }>,
+  ) {
+    const targetAnimationIngredient = this.animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
+
+    if (targetAnimationIngredient) {
+      const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+        const targetLayer = draft.layers.find((layer) => layer.id === targetLayerId);
+        const otherLayers = draft.layers.filter((layer) => layer.id !== targetLayerId && layer.isIncluded);
+
+        if (targetLayer) {
+          keyframeDataList.forEach((keyframeData) => {
+            const targetTrack = targetLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === keyframeData.property);
+
+            if (targetTrack) {
+              switch (keyframeData.property) {
+                case 'position': {
+                  let newPosition = Vector3.FromArray(keyframeData.value);
+                  otherLayers.forEach((otherLayer) => {
+                    const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'position');
+                    if (otherLayerTrack) {
+                      const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                      newPosition = newPosition.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, targetFrameIndex));
+                    }
+                  });
+
+                  targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newPosition);
+                  break;
+                }
+                case 'rotationQuaternion': {
+                  let newRotationQuaternion = Quaternion.FromArray(keyframeData.value);
+                  otherLayers.forEach((otherLayer) => {
+                    const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
+                    if (otherLayerTrack) {
+                      const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                      newRotationQuaternion = newRotationQuaternion
+                        .clone()
+                        .toEulerAngles()
+                        .subtract(
+                          targetTransformKey
+                            ? targetTransformKey.value.toEulerAngles()
+                            : getInterpolatedQuaternion(otherLayerTrack.transformKeys, targetFrameIndex).toEulerAngles(),
+                        )
+                        .toQuaternion();
+                    }
+                  });
+                  targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newRotationQuaternion);
+
+                  const peerTrack = targetLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotation');
+                  if (peerTrack) {
+                    let newRotation = Quaternion.FromArray(keyframeData.value).toEulerAngles();
+                    otherLayers.forEach((otherLayer) => {
+                      const otherLayerPeerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotation');
+                      if (otherLayerPeerTrack) {
+                        const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                        newRotation = newRotation.subtract(
+                          targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerPeerTrack.transformKeys, targetFrameIndex),
+                        );
+                      }
+                    });
+
+                    peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, targetFrameIndex, newRotation);
+                  }
+
+                  break;
+                }
+                case 'rotation': {
+                  let newRotation = Vector3.FromArray(keyframeData.value);
+                  otherLayers.forEach((otherLayer) => {
+                    const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotation');
+                    if (otherLayerTrack) {
+                      const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                      newRotation = newRotation.subtract(targetTransformKey ? targetTransformKey.value : getInterpolatedVector(otherLayerTrack.transformKeys, targetFrameIndex));
+                    }
+                  });
+
+                  targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newRotation);
+
+                  const peerTrack = targetLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
+                  if (peerTrack) {
+                    let newRotationQuaternion = Vector3.FromArray(keyframeData.value).toQuaternion();
+                    otherLayers.forEach((otherLayer) => {
+                      const otherLayerPeerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
+                      if (otherLayerPeerTrack) {
+                        const targetTransformKey = otherLayerPeerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                        newRotationQuaternion = newRotationQuaternion
+                          .clone()
+                          .toEulerAngles()
+                          .subtract(
+                            targetTransformKey
+                              ? targetTransformKey.value.toEulerAngles()
+                              : getInterpolatedQuaternion(otherLayerPeerTrack.transformKeys, targetFrameIndex).toEulerAngles(),
+                          )
+                          .toQuaternion();
+                      }
+                    });
+                    peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, targetFrameIndex, newRotationQuaternion);
+                  }
+                  break;
+                }
+                case 'scaling': {
+                  let newScaling = Vector3.FromArray(keyframeData.value);
+                  otherLayers.forEach((otherLayer) => {
+                    const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'scaling');
+                    if (otherLayerTrack) {
+                      const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                      if (targetTransformKey) {
+                        const {
+                          value: { x, y, z },
+                        } = targetTransformKey;
+                        newScaling = new Vector3(x === 0 ? newScaling.x : newScaling.x / x, y === 0 ? newScaling.y : newScaling.y / y, z === 0 ? newScaling.z : newScaling.z / z);
+                      } else {
+                        const interpolatedVector = getInterpolatedVector(otherLayerTrack.transformKeys, targetFrameIndex);
+                        const { x, y, z } = interpolatedVector;
+                        newScaling = new Vector3(x === 0 ? newScaling.x : newScaling.x / x, y === 0 ? newScaling.y : newScaling.y / y, z === 0 ? newScaling.z : newScaling.z / z);
+                      }
+                    }
+                  });
+
+                  targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newScaling);
+                  break;
+                }
+                default: {
+                  break;
+                }
+              }
+            }
+          });
+        }
+      });
+
+      // update animationIngredient (and continually currentAnimationGroup too)
+      this.plaskEngine.dispatch(
+        animationDataActions.editAnimationIngredient({
+          animationIngredient: newAnimationIngredient,
+        }),
+      );
+    }
   }
 
   /**

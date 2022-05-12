@@ -1,8 +1,8 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 import _FilledButton from './';
+import { Fragment } from 'react';
 
 export default {
-  title: 'Buttons',
   component: _FilledButton,
   argTypes: {
     size: {
@@ -23,6 +23,6 @@ FilledButton.args = {
   text: 'Button',
   fullSize: false,
   disabled: false,
-  color: 'primary',
+  type: 'primary',
   size: 'small',
 };

@@ -4,4 +4,11 @@
 
 body {
   background-color: #1D1F20;
+  overflow-y: unset;
+}
+
+#docs-root {
+  *:not(.background) {
+    background-image: unset;
+  }
 }

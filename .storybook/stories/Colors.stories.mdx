@@ -1,0 +1,79 @@
+import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs';
+
+<Meta title="Colors" />
+
+<!-- TODO: import 하여서 property 목록 가져오기 -->
+
+<h1>Colors</h1>
+
+<br/>
+<h2>Primitive Color System</h2>
+
+Primitive color variables follow the following format: [name][number], (Kebab Case) | ex: grey010, overlay-blue01
+
+<ColorPalette>
+  <ColorItem
+    title="Monochrome"
+    subtitle="Gray colors"
+    colors={{
+      grey010: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey010'),
+      grey012: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey012'),
+      grey016: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey016'),
+      grey020: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey020'),
+      grey030: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey030'),
+      grey040: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey040'),
+      grey050: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey050'),
+      grey060: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey060'),
+      grey070: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey070'),
+      grey080: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey080'),
+      grey090: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey090'),
+    }}
+  />
+  <ColorItem
+    title="blue"
+    subtitle="Blue colors"
+    colors={{
+      blue016: getComputedStyle(document.getElementById('root')).getPropertyValue('--blue016'),
+      blue055: getComputedStyle(document.getElementById('root')).getPropertyValue('--blue055'),
+    }}
+  />
+  <ColorItem
+    title="orange"
+    subtitle="Orange color"
+    colors={{
+      orange055: getComputedStyle(document.getElementById('root')).getPropertyValue('--orange055'),
+    }}
+  />
+  <ColorItem
+    title="red"
+    subtitle="Red color"
+    colors={{
+      red055: getComputedStyle(document.getElementById('root')).getPropertyValue('--red055'),
+    }}
+  />
+  <ColorItem
+    title="green"
+    subtitle="Green color"
+    colors={{
+      green045: getComputedStyle(document.getElementById('root')).getPropertyValue('--green045'),
+    }}
+  />
+  <ColorItem
+    title="overlay"
+    subtitle="Overlay colors"
+    colors={{
+      grey060_opacity01: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey060-opacity01'),
+      grey060_opacity02: getComputedStyle(document.getElementById('root')).getPropertyValue('--grey060-opacity02'),
+      red055_opacity01: getComputedStyle(document.getElementById('root')).getPropertyValue('--red055-opacity01'),
+      green045_opacity01: getComputedStyle(document.getElementById('root')).getPropertyValue('--green045-opacity01'),
+    }}
+  />
+  <ColorItem
+    title="W&B"
+    subtitle="White and Black"
+    colors={{
+      white: "#fff",
+      black: "#000",
+    }}
+  />
+</ColorPalette>

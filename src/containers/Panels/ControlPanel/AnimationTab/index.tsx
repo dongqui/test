@@ -1,4 +1,4 @@
-import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
 
@@ -9,6 +9,7 @@ import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/commo
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 import { Mesh, TransformNode } from '@babylonjs/core';
+import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -114,6 +115,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         setPositionZ(position.z);
 
         const e = rotationQuaternion!.clone().toEulerAngles();
+
         setEulerX(convertToDegree(e.x));
         setEulerY(convertToDegree(e.y));
         setEulerZ(convertToDegree(e.z));
@@ -200,13 +202,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setPositionX(parseFloat(event.target.value));
             controlTarget.position.x = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: positionX,
+      currentValue: `${positionX}`,
     },
     {
       text: 'Y',
@@ -219,13 +223,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setPositionY(parseFloat(event.target.value));
             controlTarget.position.y = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.y : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: positionY,
+      currentValue: `${positionY}`,
     },
     {
       text: 'Z',
@@ -238,13 +244,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setPositionZ(parseFloat(event.target.value));
             controlTarget.position.z = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.position.z : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: positionZ,
+      currentValue: `${positionZ}`,
     },
   ];
 
@@ -265,6 +273,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
             setEulerX(parseFloat(event.target.value));
             controlTarget.rotationQuaternion = q;
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
@@ -278,7 +288,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         }
       }, [controlTarget]),
       decimalDigit: 4,
-      currentValue: eulerX,
+      currentValue: `${eulerX}`,
     },
     {
       text: 'Y',
@@ -296,6 +306,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
             setEulerY(parseFloat(event.target.value));
             controlTarget.rotationQuaternion = q;
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
@@ -309,7 +321,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         }
       }, [controlTarget]),
       decimalDigit: 4,
-      currentValue: eulerY,
+      currentValue: `${eulerY}`,
     },
     {
       text: 'Z',
@@ -327,6 +339,8 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
             setEulerZ(parseFloat(event.target.value));
             controlTarget.rotationQuaternion = q;
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
@@ -340,7 +354,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         }
       }, [controlTarget]),
       decimalDigit: 4,
-      currentValue: eulerZ,
+      currentValue: `${eulerZ}`,
     },
   ];
 
@@ -356,13 +370,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setQuaternionW(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.w = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.w : 1), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quaternionW,
+      currentValue: `${quaternionW}`,
     },
     {
       text: 'X',
@@ -375,13 +391,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setQuaternionX(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.x = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quaternionX,
+      currentValue: `${quaternionX}`,
     },
     {
       text: 'Y',
@@ -394,13 +412,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setQuaternionY(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.y = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.y : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quaternionY,
+      currentValue: `${quaternionY}`,
     },
     {
       text: 'Z',
@@ -413,13 +433,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setQuaternionZ(parseFloat(event.target.value));
             controlTarget.rotationQuaternion!.z = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.rotationQuaternion!.z : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: quaternionZ,
+      currentValue: `${quaternionZ}`,
     },
   ];
 
@@ -435,13 +457,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setScaleX(parseFloat(event.target.value));
             controlTarget.scaling.x = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: scaleX,
+      currentValue: `${scaleX}`,
     },
     {
       text: 'Y',
@@ -454,13 +478,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setScaleY(parseFloat(event.target.value));
             controlTarget.scaling.y = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: scaleY,
+      currentValue: `${scaleY}`,
     },
     {
       text: 'Z',
@@ -473,13 +499,15 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           if (controlTarget) {
             setScaleZ(parseFloat(event.target.value));
             controlTarget.scaling.z = parseFloat(event.target.value);
+            controlTarget.getPlaskEntity().fromTransformNode();
+            plaskEngine.userAction([controlTarget.getPlaskEntity()]);
           }
         },
         [controlTarget],
       ),
       defaultValue: useMemo(() => (controlTarget ? controlTarget.scaling.x : 0), [controlTarget]),
       decimalDigit: 4,
-      currentValue: scaleZ,
+      currentValue: `${scaleZ}`,
     },
   ];
 

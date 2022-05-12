@@ -2,7 +2,6 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import _GhostButton from './';
 
 export default {
-  title: 'Buttons',
   component: _GhostButton,
   argTypes: {
     size: {
@@ -23,6 +22,6 @@ GhostButton.args = {
   text: 'Button',
   fullSize: false,
   disabled: false,
-  color: 'default',
+  type: 'default',
   size: 'small',
 };
