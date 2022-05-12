@@ -1,6 +1,7 @@
 @import "styles/libraries/_typography";
 
 .wrapper {
+  padding: 12px;
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -16,9 +17,9 @@
   display: flex;
   align-items: center;
   border: none;
+  padding: 0;
   background-color: transparent;
   color: #4f4f4f;
-  margin-bottom: 12px;
   font: $iti-title;
   line-height: 15px;
 }
