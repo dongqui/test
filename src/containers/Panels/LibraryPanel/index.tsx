@@ -129,7 +129,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
+          <LPBody lpNodes={nodes} isPreventContextmenu={isPreventContextmenu} />
         </Box>
       </div>
     </div>
