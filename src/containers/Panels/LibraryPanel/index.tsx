@@ -93,26 +93,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
 
-  // useEffect(() => {
-  //   if (isSceneReady) {
-  //     const defaultModels = ['Mannequin.glb', 'Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
-
-  //     const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
-
-  //     if (!isAlreadyExist && !isDefaultModelLoaded) {
-  //       for (const model of defaultModels) {
-  //         dispatch(
-  //           lpNodeActions.fileUpload({
-  //             file: model,
-  //             showLoading: false,
-  //           }),
-  //         );
-  //       }
-  //       setIsDefaultModelLoaded(true);
-  //     }
-  //   }
-  // }, [_lpNode, isDefaultModelLoaded, isSceneReady, dispatch]);
-
   const handleSearch = useCallback(
     (text: string) => {
       setSearchText(text);

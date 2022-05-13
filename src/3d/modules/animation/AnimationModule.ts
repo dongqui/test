@@ -11,9 +11,13 @@ import {
   PlaskTrack,
   QuaternionTransformKey,
   ServerAnimation,
+  ServerAnimationRequest,
   ServerAnimationLayer,
+  ServerAnimationLayerRequest,
   ServerAnimationTrack,
+  ServerAnimationTrackRequest,
   ServerTransformKey,
+  ServerTransformKeyRequest,
   VectorTransformKey,
 } from 'types/common';
 import { getRandomStringKey } from 'utils/common';
@@ -38,34 +42,31 @@ export class AnimationModule extends Module {
     this.onAnimationDataChangeObservable = new Observable();
   }
 
-  static ingredientToServerData(animationIngredient: AnimationIngredient, fps: number, isMocapAnimation: boolean): [ServerAnimation, ServerAnimationLayer[]] {
-    const serverAnimation: ServerAnimation = {
-      id: animationIngredient.id,
-      scenesLibraryId: animationIngredient.assetId,
+  static ingredientToServerData(animationIngredient: AnimationIngredient, fps: number, isMocapAnimation: boolean): [ServerAnimationRequest, ServerAnimationLayerRequest[]] {
+    const serverAnimation: ServerAnimationRequest = {
       name: animationIngredient.name,
       fps,
       isMocapAnimation,
       isDeleted: false,
     };
 
-    const serverAnimationLayers: ServerAnimationLayer[] = [];
+    const serverAnimationLayers: ServerAnimationLayerRequest[] = [];
     animationIngredient.layers.forEach((layer) => {
-      const serverAnimationTracks: ServerAnimationTrack[] = [];
+      const serverAnimationTracks: ServerAnimationTrackRequest[] = [];
       layer.tracks.forEach((track) => {
-        const transformKeysMap = new Map<number, ServerTransformKey>();
-        track.transformKeys.forEach((transformKey) => {
-          const serverTransformKey: ServerTransformKey = {
+        const transformKeysMap = track.transformKeys.map((transformKey) => {
+          const serverTransformKey: ServerTransformKeyRequest = {
+            frameIndex: transformKey.frame,
             property: track.property,
             transformKey:
               track.property === 'rotationQuaternion'
                 ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
                 : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
           };
-
-          transformKeysMap.set(transformKey.frame, serverTransformKey);
+          return serverTransformKey;
         });
 
-        const serverAnimationTrack: ServerAnimationTrack = {
+        const serverAnimationTrack: ServerAnimationTrackRequest = {
           id: track.id,
           targetId: track.targetId,
           name: track.name,
@@ -78,9 +79,7 @@ export class AnimationModule extends Module {
       });
 
       const { id, name, isIncluded, useFilter } = layer;
-      const serverAnimationLayer: ServerAnimationLayer = {
-        id,
-        animationId: serverAnimation.id,
+      const serverAnimationLayer: ServerAnimationLayerRequest = {
         name,
         isIncluded,
         isDeleted: false,

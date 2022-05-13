@@ -27,7 +27,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
         // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteMotion(nodeId));
+          dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
         },
         onCancel: () => {},
       }),

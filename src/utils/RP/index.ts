@@ -4,6 +4,7 @@ export { default as createHemisphericLight } from './createHemisphericLight';
 export { default as createDirectionalLight } from './createDirectionalLight';
 export { default as addJointSpheres } from './addJointSpheres';
 
+export { default as createPlaskServerTrack } from './createPlaskServerTrack';
 export { default as createPlaskTrack } from './createPlaskTrack';
 export { default as duplicateAnimationIngredient } from './duplicateAnimationIngredient';
 export { default as getRecurrentRotationQuaternion } from './getRecurrentRotationQuaternion';
@@ -19,3 +20,5 @@ export { default as goToSpecificPoses } from './goToSpecificPoses';
 export { default as getInterpolatedQuaternion } from './getInterpolatedQuaternion';
 export { default as getInterpolatedVector } from './getInterpolatedVector';
 export { default as getValueInsertedTransformKeys } from './getValueInsertedTransformKeys';
+export { default as getInitialPoses } from './getInitialPoses';
+export { default as getCustomAnimationIngredients } from './getCustomAnimationIngredients';

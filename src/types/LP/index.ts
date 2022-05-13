@@ -1,3 +1,5 @@
+import { PlaskMocapData, PlaskRetargetMap, ServerAnimationRequest, ServerAnimationLayerRequest } from 'types/common';
+
 export interface RequestNodeResponse {
   uid: string;
   type: 'MOCAP' | 'DIRECTORY' | 'MODEL';
@@ -5,11 +7,12 @@ export interface RequestNodeResponse {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
-  retargetMap: {};
+  retargetMap: Omit<PlaskRetargetMap, 'id' | 'assetId'>;
   parentUid: string;
   scenesUid: string;
   assetsUid: string;
   modelUrl?: string;
+  mocap?: PlaskMocapData;
 }
 export interface CreateFolderOrMocapBodyData {
   name: string;
@@ -20,4 +23,9 @@ export interface CreateFolderOrMocapBodyData {
 export interface AddModelResponse extends RequestNodeResponse {
   type: 'MODEL';
   modelUrl: string;
+}
+
+export interface PostMotionData {
+  animation: ServerAnimationRequest;
+  animationLayer: ServerAnimationLayerRequest[];
 }

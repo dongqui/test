@@ -12,11 +12,13 @@ import watchMoveNodeSocketActions from './moveNode';
 // import { watchConfirmOnError, handleDropMocapOnModel } from './dropMocapOnModel';
 import watchEditNodeNameSocketActions from './editNodeName';
 import handleExportAsset from './exportAsset';
-import watchDeleteMotionSocketActions from './deleteMotion';
+import handleDeleteMotion from './deleteMotion';
+import handleDeleteModel from './deleteModel';
 import watchDeleteNodeSocketActions from './deleteNode';
 import handleFileUpload from './fileUpload';
 import handleAddModel from './addModel';
 import initNodes from './initNodes';
+import watchApplyMocapToModelSocketActions from './applyMocapToModel';
 
 export default function* LPSaga() {
   yield all([
@@ -29,8 +31,8 @@ export default function* LPSaga() {
     // takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),
     // takeLatest(getType(lpNodeActions.editNodeName), handleEditNodeName),
     takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
-    // takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
-    // takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
+    takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
+    takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
     // takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.initNodes), initNodes),
@@ -40,7 +42,7 @@ export default function* LPSaga() {
     // watchConfirmOnError(),
     watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),
-    watchDeleteMotionSocketActions(),
     watchEditNodeNameSocketActions(),
+    watchApplyMocapToModelSocketActions(),
   ]);
 }

@@ -14,13 +14,11 @@ function getAnimationIngredients(state: RootState) {
 function* worker({ payload }: ReturnType<typeof trackListActions.clickDeleteLayerTrackButton>) {
   const animationIngredientId = getAnimationIngredientId(yield select());
   yield put(trackListActions.deleteLayerTrack(payload));
-
   // RP Delete Track 액션 호출 시 인자값 : { animationIngredientId, ...payload }
   // 여기서부터 RP Delete Track 액션 호출
   const animationIngredients = getAnimationIngredients(yield select());
   const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === animationIngredientId);
   if (targetAnimationIngredient) {
-    // track들 삭제한 후 animationIngredient 업데이트
     yield put(
       animationDataActions.editAnimationIngredient({
         animationIngredient: {
@@ -30,6 +28,24 @@ function* worker({ payload }: ReturnType<typeof trackListActions.clickDeleteLaye
       }),
     );
   }
+}
+
+function* handleDeleteLayerRequest(action: ReturnType<typeof trackListActions.deleteLayerSocket.request>) {
+  trackListActions.deleteLayerSocket.send({
+    type: 'delete-layer',
+    data: {
+      layerId: action.payload,
+    },
+  });
+}
+function* handleDeleteLayerReceive(action: ReturnType<typeof trackListActions.deleteLayerSocket.receive>) {
+  // TODO: 서버에서 애니메이션 아이디도 같이 보내주도록 요청
+  // trackListActions.deleteLayerSocket.send({
+  //   type: 'delete-layer',
+  //   data: {
+  //     layerId: action.payload,
+  //   },
+  // });
 }
 
 function* watchDeleteLayerTrack() {

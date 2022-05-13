@@ -1,6 +1,7 @@
 import { PlaskTrack } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
+import { createSocketActions } from './helper';
 
 export type KeyframesAction =
   | ReturnType<typeof initializeKeyframes>
@@ -86,10 +87,20 @@ export const createKeyframes = (params: any) => ({
   },
 });
 
+interface deleteKeyframesRequestParams {}
+interface deleteKeyframesSendParams {}
+interface deleteKeyframesReceiveParams {}
 // 키프레임 삭제
 export const deleteKeyframes = () => ({
   type: 'keyframes/DELETE_KEYFRAMES' as const,
 });
+export const deleteKeyframesSocket = createSocketActions(
+  'keyframes/DELETE_KEYFRAMES_REQUEST',
+  'keyframes/DELETE_KEYFRAMES_SEND',
+  'keyframes/DELETE_KEYFRAMES_RECEIVE',
+  'keyframes/DELETE_KEYFRAMES_UPDATE',
+  'keyframes/DELETE_KEYFRAMES_FAILURE',
+)<deleteKeyframesRequestParams, deleteKeyframesSendParams, deleteKeyframesReceiveParams, LP.Node[], string>();
 
 // 키프레임 드래드 드랍
 export interface DragDropKeyframes {

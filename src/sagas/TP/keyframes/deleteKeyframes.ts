@@ -63,6 +63,9 @@ function* worker() {
   }
 }
 
+function* handleDeleteKeyFramesRequest() {}
+function* handleDeleteKeyFramesReceive() {}
+
 // 키프레임 드래그 드랍 입력 감지
 function* watchDeleteframes() {
   yield takeLatest(keyframesActions.ENTER_KEYFRAME_DELETE_KEY, worker);

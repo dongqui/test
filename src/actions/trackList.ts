@@ -1,6 +1,7 @@
-import { PlaskLayer, PlaskTrack } from 'types/common';
+import { PlaskLayer, PlaskTrack, ServerAnimationTrackRequest, ServerAnimationTrack } from 'types/common';
 import { TrackType } from 'types/TP';
 import { LayerTrack, BoneTrack, PropertyTrack } from 'types/TP/track';
+import { createSocketActions } from './helper';
 
 export type TrackListAction =
   | ReturnType<typeof initializeTrackList>
@@ -70,11 +71,6 @@ export const clickInterpolationMode = (params: ClickInterpolationMode) => ({
   payload: { ...params },
 });
 
-// 레이어 트랙 추가 버튼 클릭
-export const clickAddLayerTrackButton = () => ({
-  type: CLICK_ADD_LAYER_TRACK_BUTTON,
-});
-
 // 레이어 트랙 추가
 export interface AddLayerTrack {
   id: string;
@@ -129,3 +125,60 @@ export const changeTrackScrollTop = (params: ChangeTrackScrollTop) => ({
   type: CHANGE_TRACK_SCROLL_TOP,
   payalod: { ...params },
 });
+
+// 레이어 트랙 추가 버튼 클릭
+export const clickAddLayerTrackButton = () => ({
+  type: CLICK_ADD_LAYER_TRACK_BUTTON,
+});
+interface AddLayerRequestParams {}
+interface AddLayerSendParams {
+  type: 'add-layer';
+  data: {
+    animationId: string;
+    layer: {
+      name: string;
+      useFilter: boolean;
+      isIncluded: boolean;
+      tracks: ServerAnimationTrackRequest[];
+    };
+  };
+}
+interface AddLayerReceiveParams {
+  name: string;
+  tracks: ServerAnimationTrack[];
+  scenesLibraryModelAnimationId: 1;
+  uid: string;
+  id: 238;
+  isIncluded: false;
+  isLocked: false;
+  isDeleted: false;
+  useFilter: false;
+}
+export const addLayerSocket = createSocketActions(
+  'trackList/ADD_LAYER_REQUEST',
+  'trackList/ADD_LAYER_SEND',
+  'trackList/ADD_LAYER_RECEIVE',
+  'trackList/ADD_LAYER_UPDATE',
+  'trackList/ADD_LAYER_FAILURE',
+)<AddLayerRequestParams, AddLayerSendParams, AddLayerReceiveParams, LP.Node[], string>();
+
+interface DeleteLayerSendParams {
+  type: 'delete-layer';
+  data: {
+    layerId: string;
+  };
+}
+
+interface DeleteLayerReceiveParams {
+  type: 'delete-layer';
+  data: {
+    layerId: string;
+  };
+}
+export const deleteLayerSocket = createSocketActions(
+  'trackList/DELETE_LAYER_REQUEST',
+  'trackList/DELETE_LAYER_SEND',
+  'trackList/DELETE_LAYER_RECEIVE',
+  'trackList/DELETE_LAYER_UPDATE',
+  'trackList/DELETE_LAYER_FAILURE',
+)<string, DeleteLayerSendParams, DeleteLayerReceiveParams, LP.Node[], string>();
