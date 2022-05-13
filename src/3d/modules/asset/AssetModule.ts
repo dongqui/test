@@ -176,6 +176,9 @@ export class AssetModule extends Module {
                 if (targetTransformNode) {
                   const sourceEvent: PointerEvent = event.sourceEvent;
                   if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+                    // TODO : 3D Modules should just use state as readonly
+                    // Do not dispatch, but instead do :
+                    // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
                     this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
                   } else {
                     this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
@@ -207,7 +210,7 @@ export class AssetModule extends Module {
     }
   }
 
-  public generatePlaskTransformNodes(assetId: string) {
+  public generateJointPlaskTransformNodes(assetId: string) {
     // Add PTNs
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
     if (targetAsset) {

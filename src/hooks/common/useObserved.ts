@@ -1,18 +1,14 @@
 import { Observable } from '@babylonjs/core';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 
-export const useObserved = <S>(observable: Observable<S>, initialState?: S): S | undefined => {
-  const [state, setState] = useState<S | undefined>(initialState);
-
+export const useObserved = <S>(observable: Observable<S>, action: (payload: S, dispatch: ReturnType<typeof useDispatch>) => void): void => {
+  const dispatch = useDispatch();
   useEffect(() => {
-    const observer = observable.add((value) => {
-      setState(value);
-    });
+    const observer = observable.add((payload: S) => action(payload, dispatch));
 
     return () => {
       observable.remove(observer);
     };
-  }, [observable]);
-
-  return state;
+  }, [observable, action, dispatch]);
 };
