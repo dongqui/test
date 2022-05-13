@@ -72,7 +72,7 @@ export interface ServerAnimation {
   isMocapAnimation: boolean;
   isDeleted: boolean;
 }
-
+export type ServerAnimationRequest = Omit<ServerAnimation, 'id' | 'scenesLibraryId'>;
 export interface ServerAnimationLayer {
   id: string; // uid -> id
   scenes_library_model_animation_id: string; // scenes_library_model_animation_id -> animationId but BE said it takes too much time.
@@ -82,6 +82,9 @@ export interface ServerAnimationLayer {
   isDeleted: boolean;
   useFilter: boolean; // destructure filter related data
   tracks: ServerAnimationTrack[]; // boneTracks -> tracks
+}
+export interface ServerAnimationLayerRequest extends Omit<ServerAnimationLayer, 'scenes_library_model_animation_id' | 'id' | 'tracks'> {
+  tracks: ServerAnimationTrackRequest[];
 }
 
 // BoneTrack -> NameTrack
@@ -96,6 +99,9 @@ export interface ServerAnimationTrack {
   filterMinCutoff: number;
   transformKeysMap: Map<number, ServerTransformKey>; // boneFrameMap -> transformKeysMap
 }
+export interface ServerAnimationTrackRequest extends Omit<ServerAnimationTrack, 'transformKeysMap'> {
+  transformKeysMap: ServerTransformKeyRequest[];
+}
 
 export interface VectorTransformKey {
   x: number;
@@ -107,6 +113,9 @@ export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
   transformKey: VectorTransformKey | QuaternionTransformKey;
   // isLocked: boolean;
+}
+export interface ServerTransformKeyRequest extends ServerTransformKey {
+  frameIndex: number;
 }
 
 export interface AnimationIngredient {

@@ -4,6 +4,7 @@ export { default as createHemisphericLight } from './createHemisphericLight';
 export { default as createDirectionalLight } from './createDirectionalLight';
 export { default as addJointSpheres } from './addJointSpheres';
 
+export { default as createPlaskServerTrack } from './createPlaskServerTrack';
 export { default as createPlaskTrack } from './createPlaskTrack';
 export { default as duplicateAnimationIngredient } from './duplicateAnimationIngredient';
 export { default as getRecurrentRotationQuaternion } from './getRecurrentRotationQuaternion';
