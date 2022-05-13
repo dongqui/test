@@ -297,9 +297,9 @@ export class PlaskEngine {
 
   public toggleInspector() {
     if (!this._inspectorActive) {
-      this.scene.debugLayer.show({overlay: true});
-      document.getElementById("scene-explorer-host")!.style.zIndex = "1000";
-      document.getElementById("inspector-host")!.style.zIndex = "1000";
+      this.scene.debugLayer.show({ overlay: true });
+      document.getElementById('scene-explorer-host')!.style.zIndex = '1000';
+      document.getElementById('inspector-host')!.style.zIndex = '1000';
     } else {
       this.scene.debugLayer.hide();
     }

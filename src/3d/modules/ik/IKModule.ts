@@ -73,6 +73,10 @@ export class IKModule extends Module {
     return null;
   }
 
+  public get ikControllers() {
+    return this._ikControllers
+  }
+
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
     this._disposeIK();

@@ -36,7 +36,13 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
         playState={_playState}
         playDirection={_playDirection}
       />
-      <IKControllerSection isAllActive={isAllActive} retargetMaps={_retargetMaps} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
+      <IKControllerSection
+        isAllActive={isAllActive}
+        visualizedAssetIds={_visualizedAssetIds}
+        retargetMaps={_retargetMaps}
+        selectableObjects={_selectableObjects}
+        selectedTargets={_selectedTargets}
+      />
     </Fragment>
   );
 };
