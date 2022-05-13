@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import requestApi from '../requestApi';
-import { CreateFolderOrMocapBodyData } from 'types/LP';
+import { CreateFolderOrMocapBodyData, PostMotionData } from 'types/LP';
 import { PlaskRetargetMap } from 'types/common';
 import axios, { Canceler } from 'axios';
 
@@ -67,6 +67,17 @@ export async function createRetargetMap(sceneId: string, libraryId: string, data
     method: 'POST',
     base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: `/library/${sceneId}/${libraryId}/retarget-map`,
+    data,
+  });
+
+  return response.data;
+}
+
+export async function postMotion(sceneId: string, libraryId: string, data: PostMotionData) {
+  const response = await requestApi({
+    method: 'POST',
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: `/library/${sceneId}/${libraryId}/motion`,
     data,
   });
 

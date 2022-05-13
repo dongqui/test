@@ -1,6 +1,6 @@
 import { convertServerResponseToNode } from 'utils/LP/converters';
 import { RootState } from 'reducers';
-import { select, put, call } from 'redux-saga/effects';
+import { select, put, call, all } from 'redux-saga/effects';
 import produce from 'immer';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -11,11 +11,11 @@ import * as BABYLON from '@babylonjs/core';
 import * as api from 'api';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createRetargetMap, isRetargetError } from 'utils/LP/Retarget';
-import { getFileExtension, filterAnimatableTransformNodes, getRandomStringKey } from 'utils/common';
+import { getFileExtension, filterAnimatableTransformNodes } from 'utils/common';
 import { getInitialPoses, getCustomAnimationIngredients } from 'utils/RP';
 import { WARNING_07, WARNING_01 } from 'constants/Text';
 import { PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
-import { AddModelResponse } from 'types/LP';
+import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import PlaskEngine from '3d/PlaskEngine';
 
@@ -28,46 +28,52 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
-    const response: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
-    const modelNode = convertServerResponseToNode(response);
+    const { assetsUid, modelUrl, uid }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
 
-    if (!modelNode.assetId || !modelNode.modelUrl) {
+    if (!assetsUid || !modelUrl) {
       return;
     }
     // TODO: handling this in sever
-    const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelNode.modelUrl, '', baseScene);
+    const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelUrl, '', baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
     if (!skeletons?.length || !skeletons[0].bones?.length || !meshes?.length) {
       throw new Error('Load asset container failed');
     }
 
-    preprocessAssetContainerData(modelNode?.assetId, assetContainer);
+    preprocessAssetContainerData(assetsUid, assetContainer);
 
-    // TODO: remove id, assetId from retargetmap
-    const animationIngredients = getCustomAnimationIngredients(modelNode.assetId, transformNodes, animationGroups);
-    const retargetMap: PlaskRetargetMap = yield call(createRetargetMap, modelNode.assetId, skeletons);
-    yield call(api.createRetargetMap, lpNode.sceneId, modelNode.id, {
+    const animationIngredients = getCustomAnimationIngredients(assetsUid, transformNodes, animationGroups);
+    const retargetMap: PlaskRetargetMap = yield call(createRetargetMap, assetsUid, skeletons);
+    const modelWithRetargetmapRes: RequestNodeResponse = yield call(api.createRetargetMap, lpNode.sceneId, uid, {
       hipSpace: retargetMap.hipSpace,
       values: retargetMap.values,
     });
+
+    const modelNode = convertServerResponseToNode(modelWithRetargetmapRes);
 
     const extension = getFileExtension(modelNode.name).toLowerCase();
     const fileName = modelNode.name.split('.').slice(0, -1).join('.');
     const nodeName = getNodeName(lpNode.nodes, fileName, extension);
     const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
 
-    // TODO: animationIngredients로 모션 생성
-    animationIngredients.map((ingredient) => {
-      AnimationModule.ingredientToServerData(ingredient, 30, false);
-    });
-    const motionNodes = Promise.all([]);
-
+    const motionNodesRes: RequestNodeResponse[] = yield all(
+      animationIngredients.map((ingredient) => {
+        const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(ingredient, 30, false);
+        console.log(serverAnimationLayers);
+        return call(api.postMotion, lpNode.sceneId, modelNode.id, {
+          animation: serverAnimation,
+          animationLayer: serverAnimationLayers,
+        });
+      }),
+    );
+    console.log(motionNodesRes, '@');
+    const motionNodes = motionNodesRes.map(convertServerResponseToNode);
     const nextNodes = produce(lpNode.nodes, (draft) => {
-      draft.push(modelNode);
+      draft.push(modelNode, ...motionNodes);
     });
 
     const newAsset: PlaskAsset = {
-      id: modelNode.assetId,
+      id: modelNode.assetId!,
       name: nodeName,
       extension,
       meshes,

@@ -29,11 +29,9 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    console.log(draggedNode);
     if (draggedNode?.type !== 'MOCAP' || !draggedNode?.mocapData) {
       return;
     }
-    console.log('d');
     e.stopPropagation();
     dispatch(
       lpNodeActions.applyMocapToModelSocket.request({
