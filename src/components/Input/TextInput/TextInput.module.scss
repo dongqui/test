@@ -8,6 +8,7 @@
   background-color: $contentbg-base;
   border-radius: 6px;
   border: 1px $outline-border solid;
+  cursor: ew-resize;
 
   &.fullSize {
     width: 100%;
@@ -39,6 +40,17 @@
 
   &.disabled {
     color: $content-inactive
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+  }
+
+  &[type=number] {
+    -moz-appearance:textfield; /* Firefox */
   }
 }
 

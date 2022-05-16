@@ -18,6 +18,10 @@ const Template: ComponentStory<typeof _TextInput> = (args) => {
       <_TextInput {...args} />
       <h2 style={{ color: 'white' }}>icon prefix</h2>
       <_TextInput {...args} prefix={SvgPath.Search} />
+      <h2 style={{ color: 'white' }}>number type</h2>
+      <_TextInput {...args} type="number" prefix={undefined} />
+      <h2 style={{ color: 'white' }}>number type with min/max (0-100)</h2>
+      <_TextInput {...args} placeholder="0" type="number" prefix={undefined} min={0} max={100} />
     </Fragment>
   );
 };
