@@ -67,6 +67,9 @@ export class PlaskEngine {
    */
   public onContextMenuOpenObservable: Observable<Vector2> = new Observable();
 
+  /**
+   * Disposes the engine
+   */
   public dispose() {
     this._engine.dispose();
     this._scene.dispose();
@@ -111,6 +114,11 @@ export class PlaskEngine {
     PlaskEngine.Instance = this;
   }
 
+  /**
+   * Initializes the engine to start the render loop
+   * @param canvas HTML canvas to render on
+   * @param dispatch Redux' dispatch. TODO : remove as this shouldn't be accessible from the engine
+   */
   public initialize(canvas: HTMLCanvasElement, dispatch: Dispatch<any>) {
     console.log('Initializing plask engine...');
     this._canvas = canvas;
@@ -130,7 +138,7 @@ export class PlaskEngine {
       this._scene.render();
 
       const current = new Date();
-      this.tick(current.getTime() - last.getTime());
+      this._tick(current.getTime() - last.getTime());
       last = current;
     });
 
@@ -143,7 +151,7 @@ export class PlaskEngine {
     };
   }
 
-  public tick(elapsed: number) {
+  private _tick(elapsed: number) {
     for (const module of this._modules) {
       module.tick(elapsed);
     }
@@ -181,6 +189,11 @@ export class PlaskEngine {
     }
   }
 
+  /**
+   * @hidden
+   * @param currentEntities
+   * @param previousEntities
+   */
   public async onEntitiesChanged(currentEntities: EntityMap, previousEntities: EntityMap) {
     // TODO : make it a static prop
     const entityOrder = ['PlaskAsset', 'PlaskTransformNode'];
@@ -214,6 +227,9 @@ export class PlaskEngine {
    */
   public state!: RootState;
 
+  /**
+   * Resizes the 3D engin to match the canvas' size
+   */
   public resize() {
     this._engine.resize();
 
@@ -264,37 +280,63 @@ export class PlaskEngine {
     this.dispatch(addEntity({ targets: entities.map((entity) => entity.clone()) }));
   }
 
+  /**
+   * Gets the current screen id.
+   * For now, only one screen is supported.
+   */
   public get currentScreenId() {
     return this.state.plaskProject.screenList[0].id;
   }
 
   // TODO : MOVE TO REACT PART
+  /**
+   * Undoes the last action
+   * @todo move to react world
+   */
   public undo() {
     if (FEATURE_HISTORY) {
       this.dispatch(ActionCreators.undo());
     }
   }
 
+  /**
+   * Redoes the last action
+   * @todo move to react world
+   */
   public redo() {
     if (FEATURE_HISTORY) {
       this.dispatch(ActionCreators.redo());
     }
   }
 
+  /**
+   *
+   * @todo
+   */
   public save() {
     return JSON.stringify(this._entityStore.serializeAll());
   }
 
+  /**
+   * @todo
+   * @param json
+   */
   public load(json: string) {
     this._entityStore.unserializeAll(JSON.parse(json) as PlaskSpec);
     // TODO : update entity action
     // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
   }
 
+  /**
+   * Clears the undo/redo history
+   */
   public clearHistory() {
     this.dispatch(ActionCreators.clearHistory());
   }
 
+  /**
+   * Shows/hides Babylon's inspector
+   */
   public toggleInspector() {
     if (!this._inspectorActive) {
       this.scene.debugLayer.show({ overlay: true });

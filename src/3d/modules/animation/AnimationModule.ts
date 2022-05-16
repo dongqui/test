@@ -33,13 +33,10 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
 
-  public onAnimationDataChangeObservable: Observable<{ animationIngredients: AnimationIngredient[]; visualizedAssetIds: string[]; startTimeIndex: number; endTimeIndex: number }>;
-
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
 
     this._currentAnimationGroup = null;
-    this.onAnimationDataChangeObservable = new Observable();
   }
 
   static ingredientToServerData(animationIngredient: AnimationIngredient, fps: number, isMocapAnimation: boolean): [ServerAnimation, ServerAnimationLayer[]] {
@@ -161,40 +158,29 @@ export class AnimationModule extends Module {
     return animationIngredient;
   }
 
-  /**
-   * Initialize observables
-   */
-  public initialize() {
-    this.onAnimationDataChangeObservable.add(({ animationIngredients, visualizedAssetIds, startTimeIndex, endTimeIndex }) => {
-      if (this.currentAnimationGroup) {
-        this.currentAnimationGroup.stop();
-        this.currentAnimationGroup.dispose();
-      }
+  public updateAnimationData(animationIngredients: AnimationIngredient[], visualizedAssetIds: string[], startTimeIndex: number, endTimeIndex: number) {
+    if (this.currentAnimationGroup) {
+      this.currentAnimationGroup.stop();
+      this.currentAnimationGroup.dispose();
+      this._currentAnimationGroup = null;
+    }
 
-      const visualizedAnimationIngredients = animationIngredients.filter(
-        (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
-      );
-      if (visualizedAnimationIngredients.length === 1) {
-        const newAnimationGroup = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
-        newAnimationGroup.normalize(startTimeIndex, endTimeIndex);
+    const visualizedAnimationIngredients = animationIngredients.filter(
+      (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
+    );
+    if (visualizedAnimationIngredients.length === 1) {
+      const newAnimationGroup = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
+      newAnimationGroup.normalize(startTimeIndex, endTimeIndex);
 
-        this._currentAnimationGroup = newAnimationGroup;
+      this._currentAnimationGroup = newAnimationGroup;
 
-        // @TODO module 내에서 currentAnimationGroup 컨트롤 하도록 변경 필요
-        this.plaskEngine.dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
-      }
-    });
+      // @TODO module 내에서 currentAnimationGroup 컨트롤 하도록 변경 필요
+      this.plaskEngine.dispatch(animatingControlsActions.setCurrentAnimationGroup({ animationGroup: newAnimationGroup }));
+    }
   }
 
   /**
-   * Clear observables
-   */
-  public dispose() {
-    this.onAnimationDataChangeObservable.clear();
-  }
-
-  /**
-   * edit keyframes with params so that we don't need to select targets in RenderingPanel
+   * Edits keyframes with params so that we don't need to select targets in RenderingPanel
    * @param targetAnimationIngredientId - id of animationIngredent to edit
    * @param targetLayerId - id of layer to edit
    * @param targetFrameIndex - index of frame to edit
@@ -334,7 +320,7 @@ export class AnimationModule extends Module {
         }
       });
 
-      // update animationIngredient (and continually currentAnimationGroup too)
+      // update animationIngredient (and therefore currentAnimationGroup too)
       this.plaskEngine.dispatch(
         animationDataActions.editAnimationIngredient({
           animationIngredient: newAnimationIngredient,
@@ -899,42 +885,13 @@ export class AnimationModule extends Module {
   }
 
   public reduxObservedStates = ['animationData.animationIngredients', 'plaskProject.visualizedAssetIds', 'animatingControls.startTimeIndex', 'animatingControls.endTimeIndex'];
-  public _onStateChanged(key: string, previousState: any): void {
+  public onStateChanged(key: string, previousState: any): void {
     switch (key) {
-      case 'animationData.animationIngredients': {
-        this.onAnimationDataChangeObservable.notifyObservers({
-          animationIngredients: this.animationIngredients,
-          visualizedAssetIds: this.visualizedAssetIds,
-          startTimeIndex: this.startTimeIndex,
-          endTimeIndex: this.endTimeIndex,
-        });
-        break;
-      }
-      case 'plaskProject.visualizedAssetIds': {
-        this.onAnimationDataChangeObservable.notifyObservers({
-          animationIngredients: this.animationIngredients,
-          visualizedAssetIds: this.visualizedAssetIds,
-          startTimeIndex: this.startTimeIndex,
-          endTimeIndex: this.endTimeIndex,
-        });
-        break;
-      }
-      case 'animatingControls.startTimeIndex': {
-        this.onAnimationDataChangeObservable.notifyObservers({
-          animationIngredients: this.animationIngredients,
-          visualizedAssetIds: this.visualizedAssetIds,
-          startTimeIndex: this.startTimeIndex,
-          endTimeIndex: this.endTimeIndex,
-        });
-        break;
-      }
+      case 'animationData.animationIngredients':
+      case 'plaskProject.visualizedAssetIds':
+      case 'animatingControls.startTimeIndex':
       case 'animatingControls.endTimeIndex': {
-        this.onAnimationDataChangeObservable.notifyObservers({
-          animationIngredients: this.animationIngredients,
-          visualizedAssetIds: this.visualizedAssetIds,
-          startTimeIndex: this.startTimeIndex,
-          endTimeIndex: this.endTimeIndex,
-        });
+        this.updateAnimationData(this.animationIngredients, this.visualizedAssetIds, this.startTimeIndex, this.endTimeIndex);
         break;
       }
       default: {
