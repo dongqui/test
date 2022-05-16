@@ -119,19 +119,22 @@ export class GizmoModule extends Module {
   }
 
   /**
-   * Returns the current gizmo space
+   * The current gizmo space
    */
   public get currentGizmoSpace() {
     return this._currentGizmoSpace;
   }
 
   /**
-   * Returns the current gizmo mode
+   * The current gizmo mode
    */
   public get currentGizmoMode() {
     return this._currentGizmoMode;
   }
 
+  /**
+   * Set to true to enable auto keyframe when changing the gizmo
+   */
   public get isAutokeyMode() {
     return this._isAutokeyMode;
   }
