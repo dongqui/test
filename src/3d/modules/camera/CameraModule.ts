@@ -16,33 +16,20 @@ export class CameraModule extends Module {
    * Needed to preserve the latest state of the camera.
    */
   private _prevPositions: PrevCameraProperties = {};
-  public onPrevPositionsChanged: Observable<PrevCameraProperties> = new Observable();
-  public set prevPositions(value: PrevCameraProperties) {
-    this._prevPositions = value;
-    this.onPrevPositionsChanged.notifyObservers(value);
-  }
-  public get prevPositions() {
-    return this._prevPositions;
-  }
 
   /**
    * The latest target of camera in Perspective mode, when user change the mode to Orthographic mode.
    * Needed to preserve the latest state of the camera.
    */
   private _prevTargets: PrevCameraProperties = {};
-  public onPrevTargetsChanged: Observable<PrevCameraProperties> = new Observable();
-  public set prevTargets(value: PrevCameraProperties) {
-    this._prevTargets = value;
-    this.onPrevTargetsChanged.notifyObservers(value);
-  }
-  public get prevTargets() {
-    return this._prevTargets;
-  }
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
   }
 
+  /**
+   * Changes camera to perspective view
+   */
   public toPerspective() {
     const scene = this.plaskEngine.scene;
     const camera = scene.activeCamera;
@@ -50,12 +37,12 @@ export class CameraModule extends Module {
     if (scene && camera && camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
       camera.mode = Camera.PERSPECTIVE_CAMERA;
 
-      if (this.prevPositions && this.prevTargets && this.prevPositions[this.plaskEngine.canvas.id] && this.prevTargets[this.plaskEngine.canvas.id]) {
+      if (this._prevPositions && this._prevTargets && this._prevPositions[this.plaskEngine.canvas.id] && this._prevTargets[this.plaskEngine.canvas.id]) {
         const activeCamera = camera as ArcRotateCamera;
-        activeCamera.setPosition(this.prevPositions[this.plaskEngine.canvas.id]!.clone() as Vector3);
-        activeCamera.setTarget(this.prevTargets[this.plaskEngine.canvas.id]!.clone() as Vector3);
-        this.prevPositions[this.plaskEngine.canvas.id] = null;
-        this.prevTargets[this.plaskEngine.canvas.id] = null;
+        activeCamera.setPosition(this._prevPositions[this.plaskEngine.canvas.id]!.clone() as Vector3);
+        activeCamera.setTarget(this._prevTargets[this.plaskEngine.canvas.id]!.clone() as Vector3);
+        this._prevPositions[this.plaskEngine.canvas.id] = null;
+        this._prevTargets[this.plaskEngine.canvas.id] = null;
       }
 
       const grounds = scene.getMeshesByTags('ground');
@@ -69,6 +56,11 @@ export class CameraModule extends Module {
     }
   }
 
+  /**
+   * Changes camera to orthographic view
+   * @param view
+   * @returns
+   */
   public toOrthographic(view: PlaskView) {
     const canvas = this.plaskEngine.canvas;
     const scene = this.plaskEngine.scene;
@@ -93,14 +85,18 @@ export class CameraModule extends Module {
       }
     });
 
-    if (!this.prevPositions[canvas.id] && !this.prevTargets[canvas.id]) {
-      this.prevPositions[canvas.id] = camera.position.clone();
-      this.prevTargets[canvas.id] = camera.target.clone();
+    if (!this._prevPositions[canvas.id] && !this._prevTargets[canvas.id]) {
+      this._prevPositions[canvas.id] = camera.position.clone();
+      this._prevTargets[canvas.id] = camera.target.clone();
     }
     const { position, target } = camera;
     this._setOrthoPosition(view, camera, position, target);
   }
 
+  /**
+   * Resets the view to the default
+   * @returns
+   */
   public resetView() {
     const camera = this.plaskEngine.scene.activeCamera as ArcRotateCamera;
     const canvas = this.plaskEngine.canvas;
@@ -164,7 +160,7 @@ export class CameraModule extends Module {
   }
 
   public initialize() {
-    this.prevPositions[this.plaskEngine.canvas.id] = null;
-    this.prevTargets[this.plaskEngine.canvas.id] = null;
+    this._prevPositions[this.plaskEngine.canvas.id] = null;
+    this._prevTargets[this.plaskEngine.canvas.id] = null;
   }
 }

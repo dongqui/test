@@ -27,7 +27,6 @@ type GizmoDragObserver = Nullable<
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
 export class GizmoModule extends Module {
-  public state = {};
   private _isAutokeyMode: boolean = false;
   private _gizmoManager!: GizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
@@ -87,6 +86,10 @@ export class GizmoModule extends Module {
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * Changes the gizmo space, to be either local or world
+   * @param space
+   */
   public changeGizmoSpace(space: GizmoSpace) {
     if (this._currentGizmoMode === GizmoMode.POSITION) {
       this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = space === GizmoSpace.LOCAL;
@@ -98,20 +101,33 @@ export class GizmoModule extends Module {
     this._currentGizmoSpace = space;
   }
 
+  /**
+   * Changes the gizmo mode between rotation position and scale
+   * @param mode
+   */
   public changeGizmoMode(mode: GizmoMode) {
     this._currentGizmoMode = mode;
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * @hidden
+   */
   public updateVisibility() {
     // Refresh attachment
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * Returns the current gizmo space
+   */
   public get currentGizmoSpace() {
     return this._currentGizmoSpace;
   }
 
+  /**
+   * Returns the current gizmo mode
+   */
   public get currentGizmoMode() {
     return this._currentGizmoMode;
   }

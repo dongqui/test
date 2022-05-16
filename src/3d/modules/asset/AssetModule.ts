@@ -21,6 +21,9 @@ const EXPORT_OPTIONS = {
   },
 };
 
+/**
+ * Module that handles asset loading, unloading, storage and manipulation
+ */
 export class AssetModule extends Module {
   private _sphereHandles: Mesh[] = [];
   constructor(plaskEngine: PlaskEngine) {
@@ -46,6 +49,7 @@ export class AssetModule extends Module {
 
   /**
    * Preprocess objects in assetContaienr including updating objects' ids.
+   * Should be called after loading an asset container and before visualization.
    * @param assetId - asset's id
    * @param assetContainer - babylon custom object including asset's sub objects
    */
@@ -67,9 +71,9 @@ export class AssetModule extends Module {
 
   /**
    * Stop all animationGroups in the project and clear them.
+   * @todo really messy as it doesn't tell the animation module that it clears all animation groups.
    * @param screens - all screens(currently single screen only)
    */
-  //TODO: should improve logic
   public clearAnimationGroups(screens: PlaskScreen[]) {
     screens.forEach(({ scene }) => {
       scene.animationGroups.forEach((animationGroup) => {
@@ -81,10 +85,10 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Turn skeletonViewer on the target screen.
+   * Shows skeleton on the target screen.
    * @param screenId - id of the screen
    */
-  public powerSkeletonViewer(screenId: string) {
+  public showSkeleton(screenId: string) {
     const targetSkeletonViewer = this.plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === screenId);
     if (targetSkeletonViewer) {
       targetSkeletonViewer.skeletonViewer.isEnabled = true;
@@ -92,10 +96,10 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Turn skeletonViewer off in the target screen.
+   * Hides skeleton on the target screen.
    * @param screenId - id of the screen
    */
-  public unpowerSkeletonViewer(screenId: string) {
+  public hideSkeleton(screenId: string) {
     const targetSkeletonViewer = this.plaskSkeletonViewers.find((plaskSkeletonViewer) => plaskSkeletonViewer.screenId === screenId);
     if (targetSkeletonViewer) {
       targetSkeletonViewer.skeletonViewer.isEnabled = false;
@@ -112,9 +116,8 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Visualize a model from all the screens.
-   * @param assetId - id of the target asset
-   * @param clickJointChannel
+   * Visualize a model on all the screens.
+   * @param assetId - id of the target asset. Should be already loaded and available in the asset list
    */
   public visualizeModel(assetId: string) {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);

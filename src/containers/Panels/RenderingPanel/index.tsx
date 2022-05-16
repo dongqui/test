@@ -153,10 +153,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       };
     }
   }, [dispatch]);
-
-  const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
-  const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
-
   /**************************
    * STATE BIND
    * ONE WAY FLOW FROM REACT TO BABYLONJS
