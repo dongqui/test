@@ -33,7 +33,6 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
 
-  public reduxObservedStates = ['animationData.animationIngredients', 'plaskProject.visualizedAssetIds', 'animatingControls.startTimeIndex', 'animatingControls.endTimeIndex'];
   public onAnimationDataChangeObservable: Observable<{ animationIngredients: AnimationIngredient[]; visualizedAssetIds: string[]; startTimeIndex: number; endTimeIndex: number }>;
 
   constructor(plaskEngine: PlaskEngine) {
@@ -908,7 +907,8 @@ export class AnimationModule extends Module {
     }
   }
 
-  public onStateChanged(key: string, previousState: any): void {
+  public reduxObservedStates = ['animationData.animationIngredients', 'plaskProject.visualizedAssetIds', 'animatingControls.startTimeIndex', 'animatingControls.endTimeIndex'];
+  public _onStateChanged(key: string, previousState: any): void {
     switch (key) {
       case 'animationData.animationIngredients': {
         this.onAnimationDataChangeObservable.notifyObservers({

@@ -15,6 +15,9 @@ import {
   Skeleton,
   Scalar,
   AssetContainer,
+  ExecuteCodeAction,
+  ActionManager,
+  ActionEvent,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -22,7 +25,9 @@ import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Slider, Button } from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty } from 'types/common';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import * as selectingDataActions from 'actions/selectingDataAction';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap } from 'types/common';
 
 type BoneIKParams = {
   bone: string;
@@ -41,11 +46,11 @@ type FingersSliderParams = {
   height: string;
 };
 export class IKModule extends Module {
+  public retargetMap: Nullable<PlaskRetargetMap> = null;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _ikControllers: BoneIKController[] = [];
   private _ikControllerMeshes: Mesh[] = [];
-  private _activeIkControllers: BoneIKController[] = [];
   private _gizmoManager!: GizmoManager;
   private _advancedTexture!: AdvancedDynamicTexture;
   private _pickedIkMesh: Mesh | undefined;
@@ -58,12 +63,7 @@ export class IKModule extends Module {
     ikControllers: [] as BoneIKController[],
   };
 
-  private get _allTransformNodes() {
-    return this.plaskEngine.selectorModule.allTransformNodes;
-  }
-
-  public get retargetMap() {
-    const assetId = this.plaskEngine.state.plaskProject.visualizedAssetIds[0];
+  public getRetargetMap(assetId: string) {
     const map = this.plaskEngine.state.animationData.retargetMaps.find((elt) => elt.assetId === assetId);
 
     if (map) {
@@ -73,9 +73,13 @@ export class IKModule extends Module {
     return null;
   }
 
+  public get ikControllers() {
+    return this._ikControllers;
+  }
+
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
-    this._disposeIK();
+    this.removeIK();
   }
 
   public initialize() {
@@ -87,9 +91,6 @@ export class IKModule extends Module {
   }
 
   public tick(elapsed: number) {
-    //if (this._pickedIkMesh)
-    //  this._pickedIkMesh.metadata.ikController.update();
-    // for (const ikController of this._activeIkControllers) {
     for (const ikController of this._ikControllers) {
       ikController.update();
     }
@@ -99,19 +100,12 @@ export class IKModule extends Module {
     this._activeTransformNodes = objects;
   }
 
-  public reduxObservedStates = ['plaskProject.visualizedAssetIds'];
-  public onStateChanged(key: string, previousState: any) {
-    if (key === 'plaskProject.visualizedAssetIds') {
-      this._disposeIK();
-      this._createIK();
-    }
+  public addIK(assetId: string) {
+    this._initializeControllers(assetId);
+    return this.generateIkPlaskTransformNodes(this._ikControllerMeshes);
   }
 
-  private _createIK() {
-    this._initializeControllers(this.plaskEngine.state.plaskProject.visualizedAssetIds[0]);
-  }
-
-  private _disposeIK() {
+  public removeIK() {
     this._ghost.skeleton?.dispose();
     this._ghost.rootMesh?.dispose();
     this._ghost.skeleton = null;
@@ -143,6 +137,7 @@ export class IKModule extends Module {
   public pushDataList(pickedIkCtrl: Mesh) {
     const targetDataList = [];
     targetDataList.push(
+<<<<<<< HEAD
     {
       targetId: pickedIkCtrl.metadata.transformNode.id, 
       property: 'rotationQuaternion' as PlaskProperty,
@@ -201,6 +196,53 @@ export class IKModule extends Module {
       // pickedIkCtrl.metadata.transformNode2.getAbsolutePosition(),
       pickedIkCtrl.metadata.transformNodeIk.name, 
       pickedIkCtrl.metadata.transformNodeIk.position,
+=======
+      {
+        targetId: pickedIkCtrl.metadata.transformNode.id,
+        property: 'rotationQuaternion' as PlaskProperty,
+        value: (pickedIkCtrl.metadata.transformNodeIk.rotationQuaternion as unknown) as ArrayOfFourNumbers,
+      },
+      {
+        targetId: pickedIkCtrl.metadata.transformNode.id,
+        property: 'position' as PlaskProperty,
+        value: (pickedIkCtrl.metadata.transformNodeIk.getAbsolutePosition() as unknown) as ArrayOfThreeNumbers,
+      },
+      // {
+      //   targetId: pickedIkCtrl.metadata.transformNode.id,
+      //   property: 'scaling' as PlaskProperty,
+      //   value: pickedIkCtrl.metadata.transformNodeIk.scaling as unknown as ArrayOfThreeNumbers
+      // },
+      {
+        targetId: pickedIkCtrl.metadata.transformNode_1.id,
+        property: 'rotationQuaternion' as PlaskProperty,
+        value: (pickedIkCtrl.metadata.transformNodeIk_1.rotationQuaternion as unknown) as ArrayOfFourNumbers,
+      },
+      {
+        targetId: pickedIkCtrl.metadata.transformNode_1.id,
+        property: 'position' as PlaskProperty,
+        value: (pickedIkCtrl.metadata.transformNodeIk_1.getAbsolutePosition() as unknown) as ArrayOfThreeNumbers,
+      },
+      // {
+      //   targetId: pickedIkCtrl.metadata.transformNode_1.id,
+      //   property: 'scaling' as PlaskProperty,
+      //   value: pickedIkCtrl.metadata.transformNodeIk_1.scaling as unknown as ArrayOfThreeNumbers
+      // },
+      {
+        targetId: pickedIkCtrl.metadata.transformNode_2.id,
+        property: 'rotationQuaternion' as PlaskProperty,
+        value: (pickedIkCtrl.metadata.transformNodeIk_2.rotationQuaternion as unknown) as ArrayOfFourNumbers,
+      },
+      {
+        targetId: pickedIkCtrl.metadata.transformNode_2.id,
+        property: 'position' as PlaskProperty,
+        value: (pickedIkCtrl.metadata.transformNodeIk_2.getAbsolutePosition() as unknown) as ArrayOfThreeNumbers,
+      },
+      // {
+      //   targetId: pickedIkCtrl.metadata.transformNode_2.id,
+      //   property: 'scaling' as PlaskProperty,
+      //   value: pickedIkCtrl.metadata.transformNodeIk_2.scaling as unknown as ArrayOfThreeNumbers
+      // }
+>>>>>>> 7be72c0d641787c97c6cda7f9d3e85a3a196056a
     );
 
     // console.log(
@@ -212,7 +254,7 @@ export class IKModule extends Module {
     // );
 
     return targetDataList;
-  };
+  }
 
   private _createIKControllerMesh(params: BoneIKParams, bone: Bone, transformNode: TransformNode) {
     // Creating IK Target Meshes
@@ -264,7 +306,119 @@ export class IKModule extends Module {
     controllerHidden.isVisible = false;
     controllerHidden.isPickable = false;
 
+    let pickedIkCtrl: Nullable<Mesh> = null;
+
+    controller.actionManager = new ActionManager(this.plaskEngine.scene);
+    controller.actionManager.registerAction(
+      // register action that enable for user to select transformNode by clicking joint
+      new ExecuteCodeAction(ActionManager.OnPickDownTrigger, (event: ActionEvent) => {
+        if (pickedIkCtrl) {
+          pickedIkCtrl.renderOutline = false;
+        }
+        this._activeTransformNodes.length = 0;
+
+        pickedIkCtrl = controller;
+        pickedIkCtrl.renderOutline = true;
+        pickedIkCtrl.outlineColor = Color3.White();
+        pickedIkCtrl.outlineWidth = 0.01;
+
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
+        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
+
+        //console.log(this._activeTransformNodes);
+
+        this._pickedIkMesh = pickedIkCtrl;
+        this._blendSlider.value = pickedIkCtrl.metadata.blend;
+        this._poleAngleSlider.value = pickedIkCtrl.metadata.ikController.poleAngle;
+
+        const sourceEvent: PointerEvent = event.sourceEvent;
+        if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
+          // TODO : 3D Modules should just use state as readonly
+          // Do not dispatch, but instead do :
+          // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
+          this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: pickedIkCtrl.getPlaskEntity() }));
+        } else {
+          this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: pickedIkCtrl.getPlaskEntity() }));
+        }
+      }),
+    );
+
     return { controllerHidden, controller };
+  }
+
+  public generateIkPlaskTransformNodes(handles: Mesh[]) {
+    const result = [];
+    for (const mesh of handles) {
+      result.push(new PlaskTransformNode(mesh));
+    }
+
+    return result;
+  }
+
+  public setIKControllerBlend(value: number = 0) {
+    // Evaluate if a IK Controller is selected
+    const scene = this.plaskEngine.scene;
+    if (this._pickedIkMesh) {
+      let newPos = new Vector3();
+      Vector3.LerpToRef(this._pickedIkMesh.metadata.transformNode.absolutePosition, this._pickedIkMesh.absolutePosition, value, newPos);
+      this._pickedIkMesh.metadata.controller.setAbsolutePosition(newPos);
+      this._pickedIkMesh.metadata.blend = value;
+
+      let newColor = new Color3();
+      let newMat = new StandardMaterial('', scene);
+      // Blend between TEAL and WHITE colors
+      Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
+      newMat.emissiveColor = newColor;
+      this._pickedIkMesh.material = newMat;
+    }
+  }
+
+  public setIKControllerPoleAngle(value: number = 0) {
+    if (this._pickedIkMesh) {
+      this._pickedIkMesh.metadata.ikController.poleAngle = value;
+    }
+  }
+
+  public setIKtoFK() {
+    // Evaluate if a IK Controller is selected
+    if (this._pickedIkMesh) {
+      this._gizmoManager.attachToNode(null);
+      let transfNodeClone = this._pickedIkMesh.metadata.transformNodeIk;
+      this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
+      let ikcontroller = this._pickedIkMesh.metadata.ikController;
+      ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
+      ikcontroller.update();
+      this._gizmoManager.attachToNode(this._pickedIkMesh);
+    }
+  }
+
+  public setFKtoIK() {
+    // Evaluate if a IK Controller is selected
+    if (this._pickedIkMesh) {
+      let controller = this._pickedIkMesh.metadata.controller;
+      let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
+      controllerOrig.setAbsolutePosition(controller.absolutePosition);
+      let ikcontrollerOrig = this._pickedIkMesh.metadata.ikControllerOrig;
+      ikcontrollerOrig.poleAngle = this._pickedIkMesh.metadata.ikController.poleAngle;
+      ikcontrollerOrig.update();
+    }
+  }
+
+  public setKeyframeIK() {
+    // Evaluate if a IK Controller is selected
+    if (this._pickedIkMesh) {
+      const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
+        (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
+      );
+      const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+      const targetFrameIndex = 20;
+
+      if (targetAnimation) {
+        console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+      }
+    }
   }
 
   private _createGUIElement() {
@@ -317,6 +471,7 @@ export class IKModule extends Module {
     slidePanel.addControl(headerTitle);
 
     // Pole Angles Title
+<<<<<<< HEAD
     const headerPoleAngle = new TextBlock();
     headerPoleAngle.text = 'Pole Angle: 0 deg';
     headerPoleAngle.height = '30px';
@@ -332,6 +487,24 @@ export class IKModule extends Module {
     sliderPoleAngle.background = 'teal';
     sliderPoleAngle.onValueChangedObservable.add((value) => {
       headerPoleAngle.text = 'Pole Angle: ' + (Tools.ToDegrees(value) | 0) + ' deg';
+=======
+    const header_PoleAngle = new TextBlock();
+    header_PoleAngle.text = 'Pole Angle: 0 deg';
+    header_PoleAngle.height = '30px';
+    header_PoleAngle.color = 'white';
+    slidePanel.addControl(header_PoleAngle);
+
+    const slider_PoleAngle = new Slider();
+    slider_PoleAngle.minimum = -Math.PI / 2;
+    slider_PoleAngle.maximum = Math.PI / 2;
+    slider_PoleAngle.value = 0;
+    slider_PoleAngle.height = '20px';
+    slider_PoleAngle.width = '200px';
+    slider_PoleAngle.background = 'teal';
+    slider_PoleAngle.onValueChangedObservable.add((value) => {
+      console.log(value);
+      header_PoleAngle.text = 'Pole Angle: ' + (Tools.ToDegrees(value) | 0) + ' deg';
+>>>>>>> 7be72c0d641787c97c6cda7f9d3e85a3a196056a
 
       if (this._pickedIkMesh) {
         this._pickedIkMesh.metadata.ikController.poleAngle = value;
@@ -430,8 +603,9 @@ export class IKModule extends Module {
       let finger2: TransformNode;
       let finger3: TransformNode;
 
-      scene.transformNodes.forEach(transformNode => {
+      scene.transformNodes.forEach((transformNode) => {
         if (transformNode.name.includes('ghost_')) {
+<<<<<<< HEAD
           if(!finger1 && transformNode.name.toLowerCase().includes(elem.joint1.toLowerCase())) {
             finger1 = transformNode;
             //console.log(finger1.name);
@@ -440,6 +614,16 @@ export class IKModule extends Module {
           } else if (!finger3 && elem.joint3 && transformNode.name.toLowerCase().includes(elem.joint3.toLowerCase())) {
             finger3 = transformNode;
           }  
+=======
+          if (!finger_1 && transformNode.name.toLowerCase().includes(elem.name_1.toLowerCase())) {
+            finger_1 = transformNode;
+            console.log(finger_1.name);
+          } else if (!finger_2 && transformNode.name.toLowerCase().includes(elem.name_2.toLowerCase())) {
+            finger_2 = transformNode;
+          } else if (!finger_3 && elem.name_3 && transformNode.name.toLowerCase().includes(elem.name_3.toLowerCase())) {
+            finger_3 = transformNode;
+          }
+>>>>>>> 7be72c0d641787c97c6cda7f9d3e85a3a196056a
         }
       });
 
@@ -523,7 +707,9 @@ export class IKModule extends Module {
     buttonKeyframe.onPointerClickObservable.add(() => {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
-        const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId));
+        const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
+          (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
+        );
         const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
         const targetFrameIndex = 20;
 
@@ -558,20 +744,21 @@ export class IKModule extends Module {
 
     const clone = container.instantiateModelsToScene((name: string) => `ghost_${name}`);
     clone.rootNodes.forEach((node: TransformNode) => {
+      const descendants = node.getDescendants();
+      // for (const descendant of descendants) {
+      //   if (descendant.getClassName() === 'Mesh') {
+      //     (descendant as Mesh).visibility = 0.25;
+      //   }
+      // }
       this._ikMeshes.push(node as Mesh);
-      if (node.name === "ghost___root__") {
+      if (node.name === 'ghost___root__') {
         this._ghost.rootMesh = node as Mesh;
       }
-    })
+    });
     this._ghost.skeleton = clone.skeletons[0];
 
-    this._createGUIElement();
-
-    // TODO : retrieve skeleton and body
-    const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
-    const skeleton = scene.skeletons[0]; // store skeleton
-
     // reduce visibility of FK meshes
+    // TODO : unclean, also reduces visibility of environment
     for (const mesh of scene.meshes) {
       if (mesh.name.includes('ghost_')) {
         mesh.visibility = 1.0;
@@ -579,6 +766,12 @@ export class IKModule extends Module {
         mesh.visibility = 0.25;
       }
     }
+
+    this._createGUIElement();
+
+    // TODO : retrieve skeleton and body
+    const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
+    const skeleton = scene.skeletons[0]; // store skeleton
 
     // Defining bones to be used in IK
     const bonesSelection = [
@@ -593,12 +786,19 @@ export class IKModule extends Module {
     // Creating IK controls
     bonesSelection.forEach((elem) => {
       const transformNodesChain = [];
-      // Finding Bone/TransformNode
-      if (!this.retargetMap) {
+      // Finding Bone
+      const retargetMap = this.getRetargetMap(assetId);
+      if (!retargetMap) {
         console.warn('Cannot find retarget map');
         return;
       }
+<<<<<<< HEAD
       const retargetValue = this.retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem.bone));
+=======
+      this.retargetMap = retargetMap;
+
+      const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem.name));
+>>>>>>> 7be72c0d641787c97c6cda7f9d3e85a3a196056a
       if (!retargetValue) {
         console.warn('Cannot find bone name, check boneSelection');
         return;
@@ -648,6 +848,7 @@ export class IKModule extends Module {
       controller.metadata.controllerOrig = controllerOrig;
       controller.metadata.ikControllerOrig = ikCtrlOrig;
     });
+<<<<<<< HEAD
 
     // Starting IK movement
     // TODO : link to GizmoModule
@@ -683,5 +884,7 @@ export class IKModule extends Module {
       }
       //console.log(pickedIkCtrl?.metadata);
     });
+=======
+>>>>>>> 7be72c0d641787c97c6cda7f9d3e85a3a196056a
   }
 }

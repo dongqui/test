@@ -29,7 +29,7 @@ import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
-import { SelectorModule } from './modules/selector/SelectorModule';
+import SelectorModuleSingleton, { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
 import { EntityMap, EntityStore, PlaskSpec } from './entities/EntityStore';
 import { addEntity } from 'actions/selectingDataAction';
@@ -297,9 +297,9 @@ export class PlaskEngine {
 
   public toggleInspector() {
     if (!this._inspectorActive) {
-      this.scene.debugLayer.show({overlay: true});
-      document.getElementById("scene-explorer-host")!.style.zIndex = "1000";
-      document.getElementById("inspector-host")!.style.zIndex = "1000";
+      this.scene.debugLayer.show({ overlay: true });
+      document.getElementById('scene-explorer-host')!.style.zIndex = '1000';
+      document.getElementById('inspector-host')!.style.zIndex = '1000';
     } else {
       this.scene.debugLayer.hide();
     }
@@ -308,7 +308,7 @@ export class PlaskEngine {
 
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
-    this._modules.push((this.selectorModule = new SelectorModule(this)));
+    this._modules.push((this.selectorModule = SelectorModuleSingleton));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
     this._modules.push((this.ikModule = new IKModule(this)));
     this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
@@ -382,4 +382,6 @@ export class PlaskEngine {
   }
 }
 
-export default new PlaskEngine();
+const engine = new PlaskEngine();
+(window as any).engine = engine;
+export default engine;

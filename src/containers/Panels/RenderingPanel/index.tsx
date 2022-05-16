@@ -15,6 +15,10 @@ import '@babylonjs/inspector';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useObserved } from 'hooks/common/useObserved';
+import SelectorModule from '3d/modules/selector/SelectorModule';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { selectionChanged } from './stateSync';
 
 const cx = classNames.bind(styles);
 
@@ -152,6 +156,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
   const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
+
+  /**************************
+   * STATE BIND
+   * ONE WAY FLOW FROM REACT TO BABYLONJS
+   * OBSERVABLES TO UPDATE REDUX STATE
+   *
+   *************************/
+  useObserved(SelectorModule._onUserSelectRequest, selectionChanged);
 
   /**
    * dragBox interacting with scene

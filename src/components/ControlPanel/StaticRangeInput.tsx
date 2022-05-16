@@ -68,25 +68,45 @@ const StaticRangeInput: FunctionComponent<Props> = ({
       inputRef.current!.blur();
     }
   }, []);
-
+  // 숫자로 전달받은 Input value를 string으로 변환하여 맨 앞자리의 숫자를 판단,
+  // 1, 2, 5라면 getRangeMaxNumber를 통해서 새로운 최대값을 구한 후 range input의 max attribute에 할당
+  const handleMaxLimitLogic = useCallback(
+    (num: number) => {
+      rangeRef.current!.value = num + '';
+      if (showProgress) setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
+    },
+    [showProgress],
+  );
   // input을 통한 value 변경이 아닌, model을 직접 움직여 값이 변경되는 경우 range input의 동기화를 위한 코드
   // range input이 이중으로 변환되는 것을 막기 위해 isValueChanged를 트리거로 사용
   useEffect(() => {
     if (rangeRef && (currentValue || currentValue === 0)) {
       if (!isValueChanged) {
-        rangeRef.current!.value = currentValue + '';
+        handleMaxLimitLogic(currentValue);
       }
     }
-  }, [max, currentValue, isValueChanged]);
+  }, [max, currentValue, isValueChanged, handleMaxLimitLogic]);
 
   // input에 동일한 값을 다시 입력하려고 할 경우 변화를 감지할 수 있도록 isFocused를 트리거로 사용하여 소수점을 다시 적용
   useEffect(() => {
     if (!isFocused) {
       const decimalFixedValue = Number.parseFloat(currentValue + '').toFixed(decimalDigit ? decimalDigit : 1);
-
       inputRef.current!.value = decimalFixedValue;
     }
   }, [currentValue, decimalDigit, isFocused]);
+
+  // range input이 change 될 때에 range input의 최대값을 변경하는 함수
+  const setRangeMaxLimit = useCallback(
+    (e) => {
+      const num = parseFloat(e.target.value);
+      handleMaxLimitLogic(num);
+      setIsValueChanged(false);
+      if (onChangeEnd) {
+        onChangeEnd(num);
+      }
+    },
+    [handleMaxLimitLogic, onChangeEnd],
+  );
 
   const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
 
@@ -107,8 +127,10 @@ const StaticRangeInput: FunctionComponent<Props> = ({
             handleChange(e);
             if (showProgress) setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
           }}
+          onMouseUp={setRangeMaxLimit}
           ref={rangeRef}
           tabIndex={activeStatus ? 0 : -1}
+          disabled={!activeStatus}
           style={{ backgroundSize: rangeRef.current ? `${progressBar}% 100%` : `100% 100%` }}
         />
         {/* 직접 값을 입력할 수 있는 text input */}
@@ -119,12 +141,14 @@ const StaticRangeInput: FunctionComponent<Props> = ({
           onFocus={handleSelectText}
           onKeyUp={handleKeyboard}
           onBlur={(e) => {
+            setRangeMaxLimit(e);
             rangeRef.current!.value = e.target.value;
             handleChange(e);
             if (showProgress) setProgressBar((+rangeRef.current!.value * 100) / +rangeRef.current!.max);
             setIsFocused(false);
           }}
           ref={inputRef}
+          disabled={!activeStatus}
           tabIndex={activeStatus ? 0 : -1}
           defaultValue={max}
         />

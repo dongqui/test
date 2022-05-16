@@ -4,7 +4,7 @@
     "source.fixAll.stylelint": true
   },
   "editor.tabSize": 2,
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "eslint.alwaysShowStatus": true,
   "stylelint.validate": ["css", "scss", ".module.scss"],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
