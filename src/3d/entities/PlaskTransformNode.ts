@@ -11,6 +11,10 @@ export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   className: 'PlaskTransformNode';
   id: string;
 }
+
+/**
+ * PlaskTransformNodes are the immutable data representation of a transform node in Babylon.js
+ */
 export class PlaskTransformNode extends PlaskEntity {
   constructor(transformNode?: TransformNode, entityId?: string) {
     super(entityId);
