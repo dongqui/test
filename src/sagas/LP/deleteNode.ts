@@ -3,15 +3,21 @@ import { getType } from 'typesafe-actions';
 import _ from 'lodash';
 
 import { RootState } from 'reducers';
-import { filterDeletedNode } from 'utils/LP/FileSystem';
+import { filterDeletedNode, getDescendantNodes } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 
 function* handleDeleteNodeRequest(action: ReturnType<typeof lpNodeActions.deleteNodeSocket.request>) {
+  const { lpNode }: RootState = yield select();
   const nodeId = action.payload;
+  const descendantIds = getDescendantNodes(lpNode.nodes, nodeId).map((node) => node.id);
+
   yield put(
     lpNodeActions.deleteNodeSocket.send({
       type: 'delete',
       scenesLibraryId: nodeId,
+      data: {
+        descendantIds,
+      },
     }),
   );
 }

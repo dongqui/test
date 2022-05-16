@@ -68,10 +68,6 @@ interface FileUploadParams {
   file: File | string;
   showLoading: boolean;
 }
-interface DeleteNodeReceiveParam {
-  type: 'delete';
-  scenesLibraryId: string;
-}
 
 interface MoveNodeSendParam {
   type: 'move';
@@ -106,6 +102,16 @@ interface DeleteMotionReceiveParam {
 interface DeleteNodeSendParams {
   type: 'delete';
   scenesLibraryId: string;
+  data: {
+    descendantIds: string[];
+  };
+}
+interface DeleteNodeReceiveParam {
+  type: 'delete';
+  scenesLibraryId: string;
+  data: {
+    descendantIds: string[];
+  };
 }
 
 interface ApplyMocapToModelRequestParams {
