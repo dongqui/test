@@ -74,7 +74,7 @@ export class IKModule extends Module {
   }
 
   public get ikControllers() {
-    return this._ikControllers
+    return this._ikControllers;
   }
 
   public dispose() {
@@ -289,6 +289,71 @@ export class IKModule extends Module {
     return result;
   }
 
+  public setIKControllerBlend(value: number = 0) {
+    // Evaluate if a IK Controller is selected
+    const scene = this.plaskEngine.scene;
+    if (this._pickedIkMesh) {
+      let newPos = new Vector3();
+      Vector3.LerpToRef(this._pickedIkMesh.metadata.transformNode.absolutePosition, this._pickedIkMesh.absolutePosition, value, newPos);
+      this._pickedIkMesh.metadata.controller.setAbsolutePosition(newPos);
+      this._pickedIkMesh.metadata.blend = value;
+
+      let newColor = new Color3();
+      let newMat = new StandardMaterial('', scene);
+      // Blend between TEAL and WHITE colors
+      Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
+      newMat.emissiveColor = newColor;
+      this._pickedIkMesh.material = newMat;
+    }
+  }
+
+  public setIKControllerPoleAngle(value: number = 0) {
+    if (this._pickedIkMesh) {
+      this._pickedIkMesh.metadata.ikController.poleAngle = value;
+    }
+  }
+
+  public setIKtoFK() {
+    // Evaluate if a IK Controller is selected
+    if (this._pickedIkMesh) {
+      this._gizmoManager.attachToNode(null);
+      let transfNodeClone = this._pickedIkMesh.metadata.transformNodeIk;
+      this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
+      let ikcontroller = this._pickedIkMesh.metadata.ikController;
+      ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
+      ikcontroller.update();
+      this._gizmoManager.attachToNode(this._pickedIkMesh);
+    }
+  }
+
+  public setFKtoIK() {
+    // Evaluate if a IK Controller is selected
+    if (this._pickedIkMesh) {
+      let controller = this._pickedIkMesh.metadata.controller;
+      let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
+      controllerOrig.setAbsolutePosition(controller.absolutePosition);
+      let ikcontrollerOrig = this._pickedIkMesh.metadata.ikControllerOrig;
+      ikcontrollerOrig.poleAngle = this._pickedIkMesh.metadata.ikController.poleAngle;
+      ikcontrollerOrig.update();
+    }
+  }
+
+  public setKeyframeIK() {
+    // Evaluate if a IK Controller is selected
+    if (this._pickedIkMesh) {
+      const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
+        (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
+      );
+      const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+      const targetFrameIndex = 20;
+
+      if (targetAnimation) {
+        console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+      }
+    }
+  }
+
   private _createGUIElement() {
     const advancedTexture = this._advancedTexture;
     const scene = this.plaskEngine.scene;
@@ -353,6 +418,7 @@ export class IKModule extends Module {
     slider_PoleAngle.width = '200px';
     slider_PoleAngle.background = 'teal';
     slider_PoleAngle.onValueChangedObservable.add((value) => {
+      console.log(value);
       header_PoleAngle.text = 'Pole Angle: ' + (Tools.ToDegrees(value) | 0) + ' deg';
 
       if (this._pickedIkMesh) {
