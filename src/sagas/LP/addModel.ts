@@ -59,7 +59,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
     const motionNodesRes: RequestNodeResponse[] = yield all(
       animationIngredients.map((ingredient) => {
         const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(ingredient, 30, false);
-        console.log(serverAnimationLayers);
         return call(api.postMotion, lpNode.sceneId, modelNode.id, {
           animation: serverAnimation,
           animationLayer: serverAnimationLayers,

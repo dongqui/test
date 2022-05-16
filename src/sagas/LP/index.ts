@@ -18,7 +18,7 @@ import watchDeleteNodeSocketActions from './deleteNode';
 import handleFileUpload from './fileUpload';
 import handleAddModel from './addModel';
 import initNodes from './initNodes';
-import watchApplyMocapToModelSocketActions from './applyMocapToModel';
+import handleApplyMocapToModel from './applyMocapToModel';
 
 export default function* LPSaga() {
   yield all([
@@ -38,11 +38,11 @@ export default function* LPSaga() {
     takeEvery(getType(lpNodeActions.initNodes), initNodes),
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
     takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
+    takeLatest(getType(lpNodeActions.applyMocapToModel.request), handleApplyMocapToModel),
     watchClickJointChannel(),
     // watchConfirmOnError(),
     watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),
     watchEditNodeNameSocketActions(),
-    watchApplyMocapToModelSocketActions(),
   ]);
 }

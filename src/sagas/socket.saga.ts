@@ -32,20 +32,11 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
   });
 }
 
-type LibraryEventPayload = ReturnType<
-  | typeof lpActions.deleteNodeSocket.receive
-  | typeof lpActions.editNodeNameSocket.receive
-  | typeof lpActions.moveNodeSocket.receive
-  | typeof lpActions.applyMocapToModelSocket.receive
->['payload'];
+type LibraryEventPayload = ReturnType<typeof lpActions.deleteNodeSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive>['payload'];
 function createEventChannel(socket: Socket) {
   return eventChannel((emit) => {
     const libraryEvent = (payload: LibraryEventPayload) => {
       switch (payload.type) {
-        case 'apply-mocap-to-model': {
-          emit(lpActions.applyMocapToModelSocket.receive(payload));
-          break;
-        }
         case 'delete': {
           emit(lpActions.deleteNodeSocket.receive(payload));
           break;
@@ -145,7 +136,6 @@ function* handleIO(socket: Socket) {
     sendSocketEmit(socket, 'library', lpActions.deleteNodeSocket.send),
     sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send),
     sendSocketEmit(socket, 'library', lpActions.moveNodeSocket.send),
-    sendSocketEmit(socket, 'library', lpActions.applyMocapToModelSocket.send),
   ]);
 }
 

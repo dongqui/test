@@ -34,7 +34,7 @@ const ModelNode = ({ node }: Props) => {
     }
     e.stopPropagation();
     dispatch(
-      lpNodeActions.applyMocapToModelSocket.request({
+      lpNodeActions.applyMocapToModel.request({
         nodeId: id,
         assetId,
       }),

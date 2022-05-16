@@ -145,6 +145,11 @@ export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadPa
 
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
+export const applyMocapToModel = createAsyncAction('node/APPLY_MOCAP_TO_MODEL_REQUEST', 'node/APPLY_MOCAP_TO_MODEL_SUCCESS', 'node/APPLY_MOCAP_TO_MODEL_FAILURE')<
+  ApplyMocapToModelRequestParams,
+  LP.Node[],
+  Error
+>();
 
 // export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteNodeSocket = createSocketActions(
@@ -174,10 +179,3 @@ export const editNodeNameSocket = createSocketActions(
 )<EditNodeNameRequestParams, EditNodeNameSendParams, EditNodeNameReceiveParam, LP.Node[], string>();
 
 export const dropMocapOnModel = createAction('node/DROP_MOCAP_ON_MODEL', (params: DropMocapOnModelParams) => ({ ...params }))();
-export const applyMocapToModelSocket = createSocketActions(
-  'node/APPLY_MOCAP_TO_MODEL_REQUEST',
-  'node/APPLY_MOCAP_TO_MODEL_SEND',
-  'node/APPLY_MOCAP_TO_MODEL_RECEIVE',
-  'node/APPLY_MOCAP_TO_MODEL_UPDATE',
-  'node/APPLY_MOCAP_TO_MODEL_FAILURE',
-)<ApplyMocapToModelRequestParams, ApplyMocapToModelSendParams, ApplyMocapToModelReceiveParams, LP.Node[], string>();
