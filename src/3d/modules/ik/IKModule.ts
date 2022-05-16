@@ -145,13 +145,13 @@ export class IKModule extends Module {
     {
       targetId: pickedIkCtrl.metadata.transformNode.id, 
       property: 'position' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk.position as unknown) as ArrayOfThreeNumbers
+      value: (pickedIkCtrl.metadata.transformNodeIk.absolutePosition as unknown) as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode.id, 
       property: 'scaling' as PlaskProperty,
-      //value: (pickedIkCtrl.metadata.transformNodeIk.scaling as unknown) as ArrayOfThreeNumbers
-      value: [1, 1, 1] as ArrayOfThreeNumbers
+      value: (pickedIkCtrl.metadata.transformNodeIk.absoluteScaling as unknown) as ArrayOfThreeNumbers
+      //value: [1, 1, 1] as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode1.id, 
@@ -161,13 +161,12 @@ export class IKModule extends Module {
     {
       targetId: pickedIkCtrl.metadata.transformNode1.id, 
       property: 'position' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk1.position as unknown) as ArrayOfThreeNumbers
+      value: (pickedIkCtrl.metadata.transformNodeIk1.absolutePosition as unknown) as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode1.id, 
       property: 'scaling' as PlaskProperty,
-      //value: (pickedIkCtrl.metadata.transformNodeIk1.scaling as unknown) as ArrayOfThreeNumbers
-      value: [1, 1, 1] as ArrayOfThreeNumbers
+      value: (pickedIkCtrl.metadata.transformNodeIk1.absoluteScaling as unknown) as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode2.id, 
@@ -182,28 +181,23 @@ export class IKModule extends Module {
     {
       targetId: pickedIkCtrl.metadata.transformNode2.id, 
       property: 'scaling' as PlaskProperty,
-      //value: (pickedIkCtrl.metadata.transformNodeIk2.scaling as unknown) as ArrayOfThreeNumbers
-      value: [1, 1, 1] as ArrayOfThreeNumbers
+      value: (pickedIkCtrl.metadata.transformNodeIk2.absoluteScaling as unknown) as ArrayOfThreeNumbers
     }
     );
 
     console.log(
-      pickedIkCtrl.metadata.transformNode.name, 
-      // pickedIkCtrl.metadata.transformNode2.getPositionExpressedInLocalSpace(),
-      pickedIkCtrl.metadata.transformNode.position,
-      // pickedIkCtrl.metadata.transformNode2.absolutePosition,
-      // pickedIkCtrl.metadata.transformNode2.getAbsolutePosition(),
-      pickedIkCtrl.metadata.transformNodeIk.name, 
-      pickedIkCtrl.metadata.transformNodeIk.position,
+      pickedIkCtrl.metadata.transformNode1.name, 
+      pickedIkCtrl.metadata.transformNode1.absolutePosition,
+      pickedIkCtrl.metadata.transformNode1.rotationQuaternion,
+      pickedIkCtrl.metadata.transformNode1.absoluteScaling,
     );
 
-    // console.log(
-    //   pickedIkCtrl.metadata.transformNodeIk2.name, 
-    //   pickedIkCtrl.metadata.transformNodeIk2.getPositionExpressedInLocalSpace(),
-    //   pickedIkCtrl.metadata.transformNodeIk2.position,
-    //   pickedIkCtrl.metadata.transformNodeIk2.absolutePosition,
-    //   pickedIkCtrl.metadata.transformNodeIk2.getAbsolutePosition(),
-    // );
+    console.log(
+      pickedIkCtrl.metadata.transformNodeIk1.name, 
+      pickedIkCtrl.metadata.transformNodeIk1.absolutePosition,
+      pickedIkCtrl.metadata.transformNodeIk1.rotationQuaternion,
+      pickedIkCtrl.metadata.transformNodeIk1.absoluteScaling,
+    );
 
     return targetDataList;
   }
@@ -367,7 +361,7 @@ export class IKModule extends Module {
       const targetFrameIndex = 20;
 
       if (targetAnimation) {
-        console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+        //console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
         this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
       }
     }
@@ -637,7 +631,7 @@ export class IKModule extends Module {
 
         if (targetAnimation) {
           this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
-          console.log(this.pushDataList(this._pickedIkMesh));
+          //console.log(this.pushDataList(this._pickedIkMesh));
           //console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
         }
       }
