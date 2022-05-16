@@ -6,7 +6,7 @@ import { isNull } from 'lodash';
 import { AnimationTitleToggle, StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
 import AnimationInputWrapper from '../AnimationInputWrapper';
-import { Nullable, PlaskRetargetMap } from 'types/common';
+import { Nullable, PlaskRetargetMap, PlaskTrack, PlaskLayer, AnimationIngredient } from 'types/common';
 import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
@@ -22,11 +22,23 @@ interface Props {
   selectedTargets: Array<PlaskTransformNode>;
   retargetMaps: Array<PlaskRetargetMap>;
   visualizedAssetIds: Array<string>;
+  seletedLayer: string;
+  animationIngredients: Array<AnimationIngredient>;
 }
 
-const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectableObjects, selectedTargets, retargetMaps, visualizedAssetIds }) => {
+const IKControllerSection: FunctionComponent<Props> = ({
+  isAllActive,
+  selectableObjects,
+  selectedTargets,
+  retargetMaps,
+  visualizedAssetIds,
+  seletedLayer,
+  animationIngredients,
+}) => {
   const _selectableObjects = selectableObjects;
   const _selectedTargets = selectedTargets;
+  const _animationIngredients = animationIngredients;
+  const _selectedLayer = seletedLayer;
   const _retargetMaps = retargetMaps;
   const _visualizedAssetIds = visualizedAssetIds;
 
@@ -36,6 +48,7 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
 
   const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
+
   useEffect(() => {
     if (visualizedRetargetMap) {
       const mappedSourceBoneNames = visualizedRetargetMap.values.filter((value) => !isNull(value.targetTransformNodeId)).map((v) => v.sourceBoneName);
@@ -78,6 +91,22 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
   const [poleAngleValue, setPoleAngleValue] = useState<number>(0);
   const [blendValue, setBlendValue] = useState<number>(1);
 
+  useEffect(() => {
+    setIsIKOn(true);
+    if (controlTarget?.metadata?.ikController) {
+      // TODO: Temp approach, need to check
+      console.log(`ControlTarget Blend: ${controlTarget.metadata.blend}`);
+      console.log(`ControlTarget Angle: ${controlTarget.metadata.ikController.poleAngle}`);
+      setBlendValue(controlTarget.metadata.blend);
+      setPoleAngleValue(BABYLON.Tools.ToDegrees(controlTarget.metadata.ikController.poleAngle));
+    } else {
+      console.log('Reset');
+      setPoleAngleValue(0);
+      setBlendValue(1);
+      setIsIKOn(false);
+    }
+  }, [controlTarget]);
+
   const IKControllerData = [
     {
       text: 'Blend',
@@ -89,10 +118,12 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
       setCurrentValue: setBlendValue,
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
-        setBlendValue(parseFloat(event.target.value));
+        // setBlendValue(parseFloat(event.target.value));
+        plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value));
       },
       onChangeEnd: useCallback((inputValue: number) => {
-        // TODO: IK Module (Adjust Blend)
+        setBlendValue(inputValue);
+        // plaskEngine.ikModule.setIKControllerBlend(inputValue);
       }, []),
     },
     {
@@ -104,10 +135,12 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
       setCurrentValue: setPoleAngleValue,
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
-        setPoleAngleValue(parseFloat(event.target.value));
+        // setPoleAngleValue(parseFloat(event.target.value));
+        plaskEngine.ikModule.setIKControllerPoleAngle(BABYLON.Tools.ToRadians(parseFloat(event.target.value)));
       },
       onChangeEnd: useCallback((inputValue: number) => {
-        // TODO: IK Module (Adjust Pole Angle)
+        setPoleAngleValue(inputValue);
+        // plaskEngine.ikModule.setIKControllerPoleAngle(inputValue);
       }, []),
     },
   ];
@@ -116,38 +149,36 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
     {
       text: 'Set IK Pose to FK',
       onClick: () => {
-        // TODO: IK Module (IK to FK)
-        console.log('Set IK Pose to FK');
+        plaskEngine.ikModule.setIKtoFK();
       },
     },
     {
       text: 'Set FK Pose to IK',
       onClick: () => {
-        // TODO: IK Module (FK to IK)
-        console.log('Set FK Pose to IK');
+        plaskEngine.ikModule.setFKtoIK();
       },
     },
     {
       text: 'Keyframe IK',
       onClick: () => {
-        // TODO: IK Module (Keyframe IK)
-        console.log('Set Bake');
+        plaskEngine.ikModule.setKeyframeIK();
       },
     },
   ];
 
   const handleSetupIK = useCallback(() => {
     // TODO: IK Module (Create IK Controller)
-    if (isIKOn) {
-      setIsIKOn(false);
-    } else {
-      setIsIKOn(true);
-    }
-  }, [isIKOn]);
+    // setIsIKOn(plaskEngine.ikModule.ikControllers.length > 0);
+    // if (isIKOn) {
+    //   setIsIKOn(false);
+    // } else {
+    //   setIsIKOn(true);
+    // }
+  }, []);
 
   return (
     <section className={cx('ik-section')}>
-      <AnimationTitleToggle text="IK Controller" isSpread={isSectionSpread} handleSpread={handleSpreadTransform} activeStatus={isAllActive && !isNull(controlTarget)} />
+      <AnimationTitleToggle text="IK Controller" isSpread={isSectionSpread} handleSpread={handleSpreadTransform} activeStatus={isAllActive} />
       <div className={cx('container', { active: isSectionSpread })}>
         {plaskEngine.ikModule.ikControllers.length > 0 ? (
           <div className={cx('inner-container')}>
@@ -161,7 +192,7 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
                 showProgress={info.showProgress}
                 currentValue={info.currentValue}
                 decimalDigit={info.decimalDigit}
-                activeStatus={isAllActive && !isIKOn && !isNull(controlTarget)}
+                activeStatus={isAllActive && isIKOn}
                 handleChange={info.handleChange}
                 onChangeEnd={info.onChangeEnd}
               />
@@ -174,7 +205,7 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
                 key={`${info.text}${idx}`}
                 text={info.text}
                 color="default"
-                disabled={!isAllActive && isNull(controlTarget)}
+                disabled={!isAllActive || !isIKOn}
                 fullSize={true}
               />
             ))}
@@ -186,7 +217,14 @@ const IKControllerSection: FunctionComponent<Props> = ({ isAllActive, selectable
             ) : (
               <div className={cx('text')}>Please complete retarget map to enable controllers</div>
             )}
-            <FilledButton onClick={handleSetupIK} className={cx('button')} text="Set Up IK" color="default" disabled={!(isAllActive && !mappingCompleted)} fullSize={true} />
+            <FilledButton
+              onClick={handleSetupIK}
+              className={cx('button')}
+              text="Set Up IK"
+              color="default"
+              disabled={!(isAllActive && (!mappingCompleted || plaskEngine.ikModule.ikControllers.length == 0))}
+              fullSize={true}
+            />
           </div>
         )}
 
