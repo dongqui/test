@@ -221,7 +221,10 @@ export class AnimationModule extends Module {
             if (targetTrack) {
               switch (keyframeData.property) {
                 case 'position': {
-                  let newPosition = Vector3.FromArray(keyframeData.value);
+                  console.log(keyframeData.value);
+                  //let newPosition = Vector3.FromArray(keyframeData.value);
+                  let newPosition = keyframeData.value;
+                  console.log(newPosition);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'position');
                     if (otherLayerTrack) {
@@ -230,11 +233,13 @@ export class AnimationModule extends Module {
                     }
                   });
 
+                  console.log(newPosition);
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newPosition);
                   break;
                 }
                 case 'rotationQuaternion': {
-                  let newRotationQuaternion = Quaternion.FromArray(keyframeData.value);
+                  //let newRotationQuaternion = Quaternion.FromArray(keyframeData.value);
+                  let newRotationQuaternion = keyframeData.value;
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
                     if (otherLayerTrack) {
@@ -622,6 +627,10 @@ export class AnimationModule extends Module {
       const positionTotalTransformKeys = this.getTotalTransformKeys(positionTransformKeysList, 'position');
       const rotationQuaternionTotalTransformKeys = this.getTotalTransformKeys(rotationQuaternionTransformKeysList, 'rotationQuaternion');
       const scalingTotalTransformKeys = this.getTotalTransformKeys(scalingTransformKeysList, 'scaling');
+
+      if (target.name == 'leftArm' || target.name == 'leftForeArm' || target.name == 'leftHand') {
+        console.log(target.name, positionTotalTransformKeys, rotationQuaternionTotalTransformKeys, scalingTotalTransformKeys);
+      }
 
       const newPositionAnimation = new Animation(`${target.name}|position`, 'position', fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
       newPositionAnimation.setKeys(positionTotalTransformKeys);
