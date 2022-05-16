@@ -1,0 +1,54 @@
+@import "styles/libraries/colors";
+@import "styles/libraries/typography";
+
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  padding: 5.5px 0 5.5px 8px;
+  background-color: $contentbg-base;
+  border-radius: 6px;
+  border: 1px $outline-border solid;
+
+  &.fullSize {
+    width: 100%;
+  }
+
+  &.invalid {
+    border-color: $negative;
+  }
+
+  &:focus-within {
+    border-color: $primary;
+  }
+
+  &::placeholder {
+    color: $content-inactive;
+  }
+}
+
+.text-input {
+  display: flex;
+  width: 100%;
+  background: none;
+  border: 0;
+  outline: 0;
+  padding: 0;
+
+  color: $content-active;
+  font: $body-default;
+
+  &.disabled {
+    color: $content-inactive
+  }
+}
+
+.prefix-wrapper {
+  margin-right: 4px;
+
+  &:not(.isStringType) {
+    width: 16px;
+    height: 16px;
+  }
+
+  color: $content-inactive;
+}
