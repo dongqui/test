@@ -220,10 +220,7 @@ export class AnimationModule extends Module {
             if (targetTrack) {
               switch (keyframeData.property) {
                 case 'position': {
-                  console.log(keyframeData.value);
-                  //let newPosition = Vector3.FromArray(keyframeData.value);
-                  let newPosition = keyframeData.value;
-                  console.log(newPosition);
+                  let newPosition = Vector3.FromArray(keyframeData.value);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'position');
                     if (otherLayerTrack) {
@@ -232,13 +229,11 @@ export class AnimationModule extends Module {
                     }
                   });
 
-                  console.log(newPosition);
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, newPosition);
                   break;
                 }
                 case 'rotationQuaternion': {
-                  //let newRotationQuaternion = Quaternion.FromArray(keyframeData.value);
-                  let newRotationQuaternion = keyframeData.value;
+                  let newRotationQuaternion = Quaternion.FromArray(keyframeData.value);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
                     if (otherLayerTrack) {
