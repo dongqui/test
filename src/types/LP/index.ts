@@ -1,4 +1,8 @@
-import { PlaskMocapData, PlaskRetargetMap, ServerAnimationRequest, ServerAnimationLayerRequest } from 'types/common';
+import { PlaskMocapData, PlaskRetargetMap, ServerAnimation, ServerAnimationLayer, ServerAnimationRequest, ServerAnimationLayerRequest } from 'types/common';
+
+interface scenesLibraryModelAnimation extends ServerAnimation {
+  scenesLibraryModelAnimationLayers: ServerAnimationLayer[];
+}
 
 export interface RequestNodeResponse {
   uid: string;
@@ -13,6 +17,7 @@ export interface RequestNodeResponse {
   assetsUid: string;
   modelUrl?: string;
   mocap?: PlaskMocapData;
+  scenesLibraryModelAnimations?: scenesLibraryModelAnimation[];
 }
 export interface CreateFolderOrMocapBodyData {
   name: string;

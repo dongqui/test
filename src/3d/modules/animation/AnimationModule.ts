@@ -95,14 +95,15 @@ export class AnimationModule extends Module {
   static serverDataToIngredient(
     serverAnimation: ServerAnimation,
     serverAnimationLayers: ServerAnimationLayer[],
-    isMocapAnimation: boolean,
-    selectableObjects: PlaskTransformNode[],
+    transformNodes: TransformNode[],
     current: boolean,
+    assetId: string,
   ): AnimationIngredient {
     const layers: PlaskLayer[] = [];
     serverAnimationLayers.forEach((serverAnimationLayer) => {
-      const { id: layerId, name: layerName, isIncluded, useFilter, tracks: serverTracks } = serverAnimationLayer;
+      const { uid: layerId, name: layerName, isIncluded, useFilter, tracks: serverTracks } = serverAnimationLayer;
       const tracks: PlaskTrack[] = [];
+
       serverTracks.forEach((serverTrack) => {
         const transformKeys: IAnimationKey[] = [];
         if (serverTrack.property === 'rotationQuaternion') {
@@ -123,10 +124,10 @@ export class AnimationModule extends Module {
           layerId,
           name: serverTrack.name,
           property: serverTrack.property,
-          target: selectableObjects.find((object) => object.id === serverTrack.targetId)!.reference,
+          target: transformNodes.find((object) => object.id === serverTrack.targetId)!,
           transformKeys,
           interpolationType: 'linear',
-          isMocapAnimation,
+          isMocapAnimation: serverAnimation.isMocapAnimation,
           filterBeta: serverTrack.filterBeta,
           filterMinCutoff: serverTrack.filterMinCutoff,
           isLocked: false,
@@ -146,9 +147,9 @@ export class AnimationModule extends Module {
     });
 
     const animationIngredient: AnimationIngredient = {
-      id: serverAnimation.id,
+      id: serverAnimation.uid,
       name: serverAnimation.name,
-      assetId: serverAnimation.scenesLibraryId,
+      assetId,
       current,
       layers,
     };
@@ -271,7 +272,7 @@ export class AnimationModule extends Module {
   public createAnimationIngredientFromMocapData(
     assetId: string,
     animationIngredientName: string,
-    retargetMap: PlaskRetargetMap,
+    retargetMap: Omit<PlaskRetargetMap, 'id' | 'assetId'>,
     initialPoses: PlaskPose[],
     animatableTransformNodes: TransformNode[],
     mocapData: PlaskMocapData,

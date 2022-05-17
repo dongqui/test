@@ -2,6 +2,7 @@ import { convertServerResponseToNode } from 'utils/LP/converters';
 import { RootState } from 'reducers';
 import { select, put, call, all } from 'redux-saga/effects';
 import produce from 'immer';
+import { omitBy } from 'lodash';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -17,7 +18,7 @@ import { WARNING_07, WARNING_01 } from 'constants/Text';
 import { PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
 import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
-import PlaskEngine from '3d/PlaskEngine';
+import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -40,13 +41,13 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       throw new Error('Load asset container failed');
     }
 
-    preprocessAssetContainerData(assetsUid, assetContainer);
+    plaskEngine.assetModule.preprocessAssetContainerData(assetsUid, assetContainer);
 
-    const animationIngredients = getCustomAnimationIngredients(assetsUid, transformNodes, animationGroups);
-    const retargetMap: PlaskRetargetMap = yield call(createRetargetMap, assetsUid, skeletons);
+    const rawAnimationIngredients = getCustomAnimationIngredients(assetsUid, transformNodes, animationGroups);
+    const rawRetargetMap: PlaskRetargetMap = yield call(createRetargetMap, assetsUid, skeletons);
     const modelWithRetargetmapRes: RequestNodeResponse = yield call(api.createRetargetMap, lpNode.sceneId, uid, {
-      hipSpace: retargetMap.hipSpace,
-      values: retargetMap.values,
+      hipSpace: rawRetargetMap.hipSpace,
+      values: rawRetargetMap.values,
     });
 
     const modelNode = convertServerResponseToNode(modelWithRetargetmapRes);
@@ -57,7 +58,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
     const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
 
     const motionNodesRes: RequestNodeResponse[] = yield all(
-      animationIngredients.map((ingredient) => {
+      rawAnimationIngredients.map((ingredient) => {
         const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(ingredient, 30, false);
         return call(api.postMotion, lpNode.sceneId, modelNode.id, {
           animation: serverAnimation,
@@ -65,9 +66,16 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
         });
       }),
     );
-    console.log(motionNodesRes, '@');
+
     const motionNodes = motionNodesRes.map(convertServerResponseToNode);
+    const animationIngredients = motionNodes.map((motionNode) => {
+      const animationLayers = motionNode?.animation?.scenesLibraryModelAnimationLayers;
+      const animation = omitBy(motionNode?.animation, (value, key) => key === 'scenesLibraryModelAnimationLayers');
+      return AnimationModule.serverDataToIngredient(animation, animationLayers, transformNodes, true, motionNode?.assetId);
+    });
+
     const nextNodes = produce(lpNode.nodes, (draft) => {
+      modelNode.childNodeIds = motionNodes.map((node) => node.id);
       draft.push(modelNode, ...motionNodes);
     });
 
@@ -81,22 +89,26 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       skeleton: skeletons[0] ?? null,
       bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
       transformNodes,
-      // motionNodes에서 animationids 추가
-      animationIngredientIds: [],
-      retargetMapId: retargetMap.id,
+      animationIngredientIds: motionNodes.map((motion) => motion?.animation?.uid!),
+      retargetMapId: modelNode.id,
     };
 
+    console.log(newAsset);
     yield put(plaskProjectActions.addAsset({ asset: newAsset }));
     yield put(
       animationDataActions.addAsset({
         transformNodes: filterAnimatableTransformNodes(transformNodes),
         animationIngredients,
-        retargetMap,
+        retargetMap: {
+          ...rawRetargetMap,
+          id: modelNode.id,
+          assetId: modelNode.assetId!,
+        },
       }),
     );
     yield put(lpNodeActions.addModelAsync.success(nextNodes));
 
-    if (isRetargetError(retargetMap)) {
+    if (isRetargetError(rawRetargetMap)) {
       yield put(
         globalUIActions.openModal('AlertModal', {
           title: 'Warning',
@@ -119,25 +131,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
   } finally {
     yield put(globalUIActions.closeModal('LoadingModal'));
   }
-}
-
-function preprocessAssetContainerData(assetId: string, assetContainer: BABYLON.AssetContainer) {
-  const { meshes, skeletons, transformNodes } = assetContainer;
-
-  meshes.forEach((mesh) => {
-    // make meshes not-pickable for clicking joints
-    mesh.isPickable = false;
-  });
-
-  skeletons[0].bones.forEach((bone) => {
-    // set bone's id with unique string using its name and the id of its' asset
-    bone.id = `${assetId}//${bone.name}//bone`;
-  });
-
-  transformNodes.forEach((transformNode) => {
-    // set transformNode's id with unique string using its name and the id of its' asset
-    transformNode.id = `${assetId}//${transformNode.name}//transformNode`;
-  });
 }
 
 function getNodeName(nodes: LP.Node[], fileName: string, extension: string) {

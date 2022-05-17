@@ -65,17 +65,16 @@ export interface PlaskAsset {
 }
 
 export interface ServerAnimation {
-  id: string; // uid -> id
-  scenesLibraryId: string; // don't know what is
+  uid: string; // uid -> id
+  scenesLibraryUid: string; // don't know what is
   name: string;
   fps: number;
   isMocapAnimation: boolean;
   isDeleted: boolean;
 }
-export type ServerAnimationRequest = Omit<ServerAnimation, 'id' | 'scenesLibraryId'>;
+export type ServerAnimationRequest = Omit<ServerAnimation, 'uid' | 'scenesLibraryUid'>;
 export interface ServerAnimationLayer {
-  id: string; // uid -> id
-  scenes_library_model_animation_id: string; // scenes_library_model_animation_id -> animationId but BE said it takes too much time.
+  uid: string;
   name: string;
   // isLocked: boolean; // related to TP node not the animation itself
   isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
@@ -83,7 +82,7 @@ export interface ServerAnimationLayer {
   useFilter: boolean; // destructure filter related data
   tracks: ServerAnimationTrack[]; // boneTracks -> tracks
 }
-export interface ServerAnimationLayerRequest extends Omit<ServerAnimationLayer, 'scenes_library_model_animation_id' | 'id' | 'tracks'> {
+export interface ServerAnimationLayerRequest extends Omit<ServerAnimationLayer, 'uid' | 'tracks'> {
   tracks: ServerAnimationTrackRequest[];
 }
 

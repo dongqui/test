@@ -12,5 +12,7 @@ export function convertServerResponseToNode(response: RequestNodeResponse): LP.N
     childNodeIds: [],
     extension: response.type === 'MODEL' ? getFileExtension(response.name) : '',
     mocapData: response.mocap,
+    animation: response.scenesLibraryModelAnimations && response.scenesLibraryModelAnimations[0],
+    retargetMap: response.retargetMap,
   };
 }
