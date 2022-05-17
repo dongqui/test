@@ -84,7 +84,7 @@ export class IKModule extends Module {
 
   public addIK(assetId: string) {
     this._initializeControllers(assetId);
-    return this.generateIkPlaskTransformNodes(this._ikControllerMeshes);
+    return this.generateIkPlaskTransformNodes(this._ikControllerMeshes, assetId);
   }
 
   public removeIK() {
@@ -169,13 +169,13 @@ export class IKModule extends Module {
     return targetDataList;
   }
 
-  private _createIKControllerMesh(params: BoneIKParams, bone: Bone, transformNode: TransformNode) {
+  private _createIKControllerMeshes(params: BoneIKParams, bone: Bone, transformNode: TransformNode, assetId: string) {
     // Creating IK Target Meshes
     // TODO : make that generic (for now really bone dependent)
     const scene = this.plaskEngine.scene;
     const ikControllerTarget = new TransformNode('ik_ctrl_target_' + params.bone);
     const ikControllerHandle = MeshBuilder.CreateTorus(
-      'ik_ctrl_handle_' + params.bone,
+      'ik_ctrl_handle_' + params.bone + '//' + assetId,
       {
         diameter: params.controllerSize,
         // diameter: params.bone.includes('Hand') ? params.controllerSize * 1.5 : params.controllerSize,
@@ -203,9 +203,9 @@ export class IKModule extends Module {
     const tn2Ik = tn1Ik?.parent;
 
     ikControllerHandle.metadata = {
-      transformNode: scene.getTransformNodeByName(params.bone),
-      transformNode1: scene.getTransformNodeByName(params.parent1),
-      transformNode2: scene.getTransformNodeByName(params.parent2),
+      transformNode: transformNode,
+      transformNode1: transformNode.parent!,
+      transformNode2: transformNode.parent!.parent!,
       transformNodeIk: tnIk,
       transformNodeIk1: tn1Ik,
       transformNodeIk2: tn2Ik,
@@ -255,10 +255,11 @@ export class IKModule extends Module {
     return { ikControllerTarget, ikControllerHandle };
   }
 
-  public generateIkPlaskTransformNodes(handles: Mesh[]) {
+  public generateIkPlaskTransformNodes(handles: Mesh[], assetId: string) {
     const result = [];
     for (const mesh of handles) {
-      result.push(new PlaskTransformNode(mesh));
+      const ptn = new PlaskTransformNode(mesh);
+      result.push(ptn);
     }
 
     return result;
@@ -326,6 +327,16 @@ export class IKModule extends Module {
     }
   }
 
+  /**
+   * Sets the visibility of the current asset
+   * @param value
+   */
+  public setVisibility(value: number) {
+    for (const mesh of this._meshes) {
+      mesh.visibility = value;
+    }
+  }
+
   private _initializeControllers(assetId: string) {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
     const ikControllersGhosts = this._ghost.ikControllers; // to store IKBoneControllers
@@ -348,12 +359,14 @@ export class IKModule extends Module {
     const clone = container.instantiateModelsToScene((name: string) => `ghost_${name}`);
     clone.rootNodes.forEach((node: TransformNode) => {
       const descendants = node.getDescendants();
-      // for (const descendant of descendants) {
-      //   if (descendant.getClassName() === 'Mesh') {
-      //     (descendant as Mesh).visibility = 0.25;
-      //   }
-      // }
-      this._meshes.push(node as Mesh);
+      for (const descendant of descendants) {
+        if (descendant.getClassName() === 'Mesh') {
+          this._meshes.push(descendant as Mesh);
+        }
+      }
+      if (node.getClassName() === 'Mesh') {
+        this._meshes.push(node as Mesh);
+      }
       if (node.name === 'ghost___root__') {
         this._ghost.rootMesh = node as Mesh;
       }
@@ -361,6 +374,7 @@ export class IKModule extends Module {
     this._ghost.skeleton = clone.skeletons[0];
 
     this.plaskEngine.assetModule.setVisibility(0.25);
+    this.setVisibility(1);
 
     // TODO : retrieve skeleton and body
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
@@ -368,10 +382,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { bone: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1), parent1: 'rightLeg', parent2: 'rightUpLeg' },
-      { bone: 'leftFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1), parent1: 'leftLeg', parent2: 'leftUpLeg' },
-      { bone: 'rightHand', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0), parent1: 'rightForeArm', parent2: 'rightArm' },
-      { bone: 'leftHand', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0), parent1: 'leftForeArm', parent2: 'leftArm' },
+      { bone: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
+      { bone: 'leftFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
+      { bone: 'rightHand', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0) },
+      { bone: 'leftHand', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0) },
     ] as BoneIKParams[];
 
     //let activeIkControllers: BoneIKController[] = this._activeIkControllers;
@@ -403,9 +417,8 @@ export class IKModule extends Module {
         return;
       }
 
-      const { ikControllerTarget, ikControllerHandle } = this._createIKControllerMesh(elem, bone, transformNode);
+      const { ikControllerTarget, ikControllerHandle } = this._createIKControllerMeshes(elem, bone, transformNode, assetId);
       this._ikControllerMeshes.push(ikControllerHandle);
-      this._meshes.push(ikControllerHandle);
 
       // Creating IK Controllers
       const ikCtrl = new BoneIKController(this._ghost.rootMesh!, (this._ghost.skeleton!.bones[skeleton.bones.indexOf(bone)] as any)._parent as Bone, {
