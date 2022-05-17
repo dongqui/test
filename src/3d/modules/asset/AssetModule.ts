@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Mesh, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
+import { AbstractMesh, ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Mesh, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
 import { convertModel } from 'api';
 import { PlaskScreen } from 'types/common';
@@ -26,6 +26,7 @@ const EXPORT_OPTIONS = {
  */
 export class AssetModule extends Module {
   private _sphereHandles: Mesh[] = [];
+  private _currentAssetMeshes: AbstractMesh[] = [];
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
   }
@@ -107,6 +108,16 @@ export class AssetModule extends Module {
   }
 
   /**
+   * Sets the visibility of the current asset
+   * @param value
+   */
+  public setVisibility(value: number) {
+    for (const mesh of this._currentAssetMeshes) {
+      mesh.visibility = value;
+    }
+  }
+
+  /**
    * Export the given scene to a .glb format file.
    * @param scene - base scene for exporting
    * @param name - file name
@@ -136,6 +147,7 @@ export class AssetModule extends Module {
           meshes.forEach((mesh) => {
             mesh.renderingGroupId = 1;
             scene.addMesh(mesh);
+            this._currentAssetMeshes.push(mesh);
 
             if (targetVisibilityOption) {
               mesh.isVisible = targetVisibilityOption.isMeshVisible;
@@ -209,6 +221,12 @@ export class AssetModule extends Module {
         .map((screen) => screen.scene)
         .forEach((scene) => {
           removeAssetFromScene(scene, targetAsset, sphereHandles, targetControllers);
+
+          for (let i = this._currentAssetMeshes.length - 1; i >= 0; i--) {
+            if (!scene.meshes.includes(this._currentAssetMeshes[i])) {
+              this._currentAssetMeshes.splice(i, 1);
+            }
+          }
         });
     }
   }
