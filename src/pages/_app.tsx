@@ -4,12 +4,21 @@ import { NextComponentType } from 'next';
 import { wrapper } from 'store';
 import { hotjar } from 'analytics';
 import Head from 'next/head';
+import TagManager from 'react-gtm-module';
 import 'styles/core.scss';
+
+const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Component, pageProps }) => {
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') {
       hotjar.initialize();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (gtmId) {
+      TagManager.initialize({ gtmId });
     }
   }, []);
 
