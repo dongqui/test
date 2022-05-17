@@ -4,7 +4,7 @@
   "main": "main/index.js",
   "productName": "Plask",
   "scripts": {
-    "dev": "next dev -p 3002",
+    "dev": "next dev",
     "prod": "next build",
     "start": "next start",
     "lint": "next lint",
