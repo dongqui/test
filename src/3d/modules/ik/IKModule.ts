@@ -41,7 +41,7 @@ export class IKModule extends Module {
   private _activeTransformNodes: TransformNode[] = [];
   private _ikControllers: BoneIKController[] = [];
   private _ikControllerMeshes: Mesh[] = [];
-  private _pickedIkMesh: Mesh | undefined;
+  private _selectedIkHandle?: Mesh;
   private _meshes: Mesh[] = [];
   private _ghost = {
     skeleton: null as Nullable<Skeleton>,
@@ -216,38 +216,38 @@ export class IKModule extends Module {
       blend: 1,
     };
 
-    let pickedIkCtrl: Nullable<Mesh> = null;
+    let pickedIkHandle: Nullable<Mesh> = null;
 
     ikControllerHandle.actionManager = new ActionManager(this.plaskEngine.scene);
     ikControllerHandle.actionManager.registerAction(
       // register action that enable for user to select transformNode by clicking joint
       new ExecuteCodeAction(ActionManager.OnPickDownTrigger, (event: ActionEvent) => {
-        if (pickedIkCtrl) {
-          pickedIkCtrl.renderOutline = false;
+        if (pickedIkHandle) {
+          pickedIkHandle.renderOutline = false;
         }
         this._activeTransformNodes.length = 0;
 
-        pickedIkCtrl = ikControllerHandle;
-        pickedIkCtrl.renderOutline = true;
-        pickedIkCtrl.outlineColor = Color3.White();
-        pickedIkCtrl.outlineWidth = 0.003;
+        pickedIkHandle = ikControllerHandle;
+        pickedIkHandle.renderOutline = true;
+        pickedIkHandle.outlineColor = Color3.White();
+        pickedIkHandle.outlineWidth = 0.003;
 
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode);
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_1);
-        this._activeTransformNodes.push(pickedIkCtrl.metadata.transformNode_2);
+        this._activeTransformNodes.push(pickedIkHandle.metadata.transformNode);
+        this._activeTransformNodes.push(pickedIkHandle.metadata.transformNode_1);
+        this._activeTransformNodes.push(pickedIkHandle.metadata.transformNode_2);
 
         //console.log(this._activeTransformNodes);
 
-        this._pickedIkMesh = pickedIkCtrl;
+        this._selectedIkHandle = pickedIkHandle;
 
         const sourceEvent: PointerEvent = event.sourceEvent;
         if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
           // TODO : 3D Modules should just use state as readonly
           // Do not dispatch, but instead do :
           // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
-          this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: pickedIkCtrl.getPlaskEntity() }));
+          this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: pickedIkHandle.getPlaskEntity() }));
         } else {
-          this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: pickedIkCtrl.getPlaskEntity() }));
+          this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: pickedIkHandle.getPlaskEntity() }));
         }
       }),
     );
@@ -267,53 +267,53 @@ export class IKModule extends Module {
   public setIKControllerBlend(value: number = 0) {
     // Evaluate if a IK Controller is selected
     const scene = this.plaskEngine.scene;
-    if (this._pickedIkMesh) {
+    if (this._selectedIkHandle) {
       let newPos = new Vector3();
-      Vector3.LerpToRef(this._pickedIkMesh.metadata.transformNode.absolutePosition, this._pickedIkMesh.absolutePosition, value, newPos);
-      this._pickedIkMesh.metadata.controller.setAbsolutePosition(newPos);
-      this._pickedIkMesh.metadata.blend = value;
+      Vector3.LerpToRef(this._selectedIkHandle.metadata.transformNode.absolutePosition, this._selectedIkHandle.absolutePosition, value, newPos);
+      this._selectedIkHandle.metadata.controller.setAbsolutePosition(newPos);
+      this._selectedIkHandle.metadata.blend = value;
 
       let newColor = new Color3();
       let newMat = new StandardMaterial('', scene);
       // Blend between TEAL and WHITE colors
       Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
       newMat.emissiveColor = newColor;
-      this._pickedIkMesh.material = newMat;
+      this._selectedIkHandle.material = newMat;
     }
   }
 
   public setIKControllerPoleAngle(value: number = 0) {
-    if (this._pickedIkMesh) {
-      this._pickedIkMesh.metadata.ikController.poleAngle = value;
+    if (this._selectedIkHandle) {
+      this._selectedIkHandle.metadata.ikController.poleAngle = value;
     }
   }
 
   public setIKtoFK() {
     // Evaluate if a IK Controller is selected
-    if (this._pickedIkMesh) {
-      let transfNodeClone = this._pickedIkMesh.metadata.transformNode;
-      this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
-      let ikcontroller = this._pickedIkMesh.metadata.ikController;
-      ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
+    if (this._selectedIkHandle) {
+      let transfNodeClone = this._selectedIkHandle.metadata.transformNode;
+      this._selectedIkHandle.setAbsolutePosition(transfNodeClone.absolutePosition);
+      let ikcontroller = this._selectedIkHandle.metadata.ikController;
+      ikcontroller.poleAngle = this._selectedIkHandle.metadata.ikControllerOrig.poleAngle;
       ikcontroller.update();
     }
   }
 
   public setFKtoIK() {
     // Evaluate if a IK Controller is selected
-    if (this._pickedIkMesh) {
-      let controller = this._pickedIkMesh.metadata.controller;
-      let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
+    if (this._selectedIkHandle) {
+      let controller = this._selectedIkHandle.metadata.controller;
+      let controllerOrig = this._selectedIkHandle.metadata.controllerOrig;
       controllerOrig.setAbsolutePosition(controller.absolutePosition);
-      let ikcontrollerOrig = this._pickedIkMesh.metadata.ikControllerOrig;
-      ikcontrollerOrig.poleAngle = this._pickedIkMesh.metadata.ikController.poleAngle;
+      let ikcontrollerOrig = this._selectedIkHandle.metadata.ikControllerOrig;
+      ikcontrollerOrig.poleAngle = this._selectedIkHandle.metadata.ikController.poleAngle;
       ikcontrollerOrig.update();
     }
   }
 
   public setKeyframeIK() {
     // Evaluate if a IK Controller is selected
-    if (this._pickedIkMesh) {
+    if (this._selectedIkHandle) {
       const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
         (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
       );
@@ -321,7 +321,7 @@ export class IKModule extends Module {
       const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
 
       if (targetAnimation) {
-        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, this.pushDataList(this._pickedIkMesh));
+        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, this.pushDataList(this._selectedIkHandle));
       }
     }
   }
@@ -403,7 +403,7 @@ export class IKModule extends Module {
         return;
       }
 
-      const { ikControllerTarget, ikControllerHandle } = this._createIKControllerMesh(elem, bone, transformNode, elem.controllerSize, Vector3.Cross(elem.upVector, elem.bendAxis));
+      const { ikControllerTarget, ikControllerHandle } = this._createIKControllerMesh(elem, bone, transformNode);
       this._ikControllerMeshes.push(ikControllerHandle);
       this._meshes.push(ikControllerHandle);
 
@@ -421,7 +421,16 @@ export class IKModule extends Module {
 
       ikControllerHandle.metadata.ikController = ikCtrl;
 
-      const controllerOrig = new TransformNode('orig_' + elem.bone, scene);
+      const controllerOrig = new TransformNode('ik_ctrl_origin_' + elem.bone, scene);
+      // controllerOrig.position.copyFrom(ikControllerTarget.position);
+      // if (ikControllerTarget.rotationQuaternion) {
+      //   controllerOrig.rotationQuaternion = ikControllerTarget.rotationQuaternion.clone();
+      // } else {
+      //   controllerOrig.rotation.copyFrom(ikControllerTarget.rotation);
+      // }
+      // controllerOrig.scaling.copyFrom(ikControllerTarget.scaling);
+      bone.getPositionToRef(Space.WORLD, transformNode, controllerOrig.position);
+
       const ikCtrlOrig = new BoneIKController(body, (bone as any)._parent as Bone, {
         targetMesh: controllerOrig,
         poleAngle: elem.poleAngle,
@@ -430,6 +439,7 @@ export class IKModule extends Module {
       ikCtrlOrig.upVector = elem.upVector;
       (ikCtrlOrig as any)._adjustRoll = 0;
       ikCtrlOrig.setIKtoRest();
+      ikCtrlOrig.update();
       //ikControllersGhosts.push(ikCtrlOrig);
 
       ikControllerHandle.metadata.controllerOrig = controllerOrig;
