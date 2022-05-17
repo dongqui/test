@@ -608,6 +608,10 @@ export class AnimationModule extends Module {
       const rotationQuaternionTotalTransformKeys = this.getTotalTransformKeys(rotationQuaternionTransformKeysList, 'rotationQuaternion');
       const scalingTotalTransformKeys = this.getTotalTransformKeys(scalingTransformKeysList, 'scaling');
 
+      if (target.name == 'leftArm' || target.name == 'leftForeArm' || target.name == 'leftHand') {
+        console.log(target.name, positionTotalTransformKeys, rotationQuaternionTotalTransformKeys, scalingTotalTransformKeys);
+      }
+
       const newPositionAnimation = new Animation(`${target.name}|position`, 'position', fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
       newPositionAnimation.setKeys(positionTotalTransformKeys);
 

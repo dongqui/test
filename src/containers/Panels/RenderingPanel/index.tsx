@@ -60,8 +60,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   useEffect(() => {
     const keyframeDataList = possibleTargets
-      .slice(10, 14)
-      .map((item) => ({ targetId: item.reference.id, property: 'rotation' as PlaskProperty, value: [0, 0.7, 0] as ArrayOfThreeNumbers }));
+      .slice(8, 11)
+      .map((item) => ({ targetId: item.reference.id, property: 'rotation' as PlaskProperty, value: (item.reference.rotation as unknown) as ArrayOfThreeNumbers }));
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (testFlag && targetAnimation && (event.key === 'm' || event.key === 'M')) {
