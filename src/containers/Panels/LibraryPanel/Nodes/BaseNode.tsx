@@ -30,8 +30,9 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   const isParentSelected = selectedNodeDescendants.some((node) => id === node.id);
 
   // TODO: visualized node 상태관리
-  const currentVisualizedNode = nodes.find((node) => visualizedAssetIds.includes(node.assetId || ''));
-  const currentVisualizedMotion = animationIngredients.filter((ingredient) => ingredient.assetId === currentVisualizedNode?.assetId && ingredient.current)[0];
+
+  const currentVisualizedIngredient = animationIngredients.filter((ingredient) => visualizedAssetIds.includes(ingredient.assetId) && ingredient.current)[0];
+  const currentVisualizedMotion = nodes.find((node) => node.animation?.uid === currentVisualizedIngredient?.id);
   const closedAndHasVisualizedDescendant = getDescendantNodes(nodes, id).some((node) => node?.id === currentVisualizedMotion?.id) && !showChildren;
   const isVisualizedUICondition = currentVisualizedMotion?.id === id || closedAndHasVisualizedDescendant;
 
