@@ -903,7 +903,7 @@ export class AnimationModule extends Module {
   }
 
   public reduxObservedStates = ['animationData.animationIngredients', 'plaskProject.visualizedAssetIds', 'animatingControls.startTimeIndex', 'animatingControls.endTimeIndex'];
-  public _onStateChanged(key: string, previousState: any): void {
+  public onStateChanged(key: string, previousState: any): void {
     switch (key) {
       case 'animationData.animationIngredients': {
         this.onAnimationDataChangeObservable.notifyObservers({

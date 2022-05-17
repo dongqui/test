@@ -28,6 +28,7 @@ import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap } from 'types/common';
+import { RootState } from 'reducers';
 
 type BoneIKParams = {
   bone: string;
@@ -140,65 +141,52 @@ export class IKModule extends Module {
     {
       targetId: pickedIkCtrl.metadata.transformNode.id, 
       property: 'rotationQuaternion' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk.rotationQuaternion as unknown) as ArrayOfFourNumbers
+      value: pickedIkCtrl.metadata.transformNodeIk.rotationQuaternion.asArray() as ArrayOfFourNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode.id, 
       property: 'position' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk.absolutePosition as unknown) as ArrayOfThreeNumbers
+      value: pickedIkCtrl.metadata.transformNodeIk.position.asArray() as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode.id, 
       property: 'scaling' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk.absoluteScaling as unknown) as ArrayOfThreeNumbers
-      //value: [1, 1, 1] as ArrayOfThreeNumbers
+      //value: pickedIkCtrl.metadata.transformNodeIk.absoluteScaling.asArray() as ArrayOfThreeNumbers
+      value: [1, 1, 1] as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode1.id, 
       property: 'rotationQuaternion' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk1.rotationQuaternion as unknown) as ArrayOfFourNumbers
+      value: pickedIkCtrl.metadata.transformNodeIk1.rotationQuaternion.asArray() as ArrayOfFourNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode1.id, 
       property: 'position' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk1.absolutePosition as unknown) as ArrayOfThreeNumbers
+      value: pickedIkCtrl.metadata.transformNodeIk1.position.asArray() as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode1.id, 
       property: 'scaling' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk1.absoluteScaling as unknown) as ArrayOfThreeNumbers
+      //value: pickedIkCtrl.metadata.transformNodeIk1.absoluteScaling.asArray() as ArrayOfThreeNumbers
+      value: [1, 1, 1] as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode2.id, 
       property: 'rotationQuaternion' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk2.rotationQuaternion as unknown) as ArrayOfFourNumbers
+      value: pickedIkCtrl.metadata.transformNodeIk2.rotationQuaternion.asArray() as ArrayOfFourNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode2.id, 
       property: 'position' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk2.position as unknown) as ArrayOfThreeNumbers
+      value: pickedIkCtrl.metadata.transformNodeIk2.position.asArray() as ArrayOfThreeNumbers
     },
     {
       targetId: pickedIkCtrl.metadata.transformNode2.id, 
       property: 'scaling' as PlaskProperty,
-      value: (pickedIkCtrl.metadata.transformNodeIk2.absoluteScaling as unknown) as ArrayOfThreeNumbers
+      //value: pickedIkCtrl.metadata.transformNodeIk2.absoluteScaling.asArray() as ArrayOfThreeNumbers
+      value: [1, 1, 1] as ArrayOfThreeNumbers
     }
     );
-
-    console.log(
-      pickedIkCtrl.metadata.transformNode1.name, 
-      pickedIkCtrl.metadata.transformNode1.absolutePosition,
-      pickedIkCtrl.metadata.transformNode1.rotationQuaternion,
-      pickedIkCtrl.metadata.transformNode1.absoluteScaling,
-    );
-
-    console.log(
-      pickedIkCtrl.metadata.transformNodeIk1.name, 
-      pickedIkCtrl.metadata.transformNodeIk1.absolutePosition,
-      pickedIkCtrl.metadata.transformNodeIk1.rotationQuaternion,
-      pickedIkCtrl.metadata.transformNodeIk1.absoluteScaling,
-    );
-
     return targetDataList;
   }
 
@@ -330,7 +318,7 @@ export class IKModule extends Module {
     // Evaluate if a IK Controller is selected
     if (this._pickedIkMesh) {
       this._gizmoManager.attachToNode(null);
-      let transfNodeClone = this._pickedIkMesh.metadata.transformNodeIk;
+      let transfNodeClone = this._pickedIkMesh.metadata.transformNode;
       this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
       let ikcontroller = this._pickedIkMesh.metadata.ikController;
       ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
@@ -358,11 +346,10 @@ export class IKModule extends Module {
         (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
       );
       const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-      const targetFrameIndex = 20;
+      const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
 
       if (targetAnimation) {
-        //console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
-        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, this.pushDataList(this._pickedIkMesh));
       }
     }
   }
@@ -584,7 +571,12 @@ export class IKModule extends Module {
       if (this._pickedIkMesh) {
         let controller = this._pickedIkMesh.metadata.controller;
         let controllerOrig = this._pickedIkMesh.metadata.controllerOrig;
+        console.log(controller.absolutePosition);
+        console.log(controllerOrig.absolutePosition);
         controllerOrig.setAbsolutePosition(controller.absolutePosition);
+        console.log(controller.absolutePosition);
+        console.log(controllerOrig.absolutePosition);
+        //controllerOrig.position = controller.position;
         let ikcontrollerOrig = this._pickedIkMesh.metadata.ikControllerOrig;
         ikcontrollerOrig.poleAngle = this._pickedIkMesh.metadata.ikController.poleAngle;
         ikcontrollerOrig.update();
@@ -603,7 +595,7 @@ export class IKModule extends Module {
       // Evaluate if a IK Controller is selected
       if (this._pickedIkMesh) {
         this._gizmoManager.attachToNode(null);
-        let transfNodeClone = this._pickedIkMesh.metadata.transformNodeIk;
+        let transfNodeClone = this._pickedIkMesh.metadata.transformNode;
         this._pickedIkMesh.setAbsolutePosition(transfNodeClone.absolutePosition);
         let ikcontroller = this._pickedIkMesh.metadata.ikController;
         ikcontroller.poleAngle = this._pickedIkMesh.metadata.ikControllerOrig.poleAngle;
@@ -627,12 +619,10 @@ export class IKModule extends Module {
           (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
         );
         const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-        const targetFrameIndex = 20;
+        const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
 
         if (targetAnimation) {
-          this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
-          //console.log(this.pushDataList(this._pickedIkMesh));
-          //console.log(targetAnimation.id, targetLayerId, targetFrameIndex, this.pushDataList(this._pickedIkMesh));
+          this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, this.pushDataList(this._pickedIkMesh));
         }
       }
     });
