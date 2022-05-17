@@ -37,7 +37,7 @@ const SelectIconTemplate: ComponentStory<typeof _IconButton> = (args) => {
 export const ExistingIcon = SelectIconTemplate.bind({});
 
 ExistingIcon.args = {
-  variant: 'default',
+  type: 'default',
   disabled: false,
 };
 
@@ -109,6 +109,6 @@ const NewIconTestTemplate: ComponentStory<typeof _IconButton> = (args) => {
 export const NewIcon = NewIconTestTemplate.bind({});
 
 NewIcon.args = {
-  variant: 'default',
+  type: 'default',
   disabled: false,
 };
