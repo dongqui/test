@@ -18,22 +18,21 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
   const asset = find(plaskProject.assetList, { id: targetMotion?.assetId });
   const targetAnimationIngredient = find(animationData.animationIngredients, { id: targetMotion?.id });
 
-  if (!targetMotion || !asset || !targetAnimationIngredient) {
-    return;
+  if (asset && targetAnimationIngredient) {
+    const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(asset.id);
+    if (isVisualizedAsset) {
+      plaskEngine.assetModule.clearAssetFromScene(asset.id);
+
+      yield put(plaskProjectActions.unrenderAsset({}));
+      yield put(selectingDataActions.unrenderAsset({ assetId: asset.id }));
+    }
+    yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));
+    yield put(plaskProjectActions.removeAnimationIngredient({ assetId: asset.id, animationIngredientId: targetAnimationIngredient.id }));
   }
 
-  const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(asset.id);
-  if (isVisualizedAsset) {
-    plaskEngine.assetModule.clearAssetFromScene(asset.id);
-
-    yield put(plaskProjectActions.unrenderAsset({}));
-    yield put(selectingDataActions.unrenderAsset({ assetId: asset.id }));
+  if (targetMotion) {
+    const nextNodes = filterDeletedNode(lpNode.nodes, targetMotion);
+    yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+    forceClickAnimationPlayAndStop();
   }
-
-  const nextNodes = filterDeletedNode(lpNode.nodes, targetMotion);
-
-  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
-  yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));
-  yield put(plaskProjectActions.removeAnimationIngredient({ assetId: asset.id, animationIngredientId: targetAnimationIngredient.id }));
-  forceClickAnimationPlayAndStop();
 }
