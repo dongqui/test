@@ -40,7 +40,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   const handleDuplicate = () => {
     dispatch(
-      lpNodeActions.duplicateMotion({
+      lpNodeActions.duplicateMotionAsync.request({
         nodeId,
         parentId,
         nodeName,
