@@ -204,7 +204,7 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
   if (!targetAsset) {
     return;
   }
-  console.log(targetAsset);
+
   // const nodeName = handleDuplicateName(lpNode.nodes, draggedNode.name, nodeId); TODO: 중복 처리
   const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
     [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
