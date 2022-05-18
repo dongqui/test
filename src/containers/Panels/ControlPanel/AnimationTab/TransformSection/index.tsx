@@ -9,6 +9,7 @@ import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack } from 'types/commo
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskCard } from 'components/ControlPanel/Card';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -433,20 +434,17 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
   ];
 
   return (
-    <section className={cx('transform-section')}>
-      <AnimationTitleToggle text="Transform" isSpread={isTransformSectionSpread} handleSpread={handleSpreadTransform} activeStatus={isAllActive && !isNull(controlTarget)} />
-      <div className={cx('container', { active: isTransformSectionSpread })}>
-        <AnimationInputWrapper inputTitle="Position" inputInfo={inputData.position} activeStatus={isAllActive && !isNull(controlTarget)} />
-        {currentRotationType === 'euler' ? (
-          <AnimationInputWrapper inputTitle="Euler" inputInfo={inputData.euler} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
-        ) : (
-          // prettier-ignore
-          <AnimationInputWrapper inputTitle="Quaternion" inputInfo={inputData.quaternion} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
-        )}
-        <AnimationInputWrapper inputTitle="Scale" inputInfo={inputData.scale} activeStatus={isAllActive && !isNull(controlTarget)} />
-        {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
-      </div>
-    </section>
+    <PlaskCard title="Transform" activeStatus={isAllActive && !isNull(controlTarget)}>
+      <AnimationInputWrapper inputTitle="Position" inputInfo={inputData.position} activeStatus={isAllActive && !isNull(controlTarget)} />
+      {currentRotationType === 'euler' ? (
+        <AnimationInputWrapper inputTitle="Euler" inputInfo={inputData.euler} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
+      ) : (
+        // prettier-ignore
+        <AnimationInputWrapper inputTitle="Quaternion" inputInfo={inputData.quaternion} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
+      )}
+      <AnimationInputWrapper inputTitle="Scale" inputInfo={inputData.scale} activeStatus={isAllActive && !isNull(controlTarget)} />
+      {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
+    </PlaskCard>
   );
 };
 

@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import * as BABYLON from '@babylonjs/core';
 import { isNull } from 'lodash';
 
-import { AnimationTitleToggle, StaticRangeInput } from 'components/ControlPanel';
+import { StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
 import AnimationInputWrapper from '../AnimationInputWrapper';
 import { Nullable, PlaskRetargetMap, PlaskTrack, PlaskLayer, AnimationIngredient } from 'types/common';
@@ -11,6 +11,9 @@ import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import plaskEngine from '3d/PlaskEngine';
+
+import * as commonActions from 'actions/Common/globalUI';
+import { PlaskCard } from 'components/ControlPanel/Card';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -72,18 +75,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
     }
   }, [_selectableObjects, _selectedTargets]);
 
-  // section spread status
-  const [isSectionSpread, setIsSectionSpread] = useState<boolean>(true);
-
-  // callback to spread/fold transform section
-  const handleSpreadTransform = useCallback(() => {
-    if (isSectionSpread) {
-      setIsSectionSpread(false);
-    } else {
-      setIsSectionSpread(true);
-    }
-  }, [isSectionSpread]);
-
   // IK Valid
   const [isIKOn, setIsIKOn] = useState<boolean>(false);
 
@@ -118,19 +109,17 @@ const IKControllerSection: FunctionComponent<Props> = ({
       setCurrentValue: setBlendValue,
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
-        // setBlendValue(parseFloat(event.target.value));
         plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value));
       },
       onChangeEnd: useCallback((inputValue: number) => {
         setBlendValue(inputValue);
-        // plaskEngine.ikModule.setIKControllerBlend(inputValue);
       }, []),
     },
     {
       text: 'Pole Angle',
       step: 0.1,
-      min: -270,
-      max: 270,
+      min: -180,
+      max: 180,
       currentValue: poleAngleValue,
       setCurrentValue: setPoleAngleValue,
       decimalDigit: 1,
@@ -140,7 +129,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
       onChangeEnd: useCallback((inputValue: number) => {
         setPoleAngleValue(inputValue);
-        // plaskEngine.ikModule.setIKControllerPoleAngle(inputValue);
       }, []),
     },
   ];
@@ -167,70 +155,91 @@ const IKControllerSection: FunctionComponent<Props> = ({
   ];
 
   const handleSetupIK = useCallback(() => {
-    // TODO: IK Module (Create IK Controller)
-    // setIsIKOn(plaskEngine.ikModule.ikControllers.length > 0);
-    // if (isIKOn) {
-    //   setIsIKOn(false);
-    // } else {
-    //   setIsIKOn(true);
-    // }
-  }, []);
+    dispatch(
+      commonActions.openModal('ConfirmModal', {
+        title: 'Setup IK',
+        message: 'This action will create IK controllers',
+        confirmText: 'Confirm',
+        onConfirm: () => {
+          // TODO: IK Module (Create IK Controller)
+        },
+        cancelText: 'Cancel',
+        confirmButtonColor: 'primary',
+      }),
+    );
+  }, [dispatch]);
+
+  const dropdownOptions = [
+    {
+      text: 'Delete all IK controllers',
+      handleSelect: () => {
+        dispatch(
+          commonActions.openModal('ConfirmModal', {
+            title: 'Delete all ik controllers?',
+            message: 'This action will delete all IK controllers',
+            confirmText: 'Delete',
+            onConfirm: () => {
+              plaskEngine.ikModule.removeIK();
+            },
+            cancelText: 'Cancel',
+            confirmButtonColor: 'negative',
+          }),
+        );
+      },
+    },
+  ];
 
   return (
-    <section className={cx('ik-section')}>
-      <AnimationTitleToggle text="IK Controller" isSpread={isSectionSpread} handleSpread={handleSpreadTransform} activeStatus={isAllActive} />
-      <div className={cx('container', { active: isSectionSpread })}>
-        {plaskEngine.ikModule.ikControllers.length > 0 ? (
-          <div className={cx('inner-container')}>
-            {IKControllerData.map((info, idx) => (
-              <StaticRangeInput
-                key={`${info.text}${idx}`}
-                text={info.text}
-                step={info.step}
-                max={info.max}
-                min={info.min ?? 0}
-                showProgress={info.showProgress}
-                currentValue={info.currentValue}
-                decimalDigit={info.decimalDigit}
-                activeStatus={isAllActive && isIKOn}
-                handleChange={info.handleChange}
-                onChangeEnd={info.onChangeEnd}
-              />
-            ))}
+    <PlaskCard title="IK Controller" type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive}>
+      {plaskEngine.ikModule.ikControllers.length > 0 ? (
+        <div className={cx('wrapper')}>
+          {IKControllerData.map((info, idx) => (
+            <StaticRangeInput
+              key={`${info.text}${idx}`}
+              text={info.text}
+              step={info.step}
+              max={info.max}
+              min={info.min ?? 0}
+              showProgress={info.showProgress}
+              currentValue={info.currentValue}
+              decimalDigit={info.decimalDigit}
+              activeStatus={isAllActive && isIKOn}
+              handleChange={info.handleChange}
+              onChangeEnd={info.onChangeEnd}
+            />
+          ))}
 
-            {IKControllerButtons.map((info, idx) => (
-              <FilledButton
-                onClick={info.onClick}
-                className={cx('button')}
-                key={`${info.text}${idx}`}
-                text={info.text}
-                color="default"
-                disabled={!isAllActive || !isIKOn}
-                fullSize={true}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className={cx('inner-container')}>
-            {mappingCompleted ? (
-              <div className={cx('text')}> Create IK Controller to continue</div>
-            ) : (
-              <div className={cx('text')}>Please complete retarget map to enable controllers</div>
-            )}
+          {IKControllerButtons.map((info, idx) => (
             <FilledButton
-              onClick={handleSetupIK}
+              onClick={info.onClick}
               className={cx('button')}
-              text="Set Up IK"
+              key={`${info.text}${idx}`}
+              text={info.text}
               color="default"
-              disabled={!(isAllActive && (!mappingCompleted || plaskEngine.ikModule.ikControllers.length == 0))}
+              disabled={!isAllActive || !isIKOn}
               fullSize={true}
             />
-          </div>
-        )}
-
-        {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
-      </div>
-    </section>
+          ))}
+        </div>
+      ) : (
+        <div className={cx('wrapper')}>
+          {mappingCompleted ? (
+            <div className={cx('text')}>Create IK Controller to continue</div>
+          ) : (
+            <div className={cx('text')}>Please complete retarget map to enable controllers</div>
+          )}
+          <FilledButton
+            onClick={handleSetupIK}
+            className={cx('button')}
+            text="Set Up IK"
+            color="default"
+            disabled={!isAllActive || !mappingCompleted || plaskEngine.ikModule.ikControllers.length > 0}
+            fullSize={true}
+          />
+        </div>
+      )}
+      {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
+    </PlaskCard>
   );
 };
 

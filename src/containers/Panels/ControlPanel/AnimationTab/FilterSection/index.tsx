@@ -10,6 +10,7 @@ import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskCard } from 'components/ControlPanel/Card';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -182,37 +183,32 @@ const FilterSection: FunctionComponent<Props> = ({ isAllActive, visualizedAssetI
     },
   ];
   return (
-    <section>
-      <section className={cx('filter-section')}>
-        <AnimationTitleToggle
-          text="Filter"
-          isSpread={isFilterSectionSpread}
-          handleSpread={handleSpreadFilter}
-          isPowerOn={isFilterOn}
-          handleToggle={handleFilterToggle}
-          withSwitch={true}
-          checked={isFilterOn}
-          activeStatus={isAllActive && isFilterOn}
-          canToggle={!isUndefined(selectedAssetId)}
+    <PlaskCard
+      type="toggle"
+      title="Filter"
+      isPowerOn={isFilterOn}
+      activeStatus={isAllActive && isFilterOn}
+      toggleOptions={{
+        checked: isFilterOn,
+        handleToggle: handleFilterToggle,
+        canToggle: !isUndefined(selectedAssetId),
+      }}
+    >
+      {filterRangeData.map((info, idx) => (
+        <AnimationRangeInput
+          key={`${info.text}${idx}`}
+          text={info.text}
+          step={info.step}
+          currentMax={info.currentMax}
+          currentValue={info.currentValue}
+          decimalDigit={info.decimalDigit}
+          activeStatus={isAllActive && isFilterOn && !isNull(controlTrack)}
+          handleChange={info.handleChange}
+          onChangeEnd={info.onChangeEnd}
         />
-        <div className={cx('container', { active: isFilterSectionSpread })}>
-          {filterRangeData.map((info, idx) => (
-            <AnimationRangeInput
-              key={`${info.text}${idx}`}
-              text={info.text}
-              step={info.step}
-              currentMax={info.currentMax}
-              currentValue={info.currentValue}
-              decimalDigit={info.decimalDigit}
-              activeStatus={isAllActive && isFilterOn && !isNull(controlTrack)}
-              handleChange={info.handleChange}
-              onChangeEnd={info.onChangeEnd}
-            />
-          ))}
-          {(!isAllActive || !isFilterOn || isNull(controlTrack)) && <div className={cx('inactive-overlay')}></div>}
-        </div>
-      </section>
-    </section>
+      ))}
+      {(!isAllActive || !isFilterOn || isNull(controlTrack)) && <div className={cx('inactive-overlay')}></div>}
+    </PlaskCard>
   );
 };
 
