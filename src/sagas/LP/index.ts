@@ -19,6 +19,7 @@ import handleFileUpload from './fileUpload';
 import handleAddModel from './addModel';
 import initNodes from './initNodes';
 import handleApplyMocapToModel from './applyMocapToModel';
+import addAssetsAndAnimationIngredients from './addAssetsAndAnimationIngredients';
 
 export default function* LPSaga() {
   yield all([
@@ -39,6 +40,7 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
     takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
     takeLatest(getType(lpNodeActions.applyMocapToModel.request), handleApplyMocapToModel),
+    takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
     watchClickJointChannel(),
     // watchConfirmOnError(),
     watchDeleteNodeSocketActions(),

@@ -1,45 +1,50 @@
-import { find, filter } from 'lodash';
-import { select, put } from 'redux-saga/effects';
+import { find } from 'lodash';
+import { select, put, take } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
-import { goToSpecificPoses } from 'utils/RP';
-import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
 import plaskEngine from '3d/PlaskEngine';
+import { forceClickAnimationPlayAndStop } from 'utils/common';
+import { goToSpecificPoses } from 'utils/RP';
 
 export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualizeMotion>) {
-  const { plaskProject, animationData, lpNode }: RootState = yield select();
-  const { animationIngredients } = animationData;
+  const { plaskProject, lpNode }: RootState = yield select();
   const { screenList, assetList } = plaskProject;
   const { assetId, nodeId, parentId } = action.payload;
 
   plaskEngine.assetModule.clearAnimationGroups(screenList);
-  const parentModel = find(lpNode.nodes, { id: parentId });
+  const modelNode = find(lpNode.nodes, { id: parentId });
 
-  if (!assetId || !parentModel) {
+  if (!assetId || !modelNode) {
     return;
   }
 
-  // TODO: 애니메이션 node 조회시 animation ingredients에 넣어야할듯.
-  const motions = filter(animationIngredients, { assetId: parentModel.assetId });
-  if (motions && parentModel.assetId) {
-    const selectedMotion = find(motions, { id: nodeId });
-    if (selectedMotion) {
-      const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
-      if (currentAsset) {
-        goToSpecificPoses(currentAsset.initialPoses);
-      }
-
-      yield put(
-        animationDataActions.changeCurrentAnimationIngredient({
-          assetId: parentModel.assetId,
-          animationIngredientId: selectedMotion.id,
-        }),
-      );
-    }
+  const asset = find(assetList, { id: modelNode.assetId });
+  if (!asset) {
+    yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode));
+    yield take('ADDED_NEW_ASSET');
   }
 
-  yield put(lpNodeActions.visualizeModel(parentModel));
+  const newRootState: RootState = yield select();
+  const motionNode = find(lpNode.nodes, { id: nodeId });
+  const targetAnimationIngredient = find(newRootState.animationData.animationIngredients, { id: motionNode?.animation?.uid });
+  const currentAsset = assetList.find((asset) => asset.id === modelNode.assetId);
+  if (currentAsset) {
+    goToSpecificPoses(currentAsset.initialPoses);
+  }
+
+  if (!targetAnimationIngredient?.id || !modelNode.assetId) {
+    return;
+  }
+
+  yield put(
+    animationDataActions.changeCurrentAnimationIngredient({
+      assetId: modelNode.assetId,
+      animationIngredientId: targetAnimationIngredient.id,
+    }),
+  );
+  yield put(lpNodeActions.visualizeModel(modelNode, targetAnimationIngredient.id));
   forceClickAnimationPlayAndStop(50);
 }
