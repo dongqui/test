@@ -4,7 +4,6 @@ import { select, put, take } from 'redux-saga/effects';
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
-import * as selectingDataActions from 'actions/selectingDataAction';
 import plaskEngine from '3d/PlaskEngine';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { goToSpecificPoses } from 'utils/RP';
@@ -16,7 +15,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
   plaskEngine.assetModule.clearAnimationGroups(screenList);
   const modelNode = find(lpNode.nodes, { id: parentId });
-
   if (!assetId || !modelNode) {
     return;
   }

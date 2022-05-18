@@ -25,8 +25,9 @@ export default function* LPSaga() {
   yield all([
     takeLatest(getType(lpNodeActions.visualizeModel), handleVisualizeModel),
     takeLatest(getType(lpNodeActions.cancelVisulization), handleCancelVisulization),
-    takeLatest(getType(lpNodeActions.addEmptyMotion), handleAddEmptyMotion),
+    takeLatest(getType(lpNodeActions.addEmptyMotionAsnyc.request), handleAddEmptyMotion),
     takeLatest(getType(lpNodeActions.duplicateMotion), handleDuplicateMotion),
+    takeLatest(getType(lpNodeActions.duplicateMotionAsync.request), handleDuplicateMotion),
     takeLatest(getType(lpNodeActions.visualizeMotion), handleVisualizeMotion),
     // takeLatest(getType(lpNodeActions.dropNodeOnFolder), handleDropNodeOnFolder),
     // takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),

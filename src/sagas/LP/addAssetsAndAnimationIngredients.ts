@@ -14,6 +14,7 @@ import { PlaskAsset, ServerAnimationLayer } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
 
+// After put this action, have to call yield take('ADDED_NEW_ASSET'); .
 export default function* addAssetsAndAnimationIngredients(action: ReturnType<typeof lpNodeActions.addAssetsAndAnimationIngredients>) {
   const { plaskProject, lpNode }: RootState = yield select();
   const baseScene = plaskProject.screenList[0].scene;

@@ -140,14 +140,24 @@ export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteMode
 export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
 export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: RequestNodeResponse[]) => nodesFromServer)();
 
-export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
-export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
 export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
 
+export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
+export const addEmptyMotionAsnyc = createAsyncAction('node/ADD_EMPTY_MOTION_REQUEST', 'node/ADD_EMPTY_MOTION_SUCCESS', 'node/ADD_EMPTY_MOTION_FAILURE')<
+  AddEmptyMotionParams,
+  LP.Node,
+  Error
+>();
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
 export const applyMocapToModel = createAsyncAction('node/APPLY_MOCAP_TO_MODEL_REQUEST', 'node/APPLY_MOCAP_TO_MODEL_SUCCESS', 'node/APPLY_MOCAP_TO_MODEL_FAILURE')<
   ApplyMocapToModelRequestParams,
+  LP.Node[],
+  Error
+>();
+export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
+export const duplicateMotionAsync = createAsyncAction('node/DUPLICATE_MOTION_REQUEST', 'node/DUPLICATE_MOTIONSUCCESS', 'node/DUPLICATE_MOTION_FAILURE')<
+  DuplicateMotionParams,
   LP.Node[],
   Error
 >();
