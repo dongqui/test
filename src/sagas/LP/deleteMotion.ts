@@ -16,8 +16,7 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
 
   const targetMotion = find(lpNode.nodes, { id: nodeId });
   const asset = find(plaskProject.assetList, { id: targetMotion?.assetId });
-  const targetAnimationIngredient = find(animationData.animationIngredients, { id: targetMotion?.id });
-
+  const targetAnimationIngredient = find(animationData.animationIngredients, { id: targetMotion?.animation?.uid });
   if (asset && targetAnimationIngredient) {
     const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(asset.id);
     if (isVisualizedAsset) {
