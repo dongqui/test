@@ -31,7 +31,7 @@ const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
   const [value, setValue] = useState((defaultValue ?? '').toString());
   const [offsetX, setOffsetX] = useState(0);
 
-  const wrapper = cx('wrapper', { fullSize, invalid });
+  const wrapper = cx('wrapper', { fullSize, invalid, nType: rest.type === 'number' });
   const prefixWrapper = cx('prefix-wrapper', { isStringType: typeof prefix === 'string' });
   const textInput = cx('text-input', { disabled });
 
@@ -56,6 +56,7 @@ const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
     }
   };
   const numberMouseUp = () => {
+    document.body.style.cursor = 'default';
     window.removeEventListener('mousemove', numberMouseMove);
     window.removeEventListener('mouseup', numberMouseUp);
   };
@@ -64,9 +65,12 @@ const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
     <div
       className={wrapper}
       onMouseDown={(e) => {
-        setOffsetX(e.pageX);
-        window.addEventListener('mousemove', numberMouseMove);
-        window.addEventListener('mouseup', numberMouseUp);
+        if (rest.type === 'number') {
+          setOffsetX(e.pageX);
+          document.body.style.cursor = 'ew-resize';
+          window.addEventListener('mousemove', numberMouseMove);
+          window.addEventListener('mouseup', numberMouseUp);
+        }
       }}
     >
       {!!prefix && (
