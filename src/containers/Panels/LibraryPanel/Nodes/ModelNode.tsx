@@ -46,16 +46,16 @@ const ModelNode = ({ node }: Props) => {
       return;
     }
 
-    // const hasMotions = childNodeIds.length !== 0;
-    // if (!hasMotions) {
-    //   dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
-    // }
+    const hasMotions = childNodeIds.length !== 0;
+    if (!hasMotions) {
+      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
+    }
     dispatch(lpNodeActions.visualizeModel(node));
   };
 
   const handleEditName = (newName: string) => {
     const nameWithExtension = `${newName}.${extension}`;
-    dispatch(lpNodeActions.editNodeName({ newName: nameWithExtension, nodeId: id }));
+    dispatch(lpNodeActions.editNodeNameSocket.request({ newName: nameWithExtension, nodeId: id }));
   };
 
   return <BaseNode dataCy="lp-model" node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} onEditName={handleEditName} onDragEnd={handleDragEnd} />;
