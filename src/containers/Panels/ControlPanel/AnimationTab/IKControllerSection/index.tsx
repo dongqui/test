@@ -14,6 +14,7 @@ import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { editAnimationIngredient } from 'actions/animationDataAction';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -161,7 +162,10 @@ const IKControllerSection: FunctionComponent<Props> = ({
     {
       text: 'Keyframe IK',
       onClick: () => {
-        plaskEngine.ikModule.setKeyframeIK();
+        const animationIngredient = plaskEngine.ikModule.getIKKeyframeData();
+        if (animationIngredient) {
+          dispatch(editAnimationIngredient(animationIngredient));
+        }
       },
     },
   ];

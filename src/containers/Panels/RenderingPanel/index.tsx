@@ -19,6 +19,7 @@ import { useObserved } from 'hooks/common/useObserved';
 import SelectorModule from '3d/modules/selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { selectionChanged } from './stateSync';
+import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
 
 const cx = classNames.bind(styles);
 
@@ -39,42 +40,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
-  const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
   const dispatch = useDispatch();
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
-
-  /**
-   * sample usage of editKeyframesWithParams method of AnimationModule
-   * 45-72 lines should not be included in the develop or master
-   */
-  const testFlag = false; // change this to true for testing
-
-  const targetAnimation = _animationIngredients.find((anim) => anim.current && _visualizedAssetIds.includes(anim.assetId));
-  const targetLayerId = useSelector((state) => state.trackList.selectedLayer);
-  const targetFrameIndex = 10;
-  const possibleTargets = _selectableObjects.filter((object) => _visualizedAssetIds.includes(object.id.split('//')[0]));
-
-  useEffect(() => {
-    const keyframeDataList = possibleTargets
-      .slice(8, 11)
-      .map((item) => ({ targetId: item.reference.id, property: 'rotation' as PlaskProperty, value: (item.reference.rotation as unknown) as ArrayOfThreeNumbers }));
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (testFlag && targetAnimation && (event.key === 'm' || event.key === 'M')) {
-        plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetFrameIndex, keyframeDataList);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [possibleTargets, targetAnimation, targetLayerId, testFlag]);
 
   /**
    * object to handle multi-key
@@ -153,13 +124,23 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       };
     }
   }, [dispatch]);
+
   /**************************
    * STATE BIND
    * ONE WAY FLOW FROM REACT TO BABYLONJS
    * OBSERVABLES TO UPDATE REDUX STATE
    *
    *************************/
+  // Selection
   useObserved(SelectorModule._onUserSelectRequest, selectionChanged);
+
+  // Animation data
+  useEffect(() => {
+    const animationGroup = plaskEngine.animationModule.regenerateAnimations(_animationIngredients, _visualizedAssetIds, _startTimeIndex, _endTimeIndex);
+    if (animationGroup) {
+      dispatch(setCurrentAnimationGroup({ animationGroup }));
+    }
+  }, [_animationIngredients, _startTimeIndex, _endTimeIndex, _visualizedAssetIds, dispatch]);
 
   /**
    * dragBox interacting with scene

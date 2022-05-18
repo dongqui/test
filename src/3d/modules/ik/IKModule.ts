@@ -312,7 +312,7 @@ export class IKModule extends Module {
     }
   }
 
-  public setKeyframeIK() {
+  public getIKKeyframeData() {
     // Evaluate if a IK Controller is selected
     if (this._selectedIkHandle) {
       const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
@@ -322,9 +322,16 @@ export class IKModule extends Module {
       const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
 
       if (targetAnimation) {
-        this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, this.pushDataList(this._selectedIkHandle));
+        const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(
+          targetAnimation.id,
+          targetLayerId,
+          targetCurrentTimeindex,
+          this.pushDataList(this._selectedIkHandle),
+        );
+        return animationIngredients;
       }
     }
+    return null;
   }
 
   /**
