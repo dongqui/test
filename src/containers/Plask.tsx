@@ -1,6 +1,6 @@
 import { FunctionComponent, Fragment } from 'react';
 import AnimationMode from './AnimationMode';
-import { VideoMode } from './VideoMode';
+import VideoMode from './New_VideoMode';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -23,7 +23,8 @@ const Plask: FunctionComponent<Props> = (props) => {
   return (
     <Fragment>
       <AnimationMode className={classes} />
-      {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={props.browserType} />}
+      {/* {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={props.browserType} />} */}
+      {mode !== 'animationMode' && <VideoMode />}
     </Fragment>
   );
 };
