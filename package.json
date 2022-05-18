@@ -18,7 +18,7 @@
     "cypress:run": "cypress run --browser chrome",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "doc:engine": "npx typedoc src/3d/PlaskEngine.ts --out doc/ --excludePrivate"
+    "doc:engine": "npx typedoc src/3d/PlaskEngine.ts --out doc/engine --excludePrivate"
   },
   "dependencies": {
     "@babylonjs/core": "5.0.0-alpha.61",
