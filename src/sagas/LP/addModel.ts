@@ -15,7 +15,7 @@ import { createRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes } from 'utils/common';
 import { getInitialPoses, getCustomAnimationIngredients } from 'utils/RP';
 import { WARNING_07, WARNING_01 } from 'constants/Text';
-import { PlaskRetargetMap, PlaskPose, PlaskAsset } from 'types/common';
+import { PlaskRetargetMap, PlaskPose, PlaskAsset, ServerAnimationLayer, ServerAnimation } from 'types/common';
 import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
@@ -24,7 +24,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
   // TODO: reduce # of actions by handle multi-files at one action
   const { lpNode, plaskProject }: RootState = yield select();
   const file = action.payload;
-
   const baseScene = plaskProject.screenList[0].scene;
 
   try {
@@ -69,9 +68,9 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
     const motionNodes = motionNodesRes.map(convertServerResponseToNode);
     const animationIngredients = motionNodes.map((motionNode) => {
-      const animationLayers = motionNode?.animation?.scenesLibraryModelAnimationLayers;
-      const animation = omitBy(motionNode?.animation, (value, key) => key === 'scenesLibraryModelAnimationLayers');
-      return AnimationModule.serverDataToIngredient(animation, animationLayers, transformNodes, true, motionNode?.assetId);
+      const animationLayers = motionNode?.animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
+      const animation = omitBy(motionNode?.animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
+      return AnimationModule.serverDataToIngredient(animation, animationLayers, transformNodes, false, assetsUid);
     });
 
     const nextNodes = produce(lpNode.nodes, (draft) => {
@@ -93,7 +92,8 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       retargetMapId: modelNode.id,
     };
 
-    console.log(newAsset);
+    yield put(animationDataActions.addAnimationIngredients({ animationIngredients: animationIngredients }));
+    yield put(plaskProjectActions.addAnimationIngredients({ assetId: modelNode.assetId!, animationIngredientIds: animationIngredients.map((ingredient) => ingredient.id) }));
     yield put(plaskProjectActions.addAsset({ asset: newAsset }));
     yield put(
       animationDataActions.addAsset({
@@ -106,8 +106,8 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
         },
       }),
     );
-    yield put(lpNodeActions.addModelAsync.success(nextNodes));
 
+    yield put(lpNodeActions.addModelAsync.success(nextNodes));
     if (isRetargetError(rawRetargetMap)) {
       yield put(
         globalUIActions.openModal('AlertModal', {
