@@ -60,9 +60,9 @@ const addJointSpheres = (bones: Bone[], mesh: AbstractMesh, scene: Scene, assetI
     sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
     sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
     sphere.position = anchorPoint.clone();
-    if (bone.name !== 'Armature') {
-      addMetadata('hasTracks', true, bone.getTransformNode()!);
-    }
+    // if (bone.name !== 'Armature') {
+    //   addMetadata('hasTracks', true, bone.getTransformNode()!);
+    // }
     sphereBoneGroups.push([sphere, bone]);
   });
 

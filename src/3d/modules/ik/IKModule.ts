@@ -259,6 +259,8 @@ export class IKModule extends Module {
     const result = [];
     for (const mesh of handles) {
       const ptn = new PlaskTransformNode(mesh);
+      const jointIds = mesh.metadata.controllerOrig.metadata.chain.map((mesh: Mesh) => mesh.id);
+      ptn.jointIds = jointIds;
       result.push(ptn);
     }
 
@@ -460,6 +462,9 @@ export class IKModule extends Module {
       (ikCtrlOrig as any)._adjustRoll = 0;
       ikCtrlOrig.setIKtoRest();
       ikCtrlOrig.update();
+      controllerOrig.metadata = {
+        chain: [transformNode, transformNode.parent!, transformNode.parent!.parent!],
+      };
       //ikControllersGhosts.push(ikCtrlOrig);
 
       ikControllerHandle.metadata.controllerOrig = controllerOrig;

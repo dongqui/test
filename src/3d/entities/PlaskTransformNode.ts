@@ -10,6 +10,7 @@ export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   type: PlaskTransformNodeType;
   className: 'PlaskTransformNode';
   id: string;
+  jointIds: string[];
 }
 
 /**
@@ -39,6 +40,23 @@ export class PlaskTransformNode extends PlaskEntity {
   public className = 'PlaskTransformNode';
 
   public id: string = '';
+  private _jointIds: string[] = [];
+
+  /**
+   * The joint ids impacted by this entity.
+   * If not set, returns and array containing the transformNode id
+   * @returns
+   */
+  public get jointIds() {
+    if (this._jointIds.length) {
+      return this._jointIds;
+    }
+    return [this.id];
+  }
+
+  public set jointIds(ids: string[]) {
+    this._jointIds = ids;
+  }
 
   private _reference: Nullable<TransformNode> = null;
   public get reference() {
@@ -97,6 +115,7 @@ export class PlaskTransformNode extends PlaskEntity {
 
     this.type = other.type;
     this.id = other.id;
+    this.jointIds = other.jointIds;
 
     // More efficient than instanceof
     if ((other as PlaskTransformNode).className === 'PlaskTransformNode') {
@@ -154,6 +173,7 @@ export class PlaskTransformNode extends PlaskEntity {
       scaling: this.scaling,
       type: this.type,
       id: this.id,
+      jointIds: this.jointIds,
       ...obj,
     };
   }
