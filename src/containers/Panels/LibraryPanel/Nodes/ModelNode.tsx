@@ -48,7 +48,7 @@ const ModelNode = ({ node }: Props) => {
 
     const hasMotions = childNodeIds.length !== 0;
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
+      dispatch(lpNodeActions.addEmptyMotionAsnyc.request({ nodeId: id, assetId }));
     }
     dispatch(lpNodeActions.visualizeModel(node));
   };

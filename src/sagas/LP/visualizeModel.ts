@@ -26,11 +26,17 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.`
   const plaskProjectSelector = (state: RootState) => state.plaskProject;
 
-  const plaskProject: PlaskProject = yield select(plaskProjectSelector);
-  const { visualizedAssetIds, assetList } = plaskProject;
-  const { modelNode, animationIngredientId } = action.payload;
-
   try {
+    const { modelNode, animationIngredientId } = action.payload;
+
+    if (!modelNode.childNodeIds.length) {
+      yield put(lpNodeActions.addEmptyMotionAsnyc.request({ assetId: modelNode.assetId!, nodeId: modelNode.id }));
+      yield take('ADDED_EMPTY_MOTION');
+    }
+
+    const plaskProject: PlaskProject = yield select(plaskProjectSelector);
+    const { visualizedAssetIds, assetList } = plaskProject;
+
     const asset = find(assetList, { id: modelNode.assetId });
     if (!asset) {
       yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode));

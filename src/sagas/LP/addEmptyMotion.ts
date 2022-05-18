@@ -72,4 +72,6 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
     }),
   );
   forceClickAnimationPlayAndStop();
+
+  yield put({ type: 'ADDED_EMPTY_MOTION' });
 }
