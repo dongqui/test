@@ -1,0 +1,32 @@
+.wrapper {
+  color: #fff;
+}
+
+.upper-section {
+  position: relative;
+}
+
+.lower-section {
+  position: relative;
+  z-index: 1;
+}
+
+.library-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.rendering-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.control-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
