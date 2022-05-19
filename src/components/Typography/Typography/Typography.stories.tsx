@@ -16,7 +16,15 @@ const Template: ComponentStory<typeof _Typography> = (args) => {
         Typography
       </_Typography>
       <div style={{ zoom: 2 }}>
-        {typeof args.children === 'string' ? args.children.split('\n').map((v) => <_Typography {...args}>{v}</_Typography>) : <_Typography {...args} />}
+        {typeof args.children === 'string' ? (
+          args.children.split('\n').map((v, i) => (
+            <_Typography key={i} {...args}>
+              {v}
+            </_Typography>
+          ))
+        ) : (
+          <_Typography {...args} />
+        )}
       </div>
     </Fragment>
   );
