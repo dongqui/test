@@ -47,6 +47,7 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         });
         readJsonChannel.put(lpNodeActions.changeNode({ nodes }));
       } catch (e) {
+        console.log(e);
         readJsonChannel.put(
           globalUIActions.openModal('_AlertModal', {
             message: 'Please check the structure of the json file.',
@@ -70,7 +71,10 @@ function checkMocapJson(json: MocapJson) {
   }
 
   for (const mocapResult of json.data.result) {
-    const hasInvalidBoneName = !isEqual(['hips', ...BONE_NAMES].sort(), mocapResult.trackData.map((data) => data.boneName).sort());
+    const boneNamesWithContact = ['hips', 'leftFoot', 'rightFoot', 'leftToeBase', 'rightToeBase', ...BONE_NAMES];
+    const basicBonNames = ['hips', ...BONE_NAMES];
+    const jsonBonnames = mocapResult.trackData.map((data) => data.boneName);
+    const hasInvalidBoneName = !isEqual(basicBonNames.sort(), jsonBonnames.sort()) && !isEqual(boneNamesWithContact.sort(), jsonBonnames.sort());
 
     if (hasInvalidBoneName) {
       throw new Error('This json has invalid bone names');
