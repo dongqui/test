@@ -1,12 +1,12 @@
 import { put, select, takeLatest, all } from 'redux-saga/effects';
 import { getType } from 'typesafe-actions';
 
-import { ServerAnimationLayerRequest, ServerAnimationTrackRequest } from 'types/common';
+import { IAnimationKey, Quaternion, Vector3 } from '@babylonjs/core';
+import { ServerAnimationLayerRequest, ServerAnimationTrackRequest, PlaskTrack, VectorTransformKey, QuaternionTransformKey } from 'types/common';
 import { LayerTrack } from 'types/TP/track';
 import * as trackListActions from 'actions/trackList';
 import * as animationDataActions from 'actions/animationDataAction';
 import { RootState } from 'reducers';
-import { getRandomStringKey } from 'utils/common';
 import { createPlaskServerTrack } from 'utils/RP';
 
 function getAnimationIngredientId(state: RootState) {
@@ -51,12 +51,11 @@ function* handleAddLayerRequest(action: ReturnType<typeof trackListActions.addLa
   const layerTrackNumbers = filterLayerTrackNumbers(layerTrackList);
   const newLayerTrackNumber = findNewLayerTrackNumber(layerTrackNumbers);
 
-  // RP New Layer Track 액션 호출 시 인자값 : { animationIngredientId, ...newLayerTrack }
-  // 여기서부터 RP New Layer Track 액션 호출
   const animationIngredients = getAnimationIngredients(yield select());
   const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === animationIngredientId);
   const newTracks: ServerAnimationTrackRequest[] = [];
-  const baseLayer = targetAnimationIngredient?.layers.find((layer) => layer.id.split('//')[0] === 'baseLayer');
+  const baseLayer = targetAnimationIngredient?.layers[0];
+
   if (!baseLayer || !targetAnimationIngredient) {
     return;
   }
@@ -66,26 +65,78 @@ function* handleAddLayerRequest(action: ReturnType<typeof trackListActions.addLa
   });
 
   const newLayer: ServerAnimationLayerRequest = { name: `Layer ${newLayerTrackNumber}`, isIncluded: true, useFilter: false, tracks: newTracks, isDeleted: false };
-  trackListActions.addLayerSocket.send({
-    type: 'add-layer',
-    data: {
-      animationId: animationIngredientId,
-      layer: newLayer,
-    },
-  });
+  yield put(
+    trackListActions.addLayerSocket.send({
+      type: 'add-layer',
+      data: {
+        animationId: animationIngredientId,
+        layer: newLayer,
+      },
+    }),
+  );
 }
 
 function* handleAddLayerReceive(action: ReturnType<typeof trackListActions.addLayerSocket.receive>) {
-  // const newLayerResponse = action.payload
-  // yield put(trackListActions.addLayerTrack(newLayer));
-  // yield put(
-  //   animationDataActions.editAnimationIngredient({
-  //     animationIngredient: {
-  //       ...targetAnimationIngredient,
-  //       layers: [...targetAnimationIngredient.layers, newLayer],
-  //     },
-  //   }),
-  // );
+  const newLayerResponse = action.payload.data;
+  const animationIngredients = getAnimationIngredients(yield select());
+  const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === newLayerResponse.animationUid);
+  const baselayer = targetAnimationIngredient?.layers[0];
+  if (!targetAnimationIngredient || !baselayer) {
+    return;
+  }
+  console.log(getAnimationIngredients(yield select()));
+  const tracks: PlaskTrack[] = newLayerResponse.tracks.map((serverTrack, index) => {
+    const transformKeys: IAnimationKey[] = [];
+    if (serverTrack.property === 'rotationQuaternion') {
+      for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
+        const quaternionKey = transformKey.transformKey as QuaternionTransformKey;
+        transformKeys.push({ frame, value: new Quaternion(quaternionKey.x, quaternionKey.y, quaternionKey.z, quaternionKey.w) });
+      }
+    } else {
+      for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
+        const vectorKey = transformKey.transformKey as VectorTransformKey;
+        transformKeys.push({ frame, value: new Vector3(vectorKey.x, vectorKey.y, vectorKey.z) });
+      }
+    }
+    const target =
+      baselayer.tracks[index].targetId === serverTrack.targetId
+        ? baselayer.tracks[index].target
+        : baselayer?.tracks?.find((track) => track?.targetId === serverTrack?.targetId)?.target;
+
+    return {
+      id: serverTrack.id,
+      targetId: serverTrack.targetId,
+      layerId: newLayerResponse.uid,
+      name: serverTrack.name,
+      property: serverTrack.property,
+      target: target!,
+      transformKeys,
+      interpolationType: 'linear',
+      isMocapAnimation: false,
+      filterBeta: serverTrack.filterBeta,
+      filterMinCutoff: serverTrack.filterMinCutoff,
+      isLocked: false,
+    };
+  });
+
+  const newLayer = {
+    id: newLayerResponse.uid,
+    name: newLayerResponse.name,
+    isIncluded: newLayerResponse.isIncluded,
+    useFilter: newLayerResponse.useFilter,
+    tracks,
+  };
+
+  yield put(trackListActions.addLayerTrack(newLayer));
+  yield put(
+    animationDataActions.editAnimationIngredient({
+      animationIngredient: {
+        ...targetAnimationIngredient,
+        layers: [...targetAnimationIngredient.layers, newLayer],
+      },
+    }),
+  );
+  console.log(getAnimationIngredients(yield select()));
 }
 
 export default function* watchAddLayerSocketActions() {

@@ -5,6 +5,7 @@ import { PayloadActionCreator } from 'typesafe-actions';
 
 import * as socketActions from 'actions/Common/socket';
 import * as lpActions from 'actions/LP/lpNodeAction';
+import * as trackListActions from 'actions/trackList';
 
 type AnimationEventType =
   | 'rename'
@@ -29,10 +30,16 @@ function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.re
       console.log('connected');
       resolve(socket);
     });
+
+    // For test
+    // socket.onAny(function (...ars) {
+    //   console.log(ars);
+    // });
   });
 }
 
 type LibraryEventPayload = ReturnType<typeof lpActions.deleteNodeSocket.receive | typeof lpActions.editNodeNameSocket.receive | typeof lpActions.moveNodeSocket.receive>['payload'];
+type AnimationEventPayload = ReturnType<typeof trackListActions.addLayerSocket.receive | typeof trackListActions.deleteLayerSocket.receive>['payload'];
 function createEventChannel(socket: Socket) {
   return eventChannel((emit) => {
     const libraryEvent = (payload: LibraryEventPayload) => {
@@ -54,48 +61,49 @@ function createEventChannel(socket: Socket) {
       }
     };
 
-    const animationEvent = (payload: { type: AnimationEventType }) => {
+    const animationEvent = (payload: AnimationEventPayload) => {
       switch (payload.type) {
         case 'add-layer': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'delete': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'delete-frames': {
-          // emit(receiveFoo(payload));
+          emit(trackListActions.addLayerSocket.receive(payload));
           break;
         }
         case 'delete-layer': {
-          // emit(receiveFoo(payload));
+          emit(trackListActions.deleteLayerSocket.receive(payload));
           break;
         }
-        case 'modify-bone-track-filter': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'modify-fps': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'move-frames': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'put-frames': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'rename': {
-          // emit(receiveFoo(payload));
-          break;
-        }
-        case 'rename-layer': {
-          // emit(receiveFoo(payload));
-          break;
-        }
+        // case 'delete': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+        // case 'delete-frames': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+
+        // case 'modify-bone-track-filter': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+        // case 'modify-fps': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+        // case 'move-frames': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+        // case 'put-frames': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+        // case 'rename': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
+        // case 'rename-layer': {
+        //   // emit(receiveFoo(payload));
+        //   break;
+        // }
       }
     };
 
@@ -136,6 +144,8 @@ function* handleIO(socket: Socket) {
     sendSocketEmit(socket, 'library', lpActions.deleteNodeSocket.send),
     sendSocketEmit(socket, 'library', lpActions.editNodeNameSocket.send),
     sendSocketEmit(socket, 'library', lpActions.moveNodeSocket.send),
+    sendSocketEmit(socket, 'animation', trackListActions.addLayerSocket.send),
+    sendSocketEmit(socket, 'animation', trackListActions.deleteLayerSocket.send),
   ]);
 }
 

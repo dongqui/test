@@ -143,24 +143,28 @@ interface AddLayerSendParams {
     };
   };
 }
+
 interface AddLayerReceiveParams {
-  name: string;
-  tracks: ServerAnimationTrack[];
-  scenesLibraryModelAnimationId: 1;
-  uid: string;
-  id: 238;
-  isIncluded: false;
-  isLocked: false;
-  isDeleted: false;
-  useFilter: false;
+  type: 'add-layer';
+  data: {
+    name: string;
+    tracks: ServerAnimationTrackRequest[];
+    uid: 'lmo02lkdzg6p4q705jwx9e3n5ryj1m8n';
+    isIncluded: false;
+    isLocked: false;
+    isDeleted: false;
+    useFilter: false;
+    animationUid: 'x8md8ygerqn96kw46vzl4p03o1jx25eo';
+  };
 }
+
 export const addLayerSocket = createSocketActions(
   'trackList/ADD_LAYER_REQUEST',
   'trackList/ADD_LAYER_SEND',
   'trackList/ADD_LAYER_RECEIVE',
   'trackList/ADD_LAYER_UPDATE',
   'trackList/ADD_LAYER_FAILURE',
-)<AddLayerRequestParams, AddLayerSendParams, AddLayerReceiveParams, LP.Node[], string>();
+)<undefined, AddLayerSendParams, AddLayerReceiveParams, undefined, Error>();
 
 interface DeleteLayerSendParams {
   type: 'delete-layer';
@@ -173,6 +177,7 @@ interface DeleteLayerReceiveParams {
   type: 'delete-layer';
   data: {
     layerId: string;
+    animationUid: string;
   };
 }
 export const deleteLayerSocket = createSocketActions(
@@ -181,4 +186,4 @@ export const deleteLayerSocket = createSocketActions(
   'trackList/DELETE_LAYER_RECEIVE',
   'trackList/DELETE_LAYER_UPDATE',
   'trackList/DELETE_LAYER_FAILURE',
-)<string, DeleteLayerSendParams, DeleteLayerReceiveParams, LP.Node[], string>();
+)<string, DeleteLayerSendParams, DeleteLayerReceiveParams, undefined, Error>();
