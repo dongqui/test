@@ -22,7 +22,7 @@
     border: 1px $outline-border solid;
   }
 
-  &:focus-within {
+  &:focus-within, &.onDrag {
     border: 1px $primary solid;
   }
 
