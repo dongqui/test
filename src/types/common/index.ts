@@ -125,7 +125,7 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
-export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact';
 export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface PlaskTrack {

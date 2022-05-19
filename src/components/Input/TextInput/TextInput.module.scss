@@ -4,11 +4,11 @@
 .wrapper {
   display: inline-flex;
   align-items: center;
-  padding: 5.5px 0 5.5px 8px;
+  padding: 4.5px 0 4.5px 8px;
   background-color: $contentbg-base;
   border-radius: 6px;
-  border: 1px $outline-border solid;
-  cursor: ew-resize;
+  user-select: none;
+  border: 1px $contentbg-base solid;
 
   &.fullSize {
     width: 100%;
@@ -18,12 +18,20 @@
     border-color: $negative;
   }
 
+  &:hover {
+    border: 1px $outline-border solid;
+  }
+
   &:focus-within {
-    border-color: $primary;
+    border: 1px $primary solid;
   }
 
   &::placeholder {
     color: $content-inactive;
+  }
+
+  &.nType {
+    cursor: ew-resize;
   }
 }
 
@@ -52,6 +60,10 @@
   &[type=number] {
     -moz-appearance:textfield; /* Firefox */
   }
+
+  &[min], &[max] {
+    width: auto;
+  }
 }
 
 .prefix-wrapper {
@@ -60,6 +72,12 @@
   &:not(.isStringType) {
     width: 16px;
     height: 16px;
+    span {
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
   }
 
   color: $content-inactive;
