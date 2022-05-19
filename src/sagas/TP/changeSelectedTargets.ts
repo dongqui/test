@@ -43,13 +43,15 @@ function* filterPlaskTracks(layer: PlaskLayer) {
 
   selectedTargets.forEach((plaskTransformNode) => {
     const ids = plaskTransformNode.jointIds;
-    const selectedTrackIndex = layer.tracks.findIndex((track) => ids.includes(track.targetId) && track.layerId === layer.id);
-    if (selectedTrackIndex === -1) {
-      return;
-    }
-    for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {
-      const propertyTrack = layer.tracks[propertyTrackIndex];
-      if (propertyTrack && propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);
+    for (const id of ids) {
+      const selectedTrackIndex = layer.tracks.findIndex((track) => id === track.targetId && track.layerId === layer.id);
+      if (selectedTrackIndex === -1) {
+        continue;
+      }
+      for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {
+        const propertyTrack = layer.tracks[propertyTrackIndex];
+        if (propertyTrack && propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);
+      }
     }
   });
 

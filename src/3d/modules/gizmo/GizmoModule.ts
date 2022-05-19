@@ -17,6 +17,7 @@ import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
+import { readMetadata } from 'utils/RP/metadata';
 
 type GizmoDragObserver = Nullable<
   Observer<{
@@ -280,14 +281,14 @@ export class GizmoModule extends Module {
         // controller
         target.renderOutline = true;
         target.outlineColor = Color3.White();
-        target.outlineWidth = 0.1;
+        target.outlineWidth = readMetadata('outlineSize', target) || 0.1;
       } else {
         // joint(transformNode)
         const joint = target.getScene().getMeshById(target.id.replace('transformNode', 'joint'));
         if (joint) {
           joint.renderOutline = true;
           joint.outlineColor = Color3.White();
-          joint.outlineWidth = 0.03; // set outline width according to joint's diameter
+          joint.outlineWidth = readMetadata('outlineSize', target) || 0.03; // set outline width according to joint's diameter
         }
       }
     });

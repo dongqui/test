@@ -154,6 +154,9 @@ const IKControllerSection: FunctionComponent<Props> = ({
         const animationIngredient = plaskEngine.ikModule.getIKKeyframeData();
         if (animationIngredient) {
           dispatch(editAnimationIngredient(animationIngredient));
+          // Set FK to IK to reflect the current animation that has been updated
+          plaskEngine.ikModule.setFKtoIK();
+
           // Refresh tracks by forcing the selection update.
           // Could be better using ADD_KEYFRAME
           dispatch(changeSelectedTargets());

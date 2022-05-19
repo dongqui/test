@@ -24,9 +24,10 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap } from 'types/common';
 import { RootState } from 'reducers';
+import { addMetadata } from 'utils/RP/metadata';
 
 type BoneIKParams = {
-  bone: string;
+  bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
   controllerSize: number;
   poleAngle: number;
   bendAxis: Vector3;
@@ -179,7 +180,7 @@ export class IKModule extends Module {
       {
         diameter: params.controllerSize,
         // diameter: params.bone.includes('Hand') ? params.controllerSize * 1.5 : params.controllerSize,
-        thickness: 0.025,
+        thickness: 0.1 * params.controllerSize,
         tessellation: 32,
       },
       scene,
@@ -195,6 +196,9 @@ export class IKModule extends Module {
     (ikControllerHandle.material as StandardMaterial).emissiveColor = Color3.Teal();
     (ikControllerHandle.material as StandardMaterial).specularColor = Color3.Black();
 
+    // Selection outline size
+    addMetadata('outlineSize', 0.03, ikControllerHandle);
+
     bone.getPositionToRef(Space.WORLD, transformNode, ikControllerHandle.position);
     ikControllerTarget.parent = ikControllerHandle;
 
@@ -203,6 +207,7 @@ export class IKModule extends Module {
     const tn2Ik = tn1Ik?.parent;
 
     ikControllerHandle.metadata = {
+      ...ikControllerHandle.metadata,
       transformNode: transformNode,
       transformNode1: transformNode.parent!,
       transformNode2: transformNode.parent!.parent!,
@@ -346,6 +351,49 @@ export class IKModule extends Module {
     }
   }
 
+  private _guessLimbUpBend(endTransformNode: TransformNode, boneType: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand') {
+    let defaultUpVector;
+    let defaultBendAxis;
+    switch (boneType) {
+      case 'rightFoot':
+      case 'leftFoot':
+        defaultUpVector = new Vector3(0, 0, 1);
+        defaultBendAxis = new Vector3(0, 0, 1);
+        break;
+      case 'rightHand':
+        defaultUpVector = new Vector3(0, 1, 0);
+        defaultBendAxis = new Vector3(1, 0, 0);
+        break;
+      case 'leftHand':
+        defaultUpVector = new Vector3(0, -1, 0);
+        defaultBendAxis = new Vector3(1, 0, 0);
+        break;
+    }
+    const result = {
+      upVector: defaultUpVector,
+      bendAxis: defaultBendAxis,
+    };
+
+    try {
+      const node2 = endTransformNode;
+      const node1 = endTransformNode.parent as TransformNode;
+      const node0 = node1.parent as TransformNode;
+      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition());
+      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition());
+      const right = Vector3.Cross(b, a);
+      if (right.length() < 1e-5) {
+        // both sections are aligned, cannot guess an up vector
+        return result;
+      }
+      // Bones are slightly bent, we can cross again to find the upvector and bend axis
+      result.upVector.copyFrom(right.cross(a).normalize());
+      // result.bendAxis.copyFrom(right.normalize());
+      return result;
+    } catch {
+      return result;
+    }
+  }
+
   private _initializeControllers(assetId: string) {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
     const ikControllersGhosts = this._ghost.ikControllers; // to store IKBoneControllers
@@ -382,8 +430,8 @@ export class IKModule extends Module {
     });
     this._ghost.skeleton = clone.skeletons[0];
 
-    this.plaskEngine.assetModule.setVisibility(0.25);
-    this.setVisibility(1);
+    this.plaskEngine.assetModule.setVisibility(1);
+    this.setVisibility(0.25);
 
     // TODO : retrieve skeleton and body
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
@@ -391,10 +439,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { bone: 'rightFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'leftFoot', controllerSize: 0.2, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'rightHand', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0) },
-      { bone: 'leftHand', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0) },
+      { bone: 'rightFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
+      { bone: 'leftFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
+      { bone: 'rightHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0) },
+      { bone: 'leftHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0) },
     ] as BoneIKParams[];
 
     //let activeIkControllers: BoneIKController[] = this._activeIkControllers;
@@ -425,6 +473,10 @@ export class IKModule extends Module {
         console.warn(`Cannot insert IK controller on bone ${elem.bone} : associated transformNode not found`);
         return;
       }
+
+      const { upVector, bendAxis } = this._guessLimbUpBend(transformNode, elem.bone);
+      elem.upVector = upVector;
+      elem.bendAxis = bendAxis;
 
       const { ikControllerTarget, ikControllerHandle } = this._createIKControllerMeshes(elem, bone, transformNode, assetId);
       this._ikControllerMeshes.push(ikControllerHandle);
