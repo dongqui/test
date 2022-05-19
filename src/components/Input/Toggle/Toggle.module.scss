@@ -1,0 +1,9 @@
+@import "styles/libraries/colors";
+
+.switch {
+  &.disabled {
+    div:first-child {
+      background-color: $contentbg-base !important;
+    }
+  }
+}
