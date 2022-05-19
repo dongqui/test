@@ -108,16 +108,14 @@ export function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActio
   }
 
   if (targetNode.type === 'MOTION') {
-    const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode.id === animationIngredient.id);
-    if (!animationIngredient) {
-      // TODO: error
-      return;
+    const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode?.animation?.uid === animationIngredient.id);
+    if (animationIngredient) {
+      yield put(
+        animationDataActions.editAnimationIngredient({
+          animationIngredient: Object.assign(animationIngredient, { name: data.name }),
+        }),
+      );
     }
-    yield put(
-      animationDataActions.editAnimationIngredient({
-        animationIngredient: Object.assign(animationIngredient, { name: data.name }),
-      }),
-    );
   }
   const nextNodes = produce(lpNode.nodes, (draft) => {
     const _targetNode = _.find(draft, { id: targetNode.id });
