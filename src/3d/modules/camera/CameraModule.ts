@@ -36,6 +36,7 @@ export class CameraModule extends Module {
 
     if (scene && camera && camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
       camera.mode = Camera.PERSPECTIVE_CAMERA;
+      camera.onViewMatrixChangedObservable.clear();
 
       if (this._prevPositions && this._prevTargets && this._prevPositions[this.plaskEngine.canvas.id] && this._prevTargets[this.plaskEngine.canvas.id]) {
         const activeCamera = camera as ArcRotateCamera;
@@ -76,6 +77,10 @@ export class CameraModule extends Module {
     camera.orthoLeft = -2 * (canvas.width / canvas.height);
     camera.orthoRight = 2 * (canvas.width / canvas.height);
 
+    camera.onViewMatrixChangedObservable.add(() => {
+      const radius = Math.abs(camera.orthoRight ?? 2 * (canvas.width / canvas.height)) + Math.abs(camera.orthoTop ?? 2);
+      this._setOrthoPosition(view, camera, target, radius);
+    });
     const grounds = scene.getMeshesByTags('ground');
     grounds.forEach((ground) => {
       if (ground.id.split('//')[1] === view) {
@@ -89,8 +94,9 @@ export class CameraModule extends Module {
       this._prevPositions[canvas.id] = camera.position.clone();
       this._prevTargets[canvas.id] = camera.target.clone();
     }
-    const { position, target } = camera;
-    this._setOrthoPosition(view, camera, position, target);
+    const { target } = camera;
+    const radius = 2 * (canvas.width / canvas.height) + 2;
+    this._setOrthoPosition(view, camera, target, radius);
   }
 
   /**
@@ -114,12 +120,13 @@ export class CameraModule extends Module {
       camera.orthoLeft = -2 * (canvas.width / canvas.height);
       camera.orthoRight = 2 * (canvas.width / canvas.height);
 
+      const radius = 2 * (canvas.width / canvas.height) + 2;
       const grounds = scene.getMeshesByTags('ground');
       const visibleGround = grounds.find((ground) => ground.isVisible);
       if (visibleGround) {
         const currentView = visibleGround.id.split('//')[1] as PlaskView;
 
-        this._setOrthoPosition(currentView, camera, defaultPosition, defaultTarget);
+        this._setOrthoPosition(currentView, camera, defaultTarget, radius);
         camera.setTarget(defaultTarget);
       }
     } else if (camera.mode === Camera.PERSPECTIVE_CAMERA) {
@@ -128,33 +135,25 @@ export class CameraModule extends Module {
     }
   }
 
-  private _setOrthoPosition(view: PlaskView, camera: ArcRotateCamera, position: Vector3, target: Vector3, defaultRadius = 10) {
-    let distance;
-
+  private _setOrthoPosition(view: PlaskView, camera: ArcRotateCamera, target: Vector3, distance: number) {
     switch (view) {
       case 'top':
-        distance = Vector3.Distance(new Vector3(0, position.y, 0), new Vector3(0, target.y, 0));
-        camera.setPosition(new Vector3(target.x, distance + defaultRadius, target.z));
+        camera.setPosition(new Vector3(target.x, distance, target.z));
         break;
       case 'bottom':
-        distance = Vector3.Distance(new Vector3(0, position.y, 0), new Vector3(0, target.y, 0));
-        camera.setPosition(new Vector3(target.x, -(distance + defaultRadius), target.z));
+        camera.setPosition(new Vector3(target.x, -distance, target.z));
         break;
       case 'left':
-        distance = Vector3.Distance(new Vector3(position.x, 0, 0), new Vector3(target.x, 0, 0));
-        camera.setPosition(new Vector3(-(distance + defaultRadius), target.y, target.z));
+        camera.setPosition(new Vector3(-distance, target.y, target.z));
         break;
       case 'right':
-        distance = Vector3.Distance(new Vector3(position.x, 0, 0), new Vector3(target.x, 0, 0));
-        camera.setPosition(new Vector3(distance + defaultRadius, target.y, target.z));
+        camera.setPosition(new Vector3(distance, target.y, target.z));
         break;
       case 'front':
-        distance = Vector3.Distance(new Vector3(0, 0, position.z), new Vector3(0, 0, target.z));
-        camera.setPosition(new Vector3(target.x, target.y, distance + defaultRadius));
+        camera.setPosition(new Vector3(target.x, target.y, distance));
         break;
       case 'back':
-        distance = Vector3.Distance(new Vector3(0, 0, position.z), new Vector3(0, 0, target.z));
-        camera.setPosition(new Vector3(target.x, target.y, -(distance + defaultRadius)));
+        camera.setPosition(new Vector3(target.x, target.y, -distance));
         break;
     }
   }
