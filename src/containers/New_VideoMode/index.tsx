@@ -12,7 +12,7 @@ const VideoMode = () => {
   const boxProps = useMemo(
     () => ({
       US: {
-        height: windowHeight - 180,
+        height: windowHeight - 180 - 36,
       } as BoxProps,
       LS: {
         height: 180,
@@ -24,7 +24,7 @@ const VideoMode = () => {
         width: 240,
       } as BoxProps,
       RP: {
-        height: windowHeight - 180,
+        height: windowHeight - 180 - 36,
       } as BoxProps,
       CP: {
         width: 240,
