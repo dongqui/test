@@ -1,4 +1,4 @@
-import { memo, MouseEvent, useState } from 'react';
+import { memo, MouseEvent, useRef, useState } from 'react';
 
 import classNames from 'classnames/bind';
 import styles from './SwitchButton.module.scss';
@@ -25,11 +25,12 @@ const defaultProps: Partial<Props> = {
 const SwitchButton = (props: Props) => {
   const { defaultIndex, disabled, fullSize, options, type } = props;
   // set to default index only if that index exist
-  const [selected, setSelected] = useState(options.length > defaultIndex! ? defaultIndex : 0);
+  const [selected, setSelected] = useState((options.length > defaultIndex! ? defaultIndex : 0) ?? 0);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const classes = cx('buttons-wrapper', { fullSize, disabled });
   const buttonClickHandler = (e: MouseEvent<HTMLDivElement>, index: number) => {
-    if (selected !== index) {
+    if (selected !== index && !disabled) {
       setSelected(index);
       if (options[index]) {
         options[index].onClick(e, index, options[index].content);
@@ -38,10 +39,12 @@ const SwitchButton = (props: Props) => {
   };
 
   return (
-    <div className={classes}>
+    <div className={classes} ref={wrapperRef}>
+      <div className={cx('button-select-effect', type)} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selected}%` }} />
       {options.map((value, index) => (
         <div className={cx('button', type, { fullSize, disabled, selected: index === selected })} key={`${value}.${index}`} onClick={(e) => buttonClickHandler(e, index)}>
-          {value.content}
+          <span className={cx('button-text')}>{value.content}</span>
+          <span className={cx('padding')}>{value.content}</span>
         </div>
       ))}
     </div>
