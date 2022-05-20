@@ -23,7 +23,7 @@
   height: 100%;
   top: 0;
   border-radius: 6px;
-  transition: left ease 0.3s;
+  transition: left ease 0.3s, width ease 0.3s;
 
   &.default {
     background-color: $outline-border;
@@ -48,6 +48,13 @@
 
   > span.button-text {
     position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  > span.padding {
+    opacity: 0;
   }
 
   &.fullSize {
