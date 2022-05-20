@@ -1,0 +1,52 @@
+@import "styles/libraries/typography";
+@import "styles/libraries/colors";
+
+.buttons-wrapper {
+  display: inline-flex;
+  font: $body-default;
+  color: $content-medium;
+  background-color: $contentbg-base;
+  user-select: none;
+  justify-content: space-around;
+
+  border-radius: 6px;
+
+  &.fullSize {
+    width: 100%;
+  }
+}
+
+.button {
+  display: flex;
+
+  padding: 4.5px 8px;
+  cursor: pointer;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  &.fullSize {
+    width: 100%;
+  }
+
+  &:hover {
+    color: $content-active;
+  }
+
+  &.selected {
+    color: $content-active;
+
+    &.default {
+      background-color: $outline-border;
+    }
+
+    &.primary {
+      background-color: $primary;
+    }
+  }
+
+  &.disabled {
+    cursor: default;
+    color: $content-inactive;
+  }
+}
