@@ -13,7 +13,7 @@ interface Props {
   onDrop: (files: File[]) => void;
 }
 
-const BaseDropzone = ({ children, className, active, disabled, onDrop }: Props) => {
+const BaseDropzone = ({ disabled = true, children, className, active, onDrop }: Props) => {
   const handleDrop = useCallback(
     (files: File[]) => {
       onDrop(files);
