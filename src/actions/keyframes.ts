@@ -1,4 +1,4 @@
-import { PlaskTrack } from 'types/common';
+import { PlaskTrack, VectorTransformKey, QuaternionTransformKey } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 import { createSocketActions } from './helper';
@@ -100,7 +100,31 @@ export const deleteKeyframesSocket = createSocketActions(
   'keyframes/DELETE_KEYFRAMES_RECEIVE',
   'keyframes/DELETE_KEYFRAMES_UPDATE',
   'keyframes/DELETE_KEYFRAMES_FAILURE',
-)<deleteKeyframesRequestParams, deleteKeyframesSendParams, deleteKeyframesReceiveParams, LP.Node[], string>();
+)<deleteKeyframesRequestParams, deleteKeyframesSendParams, deleteKeyframesReceiveParams, undefined, Error>();
+
+interface editKeyframesRequestParams {}
+interface editKeyframesSendParams {
+  type: 'put-frames';
+  data: {
+    layerId: string;
+    tracks: {
+      trackId: string;
+      frame: {
+        frameIndex: number;
+        property: string;
+        transformKey: VectorTransformKey | QuaternionTransformKey;
+      };
+    }[];
+  };
+}
+interface editKeyframesReceiveParams {}
+export const editKeyframesSocket = createSocketActions(
+  'keyframes/EDIT_KEYFRAMES_REQUEST',
+  'keyframes/EDIT_KEYFRAMES_SEND',
+  'keyframes/EDIT_KEYFRAMES_RECEIVE',
+  'keyframes/EDIT_KEYFRAMES_UPDATE',
+  'keyframes/EDIT_KEYFRAMES_FAILURE',
+)<editKeyframesRequestParams, editKeyframesSendParams, editKeyframesReceiveParams, undefined, Error>();
 
 // 키프레임 드래드 드랍
 export interface DragDropKeyframes {

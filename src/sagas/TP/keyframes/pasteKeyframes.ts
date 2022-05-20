@@ -3,7 +3,7 @@ import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { isUndefined } from 'lodash';
 import * as animationDataActions from 'actions/animationDataAction';
-import * as keyframesAction from 'actions/keyframes';
+import * as keyframesActions from 'actions/keyframes';
 import { PlaskTrack } from 'types/common';
 import { UpdatedPropertyKeyframes, ClusteredKeyframe } from 'types/TP/keyframe';
 import { RootState } from 'reducers';
@@ -47,7 +47,7 @@ function* worker() {
     const smallestFrame = findSmallestTime(copiedPropertyKeyframes);
     const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, copiedPropertyKeyframes, scrubberTime - smallestFrame);
 
-    yield put(keyframesAction.paste({ currentTimeIndex: scrubberTime }));
+    yield put(keyframesActions.paste({ currentTimeIndex: scrubberTime }));
 
     const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
     const animationIngredients = getAnimationIngredients(yield select());
@@ -77,12 +77,42 @@ function* worker() {
         }
       });
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+
+      const targetTrackIds = targetTransformKeys.map((key) => key.trackId);
+      const updatedLayer = newAnimationIngredient.layers.find((layer) => layer.id === selectedLayer);
+      const tracks = updatedLayer?.tracks.filter((track) => targetTrackIds.includes(track.id));
+      if (!tracks) {
+        return;
+      }
+
+      yield put(
+        keyframesActions.editKeyframesSocket.send({
+          type: 'put-frames',
+          data: {
+            layerId: selectedLayer,
+            tracks: tracks?.map((track) => {
+              const transformKey = track.transformKeys.find((key) => key.frame === scrubberTime)!;
+              return {
+                trackId: track.id,
+                frame: {
+                  frameIndex: transformKey?.frame,
+                  property: track.property,
+                  transformKey:
+                    track.property === 'rotationQuaternion'
+                      ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                      : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+                },
+              };
+            }),
+          },
+        }),
+      );
     }
   }
 }
 
 function* watchPasteKeyframes() {
-  yield takeLatest(keyframesAction.ENTER_PASTE_KEY, worker);
+  yield takeLatest(keyframesActions.ENTER_PASTE_KEY, worker);
 }
 
 export default watchPasteKeyframes;
