@@ -56,7 +56,7 @@ const SwitchButton = (props: Props) => {
         setEffectPosition((wrapperRef.current.getBoundingClientRect().width / options.length) * selected);
       }
     }
-  }, [wrapperRef, selected, options]);
+  }, [wrapperRef, selected, options, fullSize]);
 
   const classes = cx('buttons-wrapper', { fullSize, disabled });
   const buttonClickHandler = (e: MouseEvent<HTMLDivElement>, index: number) => {
