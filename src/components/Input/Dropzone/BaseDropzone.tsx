@@ -9,11 +9,12 @@ interface Props {
   children?: ReactNode;
   className?: string;
   disabled?: boolean;
+  clickable?: boolean;
   active?: string;
   onDrop: (files: File[]) => void;
 }
 
-const BaseDropzone = ({ disabled = true, children, className, active, onDrop }: Props) => {
+const BaseDropzone = ({ clickable = false, disabled, children, className, active, onDrop }: Props) => {
   const handleDrop = useCallback(
     (files: File[]) => {
       onDrop(files);
@@ -21,7 +22,7 @@ const BaseDropzone = ({ disabled = true, children, className, active, onDrop }: 
     [onDrop],
   );
 
-  const { getRootProps, isDragActive } = useDropzone({ onDrop: handleDrop, disabled });
+  const { getRootProps, isDragActive } = useDropzone({ onDrop: handleDrop, noClick: !clickable, disabled });
 
   const dropzoneProps = useCallback(() => {
     const baseStyles = cx('wrapper', className, {
