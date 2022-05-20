@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, MouseEvent } from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import _SwitchButton from './';
