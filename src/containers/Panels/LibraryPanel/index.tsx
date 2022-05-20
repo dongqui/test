@@ -73,7 +73,7 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch],
   );
 
-  const { getRootProps } = useDropzone({ onDrop: handleDrop, disabled: true });
+  const { getRootProps } = useDropzone({ onDrop: handleDrop, noClick: true });
 
   const [isSceneReady, setIsSceneReady] = useState(false);
 

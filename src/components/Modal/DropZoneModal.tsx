@@ -56,7 +56,7 @@ const DropZoneModal: FunctionComponent<Props> = (props) => {
       onDrop(files);
       onClose();
     },
-    disabled: true,
+    noClick: true,
   });
 
   const fileExplorerRef = useRef<HTMLInputElement>(null);
