@@ -26,6 +26,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   return (
     <Fragment>
       <BoneTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
+
       <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
       <FilterSection
         isAllActive={isAllActive}

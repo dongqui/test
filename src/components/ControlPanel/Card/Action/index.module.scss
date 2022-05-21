@@ -1,0 +1,52 @@
+@import "styles/libraries/_typography";
+
+.wrapper {
+  padding: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  &.able {
+    & > .toggle {
+      color: #fff;
+    }
+  }
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  color: #4f4f4f;
+  font: $iti-title;
+  line-height: 15px;
+}
+
+.arrowdown-icon {
+  margin-right: 13px;
+  cursor: pointer;
+
+  & > svg {
+    transform: rotate(-90deg);
+    transition: 0.2s ease-in-out;
+    color: #fff !important;
+  }
+
+  &.active {
+    & > svg {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+.toggle-switch {
+  &.inactive {
+    cursor: not-allowed !important;
+
+    & > div {
+      cursor: not-allowed !important;
+    }
+  }
+}

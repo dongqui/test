@@ -11,6 +11,7 @@ import CameraReset from './svg/CameraReset.svg';
 // import Folder from './svg/Folder.svg';
 // import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
+import More from './svg/More.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import ChevronRight from './svg/ChevronRight.svg';
 import ChevronUp from './svg/ChevronUp.svg';
@@ -65,6 +66,7 @@ import ModalClose from './svg/ModalClose.svg';
 
 type Icon =
   | 'ModalClose'
+  | 'More'
   | 'Close'
   | 'Search'
   | 'EyeClose'
@@ -133,6 +135,7 @@ const images: Images = {
   Close,
   Search,
   EyeClose,
+  More,
   EyeOpen,
   EyeOpenWhite,
   LockClose,
