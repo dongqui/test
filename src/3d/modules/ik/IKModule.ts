@@ -18,6 +18,9 @@ import {
   ExecuteCodeAction,
   ActionManager,
   ActionEvent,
+  AssetsManager,
+  AnimationGroup,
+  Curve3,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -94,6 +97,13 @@ export class IKModule extends Module {
   public tick(elapsed: number) {
     for (const ikController of this._ikControllers) {
       ikController.update();
+    }
+
+    // Foot Locking Component
+    if (this.plaskEngine.scene.animationGroups[0]) {
+      if (this.plaskEngine.scene.animationGroups[0].isPlaying){
+        this.footLockingData(Math.floor(this.plaskEngine.scene.animationGroups[0].animatables[0].masterFrame));
+      }
     }
   }
 
@@ -629,10 +639,78 @@ export class IKModule extends Module {
     slidePanel.addControl(buttonKeyframe);
   }
 
+  // Foot Locking Component
+  //  Trick to get the Foot's joints positions along the animation flow
+  // and generate lines to visualize it motions
+  // There are a sequence of actions that need be manually done, which are:
+  //  - import and generate the mocap for the video jh_lebron.mp4
+  //  - drag the mocap on top of character model to apply it
+  //  - change the End size of animation to 261 instead of 100 in bottom left panel
+  //  - play the animation and stop it when reach it finish
+  // Lines wil appears with the flows of the Foot's motions
+
+  public targetAnimation: Nullable<AnimationGroup> = null;
+  public contactData: any;
+  public leftFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
+  public captureFlag: boolean = false;
+  public contactToggle: number = -1;
+  public lastIndex: number = 0;
+
+  public footLockingData(index: number) {
+    if (this.contactData) {
+      if ( !this.leftFootPositionsContacts[index] ) {
+        // Grabbing leftFoot data (contact and position)
+        this.leftFootPositionsContacts.push({
+          contact: this.contactData.data[0].trackData[9].transformKeys[index].value, 
+          position: this.plaskEngine.scene.getMeshByName('leftFoot_joint')?.position.asArray() as ArrayOfThreeNumbers
+        });
+        //console.log(this.leftFootPositionsContacts[index]);
+
+        // Evaluate if Contact change it value to draw line with different color
+        if ( this.contactToggle != -1 && this.contactToggle != this.contactData.data[0].trackData[9].transformKeys[index].value ) {
+          const leftFootPositions: Vector3[] = [];
+
+          for ( let i:number = this.lastIndex; i < index; i++ ) {
+            leftFootPositions.push( Vector3.FromArray(this.leftFootPositionsContacts[i].position) as Vector3 );
+          }
+
+          this.lastIndex = index; 
+
+          const leftFootCurve = new Curve3(leftFootPositions);
+          const leftFootCurveLine = MeshBuilder.CreateLines('', {points: leftFootCurve.getPoints()}, this.plaskEngine.scene);  
+
+          leftFootCurveLine.color = (this.contactToggle == 0) ? Color3.Red(): Color3.Green();
+        }
+        this.contactToggle = this.contactData.data[0].trackData[9].transformKeys[index].value;
+      }
+      
+      // Stop LeftFoot values capture
+      if ( this.leftFootPositionsContacts.length > 260 && !this.captureFlag) {
+        this.captureFlag = true;
+        //console.log(this.leftFootPositionsContacts);
+        this.plaskEngine.state.animatingControls.currentAnimationGroup?.stop();
+        this.plaskEngine.scene.animationGroups[0].stop();
+
+        // Generate Floor Projection Line
+        const projectionPoints: Vector3[] = []; 
+        this.leftFootPositionsContacts.forEach((value) => {
+          const pointProjected = new Vector3(value.position[0], 0, value.position[2]);
+          projectionPoints.push( pointProjected);
+        })
+        const projectionCurve = new Curve3(projectionPoints);
+        const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, this.plaskEngine.scene);
+        projectionCurveLine.color = Color3.Blue();
+      }
+    }
+  }
+
   private _initializeControllers(assetId: string) {
     const ikControllers = this._ikControllers; // to store IKBoneControllers
     const ikControllersGhosts = this._ghost.ikControllers; // to store IKBoneControllers
     const scene = this.plaskEngine.scene;
+
+    // FootLocking component (loading Animation)
+    this.targetAnimation = this.plaskEngine.scene.animationGroups[0];
 
     // Container created to generate the Clone of Character used in IK posing
     const asset = this.plaskEngine.assetModule.assetList.find((asset) => asset.id === assetId);
@@ -675,6 +753,21 @@ export class IKModule extends Module {
 
     this._createGUIElement();
 
+    const leftFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
+    const leftToeBasePositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
+    const rightFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
+    const rightToeBasePositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
+
+    // Foot Locking component (Loading Json)
+    const assetManager = new AssetsManager(scene);
+    assetManager.useDefaultLoadingScreen = false;
+    const jsonLoadTask = assetManager.addTextFileTask("FLJson", "./contact_sample.json");
+    jsonLoadTask.onSuccess = (task) => {
+      this.contactData = JSON.parse(task.text);
+      //console.log(contactData);
+    }
+    assetManager.load();
+
     // TODO : retrieve skeleton and body
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
@@ -691,7 +784,6 @@ export class IKModule extends Module {
 
     // Creating IK controls
     bonesSelection.forEach((elem) => {
-      const transformNodesChain = [];
       // Finding Bone
       const retargetMap = this.getRetargetMap(assetId);
       if (!retargetMap) {
