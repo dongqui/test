@@ -25,6 +25,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap } from 'types/common';
 import { RootState } from 'reducers';
 import { addMetadata } from 'utils/RP/metadata';
+import { copyTransformFrom } from 'utils/RP/copyPose';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -42,6 +43,7 @@ export class IKModule extends Module {
   private _activeTransformNodes: TransformNode[] = [];
   private _ikControllers: BoneIKController[] = [];
   private _ikControllerMeshes: Mesh[] = [];
+  private _fkControlledJoints: { ikNode: TransformNode; fkNode: TransformNode }[] = [];
   private _selectedIkHandle?: Mesh;
   private _meshes: Mesh[] = [];
   private _ghost = {
@@ -74,8 +76,15 @@ export class IKModule extends Module {
   }
 
   public tick(elapsed: number) {
+    // Update all IK controllers
     for (const ikController of this._ikControllers) {
       ikController.update();
+    }
+
+    // Copy FK position for IK ghost, only for joints
+    // that are not forced by IK
+    for (const { ikNode, fkNode } of this._fkControlledJoints) {
+      copyTransformFrom(ikNode, fkNode);
     }
   }
 
@@ -103,6 +112,7 @@ export class IKModule extends Module {
       controller.targetMesh.dispose();
     }
     this._ikControllers.length = 0;
+    this._fkControlledJoints.length = 0;
 
     for (const mesh of this._meshes) {
       mesh.dispose();
@@ -172,20 +182,19 @@ export class IKModule extends Module {
 
   private _createIKControllerMeshes(params: BoneIKParams, bone: Bone, transformNode: TransformNode, assetId: string) {
     // Creating IK Target Meshes
-    // TODO : make that generic (for now really bone dependent)
     const scene = this.plaskEngine.scene;
     const ikControllerTarget = new TransformNode('ik_ctrl_target_' + params.bone);
     const ikControllerHandle = MeshBuilder.CreateTorus(
       'ik_ctrl_handle_' + params.bone + '//' + assetId,
       {
         diameter: params.controllerSize,
-        // diameter: params.bone.includes('Hand') ? params.controllerSize * 1.5 : params.controllerSize,
         thickness: 0.1 * params.controllerSize,
         tessellation: 32,
       },
       scene,
     );
     // ikControllerHandle.rotationQuaternion = Quaternion.FromLookDirectionLH(params.upVector.cross(params.upVector), params.upVector);
+    // TODO : make that generic (for now really bone dependent) - use retargetmap
     ikControllerHandle.rotationQuaternion = params.bone.includes('Hand')
       ? Quaternion.FromLookDirectionLH(Vector3.Up(), Vector3.Right())
       : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
@@ -235,7 +244,6 @@ export class IKModule extends Module {
         pickedIkHandle = ikControllerHandle;
         pickedIkHandle.renderOutline = true;
         pickedIkHandle.outlineColor = Color3.White();
-        pickedIkHandle.outlineWidth = 0.003;
 
         this._activeTransformNodes.push(pickedIkHandle.metadata.transformNode);
         this._activeTransformNodes.push(pickedIkHandle.metadata.transformNode_1);
@@ -282,6 +290,9 @@ export class IKModule extends Module {
       this._selectedIkHandle.metadata.blend = value;
 
       let newColor = new Color3();
+      // TODO : this is wrong - do not create a new material
+      // Should start with 4 mats (1 for each IK handle)
+      // And just alter the emissivecolor
       let newMat = new StandardMaterial('', scene);
       // Blend between TEAL and WHITE colors
       Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
@@ -387,7 +398,6 @@ export class IKModule extends Module {
       }
       // Bones are slightly bent, we can cross again to find the upvector and bend axis
       result.upVector.copyFrom(right.cross(a).normalize());
-      // result.bendAxis.copyFrom(right.normalize());
       return result;
     } catch {
       return result;
@@ -448,6 +458,7 @@ export class IKModule extends Module {
     //let activeIkControllers: BoneIKController[] = this._activeIkControllers;
 
     // Creating IK controls
+    const ikDrivenTransformNodes: TransformNode[] = [];
     bonesSelection.forEach((elem) => {
       const transformNodesChain = [];
       // Finding Bone
@@ -496,13 +507,6 @@ export class IKModule extends Module {
       ikControllerHandle.metadata.ikController = ikCtrl;
 
       const controllerOrig = new TransformNode('ik_ctrl_origin_' + elem.bone, scene);
-      // controllerOrig.position.copyFrom(ikControllerTarget.position);
-      // if (ikControllerTarget.rotationQuaternion) {
-      //   controllerOrig.rotationQuaternion = ikControllerTarget.rotationQuaternion.clone();
-      // } else {
-      //   controllerOrig.rotation.copyFrom(ikControllerTarget.rotation);
-      // }
-      // controllerOrig.scaling.copyFrom(ikControllerTarget.scaling);
       bone.getPositionToRef(Space.WORLD, transformNode, controllerOrig.position);
 
       const ikCtrlOrig = new BoneIKController(body, (bone as any)._parent as Bone, {
@@ -514,13 +518,26 @@ export class IKModule extends Module {
       (ikCtrlOrig as any)._adjustRoll = 0;
       ikCtrlOrig.setIKtoRest();
       ikCtrlOrig.update();
+      // TODO add defensive check for node hierarchy (parent, and parent.parent)
       controllerOrig.metadata = {
         chain: [transformNode, transformNode.parent!, transformNode.parent!.parent!],
       };
-      //ikControllersGhosts.push(ikCtrlOrig);
+      ikDrivenTransformNodes.push(transformNode, transformNode.parent as TransformNode, transformNode.parent!.parent as TransformNode);
 
       ikControllerHandle.metadata.controllerOrig = controllerOrig;
       ikControllerHandle.metadata.ikControllerOrig = ikCtrlOrig;
+    });
+    clone.rootNodes.forEach((node: TransformNode) => {
+      const allNodes = [node].concat(node.getDescendants());
+      for (const node of allNodes) {
+        const fkNode = scene.getNodeByName(node.name.substring(6)) as TransformNode;
+        if (!fkNode) {
+          throw new Error('Cloning error.');
+        }
+        if (!ikDrivenTransformNodes.includes(fkNode)) {
+          this._fkControlledJoints.push({ ikNode: node, fkNode });
+        }
+      }
     });
   }
 }
