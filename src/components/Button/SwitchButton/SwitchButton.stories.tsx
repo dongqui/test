@@ -25,19 +25,19 @@ SwitchButton.args = {
   options: [
     {
       content: 'option1',
-      onClick: (e?: MouseEvent, index?: number, content?: string) => {
+      onClick: (e?: MouseEvent<HTMLDivElement>, index?: number, content?: string) => {
         console.log({ index, content });
       },
     },
     {
       content: 'option2',
-      onClick: (e?: MouseEvent, index?: number, content?: string) => {
+      onClick: (e?: MouseEvent<HTMLDivElement>, index?: number, content?: string) => {
         console.log({ index, content });
       },
     },
     {
       content: 'option3',
-      onClick: (e?: MouseEvent, index?: number, content?: string) => {
+      onClick: (e?: MouseEvent<HTMLDivElement>, index?: number, content?: string) => {
         console.log({ index, content });
       },
     },

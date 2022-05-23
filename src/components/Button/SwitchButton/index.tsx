@@ -5,27 +5,17 @@ import styles from './SwitchButton.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface BaseProps {
-  options: { content: string; onClick: (e?: MouseEvent, index?: number, content?: string) => void }[];
+type Props = {
+  options: { content: string; onClick: (e?: MouseEvent<HTMLDivElement>, index?: number, content?: string) => void }[];
   type?: 'default' | 'primary';
   disabled?: boolean;
   fullSize?: boolean;
   defaultIndex?: number;
-}
-
-type Props = BaseProps;
-
-const defaultProps: Partial<Props> = {
-  type: 'default',
-  disabled: false,
-  fullSize: false,
-  defaultIndex: 0,
 };
 
-const SwitchButton = (props: Props) => {
-  const { defaultIndex, disabled, fullSize, options, type } = props;
+const SwitchButton = ({ defaultIndex = 0, disabled = false, fullSize = false, options, type = 'default' }: Props) => {
   // set to default index only if that index exists on options
-  const [selected, setSelected] = useState((options.length > defaultIndex! ? defaultIndex : 0) ?? 0);
+  const [selected, setSelected] = useState(options.length > defaultIndex ? defaultIndex : 0);
   const [effectWidth, setEffectWidth] = useState(0);
   const [effectPosition, setEffectPosition] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -83,7 +73,5 @@ const SwitchButton = (props: Props) => {
     </div>
   );
 };
-
-SwitchButton.defaultProps = defaultProps;
 
 export default memo(SwitchButton);
