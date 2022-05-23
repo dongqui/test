@@ -2,7 +2,7 @@ import { Module } from '../Module';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, SkeletonViewer } from '@babylonjs/core';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { setBoneVisibility, setGizmoVisibility, setMeshVisibility } from 'actions/screenDataAction';
+import { setBoneVisibility, setGizmoVisibility, setIKControllerVisibility, setMeshVisibility } from 'actions/screenDataAction';
 
 export class VisibilityLayersModule extends Module {
   // TODO : skeleton viewer probably doesn't belong here, we should add a skeletonViewer module
@@ -82,9 +82,12 @@ export class VisibilityLayersModule extends Module {
       }
       this.plaskEngine.dispatch(setMeshVisibility({ screenId: this.plaskEngine.currentScreenId, value: targetVisibility }));
     } else if (type === 'Gizmo') {
-      // TODO : this will go away once we merge modules
       this.plaskEngine.dispatch(setGizmoVisibility({ screenId: this.plaskEngine.currentScreenId, value: !this.visibilityOptions.isGizmoVisible }));
       this.plaskEngine.gizmoModule.updateVisibility();
+    } else if (type === 'IK Controllers') {
+      this.plaskEngine.dispatch(setIKControllerVisibility({ screenId: this.plaskEngine.currentScreenId, value: !this.visibilityOptions.isIKControllerVisible }));
+      // TODO Update visibility
+      // this.plaskEngine.ikModule.updateVisibility();
     }
   }
 }
