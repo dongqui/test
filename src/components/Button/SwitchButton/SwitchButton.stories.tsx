@@ -15,50 +15,6 @@ const Template: ComponentStory<typeof _SwitchButton> = (args) => {
       <div>
         <_SwitchButton {...args} />
       </div>
-      <br />
-      <div>
-        <_SwitchButton
-          {...args}
-          options={[
-            {
-              content: 'longlongoption1',
-              onClick: (e?: MouseEvent, index?: number, content?: string) => {
-                console.log({ index, content });
-              },
-            },
-            {
-              content: 'so2',
-              onClick: (e?: MouseEvent, index?: number, content?: string) => {
-                console.log({ index, content });
-              },
-            },
-            {
-              content: 'option3',
-              onClick: (e?: MouseEvent, index?: number, content?: string) => {
-                console.log({ index, content });
-              },
-            },
-            {
-              content: 'longlongoption1',
-              onClick: (e?: MouseEvent, index?: number, content?: string) => {
-                console.log({ index, content });
-              },
-            },
-            {
-              content: 'ssdf4sda6f54s56df46as54fd654fo2',
-              onClick: (e?: MouseEvent, index?: number, content?: string) => {
-                console.log({ index, content });
-              },
-            },
-            {
-              content: 'option3',
-              onClick: (e?: MouseEvent, index?: number, content?: string) => {
-                console.log({ index, content });
-              },
-            },
-          ]}
-        />
-      </div>
     </Fragment>
   );
 };

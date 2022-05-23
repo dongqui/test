@@ -1,7 +1,7 @@
 @import "styles/libraries/typography";
 @import "styles/libraries/colors";
 
-.buttons-wrapper {
+.btn-group {
   position: relative;
   display: inline-flex;
   font: $body-default;
@@ -13,12 +13,12 @@
   border-radius: 6px;
   height: 24px;
 
-  &.fullSize {
+  &.fullsize {
     width: 100%;
   }
 }
 
-.button-select-effect {
+.btn-select {
   position: absolute;
   height: 100%;
   top: 0;
@@ -35,7 +35,7 @@
 
 }
 
-.button {
+.btn {
   position: relative;
   display: flex;
   height: 100%;
@@ -46,18 +46,18 @@
 
   border-radius: 6px;
 
-  > span.button-text {
+  & > .btn-text {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
   }
 
-  > span.padding {
+  & > .padding {
     opacity: 0;
   }
 
-  &.fullSize {
+  &.fullsize {
     width: 100%;
   }
 

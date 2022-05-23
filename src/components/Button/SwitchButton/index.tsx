@@ -58,7 +58,7 @@ const SwitchButton = (props: Props) => {
     }
   }, [wrapperRef, selected, options, fullSize]);
 
-  const classes = cx('buttons-wrapper', { fullSize, disabled });
+  const classes = cx('btn-group', { fullsize: fullSize, disabled });
   const buttonClickHandler = (e: MouseEvent<HTMLDivElement>, index: number) => {
     // active when press another button and not disabled
     if (selected !== index && !disabled) {
@@ -71,11 +71,11 @@ const SwitchButton = (props: Props) => {
 
   return (
     <div className={classes} ref={wrapperRef}>
-      <div className={cx('button-select-effect', type)} style={{ width: `${effectWidth}px`, left: `${effectPosition}px` }} />
+      <div className={cx('btn-select', type)} style={{ width: `${effectWidth}px`, left: `${effectPosition}px` }} />
       {options.map((value, index) => (
-        <div className={cx('button', type, { fullSize, disabled, selected: index === selected })} key={`${value}.${index}`} onClick={(e) => buttonClickHandler(e, index)}>
+        <div className={cx('btn', type, { fullsize: fullSize, disabled, selected: index === selected })} key={`${value}.${index}`} onClick={(e) => buttonClickHandler(e, index)}>
           {/*for hover text above button-select-effect*/}
-          <span className={cx('button-text')}>{value.content}</span>
+          <span className={cx('btn-text')}>{value.content}</span>
           {/*for keep div size behind the button-select-effect due to overlayed text*/}
           <span className={cx('padding')}>{value.content}</span>
         </div>
