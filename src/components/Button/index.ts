@@ -5,6 +5,7 @@ export { default as IconButton } from './IconButton';
 export { default as ExpandButton } from './ExpandButton';
 export { default as ToggleButton } from './ToggleButton';
 export { default as IconToggleButton } from './IconToggleButton';
+export { default as SwitchButton } from './SwitchButton';
 
 // 현재 사용하고 있지 않음. 추후에 논의후 제거!
 // export { default as SegmentButton } from './SegmentButton/SegmentButton';
