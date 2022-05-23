@@ -52,9 +52,8 @@ Quaternion.prototype.toArray = function (array: number[]) {
  */
 declare module '@babylonjs/core' {
   export interface BoneIKController {
-    _bendMatrix: Matrix;
-    _initialBendInvert0: Matrix;
-    _initialBendInvert1: Matrix;
+    _bendMatrixBone1: Matrix;
+    _bendMatrixBone2: Matrix;
     _bendMatrixDirty: boolean;
     upVector: Nullable<Vector3>;
     setIKtoRest: () => void;
@@ -90,15 +89,14 @@ Bone.prototype['_getNegativeRotationToRef'] = function (rotMatInv: Matrix, tNode
   return true;
 };
 
-BoneIKController.prototype._bendMatrix = Matrix.Identity();
+BoneIKController.prototype._bendMatrixBone1 = Matrix.Identity();
 BoneIKController.prototype._bendMatrixDirty = true;
 BoneIKController.prototype.upVector = null;
 
 BoneIKController.prototype.setIKtoRest = function () {
   this._bendMatrixDirty = true;
-  this._bendMatrix = Matrix.Identity();
-  this._initialBendInvert0 = Matrix.Identity();
-  this._initialBendInvert1 = Matrix.Identity();
+  this._bendMatrixBone1 = Matrix.Identity();
+  this._bendMatrixBone2 = Matrix.Identity();
 };
 
 /**
@@ -177,13 +175,19 @@ BoneIKController.prototype.update = function () {
     Matrix.RotationYawPitchRollToRef(0, 0, this['_adjustRoll'], mat2);
     mat2.multiplyToRef(mat1, mat1);
     Matrix.RotationAxisToRef(this['_bendAxis'], angB, mat2);
+    Matrix.RotationAxisToRef(this['_bendAxis'], angC, mat3);
 
     mat2.multiplyToRef(mat1, mat1);
+    mat3.multiplyToRef(mat1, mat3);
     if (this._bendMatrixDirty) {
-      mat1.invertToRef(this._bendMatrix);
+      mat1.invertToRef(this._bendMatrixBone1);
       const tmpMat = BoneIKController['_tmpMats'][2];
       bone1.getRotationMatrix(Space.WORLD, this.mesh).invertToRef(tmpMat);
-      this._bendMatrix.multiplyToRef(tmpMat, this._bendMatrix);
+      this._bendMatrixBone1.multiplyToRef(tmpMat, this._bendMatrixBone1);
+
+      mat3.invertToRef(this._bendMatrixBone2);
+      this['_bone2'].getRotationMatrix(Space.WORLD, this.mesh).invertToRef(tmpMat);
+      this._bendMatrixBone2.multiplyToRef(tmpMat, this._bendMatrixBone2);
     }
   } else {
     var _tmpVec = BoneIKController['_tmpVecs'][5];
@@ -193,26 +197,10 @@ BoneIKController.prototype.update = function () {
     mat2.multiplyToRef(mat1, mat1);
   }
 
-  target.subtractToRef(bone2Pos, yaxis);
-  yaxis.normalize();
-  Vector3.CrossToRef(yaxis, upAxis, zaxis);
-  zaxis.normalize();
-  Vector3.CrossToRef(yaxis, zaxis, xaxis);
-  xaxis.normalize();
-  Matrix.FromXYZAxesToRef(xaxis, yaxis, zaxis, mat3);
-  Matrix.RotationAxisToRef(this['_bendAxis'], angC, mat2);
-  mat2.multiplyToRef(mat3, mat3);
-
-  if (this._bendMatrixDirty) {
-    mat3.invertToRef(this._initialBendInvert0);
-  }
-
-  this._initialBendInvert0.multiplyToRef(mat3, mat3);
-  this['_bone2'].setRotationMatrix(mat3.getRotationMatrix(), Space.WORLD, this.mesh);
-
   if (this.poleAngle) {
     Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
     mat1.multiplyToRef(mat2, mat1);
+    mat3.multiplyToRef(mat2, mat3);
   }
   if (this['_bone1']) {
     if (this.slerpAmount < 1) {
@@ -225,8 +213,10 @@ BoneIKController.prototype.update = function () {
       this['_bone1'].setRotationQuaternion(this['_bone1Quat'], Space.WORLD, this.mesh);
       this['_slerping'] = true;
     } else {
-      this._bendMatrix.multiplyToRef(mat1, mat1);
+      this._bendMatrixBone1.multiplyToRef(mat1, mat1);
+      this._bendMatrixBone2.multiplyToRef(mat3, mat3);
       this['_bone1'].setRotationMatrix(mat1.getRotationMatrix(), Space.WORLD, this.mesh);
+      this['_bone2'].setRotationMatrix(mat3.getRotationMatrix(), Space.WORLD, this.mesh);
       this['_bone1Mat'].copyFrom(mat1);
       this['_slerping'] = false;
     }
