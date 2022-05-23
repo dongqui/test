@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   color: #fff;
 }
@@ -29,4 +31,21 @@
   top: 0;
   right: 0;
   z-index: 1;
+}
+
+.dropzone {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+}
+
+.dropzone-outer {
+  background-color: $bg-elevated;
+  border: 1px dotted $content-inactive;
+  border-radius: 6px;
+}
+
+.dropzone-active {
+  background-color: darkgray;
+  transition: background-color 0.25s;
 }

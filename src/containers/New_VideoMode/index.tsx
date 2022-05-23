@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import Box, { BoxProps } from 'components/Layout/Box';
+import { BaseDropzone } from 'components/Input/Dropzone';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -12,7 +13,7 @@ const VideoMode = () => {
   const boxProps = useMemo(
     () => ({
       US: {
-        height: windowHeight - 180,
+        height: windowHeight - 180 - 36,
       } as BoxProps,
       LS: {
         height: 180,
@@ -24,7 +25,7 @@ const VideoMode = () => {
         width: 240,
       } as BoxProps,
       RP: {
-        height: windowHeight - 180,
+        height: windowHeight - 180 - 36,
       } as BoxProps,
       CP: {
         width: 240,
@@ -38,6 +39,10 @@ const VideoMode = () => {
     }),
     [windowHeight],
   );
+
+  const handleDrop = (files: File[]) => {
+    console.log(files);
+  };
 
   return (
     <div className={cx('wrapper')}>
@@ -60,7 +65,11 @@ const VideoMode = () => {
           MB
         </Box>
         <Box id="TP" {...boxProps.TP}>
-          TP
+          <div className={cx('dropzone')}>
+            <BaseDropzone onDrop={handleDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+              TP
+            </BaseDropzone>
+          </div>
         </Box>
       </Box>
     </div>
