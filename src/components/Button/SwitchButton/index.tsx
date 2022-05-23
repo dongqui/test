@@ -16,37 +16,7 @@ type Props = {
 const SwitchButton = ({ defaultIndex = 0, disabled = false, fullSize = false, options, type = 'default' }: Props) => {
   // set to default index only if that index exists on options
   const [selected, setSelected] = useState(options.length > defaultIndex ? defaultIndex : 0);
-  const [effectWidth, setEffectWidth] = useState(0);
-  const [effectPosition, setEffectPosition] = useState(0);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // dynamically calculate width and left position
-  useEffect(() => {
-    if (wrapperRef.current) {
-      const wrapperChildren = wrapperRef.current.children;
-      const wrapperChildrenMap = Array.from(Array(options.length))
-        .map((_, i) => i)
-        .map((i) => {
-          return wrapperChildren.item(i);
-        })
-        .slice(1, selected + 1);
-      const selectedItem = wrapperChildren.item(selected + 1);
-      if (selectedItem) {
-        setEffectWidth(selectedItem.getBoundingClientRect().width);
-        setEffectPosition(
-          wrapperChildrenMap.reduce((prev, curr) => {
-            let sum = prev;
-            if (curr) {
-              sum += curr.getBoundingClientRect().width;
-            }
-            return sum;
-          }, 0),
-        );
-      } else {
-        setEffectWidth(wrapperRef.current.getBoundingClientRect().width / options.length);
-        setEffectPosition((wrapperRef.current.getBoundingClientRect().width / options.length) * selected);
-      }
-    }
-  }, [wrapperRef, selected, options, fullSize]);
 
   const classes = cx('btn-group', { fullsize: fullSize, disabled });
   const buttonClickHandler = (e: MouseEvent<HTMLDivElement>, index: number) => {
@@ -61,7 +31,7 @@ const SwitchButton = ({ defaultIndex = 0, disabled = false, fullSize = false, op
 
   return (
     <div className={classes} ref={wrapperRef}>
-      <div className={cx('btn-select', type)} style={{ width: `${effectWidth}px`, left: `${effectPosition}px` }} />
+      <div className={cx('btn-select', type)} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selected}%` }} />
       {options.map((value, index) => (
         <div className={cx('btn', type, { fullsize: fullSize, disabled, selected: index === selected })} key={`${value}.${index}`} onClick={(e) => buttonClickHandler(e, index)}>
           {/*for hover text above button-select-effect*/}
