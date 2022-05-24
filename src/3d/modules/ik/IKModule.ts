@@ -290,14 +290,9 @@ export class IKModule extends Module {
       this._selectedIkHandle.metadata.blend = value;
 
       let newColor = new Color3();
-      // TODO : this is wrong - do not create a new material
-      // Should start with 4 mats (1 for each IK handle)
-      // And just alter the emissivecolor
-      let newMat = new StandardMaterial('', scene);
-      // Blend between TEAL and WHITE colors
       Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
-      newMat.emissiveColor = newColor;
-      this._selectedIkHandle.material = newMat;
+      let targetMat = this._selectedIkHandle.material as StandardMaterial;
+      targetMat.emissiveColor = newColor;
     }
   }
 
