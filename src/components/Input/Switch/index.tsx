@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import SwitchItem from './SwitchItem';
 
 import classNames from 'classnames/bind';
@@ -40,7 +40,11 @@ const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type 
   );
 
   const selectedIndex = useMemo(() => {
-    return options.findIndex((value) => value.key === selectedKey);
+    const idx = options.findIndex((value) => value.key === selectedKey);
+    if (idx === -1) {
+      setSelectedKey(options[0].key);
+    }
+    return idx;
   }, [options, selectedKey]);
 
   return (

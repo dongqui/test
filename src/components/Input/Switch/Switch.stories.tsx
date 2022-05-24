@@ -10,6 +10,9 @@ export default {
     onChange: {
       control: false,
     },
+    className: {
+      control: false,
+    },
   },
 } as ComponentMeta<typeof _SwitchButton>;
 
