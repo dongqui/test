@@ -88,7 +88,16 @@ export const createKeyframes = (params: any) => ({
 });
 
 interface deleteKeyframesRequestParams {}
-interface deleteKeyframesSendParams {}
+interface deleteKeyframesSendParams {
+  type: 'delete-frames';
+  data: {
+    layerId: '6oo3jg40ex12npvn1p7yk89ld65mzqrz';
+    tracks: {
+      trackId: string;
+      frames: number[];
+    }[];
+  };
+}
 interface deleteKeyframesReceiveParams {}
 // 키프레임 삭제
 export const deleteKeyframes = () => ({

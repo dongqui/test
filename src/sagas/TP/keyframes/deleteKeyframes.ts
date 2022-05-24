@@ -60,11 +60,36 @@ function* worker() {
       }
     });
     yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+
+    const targetTracks: { trackId: string; frames: number[] }[] = [];
+    for (const transformKey of targetTransformKeys) {
+      if (!transformKey?.trackId || transformKey.from === undefined) {
+        continue;
+      }
+      const track = targetTracks.find((t) => t.trackId === transformKey.trackId);
+      if (track) {
+        track.frames.push(transformKey.from);
+      } else {
+        targetTracks.push({
+          trackId: transformKey.trackId,
+          frames: [transformKey.from],
+        });
+      }
+    }
+    yield put(
+      keyframesActions.deleteKeyframesSocket.send({
+        type: 'delete-frames',
+        data: {
+          layerId: '6oo3jg40ex12npvn1p7yk89ld65mzqrz',
+          tracks: targetTracks,
+        },
+      }),
+    );
   }
 }
 
-function* handleDeleteKeyFramesRequest() {}
-function* handleDeleteKeyFramesReceive() {}
+function* handleDeleteKeyFramesRequest(action: ReturnType<typeof keyframesActions.deleteKeyframesSocket.request>) {}
+function* handleDeleteKeyFramesReceive(action: ReturnType<typeof keyframesActions.deleteKeyframesSocket.receive>) {}
 
 // 키프레임 드래그 드랍 입력 감지
 function* watchDeleteframes() {
