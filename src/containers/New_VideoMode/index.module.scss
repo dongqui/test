@@ -1,4 +1,5 @@
 @import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
 
 .wrapper {
   color: #fff;
@@ -40,6 +41,7 @@
 }
 
 .dropzone-outer {
+  display: flex;
   background-color: $bg-elevated;
   border: 1px dotted $content-inactive;
   border-radius: 6px;
@@ -48,4 +50,27 @@
 .dropzone-active {
   background-color: darkgray;
   transition: background-color 0.25s;
+}
+
+.dropzone-guide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.icon-plus {
+  color: $content-inactive;
+  width: 16px;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.dropzone-guide-text {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 300;
+  color: $content-medium;
+  margin-bottom: 8px;
 }
