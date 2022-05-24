@@ -1,4 +1,4 @@
-import { Bone, Color3, Mesh, MeshBuilder, Quaternion, Scene, Space, StandardMaterial, Vector3 } from '@babylonjs/core';
+import { Bone, Color3, Mesh, MeshBuilder, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
@@ -89,6 +89,17 @@ export class IKController {
     (ikControllerHandle.material as StandardMaterial).specularColor = Color3.Black();
 
     return ikControllerHandle;
+  }
+
+  public update() {
+    // Blend only if we have a FK target
+    if (this.fkTarget && this.fkInfluenceChain) {
+      this.fkTarget.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
+      Vector3.LerpToRef(this.fkTarget.absolutePosition, this.handle.absolutePosition, this.blend, TmpVectors.Vector3[0]);
+      this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
+    }
+
+    this.controller.update();
   }
 
   /**

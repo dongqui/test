@@ -74,7 +74,7 @@ export class IKModule extends Module {
   public tick(elapsed: number) {
     // Update all IK controllers
     for (const ikController of this.ikControllers) {
-      ikController.controller.update();
+      ikController.update();
     }
 
     // Copy FK position for IK ghost, only for joints
@@ -219,9 +219,6 @@ export class IKModule extends Module {
     // Evaluate if a IK Controller is selected
     const scene = this.plaskEngine.scene;
     if (this._selectedIk) {
-      let newPos = new Vector3();
-      Vector3.LerpToRef(this._selectedIk.fkTarget!.absolutePosition, this._selectedIk.handle.absolutePosition, value, newPos);
-      this._selectedIk.target.setAbsolutePosition(newPos);
       this._selectedIk.blend = value;
 
       let newColor = new Color3();
@@ -420,7 +417,7 @@ export class IKModule extends Module {
         {
           body: this._ghost.rootMesh!,
           bone: ikBone,
-          transformNode: bone.getTransformNode()!,
+          transformNode: ikBone.getTransformNode()!,
           fkBody: body,
           fkBone: bone,
           fkTransformNode: transformNode,

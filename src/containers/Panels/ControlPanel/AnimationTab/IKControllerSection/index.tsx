@@ -142,6 +142,8 @@ const IKControllerSection: FunctionComponent<Props> = ({
       text: 'Set IK Pose to FK',
       onClick: () => {
         plaskEngine.ikModule.setIKtoFK();
+        plaskEngine.ikModule.setIKControllerBlend(1);
+        setBlendValue(1);
       },
     },
     {
