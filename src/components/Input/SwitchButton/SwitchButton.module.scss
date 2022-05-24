@@ -1,5 +1,5 @@
-@import "styles/libraries/typography";
-@import "styles/libraries/colors";
+@import "../../../styles/libraries/typography";
+@import "../../../styles/libraries/colors";
 
 .btn-group {
   position: relative;
@@ -58,6 +58,10 @@
   & > .padding {
     opacity: 0;
     width: 100%;
+  }
+
+  & > input {
+    display: none;
   }
 
   &.fullsize {

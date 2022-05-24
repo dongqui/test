@@ -1,9 +1,16 @@
-import { memo, MouseEvent, useEffect, useRef, useState } from 'react';
+import { memo, MouseEvent, useRef, useState } from 'react';
 
 import classNames from 'classnames/bind';
 import styles from './SwitchButton.module.scss';
 
 const cx = classNames.bind(styles);
+
+// Since it is input component, it has value and label separately.
+interface Option {
+  key: string;
+  value: string;
+  label: string;
+}
 
 type Props = {
   options: { content: string; onClick: (e?: MouseEvent<HTMLDivElement>, index?: number, content?: string) => void }[];
@@ -33,11 +40,12 @@ const SwitchButton = ({ defaultIndex = 0, disabled = false, fullSize = false, op
     <div className={classes} ref={wrapperRef}>
       <div className={cx('btn-select', type)} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selected}%` }} />
       {options.map((value, index) => (
-        <div className={cx('btn', type, { fullsize: fullSize, disabled, selected: index === selected })} key={`${value}.${index}`} onClick={(e) => buttonClickHandler(e, index)}>
+        <div className={cx('btn', { fullsize: fullSize, disabled, selected: index === selected })} key={`${value.content}.${index}`} onClick={(e) => buttonClickHandler(e, index)}>
           {/*for hover text above button-select-effect*/}
           <span className={cx('btn-text')}>{value.content}</span>
           {/*for keep div size behind the button-select-effect due to overlayed text*/}
           <span className={cx('padding')}>{value.content}</span>
+          <input type="radio" value={value.content} defaultChecked={index === selected} />
         </div>
       ))}
     </div>

@@ -1,7 +1,7 @@
 import { Fragment, MouseEvent } from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import _SwitchButton from './';
+import _SwitchButton from 'components/Input/SwitchButton/index';
 
 export default {
   component: _SwitchButton,
