@@ -18,7 +18,7 @@ interface Props {
   selectedTargets: Array<PlaskTransformNode>;
 }
 
-const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObjects, selectedTargets }) => {
+const SelectionTrackerSection: FunctionComponent<Props> = ({ isAllActive, selectableObjects, selectedTargets }) => {
   const _selectableObjects = selectableObjects;
   const _selectedTargets = selectedTargets;
 
@@ -54,7 +54,7 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
     <section className={cx('bone-tracker-section')}>
       <div className={cx('container', { active: isSectionSpread })}>
         <div className={cx('inner-container')}>
-          <span className={cx('text', { active: controlTarget })}>{controlTarget ? controlTarget.name : 'None'}</span>
+          <span className={cx('text', { active: controlTarget })}>{controlTarget ? controlTarget.name.split('//')[0] : 'None'}</span>
         </div>
         {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
       </div>
@@ -62,4 +62,4 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
   );
 };
 
-export default TransformSection;
+export default SelectionTrackerSection;
