@@ -144,6 +144,32 @@ export const dragDropKeyframes = (params: DragDropKeyframes) => ({
   payload: { ...params },
 });
 
+interface MoveKeyframesRequestParams {
+  timeDiff: number;
+}
+interface MoveKeyframesSendParams {
+  type: 'move-frames';
+  data: {
+    layerId: string;
+    tracks: {
+      trackId: string;
+      frames: {
+        frameIndexFrom: number;
+        frameIndexTo: number;
+      }[];
+    }[];
+  };
+}
+interface MoveKeyframesReceiveParams {}
+
+export const moveKeyframesSocket = createSocketActions(
+  'keyframes/MOVE_KEYFRAMES_REQUEST',
+  'keyframes/MOVE_KEYFRAMES_SEND',
+  'keyframes/MOVE_KEYFRAMES_RECEIVE',
+  'keyframes/MOVE_KEYFRAMES_UPDATE',
+  'keyframes/MOVE_KEYFRAMES_FAILURE',
+)<MoveKeyframesRequestParams, MoveKeyframesSendParams, MoveKeyframesReceiveParams, undefined, Error>();
+
 // 키프레임 붙이기
 export interface Paste {
   currentTimeIndex: number;
@@ -155,3 +181,15 @@ export const paste = (params: Paste) => ({
     ...params,
   },
 });
+
+interface PasteKeyframesRequestParams {}
+interface PasteKeyframesSendParams extends editKeyframesSendParams {}
+interface PasteKeyframesReceiveParams {}
+
+export const pasteKeyframesSocket = createSocketActions(
+  'keyframes/PASTE_KEYFRAMES_REQUEST',
+  'keyframes/PASTE_KEYFRAMES_SEND',
+  'keyframes/PASTE_KEYFRAMES_RECEIVE',
+  'keyframes/PASTE_KEYFRAMES_UPDATE',
+  'keyframes/PASTE_KEYFRAMES_FAILURE',
+)<PasteKeyframesRequestParams, PasteKeyframesSendParams, PasteKeyframesReceiveParams, undefined, Error>();
