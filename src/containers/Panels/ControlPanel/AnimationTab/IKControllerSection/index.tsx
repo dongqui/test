@@ -19,6 +19,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { editAnimationIngredient } from 'actions/animationDataAction';
 import { changeSelectedTargets } from 'actions/trackList';
+import { readMetadata } from 'utils/RP/metadata';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -86,12 +87,13 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setIsIKOn(true);
-    if (controlTarget?.metadata?.ikController) {
+    const controller = controlTarget ? readMetadata('ikController', controlTarget) : null;
+    if (controller) {
       // TODO: Temp approach, need to check
-      console.log(`ControlTarget Blend: ${controlTarget.metadata.blend}`);
-      console.log(`ControlTarget Angle: ${controlTarget.metadata.ikController.poleAngle}`);
-      setBlendValue(controlTarget.metadata.blend);
-      setPoleAngleValue(BABYLON.Tools.ToDegrees(controlTarget.metadata.ikController.poleAngle));
+      console.log(`ControlTarget Blend: ${controller.blend}`);
+      console.log(`ControlTarget Angle: ${controller.poleAngle}`);
+      setBlendValue(controller.blend);
+      setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
     } else {
       console.log('Reset');
       setPoleAngleValue(0);
