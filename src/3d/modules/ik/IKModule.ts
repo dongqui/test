@@ -21,6 +21,7 @@ import {
   AssetsManager,
   AnimationGroup,
   Curve3,
+  DistanceBlock,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -100,9 +101,29 @@ export class IKModule extends Module {
     }
 
     // Foot Locking Component
-    if (this.plaskEngine.scene.animationGroups[0]) {
+    if (this.plaskEngine.scene.animationGroups[0] && this.leftFootPositionsProjected.length < 260) {
       if (this.plaskEngine.scene.animationGroups[0].isPlaying){
         this.footLockingData(Math.floor(this.plaskEngine.scene.animationGroups[0].animatables[0].masterFrame));
+      }
+    }
+
+    if (
+          this.leftFootPositionsProjected.length > 260 && 
+          this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].contact == 1 //&&
+          // this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].position[1] <= 0.25
+    ) {
+      if (this.leftFootOrigIk) {
+        this.leftFootOrigIk.targetPosition = this.leftFootPositionsProjected[this.plaskEngine.state.animatingControls.currentTimeIndex];
+        this.leftFootOrigIk?.update();
+        console.log(this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].position[1]);
+      }
+      if ( this.plaskEngine.state.animatingControls.currentTimeIndex < 261 ) {
+        let pos1 = Vector3.FromArray(this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].position) as Vector3 ;
+        let pos2 = Vector3.FromArray(this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex+1].position) as Vector3 ;
+        console.log(Vector3.Distance(pos1, pos2));
+        // if ( Vector3.Distance(pos1, pos2) ) {
+          
+        // }
       }
     }
   }
@@ -652,9 +673,12 @@ export class IKModule extends Module {
   public targetAnimation: Nullable<AnimationGroup> = null;
   public contactData: any;
   public leftFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
+  public leftFootPositionsProjected: Vector3[] = [];
   public captureFlag: boolean = false;
   public contactToggle: number = -1;
   public lastIndex: number = 0;
+  public lowestYPosition: number = 10;
+  public leftFootOrigIk: Nullable<BoneIKController> = null;
 
   public footLockingData(index: number) {
     if (this.contactData) {
@@ -663,25 +687,34 @@ export class IKModule extends Module {
         this.leftFootPositionsContacts.push({
           contact: this.contactData.data[0].trackData[9].transformKeys[index].value, 
           position: this.plaskEngine.scene.getMeshByName('leftFoot_joint')?.position.asArray() as ArrayOfThreeNumbers
-        });
+        });    
         //console.log(this.leftFootPositionsContacts[index]);
 
+        // Store the lowest Y position of LeftFoot to adjust projected lines further
+        if (this.leftFootPositionsContacts[index].position[1] < this.lowestYPosition) {
+          this.lowestYPosition = this.leftFootPositionsContacts[index].position[1];
+        }
+
         // Evaluate if Contact change it value to draw line with different color
-        if ( this.contactToggle != -1 && this.contactToggle != this.contactData.data[0].trackData[9].transformKeys[index].value ) {
+        if ( 
+              this.contactToggle != -1 && 
+              this.contactToggle != this.contactData.data[0].trackData[9].transformKeys[index].value
+              //this.contactToggle != this.leftFootPositionsContacts[index].contact
+            ) {
           const leftFootPositions: Vector3[] = [];
 
           for ( let i:number = this.lastIndex; i < index; i++ ) {
             leftFootPositions.push( Vector3.FromArray(this.leftFootPositionsContacts[i].position) as Vector3 );
           }
 
-          this.lastIndex = index; 
+          this.lastIndex = index - 1; 
 
           const leftFootCurve = new Curve3(leftFootPositions);
           const leftFootCurveLine = MeshBuilder.CreateLines('', {points: leftFootCurve.getPoints()}, this.plaskEngine.scene);  
-
-          leftFootCurveLine.color = (this.contactToggle == 0) ? Color3.Red(): Color3.Green();
+          leftFootCurveLine.color = (this.contactToggle == 0) ? Color3.Green(): Color3.Red();
         }
         this.contactToggle = this.contactData.data[0].trackData[9].transformKeys[index].value;
+        //this.contactToggle = this.leftFootPositionsContacts[index].contact;
       }
       
       // Stop LeftFoot values capture
@@ -694,12 +727,13 @@ export class IKModule extends Module {
         // Generate Floor Projection Line
         const projectionPoints: Vector3[] = []; 
         this.leftFootPositionsContacts.forEach((value) => {
-          const pointProjected = new Vector3(value.position[0], 0, value.position[2]);
+          const pointProjected = new Vector3(value.position[0], this.lowestYPosition, value.position[2]);
           projectionPoints.push( pointProjected);
         })
         const projectionCurve = new Curve3(projectionPoints);
         const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, this.plaskEngine.scene);
         projectionCurveLine.color = Color3.Blue();
+        this.leftFootPositionsProjected = projectionPoints;
       }
     }
   }
@@ -753,18 +787,13 @@ export class IKModule extends Module {
 
     this._createGUIElement();
 
-    const leftFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
-    const leftToeBasePositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
-    const rightFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
-    const rightToeBasePositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
-
     // Foot Locking component (Loading Json)
     const assetManager = new AssetsManager(scene);
     assetManager.useDefaultLoadingScreen = false;
     const jsonLoadTask = assetManager.addTextFileTask("FLJson", "./contact_sample.json");
     jsonLoadTask.onSuccess = (task) => {
       this.contactData = JSON.parse(task.text);
-      //console.log(contactData);
+      console.log(this.contactData);
     }
     assetManager.load();
 
@@ -836,6 +865,7 @@ export class IKModule extends Module {
       (ikCtrlOrig as any)._adjustRoll = 0;
       ikCtrlOrig.setIKtoRest();
       //ikControllersGhosts.push(ikCtrlOrig);
+      if (elem.bone.includes('leftFoot')) this.leftFootOrigIk = ikCtrlOrig;
 
       controller.metadata.controllerOrig = controllerOrig;
       controller.metadata.ikControllerOrig = ikCtrlOrig;
