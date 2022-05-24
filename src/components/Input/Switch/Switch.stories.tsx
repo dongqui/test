@@ -1,10 +1,15 @@
 import { Fragment } from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import _SwitchButton from './';
+import _Switch from './';
+
+import classNames from 'classnames/bind';
+import styles from './Switch.stories.module.scss';
+
+const cx = classNames.bind(styles);
 
 export default {
-  component: _SwitchButton,
+  component: _Switch,
   // TODO: add argTypes if any
   argTypes: {
     onChange: {
@@ -14,21 +19,26 @@ export default {
       control: false,
     },
   },
-} as ComponentMeta<typeof _SwitchButton>;
+} as ComponentMeta<typeof _Switch>;
 
-const Template: ComponentStory<typeof _SwitchButton> = (args) => {
+const Template: ComponentStory<typeof _Switch> = (args) => {
   return (
     <Fragment>
       <div>
-        <_SwitchButton {...args} />
+        <h2>sample switch</h2>
+        <_Switch {...args} className={cx('switch-story')} />
+      </div>
+      <br />
+      <div>
+        <h2>sample form</h2>
       </div>
     </Fragment>
   );
 };
-export const SwitchButton = Template.bind({});
+export const Switch = Template.bind({});
 
 // TODO: add default props
-SwitchButton.args = {
+Switch.args = {
   options: [
     {
       key: 'opt1',
