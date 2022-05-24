@@ -51,7 +51,7 @@ const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type 
     <div className={classes}>
       <div className={cx('btn-select', type)} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selectedIndex}%` }} />
       {options.map((option, index) => (
-        <SwitchItem option={option} key={`${option.key}.${index}`} disabled={disabled} onChange={clickHandler} selected={option.key === selectedKey} fullSize={fullSize} />
+        <SwitchItem option={option} key={`${option.key}.${index}`} disabled={disabled} onChange={clickHandler} selected={option.key === selectedKey} />
       ))}
     </div>
   );

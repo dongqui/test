@@ -14,17 +14,16 @@ interface Props {
   selected: boolean;
   onChange: (key: string) => void;
   disabled: boolean;
-  fullSize: boolean;
 }
 
-const SwitchItem = ({ option, selected, onChange, disabled, fullSize }: Props) => {
+const SwitchItem = ({ option, selected, onChange, disabled }: Props) => {
   const { key, value, label } = option;
   const changeHandler = useCallback(() => {
     onChange(key);
   }, [key, onChange]);
 
   return (
-    <div className={cx('btn', { disabled, selected, fullsize: fullSize })} onClick={changeHandler}>
+    <div className={cx('btn', { disabled, selected })} onClick={changeHandler}>
       {/*for hover text above select-effect*/}
       <span className={cx('btn-text')}>{label}</span>
       {/*for keep div size behind the select-effect due to overlayed text*/}
