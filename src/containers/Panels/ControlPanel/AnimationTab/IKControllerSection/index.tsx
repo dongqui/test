@@ -20,6 +20,7 @@ import styles from './index.module.scss';
 import { editAnimationIngredient } from 'actions/animationDataAction';
 import { changeSelectedTargets } from 'actions/trackList';
 import { readMetadata } from 'utils/RP/metadata';
+import { addEntity, addSelectableObjects, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -176,13 +177,16 @@ const IKControllerSection: FunctionComponent<Props> = ({
         message: 'This action will create IK controllers',
         confirmText: 'Confirm',
         onConfirm: () => {
-          // TODO: IK Module (Create IK Controller)
+          const assetId = _visualizedAssetIds[0];
+          const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId);
+          dispatch(addEntity({ targets: plaskTransformNodes }));
+          dispatch(addSelectableObjects({ objects: plaskTransformNodes }));
         },
         cancelText: 'Cancel',
         confirmButtonColor: 'primary',
       }),
     );
-  }, [dispatch]);
+  }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = [
     {
@@ -194,6 +198,10 @@ const IKControllerSection: FunctionComponent<Props> = ({
             message: 'This action will delete all IK controllers',
             confirmText: 'Delete',
             onConfirm: () => {
+              // TODO : also remove PlaskTransformNode from the state (including selectedTarget if it is associated with a IKController)
+              const plaskEntities = plaskEngine.ikModule.ikControllers.map((controller) => controller.handle.getPlaskEntity());
+              dispatch(removeSelectableObjects({ objects: plaskEntities }));
+              dispatch(removeEntity({ targets: plaskEntities }));
               plaskEngine.ikModule.removeIK();
             },
             cancelText: 'Cancel',

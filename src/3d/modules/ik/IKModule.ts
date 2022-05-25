@@ -345,20 +345,31 @@ export class IKModule extends Module {
     container.transformNodes = asset.transformNodes;
 
     const clone = container.instantiateModelsToScene((name: string) => `ghost_${name}`);
-    clone.rootNodes.forEach((node: TransformNode) => {
-      const descendants = node.getDescendants();
-      for (const descendant of descendants) {
-        if (descendant.getClassName() === 'Mesh') {
-          this._ghostMeshes.push(descendant as Mesh);
-        }
-      }
-      if (node.getClassName() === 'Mesh') {
-        this._ghostMeshes.push(node as Mesh);
-      }
+    const _traverse = (node: TransformNode) => {
+      // Find the root node
       if (node.name === 'ghost___root__') {
         this._ghost.rootMesh = node as Mesh;
       }
-    });
+
+      // Remove any skeletonViewer
+      if (node.name.startsWith('ghost_skeletonViewer')) {
+        node.dispose();
+        return;
+      }
+
+      // List all meshes
+      if (node.getClassName() === 'Mesh') {
+        this._ghostMeshes.push(node as Mesh);
+      }
+
+      for (const child of node.getChildren()) {
+        _traverse(child as TransformNode);
+      }
+    };
+    for (const rootNode of clone.rootNodes) {
+      _traverse(rootNode);
+    }
+
     this._ghost.skeleton = clone.skeletons[0];
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {
