@@ -82,25 +82,30 @@ export class IKModule extends Module {
     }
 
     // Foot Locking Component
-    if (this.plaskEngine.scene.animationGroups[0] && this.leftFootPositionsProjected.length < 260) {
+    if (this.plaskEngine.scene.animationGroups[0] && this.leftFootPositionsContacts.length < 260) {
       if (this.plaskEngine.scene.animationGroups[0].isPlaying){
         this.footLockingData(Math.floor(this.plaskEngine.scene.animationGroups[0].animatables[0].masterFrame));
       }
     }
 
     if (
-          this.leftFootPositionsProjected.length > 260 && 
-          this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].contact == 1 //&&
-          // this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].position[1] <= 0.25
-    ) {
-      if (this.leftFootOrigIk) {
-        this.leftFootOrigIk.targetPosition = this.leftFootPositionsProjected[this.plaskEngine.state.animatingControls.currentTimeIndex];
-        this.leftFootOrigIk?.update();
-        console.log(this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].position[1]);
-      }
-      if ( this.plaskEngine.state.animatingControls.currentTimeIndex < 261 ) {
+          this.leftFootPositionsContacts.length >= 260 //&& 
+          //this.leftFootPositionsProjected [this.plaskEngine.state.animatingControls.currentTimeIndex].contact == 1 //&&
+        ) {
+          this.leftFootPositionsProjected.forEach((point) => {
+            if (point.index == this.plaskEngine.state.animatingControls.currentTimeIndex && point.action) {
+              console.log(point.index, point.action);
+              if (this.leftFootOrigIk?.fkTarget) {
+                this.leftFootOrigIk.fkTarget.position = point.position;
+                this.leftFootOrigIk.update();
+                console.log("ACTION");
+                //console.log(this.leftFootPositionsContacts[this.plaskEngine.state.animatingControls.currentTimeIndex].position[1]);
+              }        
+            }
+          })
+      // if ( this.plaskEngine.state.animatingControls.currentTimeIndex < 261 ) {
 
-      }
+      // }
     }
     // Copy FK position for IK ghost, only for joints
     // that are not forced by IK
@@ -364,24 +369,24 @@ export class IKModule extends Module {
   public targetAnimation: Nullable<AnimationGroup> = null;
   public contactData: any;
   public leftFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
-  public leftFootPositionsProjected: Vector3[] = [];
+  public leftFootPositionsProjected: { index: number; action: boolean; position:Vector3; }[] = [];
   public captureFlag: boolean = false;
   public contactToggle: number = -1;
   public lastIndex: number = 0;
   public lowestYPosition: number = 10;
-  public leftFootOrigIk: Nullable<BoneIKController> = null;
+  public leftFootOrigIk: IKController | undefined = undefined;
 
   public footLockingData(index: number) {
     if (this.contactData) {
       if ( !this.leftFootPositionsContacts[index] ) {
         // Grabbing leftFoot data (contact and position)
         this.leftFootPositionsContacts.push({
-          contact: this.contactData.data[0].trackData[9].transformKeys[index].value, 
+          contact: this.contactData.data.result[0].trackData[9].transformKeys[index].value, 
           position: this.plaskEngine.scene.getMeshByName('leftFoot_joint')?.position.asArray() as ArrayOfThreeNumbers
         });    
-        //console.log(this.leftFootPositionsContacts[index]);
+        //console.log(index, this.leftFootPositionsContacts[index]);
 
-        // Store the lowest Y position of LeftFoot to adjust projected lines further
+        // Store the lowest Y position of LeftFoot to adjust projected line further
         if (this.leftFootPositionsContacts[index].position[1] < this.lowestYPosition) {
           this.lowestYPosition = this.leftFootPositionsContacts[index].position[1];
         }
@@ -389,27 +394,34 @@ export class IKModule extends Module {
         // Evaluate if Contact change it value to draw line with different color
         if ( 
               this.contactToggle != -1 && 
-              this.contactToggle != this.contactData.data[0].trackData[9].transformKeys[index].value
+              this.contactToggle != this.contactData.data.result[0].trackData[9].transformKeys[index].value
               //this.contactToggle != this.leftFootPositionsContacts[index].contact
             ) {
-          const leftFootPositions: Vector3[] = [];
 
-          for ( let i:number = this.lastIndex; i < index; i++ ) {
-            leftFootPositions.push( Vector3.FromArray(this.leftFootPositionsContacts[i].position) as Vector3 );
-          }
+          // if (
+          //     !(this.contactData.data.result[0].trackData[9].transformKeys[index-1].value == 0 &&
+          //     this.contactData.data.result[0].trackData[9].transformKeys[index].value == 1 &&
+          //     this.contactData.data.result[0].trackData[9].transformKeys[index+1].value == 0)
+          //    ) {
+              const leftFootPositions: Vector3[] = [];
 
-          this.lastIndex = index - 1; 
-
-          const leftFootCurve = new Curve3(leftFootPositions);
-          const leftFootCurveLine = MeshBuilder.CreateLines('', {points: leftFootCurve.getPoints()}, this.plaskEngine.scene);  
-          leftFootCurveLine.color = (this.contactToggle == 0) ? Color3.Green(): Color3.Red();
+              for ( let i:number = this.lastIndex; i < index; i++ ) {
+                leftFootPositions.push( Vector3.FromArray(this.leftFootPositionsContacts[i].position) as Vector3 );
+              }
+    
+              this.lastIndex = index - 1; 
+    
+              const leftFootCurve = new Curve3(leftFootPositions);
+              const leftFootCurveLine = MeshBuilder.CreateLines('', {points: leftFootCurve.getPoints()}, this.plaskEngine.scene);  
+              leftFootCurveLine.color = (this.contactToggle == 0) ? Color3.Green(): Color3.Red();    
+          //}
         }
-        this.contactToggle = this.contactData.data[0].trackData[9].transformKeys[index].value;
+        this.contactToggle = this.contactData.data.result[0].trackData[9].transformKeys[index].value;
         //this.contactToggle = this.leftFootPositionsContacts[index].contact;
       }
       
       // Stop LeftFoot values capture
-      if ( this.leftFootPositionsContacts.length > 260 && !this.captureFlag) {
+      if ( this.leftFootPositionsContacts.length >= 260 && !this.captureFlag) {
         this.captureFlag = true;
         //console.log(this.leftFootPositionsContacts);
         this.plaskEngine.state.animatingControls.currentAnimationGroup?.stop();
@@ -430,17 +442,20 @@ export class IKModule extends Module {
         const pointsToEvaluateCenter: Vector3[] = [];
         this.leftFootPositionsContacts.forEach((value, index) => {
           if (value.contact == 1) {
-            // Store initial point of this contact portion
+            // Store initial point of the contact portion
             if (index == 0) {
               projectionPoints.push(new Vector3(value.position[0], this.lowestYPosition, value.position[2]));
+              this.leftFootPositionsProjected.push({index: index, action: false, position: new Vector3(value.position[0], this.lowestYPosition, value.position[2])});
             } else if (this.leftFootPositionsContacts[index-1].contact == 0) {
               projectionPoints.push(new Vector3(this.leftFootPositionsContacts[index-1].position[0], this.lowestYPosition, this.leftFootPositionsContacts[index-1].position[2]));
+              this.leftFootPositionsProjected.push({index: index, action: false, position: new Vector3(this.leftFootPositionsContacts[index-1].position[0], this.lowestYPosition, this.leftFootPositionsContacts[index-1].position[2])});
             }
             // Store point to evaluate the center of this contact portion
             pointsToEvaluateCenter.push(new Vector3(value.position[0], this.lowestYPosition, value.position[2]));
           } else {
             // Evaluate if there is a portion of contact points to evaluate its center point
-            if (pointsToEvaluateCenter.length != 0) {
+            // And it needs to be bigger than 1 to not use false/positive indication
+            if (pointsToEvaluateCenter.length > 1) {
               const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
               const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
               pointsToEvaluateCenter.forEach(vec => {
@@ -453,9 +468,11 @@ export class IKModule extends Module {
               })
               const result = max.add(min).scale(0.5);
               projectionPoints.push(result);
+              this.leftFootPositionsProjected.push({index: index-1, action: true, position: result});
               // Store end point of this contact portion
               if (index < this.leftFootPositionsContacts.length && value.contact == 0) {
                 projectionPoints.push(new Vector3(this.leftFootPositionsContacts[index].position[0], this.lowestYPosition, this.leftFootPositionsContacts[index].position[2]));
+                this.leftFootPositionsProjected.push({index: index, action: false, position: new Vector3(this.leftFootPositionsContacts[index].position[0], this.lowestYPosition, this.leftFootPositionsContacts[index].position[2])});
               }
               pointsToEvaluateCenter.length = 0;
             }
@@ -464,15 +481,13 @@ export class IKModule extends Module {
         const projectionCurve = new Curve3(projectionPoints);
         const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, this.plaskEngine.scene);
         projectionCurveLine.color = Color3.Blue();
+        //console.log(projectionPoints);
       }
     }
   }
 
   private _initializeControllers(assetId: string) {
     const scene = this.plaskEngine.scene;
-
-    // FootLocking component (loading Animation)
-    this.targetAnimation = this.plaskEngine.scene.animationGroups[0];
 
     // Container created to generate the Clone of Character used in IK posing
     const asset = this.plaskEngine.assetModule.assetList.find((asset) => asset.id === assetId);
@@ -516,10 +531,16 @@ export class IKModule extends Module {
     // Foot Locking component (Loading Json)
     const assetManager = new AssetsManager(scene);
     assetManager.useDefaultLoadingScreen = false;
-    const jsonLoadTask = assetManager.addTextFileTask("FLJson", "./contact_sample_new.json");
+    const jsonLoadTask = assetManager.addTextFileTask("FLJson", "./0525_new_contact_1.json");
     jsonLoadTask.onSuccess = (task) => {
       this.contactData = JSON.parse(task.text);
       console.log(this.contactData);
+
+      // FootLocking component (loading Animation)
+      this.targetAnimation = this.plaskEngine.scene.animationGroups[0];
+
+      // Foot Locking IK controller
+      this.leftFootOrigIk = this.ikControllers.find((controller) => controller.fkTarget == this.plaskEngine.scene.getTransformNodeByName('ik_ctrl_origin_leftFoot'));
     }
     assetManager.load();
 
@@ -565,9 +586,6 @@ export class IKModule extends Module {
       const { upVector, bendAxis } = this._guessLimbUpBend(transformNode, elem.bone);
       elem.upVector = upVector;
       elem.bendAxis = bendAxis;
-
-      // Foot Locking
-      //if (elem.bone.includes('leftFoot')) this.leftFootOrigIk = ikCtrlOrig;
 
       const ikBone = this._ghost.skeleton!.bones[skeleton.bones.indexOf(bone)];
       const ikController = new IKController(
