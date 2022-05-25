@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import SwitchItem from './SwitchItem';
 
 import classNames from 'classnames/bind';
@@ -28,7 +28,7 @@ const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type 
   const [selectedKey, setSelectedKey] = useState(defaultKey);
 
   const classes = cx('btn-group', className, { fullsize: fullSize, disabled });
-  const clickHandler = useCallback(
+  const handleChange = useCallback(
     (key: string) => {
       // active when press another button and not disabled
       if (selectedKey !== key && !disabled) {
@@ -51,7 +51,7 @@ const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type 
     <div className={classes}>
       <div className={cx('btn-select', type)} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selectedIndex}%` }} />
       {options.map((option, index) => (
-        <SwitchItem option={option} key={`${option.key}.${index}`} disabled={disabled} onChange={clickHandler} selected={option.key === selectedKey} />
+        <SwitchItem option={option} key={`${option.key}.${index}`} disabled={disabled} onClick={handleChange} selected={option.key === selectedKey} />
       ))}
     </div>
   );
