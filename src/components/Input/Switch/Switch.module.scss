@@ -1,0 +1,37 @@
+@import "styles/libraries/typography";
+@import "styles/libraries/colors";
+
+.btn-group {
+  position: relative;
+  display: inline-flex;
+  font: $body-default;
+  color: $content-medium;
+  background-color: $contentbg-base;
+  user-select: none;
+  justify-content: space-around;
+
+  border-radius: 6px;
+  height: 24px;
+  width: 100px;
+
+  &.fullsize {
+    width: 100%;
+  }
+}
+
+.btn-select {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  border-radius: 6px;
+  transition: left ease 0.3s, width ease 0.3s;
+
+  &.default {
+    background-color: $outline-border;
+  }
+
+  &.primary {
+    background-color: $primary;
+  }
+
+}
