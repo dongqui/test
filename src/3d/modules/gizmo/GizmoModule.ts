@@ -17,6 +17,7 @@ import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
+import { readMetadata } from 'utils/RP/metadata';
 
 type GizmoDragObserver = Nullable<
   Observer<{
@@ -27,7 +28,6 @@ type GizmoDragObserver = Nullable<
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
 export class GizmoModule extends Module {
-  public state = {};
   private _isAutokeyMode: boolean = false;
   private _gizmoManager!: GizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
@@ -87,6 +87,10 @@ export class GizmoModule extends Module {
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * Changes the gizmo space, to be either local or world
+   * @param space
+   */
   public changeGizmoSpace(space: GizmoSpace) {
     if (this._currentGizmoMode === GizmoMode.POSITION) {
       this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = space === GizmoSpace.LOCAL;
@@ -98,24 +102,40 @@ export class GizmoModule extends Module {
     this._currentGizmoSpace = space;
   }
 
+  /**
+   * Changes the gizmo mode between rotation position and scale
+   * @param mode
+   */
   public changeGizmoMode(mode: GizmoMode) {
     this._currentGizmoMode = mode;
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * @hidden
+   */
   public updateVisibility() {
     // Refresh attachment
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * The current gizmo space
+   */
   public get currentGizmoSpace() {
     return this._currentGizmoSpace;
   }
 
+  /**
+   * The current gizmo mode
+   */
   public get currentGizmoMode() {
     return this._currentGizmoMode;
   }
 
+  /**
+   * Set to true to enable auto keyframe when changing the gizmo
+   */
   public get isAutokeyMode() {
     return this._isAutokeyMode;
   }
@@ -261,14 +281,14 @@ export class GizmoModule extends Module {
         // controller
         target.renderOutline = true;
         target.outlineColor = Color3.White();
-        target.outlineWidth = 0.1;
+        target.outlineWidth = readMetadata('outlineSize', target) || 0.1;
       } else {
         // joint(transformNode)
         const joint = target.getScene().getMeshById(target.id.replace('transformNode', 'joint'));
         if (joint) {
           joint.renderOutline = true;
           joint.outlineColor = Color3.White();
-          joint.outlineWidth = 0.03; // set outline width according to joint's diameter
+          joint.outlineWidth = readMetadata('outlineSize', target) || 0.03; // set outline width according to joint's diameter
         }
       }
     });

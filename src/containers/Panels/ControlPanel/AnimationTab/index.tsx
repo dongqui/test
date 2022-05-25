@@ -2,7 +2,7 @@ import { Fragment, FunctionComponent } from 'react';
 import IKControllerSection from './IKControllerSection';
 import FilterSection from './FilterSection';
 import TransformSection from './TransformSection';
-import BoneTrackerSection from './BoneTrackerSection';
+import SelectionTrackerSection from './SelectionTrackerSection';
 
 import { useSelector } from 'reducers';
 
@@ -25,7 +25,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   return (
     <Fragment>
-      <BoneTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
+      <SelectionTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
 
       <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
       <FilterSection

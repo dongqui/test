@@ -17,6 +17,9 @@ import { PlaskCard } from 'components/ControlPanel/Card';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { editAnimationIngredient } from 'actions/animationDataAction';
+import { changeSelectedTargets } from 'actions/trackList';
+import { readMetadata } from 'utils/RP/metadata';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -84,12 +87,13 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setIsIKOn(true);
-    if (controlTarget?.metadata?.ikController) {
+    const controller = controlTarget ? readMetadata('ikController', controlTarget) : null;
+    if (controller) {
       // TODO: Temp approach, need to check
-      console.log(`ControlTarget Blend: ${controlTarget.metadata.blend}`);
-      console.log(`ControlTarget Angle: ${controlTarget.metadata.ikController.poleAngle}`);
-      setBlendValue(controlTarget.metadata.blend);
-      setPoleAngleValue(BABYLON.Tools.ToDegrees(controlTarget.metadata.ikController.poleAngle));
+      console.log(`ControlTarget Blend: ${controller.blend}`);
+      console.log(`ControlTarget Angle: ${controller.poleAngle}`);
+      setBlendValue(controller.blend);
+      setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
     } else {
       console.log('Reset');
       setPoleAngleValue(0);
@@ -138,6 +142,8 @@ const IKControllerSection: FunctionComponent<Props> = ({
       text: 'Set IK Pose to FK',
       onClick: () => {
         plaskEngine.ikModule.setIKtoFK();
+        plaskEngine.ikModule.setIKControllerBlend(1);
+        setBlendValue(1);
       },
     },
     {
@@ -149,7 +155,16 @@ const IKControllerSection: FunctionComponent<Props> = ({
     {
       text: 'Keyframe IK',
       onClick: () => {
-        plaskEngine.ikModule.setKeyframeIK();
+        const animationIngredient = plaskEngine.ikModule.getIKKeyframeData();
+        if (animationIngredient) {
+          dispatch(editAnimationIngredient(animationIngredient));
+          // Set FK to IK to reflect the current animation that has been updated
+          plaskEngine.ikModule.setFKtoIK();
+
+          // Refresh tracks by forcing the selection update.
+          // Could be better using ADD_KEYFRAME
+          dispatch(changeSelectedTargets());
+        }
       },
     },
   ];

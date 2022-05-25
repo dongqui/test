@@ -42,9 +42,12 @@ function* filterPlaskTracks(layer: PlaskLayer) {
   const filteredTracks: PlaskTrack[] = [];
 
   selectedTargets.forEach((plaskTransformNode) => {
-    const { id } = plaskTransformNode.reference;
-    if (readMetadata('hasTracks', plaskTransformNode.reference)) {
-      const selectedTrackIndex = layer.tracks.findIndex((track) => track.targetId === id && track.layerId === layer.id);
+    const ids = plaskTransformNode.jointIds;
+    for (const id of ids) {
+      const selectedTrackIndex = layer.tracks.findIndex((track) => id === track.targetId && track.layerId === layer.id);
+      if (selectedTrackIndex === -1) {
+        continue;
+      }
       for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {
         const propertyTrack = layer.tracks[propertyTrackIndex];
         if (propertyTrack && propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);

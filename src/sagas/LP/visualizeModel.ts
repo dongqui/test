@@ -29,17 +29,9 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   const { assetId } = action.payload;
 
   try {
+    const requestSameAsset = visualizedAssetIds.length > 0 && visualizedAssetIds[0] === action.payload.assetId;
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
     const visualizedAssets = plaskEngine.getEntitiesByPredicate((entity) => entity.className == 'PlaskAsset' && (entity as PlaskAsset).assetId === visualizedAssetIds[0]);
-
-    // TODO : redundant with what's below
-    let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
-    if (!currentVisualizedAsset) {
-      currentVisualizedAsset = new PlaskAsset();
-    } else {
-      currentVisualizedAsset = currentVisualizedAsset.clone();
-    }
-    currentVisualizedAsset.assetId = assetId;
 
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
@@ -53,7 +45,18 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     }
 
     // visualize new asset
-    yield put(selectingDataActions.addEntity({ targets: [currentVisualizedAsset] }));
+    if (!requestSameAsset) {
+      // TODO : redundant with what's below
+      let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
+      if (!currentVisualizedAsset) {
+        currentVisualizedAsset = new PlaskAsset();
+      } else {
+        currentVisualizedAsset = currentVisualizedAsset.clone();
+      }
+      currentVisualizedAsset.assetId = assetId;
+
+      yield put(selectingDataActions.addEntity({ targets: [currentVisualizedAsset] }));
+    }
 
     if (assetId && !visualizedAssetIds.includes(assetId)) {
       // TODO: simplify call with asset from assetList

@@ -4,7 +4,7 @@ import { isNull, isUndefined } from 'lodash';
 import { useDispatch } from 'react-redux';
 import { PlayDirection, PlayState } from 'types/RP';
 import * as animationDataActions from 'actions/animationDataAction';
-import { AnimationTitleToggle, AnimationRangeInput } from 'components/ControlPanel';
+import { AnimationTitleToggle, StaticRangeInput } from 'components/ControlPanel';
 import { Nullable, PlaskLayer, PlaskRotationType, PlaskTrack, AnimationIngredient } from 'types/common';
 import { useSelector } from 'reducers';
 import { convertToDegree, convertToRadian, forceClickAnimationPauseAndPlay } from 'utils/common';
@@ -195,11 +195,11 @@ const FilterSection: FunctionComponent<Props> = ({ isAllActive, visualizedAssetI
       }}
     >
       {filterRangeData.map((info, idx) => (
-        <AnimationRangeInput
+        <StaticRangeInput
           key={`${info.text}${idx}`}
           text={info.text}
           step={info.step}
-          currentMax={info.currentMax}
+          max={info.currentMax}
           currentValue={info.currentValue}
           decimalDigit={info.decimalDigit}
           activeStatus={isAllActive && isFilterOn && !isNull(controlTrack)}

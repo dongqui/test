@@ -37,7 +37,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       });
     }
 
-    plaskEngine.assetModule.unpowerSkeletonViewer(baseScreen.id);
+    plaskEngine.assetModule.hideSkeleton(baseScreen.id);
 
     const parentAsset = find(nodes, { id: parentId });
 
@@ -106,9 +106,9 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
 
     const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
     if (targetVisibilityOption && !targetVisibilityOption.isBoneVisible) {
-      plaskEngine.assetModule.unpowerSkeletonViewer(baseScreen.id);
+      plaskEngine.assetModule.hideSkeleton(baseScreen.id);
     } else {
-      plaskEngine.assetModule.powerSkeletonViewer(baseScreen.id);
+      plaskEngine.assetModule.showSkeleton(baseScreen.id);
     }
   }
 

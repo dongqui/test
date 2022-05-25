@@ -29,7 +29,7 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
     if (typeof e?.target?.result === 'string') {
       try {
         const json = JSON.parse(e.target.result);
-        checkMocapJson(json);
+        //checkMocapJson(json);
 
         const nodes = produce(lpNode.nodes, (draft) => {
           const newMocapNode: LP.Node = {
