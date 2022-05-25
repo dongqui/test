@@ -3,6 +3,7 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { Video } from 'components/Video';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -104,6 +105,7 @@ const VideoMode = () => {
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           {/* RP */}
           <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} {...videoOptions} />
+          {/* <Video /> */}
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           CP
