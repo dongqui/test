@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
@@ -46,6 +46,52 @@ const VideoMode = () => {
     console.log(files);
   };
 
+  const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
+  const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
+  const [currentStream, setCurrentStream] = useState<MediaStream>();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const getCameraDeviceList = useCallback(async () => {
+    const devices = await navigator.mediaDevices
+      .enumerateDevices()
+      .then((totalDevice) => {
+        setIsCameraLoaded({ loaded: true, error: false });
+        return totalDevice.filter((device) => device.kind === 'videoinput');
+      })
+      .catch((error) => {
+        console.warn(error);
+        setIsCameraLoaded({ loaded: false, error: true });
+        return [];
+      });
+
+    setCameraDeviceList(devices);
+  }, []);
+
+  const mediaStreamInitialize = useCallback(
+    async (constraint = { video: true }) => {
+      await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
+        if (videoRef.current) videoRef.current.srcObject = stream;
+        setCurrentStream(stream);
+      });
+
+      await getCameraDeviceList();
+    },
+    [getCameraDeviceList],
+  );
+
+  useEffect(() => {
+    mediaStreamInitialize();
+  }, [mediaStreamInitialize]);
+
+  console.log('cameraDeviceList');
+  console.log(cameraDeviceList, isCameraLoaded);
+
+  const videoOptions = {
+    autoPlay: true,
+    playsInline: true,
+    muted: true,
+  };
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -56,7 +102,8 @@ const VideoMode = () => {
           LP
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
-          RP
+          {/* RP */}
+          <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} {...videoOptions} />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           CP

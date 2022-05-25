@@ -68,3 +68,11 @@
   color: $content-medium;
   margin-bottom: 8px;
 }
+
+.video {
+  width: 100%;
+
+  &.mirror {
+    transform: rotateY(180deg);
+  }
+}
