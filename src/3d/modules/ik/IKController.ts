@@ -72,6 +72,11 @@ export class IKController {
    */
   public fkInfluenceChain?: [TransformNode, TransformNode, TransformNode];
 
+  /**
+   * Should the IK controller be locked to the FK position
+   */
+  public lockToFk = false;
+
   private _createHandle(limb: string, assetId: string, size: number): Mesh {
     const ikControllerHandle = MeshBuilder.CreateTorus(
       'ik_ctrl_handle_' + limb + '//' + assetId,
@@ -95,6 +100,9 @@ export class IKController {
     // Blend only if we have a FK target
     if (this.fkTarget && this.fkInfluenceChain) {
       this.fkTarget.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
+      if (this.lockToFk) {
+        this.handle.setAbsolutePosition(this.fkTarget.absolutePosition);
+      }
       Vector3.LerpToRef(this.fkTarget.absolutePosition, this.handle.absolutePosition, this.blend, TmpVectors.Vector3[0]);
       this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     }
