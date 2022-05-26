@@ -1,12 +1,16 @@
-import { Fragment, useCallback, ReactNode } from 'react';
+import { Fragment, useCallback, ReactNode, memo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import classNames from 'classnames/bind';
 import styles from './BaseDropzone.module.scss';
 
 const cx = classNames.bind(styles);
 
+interface RenderProps {
+  open: () => void;
+}
+
 interface Props {
-  children?: ReactNode;
+  children?: (props: RenderProps) => ReactNode;
   className?: string;
   disabled?: boolean;
   clickable?: boolean;
@@ -22,7 +26,7 @@ const BaseDropzone = ({ clickable = false, disabled, children, className, active
     [onDrop],
   );
 
-  const { getRootProps, isDragActive } = useDropzone({ onDrop: handleDrop, noClick: !clickable, disabled });
+  const { getRootProps, isDragActive, open } = useDropzone({ onDrop: handleDrop, noClick: !clickable, disabled });
 
   const dropzoneProps = useCallback(() => {
     const baseStyles = cx('wrapper', className, {
@@ -44,11 +48,27 @@ const BaseDropzone = ({ clickable = false, disabled, children, className, active
     };
   }, [active, className, getRootProps, isDragActive]);
 
+  const renderInner = useCallback(() => {
+    if (children) {
+      /**
+       * If additional features are needed, renderProps will be added.
+       * @beta
+       */
+      const renderProps = {
+        open,
+      };
+
+      return children(renderProps);
+    }
+
+    return <Fragment />;
+  }, [children, open]);
+
   return (
     <Fragment>
-      <div {...dropzoneProps()}>{children}</div>
+      <div {...dropzoneProps()}>{renderInner()}</div>
     </Fragment>
   );
 };
 
-export default BaseDropzone;
+export default memo(BaseDropzone);
