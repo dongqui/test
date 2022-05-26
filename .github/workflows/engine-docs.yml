@@ -30,11 +30,11 @@ jobs:
         run: npm run doc:engine
 
       - name: FTP-Deploy-Action
-        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
         env:
           FTP_SERVER: plask.dot-sine.com
           FTP_USERNAME: plask-autodeploy
-          FTP_PASSWORD: ${{ secrets.ENGINE_DOC_AUTODEPLOY_PASSW }}
+          FTP_PASSWORD: ${{ secrets.ENGINE_DOC_AUTODEPLOY_PASSWD }}
           LOCAL_DIR: doc
           METHOD: sftp
           PORT: 22
