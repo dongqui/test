@@ -27,11 +27,12 @@ const defaultProps: Partial<Props> = {
 const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
   const { prefix, placeholder, fullSize, disabled, invalid, autoComplete, spellCheck, defaultValue, ...rest } = Props;
 
+  const [onDrag, setOnDrag] = useState(false);
   const [onInput, setOnInput] = useState(false);
   const [value, setValue] = useState((defaultValue ?? '').toString());
-  const [offsetX, setOffsetX] = useState(0);
+  const offsetX = useRef(0);
 
-  const wrapper = cx('wrapper', { fullSize, invalid, nType: rest.type === 'number' });
+  const wrapper = cx('wrapper', { fullSize, invalid, onDrag, nType: rest.type === 'number' });
   const prefixWrapper = cx('prefix-wrapper', { isStringType: typeof prefix === 'string' });
   const textInput = cx('text-input', { disabled });
 
@@ -42,7 +43,7 @@ const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
         safeValue = (rest.min ?? '0').toString();
       }
 
-      const xDiff = offsetX - e.pageX;
+      const xDiff = offsetX.current - e.pageX;
       let newValue = parseInt(safeValue) - xDiff;
 
       if (rest.max !== undefined && parseInt(rest.max.toString()) < newValue) {
@@ -56,6 +57,7 @@ const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
     }
   };
   const numberMouseUp = () => {
+    setOnDrag(false);
     document.body.style.cursor = 'default';
     window.removeEventListener('mousemove', numberMouseMove);
     window.removeEventListener('mouseup', numberMouseUp);
@@ -66,7 +68,8 @@ const TextInput = forwardRef<HTMLInputElement, Props>((Props: Props, ref) => {
       className={wrapper}
       onMouseDown={(e) => {
         if (rest.type === 'number') {
-          setOffsetX(e.pageX);
+          offsetX.current = e.pageX;
+          setOnDrag(true);
           document.body.style.cursor = 'ew-resize';
           window.addEventListener('mousemove', numberMouseMove);
           window.addEventListener('mouseup', numberMouseUp);

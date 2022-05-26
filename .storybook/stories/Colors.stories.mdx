@@ -77,3 +77,48 @@ Primitive color variables follow the following format: [name][number], (Kebab Ca
     }}
   />
 </ColorPalette>
+
+<br/>
+<h2>Solid Color</h2>
+
+Color variables follow Kebab case convention
+
+<ColorPalette>
+  <ColorItem
+    title="BG"
+    subtitle="Background colors"
+    colors={{
+      "$bg_base": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey012'),
+      "$bg_elevated": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey016'),
+      "$contentbg_base": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey020'),
+    }}
+  />
+  <ColorItem
+    title="Content"
+    subtitle="Content colors"
+    colors={{
+      "$content-active": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey090'),
+      "$content-medium": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey070'),
+      "$content-inactive": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey040'),
+    }}
+  />
+  <ColorItem
+    title="Favor"
+    subtitle="Favor colors"
+    colors={{
+      "$primary": getComputedStyle(document.getElementById('root')).getPropertyValue('--blue055'),
+      "$secondary": getComputedStyle(document.getElementById('root')).getPropertyValue('--orange055'),
+      "$negative": getComputedStyle(document.getElementById('root')).getPropertyValue('--red055'),
+      "$positive": getComputedStyle(document.getElementById('root')).getPropertyValue('--green045'),
+    }}
+  />
+  <ColorItem
+    title="Outline"
+    subtitle="Outline color"
+    colors={{
+      "$outline": getComputedStyle(document.getElementById('root')).getPropertyValue('--grey030'),
+    }}
+  />
+</ColorPalette>
+
+<!--hover, box-shadow 추가하기-->
