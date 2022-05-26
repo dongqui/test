@@ -2,6 +2,8 @@ import { Fragment } from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
 import _Toggle from './';
+import _NewToggle from './newToggle';
+import './Toggle.stories.module.scss';
 
 export default {
   component: _Toggle,
@@ -16,7 +18,15 @@ export default {
 const Template: ComponentStory<typeof _Toggle> = (args) => {
   return (
     <Fragment>
-      <_Toggle {...args} />
+      <div>
+        <h2 style={{ userSelect: 'none' }}>react-switch Toggle component</h2>
+        <_Toggle {...args} />
+      </div>
+      <br />
+      <div>
+        <h2 style={{ userSelect: 'none' }}>custom Toggle component</h2>
+        <_NewToggle {...args} />
+      </div>
     </Fragment>
   );
 };

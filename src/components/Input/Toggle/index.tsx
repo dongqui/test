@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import Switch from 'react-switch';
 
 import classNames from 'classnames/bind';
@@ -16,12 +16,15 @@ interface Props {
 
 const Toggle = ({ defaultChecked = false, disabled = false, onChange, width = 24, height = 12 }: Props) => {
   const [checked, setChecked] = useState(defaultChecked);
-  const handleChange = (checked: boolean) => {
-    setChecked(checked);
-    if (onChange) {
-      onChange(checked);
-    }
-  };
+  const handleChange = useCallback(
+    (checked: boolean) => {
+      setChecked(checked);
+      if (onChange) {
+        onChange(checked);
+      }
+    },
+    [onChange],
+  );
 
   const classes = cx('switch', { disabled, checked });
 
