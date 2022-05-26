@@ -10,7 +10,7 @@ interface RenderProps {
 }
 
 interface Props {
-  children: (props: RenderProps) => ReactNode;
+  children?: (props: RenderProps) => ReactNode;
   className?: string;
   disabled?: boolean;
   clickable?: boolean;
@@ -49,15 +49,19 @@ const BaseDropzone = ({ clickable = false, disabled, children, className, active
   }, [active, className, getRootProps, isDragActive]);
 
   const renderInner = useCallback(() => {
-    /**
-     * If additional features are needed, renderProps will be added.
-     * @beta
-     */
-    const renderProps = {
-      open,
-    };
+    if (children) {
+      /**
+       * If additional features are needed, renderProps will be added.
+       * @beta
+       */
+      const renderProps = {
+        open,
+      };
 
-    return children(renderProps);
+      return children(renderProps);
+    }
+
+    return <Fragment />;
   }, [children, open]);
 
   return (
