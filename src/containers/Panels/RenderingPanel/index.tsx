@@ -702,7 +702,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_visibilityOptions, _screenList]);
+  }, [dispatch, _visibilityOptions, _screenList]);
 
   return (
     <div className={cx('wrapper')}>
