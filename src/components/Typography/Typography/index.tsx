@@ -1,17 +1,13 @@
 import { ElementType, Fragment, memo, ReactNode } from 'react';
+import typo from './typography.json';
 
 import classNames from 'classnames/bind';
 import styles from './Typography.module.scss';
 
 const cx = classNames.bind(styles);
 
-type defaultVariant = 'title' | 'button' | 'body' | 'list';
-const defaultVariantMapping: { [key in defaultVariant]: string } = {
-  title: 'normal 600 var(--font-size-4)"Inter"',
-  button: 'normal 500 var(--font-size-3)"Inter"',
-  body: 'normal 300 var(--font-size-3)"Inter"',
-  list: 'normal 400 var(--font-size-4)"Inter"',
-};
+const defaultVariantMapping = { ...typo.common, ...typo.special };
+type defaultVariant = keyof typeof defaultVariantMapping;
 
 interface BaseProps {
   br?: boolean;
@@ -24,19 +20,9 @@ interface BaseProps {
 
 export type Props = BaseProps;
 
-const defaultProps: Partial<BaseProps> = {
-  br: false,
-  className: 'typography',
-  component: 'div',
-  variant: 'body',
-  variantMapping: defaultVariantMapping,
-};
-
-const Typography = (props: Props) => {
-  const { br, children, className, component, variant, variantMapping } = props;
+const Typography = ({ br = false, children, className, component = 'div', variant = 'body', variantMapping = defaultVariantMapping }: Props) => {
   const classes = cx('wrapper', className);
-
-  const C = component as ElementType;
+  const C = component;
 
   return (
     <Fragment>
@@ -48,7 +34,5 @@ const Typography = (props: Props) => {
     </Fragment>
   );
 };
-
-Typography.defaultProps = defaultProps;
 
 export default memo(Typography);

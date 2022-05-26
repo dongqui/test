@@ -1,0 +1,11 @@
+{
+  "_format": "{font-style} {font-weight} {font-size}/{line-height}'{font-family}'",
+  "common": {
+    "title": "normal 600 var(--font-size-4)'Inter'",
+    "body": "normal 300 var(--font-size-3)'Inter'"
+  },
+  "special": {
+    "button": "normal 500 var(--font-size-3)'Inter'",
+    "list": "normal 400 var(--font-size-4)'Inter'"
+  }
+}
