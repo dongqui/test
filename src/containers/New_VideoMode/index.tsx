@@ -3,7 +3,6 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
-import { Video } from 'components/Video';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -43,8 +42,44 @@ const VideoMode = () => {
     [windowHeight],
   );
 
+  const headerInspector = (file: File) => {
+    const blob = file;
+    const fileReader = new FileReader();
+    fileReader.onloadend = (e: ProgressEvent<FileReader>) => {
+      if (e.target && e.target.readyState === FileReader.DONE) {
+        const arr = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
+
+        let header = '';
+        const temp = [];
+        for (let i = 0; i < arr.length; i++) {
+          header += arr[i].toString(16);
+          temp.push(arr[i].toString(16));
+        }
+
+        // 52 49 46 46 ?? ?? ?? ?? 41 56 49 20 4c 49 53 54 - avi
+        // 66 74 79 70 (69 73 6f 6d) // (4d 53 4e 56) - mp4
+        // ?? ?? ?? ?? 66 74 79 70 71 74 20 20 - mov
+        // 1a 45 df a3 - webm
+      }
+    };
+
+    fileReader.readAsArrayBuffer(blob);
+  };
+
   const handleDrop = (files: File[]) => {
-    console.log(files);
+    if (files.length > 1) {
+      return;
+    }
+
+    const file = files[0];
+
+    const isAcceptableFormat = ['video/x-msvideo', 'video/mp4', 'video/quicktime', 'video/webm'];
+
+    const videoURL = URL.createObjectURL(files[0]);
+
+    if (videoRef && videoRef.current) {
+      videoRef.current.src = videoURL;
+    }
   };
 
   const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
@@ -60,7 +95,6 @@ const VideoMode = () => {
         return totalDevice.filter((device) => device.kind === 'videoinput');
       })
       .catch((error) => {
-        console.warn(error);
         setIsCameraLoaded({ loaded: false, error: true });
         return [];
       });
@@ -68,24 +102,22 @@ const VideoMode = () => {
     setCameraDeviceList(devices);
   }, []);
 
-  const mediaStreamInitialize = useCallback(
-    async (constraint = { video: true }) => {
-      await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
-        setCurrentStream(stream);
-      });
+  const mediaStreamInitialize = useCallback(async () => {
+    const constraint = { video: true };
+    // await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
+    //   if (videoRef.current) {
+    //     videoRef.current.srcObject = stream;
+    //   }
 
-      await getCameraDeviceList();
-    },
-    [getCameraDeviceList],
-  );
+    //   setCurrentStream(stream);
+    // });
+
+    await getCameraDeviceList();
+  }, [getCameraDeviceList]);
 
   useEffect(() => {
     mediaStreamInitialize();
   }, [mediaStreamInitialize]);
-
-  console.log('cameraDeviceList');
-  console.log(cameraDeviceList, isCameraLoaded);
 
   const videoOptions = {
     autoPlay: true,
@@ -105,7 +137,6 @@ const VideoMode = () => {
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           {/* RP */}
           <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} {...videoOptions} />
-          {/* <Video /> */}
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           CP
