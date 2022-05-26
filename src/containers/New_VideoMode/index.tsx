@@ -73,6 +73,7 @@ const VideoMode = () => {
 
     const file = files[0];
 
+    // avi, mp4, mov, webm
     const isAcceptableFormat = ['video/x-msvideo', 'video/mp4', 'video/quicktime', 'video/webm'];
 
     const videoURL = URL.createObjectURL(files[0]);
