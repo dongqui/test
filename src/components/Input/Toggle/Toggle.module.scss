@@ -1,6 +1,16 @@
 @import "styles/libraries/colors";
 
 .switch {
+  div:first-child {
+    background-color: $contentbg-base !important;
+  }
+
+  &.checked {
+    div:first-child {
+      background-color: $primary !important;
+    }
+  }
+
   &.disabled {
     div:first-child {
       background-color: $contentbg-base !important;
