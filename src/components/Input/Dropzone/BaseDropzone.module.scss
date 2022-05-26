@@ -1,5 +1,11 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   position: relative;
   width: 100%;
   height: 100%;
+
+  &.active {
+    border: 1px dotted $primary;
+  }
 }
