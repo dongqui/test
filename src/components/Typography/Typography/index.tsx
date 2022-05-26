@@ -6,7 +6,7 @@ import styles from './Typography.module.scss';
 
 const cx = classNames.bind(styles);
 
-const defaultVariantMapping = { ...typo.common, ...typo.special };
+export const defaultVariantMapping = { ...typo.common, ...typo.special };
 type defaultVariant = keyof typeof defaultVariantMapping;
 
 interface BaseProps {

@@ -1,5 +1,6 @@
 import { Meta } from '@storybook/addon-docs';
 import {Typography} from "components/Typography";
+import { defaultVariantMapping } from "components/Typography/Typography";
 
 <Meta title="Typography" />
 
@@ -41,19 +42,9 @@ browser에 따라 최소 font-size 값이 정해져 있어서, 일부 폰트의 
 <br/>
 <h2>Typography (2x)</h2>
 
-Typography의 경우 필요에 의해 조합으로 추가되는 방식입니다. `src/styles/libraries/_typography.scss`에서 확인할 수 있습니다.<br/>
+Typography의 경우 필요에 의해 조합으로 추가되는 방식입니다.<br/>
 (아래 보기는 2배 확대된 모습입니다.)
 
 <div style={{ zoom: 2 }}>
-  <span style={{font: 'normal 600 var(--font-size-4)"Inter"'}}>header-title</span><br/>
-  <span style={{font: 'normal 500 var(--font-size-3)"Inter"'}}>button-small</span><br/>
-  <span style={{font: 'normal 300 var(--font-size-3)"Inter"'}}>body-default</span><br/>
-  <span style={{font: 'normal 400 var(--font-size-4)"Inter"'}}>list</span><br/>
-
-  <br/>
-
-  <Typography component='span' variant='title' br>header-title</Typography>
-  <Typography component='span' variant='button' br>button-small</Typography>
-  <Typography component='span' variant='body' br>body-default</Typography>
-  <Typography component='span' variant='list' br>list</Typography>
+  {Object.keys(defaultVariantMapping).map(key => <Typography component='span' variant={key} br>{key}</Typography> )}
 </div>
