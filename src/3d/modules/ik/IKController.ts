@@ -181,22 +181,5 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
-
-    // ikDrivenTransformNodes.push(transformNode, transformNode.parent as TransformNode, transformNode.parent!.parent as TransformNode);
-
-    // ikControllerHandle.metadata = {
-    //   ...ikControllerHandle.metadata,
-    //   transformNode: transformNode,
-    //   transformNode1: transformNode.parent!,
-    //   transformNode2: transformNode.parent!.parent!,
-    //   transformNodeIk: tnIk,
-    //   transformNodeIk1: tn1Ik,
-    //   transformNodeIk2: tn2Ik,
-    //   controller: ikControllerTarget,
-    //   ikController: undefined,
-    //   controllerOrig: undefined,
-    //   ikControllerOrig: undefined,
-    //   blend: 1,
-    // };
   }
 }

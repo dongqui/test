@@ -52,6 +52,11 @@ export class IKModule extends Module {
     rootMesh: null as Nullable<Mesh>,
   };
 
+  /**
+   * Retrieves the retarget map for a specific assetID
+   * @param assetId
+   * @returns
+   */
   public getRetargetMap(assetId: string) {
     const map = this.plaskEngine.state.animationData.retargetMaps.find((elt) => elt.assetId === assetId);
 
@@ -88,11 +93,19 @@ export class IKModule extends Module {
     this._activeTransformNodes = objects;
   }
 
+  /**
+   * Adds IK controllers for a specific assetId
+   * @param assetId
+   * @returns PlaskTransformNodes to represent IK controller state
+   */
   public addIK(assetId: string) {
     this._initializeControllers(assetId);
-    return this.generateIkPlaskTransformNodes(assetId);
+    return this._generateIkPlaskTransformNodes(assetId);
   }
 
+  /**
+   * Removes IK structures from the engine
+   */
   public removeIK() {
     this._ghost.skeleton?.dispose();
     this._ghost.rootMesh?.dispose();
@@ -111,7 +124,7 @@ export class IKModule extends Module {
     this._ghostMeshes.length = 0;
   }
 
-  public pushDataList(pickedIkCtrl: IKController) {
+  private _getKeyframeDataForController(pickedIkCtrl: IKController) {
     const targetDataList = [];
     targetDataList.push(
       {
@@ -203,7 +216,7 @@ export class IKModule extends Module {
     }
   }
 
-  public generateIkPlaskTransformNodes(assetId: string) {
+  private _generateIkPlaskTransformNodes(assetId: string) {
     const result = [];
     for (const ikController of this.ikControllers) {
       const ptn = new PlaskTransformNode(ikController.handle);
@@ -215,6 +228,10 @@ export class IKModule extends Module {
     return result;
   }
 
+  /**
+   * Sets the blend value for the current selected controller
+   * @param value
+   */
   public setIKControllerBlend(value: number = 0) {
     // Evaluate if a IK Controller is selected
     const scene = this.plaskEngine.scene;
@@ -228,12 +245,19 @@ export class IKModule extends Module {
     }
   }
 
+  /**
+   * Sets the pole angle for the current selected controller
+   * @param value
+   */
   public setIKControllerPoleAngle(value: number = 0) {
     if (this._selectedIk) {
       this._selectedIk.poleAngle = value;
     }
   }
 
+  /**
+   * Sets IK position to FK for the current selected controller
+   */
   public setIKtoFK() {
     // Evaluate if a IK Controller is selected
     if (this._selectedIk) {
@@ -243,6 +267,9 @@ export class IKModule extends Module {
     }
   }
 
+  /**
+   * Sets FK position to IK for the current selected controller
+   */
   public setFKtoIK() {
     // Evaluate if a IK Controller is selected
     if (this._selectedIk) {
@@ -252,6 +279,10 @@ export class IKModule extends Module {
     }
   }
 
+  /**
+   * Edits the current animation ingredient so it adds a keyframe inside, representing the state of the current selected IK
+   * @returns the edited animationIngredient
+   */
   public getIKKeyframeData() {
     // Evaluate if a IK Controller is selected
     if (this._selectedIk) {
@@ -266,7 +297,7 @@ export class IKModule extends Module {
           targetAnimation.id,
           targetLayerId,
           targetCurrentTimeindex,
-          this.pushDataList(this._selectedIk),
+          this._getKeyframeDataForController(this._selectedIk),
         );
         return animationIngredients;
       }

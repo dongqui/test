@@ -674,7 +674,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Bone',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Bone');
+            dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isBoneVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
           active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
@@ -682,7 +683,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Mesh',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Mesh');
+            dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isMeshVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
           active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
@@ -690,7 +692,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Gizmo',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Gizmo');
+            dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isGizmoVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Gizmo');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
