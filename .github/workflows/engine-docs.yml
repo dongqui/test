@@ -29,8 +29,14 @@ jobs:
       - name: Generate doc
         run: npm run doc:engine
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./doc
+      - name: FTP-Deploy-Action
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        env:
+          FTP_SERVER: plask.dot-sine.com
+          FTP_USERNAME: plask-autodeploy
+          # FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PASSWORD: BROKEN_SECRET_FOR_TEST
+          LOCAL_DIR: doc
+          METHOD: sftp
+          PORT: 22
+          ARGS: --delete
