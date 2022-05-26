@@ -30,7 +30,7 @@
   left: 2px;
   top: 50%;
   transform: translateY(-50%);
-  transition: left ease 0.25s;
+  transition: left ease 0.25s, background-color ease 0.25s;
 
   &.checked {
     left: 14px;
