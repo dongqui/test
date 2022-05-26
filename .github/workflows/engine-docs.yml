@@ -30,7 +30,7 @@ jobs:
         run: npm run doc:engine
 
       - name: FTP-Deploy-Action
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
         env:
           FTP_SERVER: plask.dot-sine.com
           FTP_USERNAME: plask-autodeploy
