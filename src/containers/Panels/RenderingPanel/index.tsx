@@ -17,9 +17,10 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { useObserved } from 'hooks/common/useObserved';
 import SelectorModule from '3d/modules/selector/SelectorModule';
-import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskTransformNode, PlaskTransformNodeType } from '3d/entities/PlaskTransformNode';
 import { selectionChanged } from './stateSync';
 import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
+import { Controller } from 'react-hook-form';
 
 const cx = classNames.bind(styles);
 
@@ -423,6 +424,10 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       if (target.tagName.toLowerCase() === 'input') {
         return;
       }
+      const selectedTarget = _selectedTargets[0];
+      if (selectedTarget?.type === 'controller') {
+        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+      }
 
       switch (event.key) {
         case 'w':
@@ -434,12 +439,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         case 'e':
         case 'E':
         case 'ㄷ': {
+          if (selectedTarget?.type === 'controller') break;
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
           break;
         }
         case 'r':
         case 'R':
         case 'ㄱ': {
+          if (selectedTarget?.type === 'controller') break;
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
           break;
         }
@@ -458,7 +465,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [dispatch]);
+  }, [dispatch, _selectedTargets]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

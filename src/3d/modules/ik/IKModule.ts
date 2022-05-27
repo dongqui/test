@@ -21,8 +21,9 @@ import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Slider, Button 
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { GizmoModule } from '3d/modules/gizmo/GizmoModule';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap } from 'types/common';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode } from 'types/common';
 import { RootState } from 'reducers';
 import { addMetadata } from 'utils/RP/metadata';
 import { copyTransformFrom } from 'utils/RP/copyPose';
@@ -90,6 +91,10 @@ export class IKModule extends Module {
   }
 
   private _onSelectionChange(objects: TransformNode[]) {
+    // TODO Maybe parameters should be PlaskTransformNode for every module?
+    if (objects.length === 1) {
+      objects[0].metadata.plask?.ikController && this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+    }
     this._activeTransformNodes = objects;
   }
 
@@ -201,6 +206,7 @@ export class IKModule extends Module {
           }
 
           this._selectedIk = controller;
+          this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
 
           const sourceEvent: PointerEvent = event.sourceEvent;
           if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
