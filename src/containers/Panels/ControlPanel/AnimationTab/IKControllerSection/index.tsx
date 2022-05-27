@@ -154,7 +154,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     },
     {
-      text: 'Keyframe IK',
+      text: 'Bake all FK into IK',
       onClick: () => {
         const animationIngredient = plaskEngine.ikModule.getIKKeyframeData();
         if (animationIngredient) {
@@ -167,6 +167,14 @@ const IKControllerSection: FunctionComponent<Props> = ({
           dispatch(changeSelectedTargets());
         }
       },
+    },
+    {
+      text: 'Bake all IK into FK',
+      onClick: () => {},
+    },
+    {
+      text: 'Reset to initial pose',
+      onClick: () => {},
     },
   ];
 
