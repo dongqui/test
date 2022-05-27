@@ -42,10 +42,14 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
     takeLatest(getType(lpNodeActions.applyMocapToModel.request), handleApplyMocapToModel),
     takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
+    takeEvery(lpNodeActions._FILE_UPLOAD, _fileUpload),
+    takeEvery(lpNodeActions.IMPORT_MOCAP_JSON, importMocapJson),
     watchClickJointChannel(),
     // watchConfirmOnError(),
     watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),
     watchEditNodeNameSocketActions(),
+    watchReadJsonChannel(),
+    watchConfirmSwitchCModelhannel(),
   ]);
 }

@@ -61,8 +61,10 @@ import Logo from './New_svg/Logo.svg';
 import Support from './New_svg/Support.svg';
 import CloudUpload from './svg/CloudUpload.svg';
 import ErrorWarning from './svg/ErrorWarning.svg';
+import ModalClose from './svg/ModalClose.svg';
 
 type Icon =
+  | 'ModalClose'
   | 'Close'
   | 'Search'
   | 'EyeClose'
@@ -187,6 +189,7 @@ const images: Images = {
   Support,
   CloudUpload,
   ErrorWarning,
+  ModalClose,
 };
 
 export default images;

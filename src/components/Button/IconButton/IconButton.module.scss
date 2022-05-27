@@ -1,0 +1,62 @@
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
+
+.icon-button {
+  @include reset-button-style();
+  @include basic-button-style();
+  background-color: inherit;
+  width: 26px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span,
+  svg {
+    transition: color 0.25s;
+    color: $content-active;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:active,
+  &:hover {
+    filter: var(--button-filter);
+  }
+
+  &.disabled {
+    filter: none;
+
+    span,
+    svg {
+      color: var(--grey030);
+      * {
+        stroke: var(--grey030);
+      }
+    }
+  }
+}
+
+.primary {
+  background-color: $primary;
+
+  &.disabled {
+    background-color: var(--grey020);
+  }
+}
+
+.negative {
+  background-color: $negative;
+
+  &.disabled {
+    background-color: var(--grey020);
+  }
+}
+
+.default {
+  background-color: var(--grey020);
+}
+
+.outline {
+  border: 1px solid var(--grey030);
+}

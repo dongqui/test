@@ -1,0 +1,60 @@
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
+
+.expand {
+  @include reset-button-style();
+  @include basic-button-style();
+  background-color: inherit;
+  padding: 4px 7px 4px 6px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+
+
+  span,
+  svg {
+    transition: color 0.25s;
+    color: $content-active;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &:active,
+  &:hover {
+    filter: var(--button-filter);
+  }
+
+  &.disabled {
+    filter: none;
+
+    span,
+    svg {
+      color: var(--grey040);
+    }
+  }
+
+  &.isText {
+    padding: 5.5px 4px 5.5px 8px;
+  }
+
+  &.fullSize {
+
+  }
+}
+
+.default {
+  background-color: var(--grey020);
+}
+
+.button-content {
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.button-arrow {
+  margin-left: 5px;
+}

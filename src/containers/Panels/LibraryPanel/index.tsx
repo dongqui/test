@@ -7,7 +7,6 @@ import { partition } from 'lodash';
 
 import * as TEXT from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as modeSelectActions from 'actions/modeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
 import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
@@ -31,16 +30,17 @@ const LibraryPanel: FunctionComponent = () => {
   const handleDrop = useCallback(
     async (files: File[]) => {
       const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
-      // const videos = files.filter((file) => file.type.includes('video'));
-      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
-      const isError = videos.length > 1;
+      const hasMoreThanOneViedo = videos.length > 1;
+      const isInvalidFileFormat = !filesExceptVideo.every((file) => {
+        return file.name.toLocaleLowerCase().includes('glb') || file.name.toLocaleLowerCase().includes('fbx') || file.type.includes('json');
+      });
 
-      if (isError) {
+      if (hasMoreThanOneViedo) {
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
-            message: TEXT.WARNING_02,
+            message: WARNING_02,
             confirmText: 'Close',
           }),
         );
@@ -56,21 +56,13 @@ const LibraryPanel: FunctionComponent = () => {
         const videoBlobURL = URL.createObjectURL(videos[0]);
 
         dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Extract',
-            message: TEXT.CONFIRM_01,
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            onConfirm: () => {
-              dispatch(
-                modeSelectActions.changeMode({
-                  mode: 'videoMode',
-                  videoURL: videoBlobURL,
-                }),
-              );
-            },
+          globalUIActions.openModal('_AlertModal', {
+            message: IMPORT_ERROR_INVALID_FORMAT,
+            title: 'Import failed',
           }),
         );
+      } else {
+        dispatch(lpNodeActions._fileUpload(files));
       }
     },
     [dispatch],
@@ -119,7 +111,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
+          <LPBody lpNodes={nodes} isPreventContextmenu={isPreventContextmenu} />
         </Box>
       </div>
     </div>

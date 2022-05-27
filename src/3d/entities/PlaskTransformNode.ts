@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { Nullable, Quaternion, TransformNode } from '@babylonjs/core';
+import { Nullable, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
 export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknwown';
@@ -67,8 +67,9 @@ export class PlaskTransformNode extends PlaskEntity {
     const transformNode = this.reference;
 
     transformNode.position.toArray(this.position);
+    this.rotation.length = 0;
     if (transformNode.rotationQuaternion) {
-      this.rotation = [transformNode.rotationQuaternion.x, transformNode.rotationQuaternion.y, transformNode.rotationQuaternion.z, transformNode.rotationQuaternion.w];
+      transformNode.rotationQuaternion.toArray(this.rotation);
     } else {
       transformNode.rotation.toArray(this.rotation);
     }
@@ -107,6 +108,31 @@ export class PlaskTransformNode extends PlaskEntity {
     }
 
     return this;
+  }
+
+  /**
+   * Helper that updates the current position and updates the referenced `TransformNode`
+   * @param position
+   */
+  public setPosition(position: Vector3) {
+    position.toArray(this.position);
+    this.toTransformNode();
+  }
+
+  /**
+   * Helper that updates the current rotation and updates the referenced `TransformNode`
+   * @param rotation
+   */
+  public setRotation(rotation: Vector3 | Quaternion) {
+    rotation.toArray(this.rotation);
+  }
+
+  /**
+   * Helper that updates the current scaling and updates the referenced `TransformNode`
+   * @param scaling
+   */
+  public setScaling(scaling: Vector3) {
+    scaling.toArray(this.scaling);
   }
 
   public serialize() {

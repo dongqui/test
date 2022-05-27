@@ -2,15 +2,13 @@ const path = require('path');
 
 module.exports = {
   core: {
-    builder: "webpack5",
+    builder: 'webpack5',
   },
-  stories: [
-    "../src/**/*.stories.@(js|jsx|ts|tsx)"
-  ],
+  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx)', './**/*.stories.@(mdx)'],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-interactions",
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
     {
       name: '@storybook/preset-scss',
       options: {
@@ -23,12 +21,12 @@ module.exports = {
         sassLoaderOptions: {
           sassOptions: {
             includePaths: [path.join(__dirname, '../src')],
-          }
+          },
         },
-      }
+      },
     },
   ],
-  framework: "@storybook/react",
+  framework: '@storybook/react',
   staticDirs: [path.join(__dirname, '../public')],
   webpackFinal: async (config) => {
     // ref:
@@ -37,16 +35,16 @@ module.exports = {
     for (let rule of config.module.rules) {
       if (rule.use && rule.use.length > 0) {
         for (let use of rule.use) {
-          if (use.loader && use.loader.includes("/css-loader/")) {
+          if (use.loader && use.loader.includes('/css-loader/')) {
             use.options = {
               ...use.options,
-              url: (url, resourcePath) => !url.startsWith("/"),
+              url: (url, resourcePath) => !url.startsWith('/'),
             };
           }
         }
       }
     }
-
+    config.resolve.modules.push(path.resolve(__dirname, '../src'));
     return config;
-  }
-}
+  },
+};

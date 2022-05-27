@@ -133,7 +133,7 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
-export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact';
 export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface PlaskTrack {
@@ -197,7 +197,7 @@ export type RetargetMapValue = {
   targetTransformNodeId: Nullable<string>;
 };
 
-type ArrayOfThreeNumbers = [number, number, number];
+export type ArrayOfThreeNumbers = [number, number, number];
 export type ArrayOfFourNumbers = [number, number, number, number];
 
 export type PlaskMocapData = Array<{
@@ -210,6 +210,19 @@ export type PlaskMocapData = Array<{
     value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
   }>;
 }>;
+
+export type MocapJson = {
+  data: {
+    id: string;
+    result: {
+      motionNumber: number;
+      trackData: PlaskMocapData;
+    }[];
+    workingtime: number;
+  };
+  message: string;
+  statusCode: number;
+};
 
 export type BvhBoneType =
   | 'Hips'
@@ -247,6 +260,6 @@ export type SelectingData = {
   allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
-export type ButtonColor = 'primary' | 'secondary' | 'negative';
+export type ButtonColor = 'default' | 'primary' | 'negative';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';

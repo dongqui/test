@@ -1,5 +1,6 @@
-@import 'styles/libraries/_responsive';
-@import 'styles/libraries/_mixins';
+@import "styles/libraries/_responsive";
+@import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
 
 .wrapper {
   position: fixed;
@@ -16,13 +17,14 @@
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
-  padding: 28px 24px;
+  border: 1px solid $outline;
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
+  // padding 없애고 자식에서 정해야함.
+  padding: 20px;
   min-width: 280px;
   max-width: 60%;
   outline: 0;
-  background-color: #202122;
+  background-color: $bg-elevated;
 
   &.icon {
     padding-top: 16px;

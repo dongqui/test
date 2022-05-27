@@ -1,0 +1,24 @@
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
+
+.toggle {
+  @include reset-button-style();
+  @include basic-button-style();
+  color: $content-active;
+  background-color: var(--grey020);
+  transition: unset;
+
+  &:active:not(.state),
+  &:hover:not(.state) {
+    filter: var(--button-filter);
+  }
+
+  &.state {
+      background-color: $primary;
+  }
+
+  &.disabled {
+    filter: none;
+    background-color: var(--grey020);
+  }
+}

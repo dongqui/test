@@ -1,3 +1,6 @@
+@import "_colors.scss";
+@import "_typography.scss";
+
 @mixin reset-button-style() {
   border: 0;
   outline: 0;
@@ -8,13 +11,11 @@
 
 @mixin basic-button-style() {
   border-radius: 6px;
-  font-weight: 400;
-  transition: background-color 0.25s, border 0.25s;
+  transition: background-color 0.25s, color 0.25s;
 
   &.small {
-    min-width: 64px;
-    padding: 5px 16px;
-    font-size: 11px;
+    font: $button-small;
+    padding: 5.5px 16px;
   }
 
   &.fullSize {
@@ -22,14 +23,8 @@
   }
 
   &.disabled {
-    cursor: not-allowed;
-    background-color: #f5f5f5;
-    color: #bdbdbd;
-
-    &:hover {
-      background-color: #f5f5f5;
-      color: #bdbdbd;
-    }
+    cursor: default;
+    color: $text-disabled;
   }
 }
 
