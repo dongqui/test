@@ -107,14 +107,14 @@ export class AnimationModule extends Module {
       serverTracks.forEach((serverTrack) => {
         const transformKeys: IAnimationKey[] = [];
         if (serverTrack.property === 'rotationQuaternion') {
-          for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
+          for (const transformKey of serverTrack.transformKeysMap) {
             const quaternionKey = transformKey.transformKey as QuaternionTransformKey;
-            transformKeys.push({ frame, value: new Quaternion(quaternionKey.x, quaternionKey.y, quaternionKey.z, quaternionKey.w) });
+            transformKeys.push({ frame: transformKey.frameIndex, value: new Quaternion(quaternionKey.x, quaternionKey.y, quaternionKey.z, quaternionKey.w) });
           }
         } else {
-          for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
+          for (const transformKey of serverTrack.transformKeysMap) {
             const vectorKey = transformKey.transformKey as VectorTransformKey;
-            transformKeys.push({ frame, value: new Vector3(vectorKey.x, vectorKey.y, vectorKey.z) });
+            transformKeys.push({ frame: transformKey.frameIndex, value: new Vector3(vectorKey.x, vectorKey.y, vectorKey.z) });
           }
         }
 
