@@ -61,34 +61,43 @@ function* handleDeleteKeyFramesRequest(action: ReturnType<typeof keyframesAction
       }
     });
     yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+    const _targetTransformKeys = [...targetTransformKeys];
+    for (const transformkey of targetTransformKeys) {
+      if (transformkey.trackId.includes('//rotation')) {
+        _targetTransformKeys.push({ ...transformkey, trackId: transformkey.trackId.replace('//rotation', '//rotationQuaternion') });
+      }
+    }
 
-    const targetTracks: { trackId: string; frames: number[] }[] = [];
-    for (const transformKey of targetTransformKeys) {
+    const deletedTracks: { trackId: string; deletedIndexes: number[] }[] = [];
+    for (const transformKey of _targetTransformKeys) {
       if (!transformKey?.trackId || transformKey.from === undefined) {
         continue;
       }
-      const track = targetTracks.find((t) => t.trackId === transformKey.trackId);
+      const track = deletedTracks.find((t) => t.trackId === transformKey.trackId);
       if (track) {
-        track.frames.push(transformKey.from);
+        track.deletedIndexes.push(transformKey.from);
       } else {
-        targetTracks.push({
+        deletedTracks.push({
           trackId: transformKey.trackId,
-          frames: [transformKey.from],
+          deletedIndexes: [transformKey.from],
         });
       }
     }
+    console.log(deletedTracks);
     yield put(
       keyframesActions.deleteKeyframesSocket.send({
         type: 'delete-frames',
         data: {
-          layerId: '6oo3jg40ex12npvn1p7yk89ld65mzqrz',
-          tracks: targetTracks,
+          layerId: selectedLayer,
+          deletedTracks,
         },
       }),
     );
   }
 }
-function* handleDeleteKeyFramesReceive(action: ReturnType<typeof keyframesActions.deleteKeyframesSocket.receive>) {}
+function* handleDeleteKeyFramesReceive(action: ReturnType<typeof keyframesActions.deleteKeyframesSocket.receive>) {
+  console.log(action.payload);
+}
 
 // 키프레임 드래그 드랍 입력 감지
 function* watchDeleteframes() {
