@@ -1,3 +1,5 @@
+@import "styles/libraries/_colors";
+
 .wrapper {
   color: #fff;
 }
@@ -29,4 +31,40 @@
   top: 0;
   right: 0;
   z-index: 1;
+}
+
+.dropzone {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+}
+
+.dropzone-outer {
+  display: flex;
+  background-color: $bg-elevated;
+  border: 1px dotted $content-inactive;
+  border-radius: 6px;
+}
+
+.dropzone-guide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.icon-plus {
+  color: $content-inactive;
+  width: 16px;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.dropzone-guide-text {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 300;
+  color: $content-medium;
+  margin-bottom: 8px;
 }
