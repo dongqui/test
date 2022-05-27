@@ -93,27 +93,35 @@ function* handleMoveKeyframesRequest(params: ReturnType<typeof keyframesActions.
       });
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
 
-      const targetTracks: { trackId: string; frames: { frameIndexFrom: number; frameIndexTo: number }[] }[] = [];
-      for (const transformKey of targetTransformKeys) {
+      const _targetTransformKeys = [...targetTransformKeys];
+      for (const transformkey of targetTransformKeys) {
+        if (transformkey.trackId.includes('//rotation')) {
+          _targetTransformKeys.push({ ...transformkey, trackId: transformkey.trackId.replace('//rotation', '//rotationQuaternion') });
+        }
+      }
+
+      const targetTracks: { trackId: string; movedFrames: { frameIndexFrom: number; frameIndexTo: number }[] }[] = [];
+      for (const transformKey of _targetTransformKeys) {
         if (!transformKey?.trackId || transformKey.from === undefined) {
           continue;
         }
         const track = targetTracks.find((t) => t.trackId === transformKey.trackId);
         if (track) {
-          track.frames.push({ frameIndexFrom: transformKey.from, frameIndexTo: transformKey.to });
+          track.movedFrames.push({ frameIndexFrom: transformKey.from, frameIndexTo: transformKey.to });
         } else {
           targetTracks.push({
             trackId: transformKey.trackId,
-            frames: [{ frameIndexFrom: transformKey.from, frameIndexTo: transformKey.to }],
+            movedFrames: [{ frameIndexFrom: transformKey.from, frameIndexTo: transformKey.to }],
           });
         }
       }
+
       yield put(
         keyframesActions.moveKeyframesSocket.send({
           type: 'move-frames',
           data: {
-            layerId: '6oo3jg40ex12npvn1p7yk89ld65mzqrz',
-            tracks: targetTracks,
+            layerId: selectedLayer,
+            movedTracks: targetTracks,
           },
         }),
       );
@@ -126,8 +134,8 @@ function* handleMoveKeyFramesReceive(action: ReturnType<typeof keyframesActions.
 // 키프레임 드래그 드랍 입력 감지
 function* watchMoveKeyframes() {
   yield all([
-    takeLatest(getType(keyframesActions.deleteKeyframesSocket.request), handleMoveKeyframesRequest),
-    takeLatest(getType(keyframesActions.deleteKeyframesSocket.receive), handleMoveKeyFramesReceive),
+    takeLatest(getType(keyframesActions.moveKeyframesSocket.request), handleMoveKeyframesRequest),
+    takeLatest(getType(keyframesActions.moveKeyframesSocket.receive), handleMoveKeyFramesReceive),
   ]);
 }
 
