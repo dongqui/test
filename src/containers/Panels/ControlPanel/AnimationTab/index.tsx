@@ -94,7 +94,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       const targetAssetId = _selectedTargets[0].id.split('//')[0];
       const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.assetId === targetAssetId && animationIngredient.current);
       const targetLayer = targetAnimationIngredient?.layers.find((layer) => layer.id === _selectedLayer)!;
-      const targetTrack = targetLayer.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
+      const targetTrack = targetLayer?.tracks.find((track) => track.targetId === _selectedTargets[0].id)!;
 
       setControlLayer(targetLayer);
       setControlTrack(targetTrack);
