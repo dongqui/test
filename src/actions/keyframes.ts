@@ -1,4 +1,4 @@
-import { PlaskTrack, VectorTransformKey, QuaternionTransformKey } from 'types/common';
+import { PlaskTrack, VectorTransformKey, QuaternionTransformKey, ServerAnimationTrackRequest } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 import { createSocketActions } from './helper';
@@ -87,18 +87,28 @@ export const createKeyframes = (params: any) => ({
   },
 });
 
-interface deleteKeyframesRequestParams {}
 interface deleteKeyframesSendParams {
   type: 'delete-frames';
   data: {
-    layerId: '6oo3jg40ex12npvn1p7yk89ld65mzqrz';
-    tracks: {
+    layerId: string;
+    deletedTracks: {
       trackId: string;
-      frames: number[];
+      deletedIndexes: number[];
     }[];
   };
 }
-interface deleteKeyframesReceiveParams {}
+interface deleteKeyframesReceiveParams {
+  type: 'delete-frames';
+  data: {
+    layerId: string;
+    deletedTracks: {
+      trackId: string;
+      deletedIndexes: number[];
+    }[];
+    scenesUid: string;
+    animationUid: string;
+  };
+}
 // 키프레임 삭제
 export const deleteKeyframes = () => ({
   type: 'keyframes/DELETE_KEYFRAMES' as const,
@@ -109,31 +119,29 @@ export const deleteKeyframesSocket = createSocketActions(
   'keyframes/DELETE_KEYFRAMES_RECEIVE',
   'keyframes/DELETE_KEYFRAMES_UPDATE',
   'keyframes/DELETE_KEYFRAMES_FAILURE',
-)<deleteKeyframesRequestParams, deleteKeyframesSendParams, deleteKeyframesReceiveParams, undefined, Error>();
+)<undefined, deleteKeyframesSendParams, deleteKeyframesReceiveParams, undefined, Error>();
 
-interface editKeyframesRequestParams {}
 interface editKeyframesSendParams {
   type: 'put-frames';
   data: {
     layerId: string;
-    tracks: {
-      trackId: string;
-      frame: {
-        frameIndex: number;
-        property: string;
-        transformKey: VectorTransformKey | QuaternionTransformKey;
-      };
-    }[];
+    tracks: ServerAnimationTrackRequest[];
   };
 }
-interface editKeyframesReceiveParams {}
+interface editKeyframesReceiveParams {
+  type: 'put-frames';
+  data: {
+    layerId: string;
+    tracks: ServerAnimationTrackRequest[];
+  };
+}
 export const editKeyframesSocket = createSocketActions(
   'keyframes/EDIT_KEYFRAMES_REQUEST',
   'keyframes/EDIT_KEYFRAMES_SEND',
   'keyframes/EDIT_KEYFRAMES_RECEIVE',
   'keyframes/EDIT_KEYFRAMES_UPDATE',
   'keyframes/EDIT_KEYFRAMES_FAILURE',
-)<editKeyframesRequestParams, editKeyframesSendParams, editKeyframesReceiveParams, undefined, Error>();
+)<undefined, editKeyframesSendParams, editKeyframesReceiveParams, undefined, Error>();
 
 // 키프레임 드래드 드랍
 export interface DragDropKeyframes {
@@ -151,9 +159,9 @@ interface MoveKeyframesSendParams {
   type: 'move-frames';
   data: {
     layerId: string;
-    tracks: {
+    movedTracks: {
       trackId: string;
-      frames: {
+      movedFrames: {
         frameIndexFrom: number;
         frameIndexTo: number;
       }[];
@@ -182,7 +190,6 @@ export const paste = (params: Paste) => ({
   },
 });
 
-interface PasteKeyframesRequestParams {}
 interface PasteKeyframesSendParams extends editKeyframesSendParams {}
 interface PasteKeyframesReceiveParams {}
 
@@ -192,4 +199,4 @@ export const pasteKeyframesSocket = createSocketActions(
   'keyframes/PASTE_KEYFRAMES_RECEIVE',
   'keyframes/PASTE_KEYFRAMES_UPDATE',
   'keyframes/PASTE_KEYFRAMES_FAILURE',
-)<PasteKeyframesRequestParams, PasteKeyframesSendParams, PasteKeyframesReceiveParams, undefined, Error>();
+)<undefined, PasteKeyframesSendParams, PasteKeyframesReceiveParams, undefined, Error>();
