@@ -162,8 +162,15 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
         }
       });
 
+      const _targetTrackIds: string[] = [...targetTrackIds];
+      for (const trackId of targetTrackIds) {
+        if (trackId.includes('//rotation')) {
+          _targetTrackIds.push(trackId.replace('//rotation', '//rotationQuaternion'));
+        }
+      }
+
       const updatedLayer = newAnimationIngredient.layers.find((layer) => layer.id === _selectedLayer);
-      const tracks = updatedLayer?.tracks.filter((track) => targetTrackIds.includes(track.id));
+      const tracks = updatedLayer?.tracks.filter((track) => _targetTrackIds.includes(track.id));
       if (!tracks) {
         return;
       }
@@ -176,15 +183,22 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
             tracks: tracks?.map((track) => {
               const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
               return {
-                trackId: track.id,
-                frame: {
-                  frameIndex: transformKey?.frame,
-                  property: track.property,
-                  transformKey:
-                    track.property === 'rotationQuaternion'
-                      ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
-                      : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
-                },
+                id: track.id,
+                targetId: track.targetId,
+                filterBeta: track.filterBeta,
+                filterMinCutoff: track.filterMinCutoff,
+                name: track.name,
+                property: track.property,
+                transformKeysMap: [
+                  {
+                    frameIndex: transformKey?.frame,
+                    property: track.property,
+                    transformKey:
+                      track.property === 'rotationQuaternion'
+                        ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                        : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+                  },
+                ],
               };
             }),
           },

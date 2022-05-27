@@ -80,7 +80,7 @@ export interface ServerAnimationLayer {
   isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
   isDeleted: boolean;
   useFilter: boolean; // destructure filter related data
-  tracks: ServerAnimationTrack[]; // boneTracks -> tracks
+  tracks: ServerAnimationTrackRequest[]; // boneTracks -> tracks
 }
 export interface ServerAnimationLayerRequest extends Omit<ServerAnimationLayer, 'uid' | 'tracks'> {
   tracks: ServerAnimationTrackRequest[];
