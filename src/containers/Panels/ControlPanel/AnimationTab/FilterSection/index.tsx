@@ -104,15 +104,6 @@ const FilterSection: FunctionComponent<Props> = ({ isAllActive, visualizedAssetI
     }
   }, [controlLayer, controlTrack]);
 
-  // callback to spread/fold filter section
-  const handleSpreadFilter = useCallback(() => {
-    if (isFilterSectionSpread) {
-      setIsFilterSectionSpread(false);
-    } else {
-      setIsFilterSectionSpread(true);
-    }
-  }, [isFilterSectionSpread]);
-
   // callback to power filter on/off
   const handleFilterToggle = useCallback(() => {
     if (selectedAssetId) {

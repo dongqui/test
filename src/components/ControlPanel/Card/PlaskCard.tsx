@@ -28,8 +28,8 @@ interface Props {
   dropdownOptions?: Array<{ text: string; handleSelect: () => void }>;
 }
 
-const PlaskCard: FunctionComponent<Props> = ({ children, className, type = 'normal', title, isPowerOn, activeStatus, toggleOptions, dropdownOptions }) => {
-  const [isSectionSpread, setIsSectionSpread] = useState<boolean>(true);
+const PlaskCard: FunctionComponent<Props> = ({ children, className, type = 'normal', title, isPowerOn = true, activeStatus, toggleOptions, dropdownOptions }) => {
+  const [isSectionSpread, setIsSectionSpread] = useState<boolean>(isPowerOn);
 
   // callback to spread/fold transform section
   const handleSectionSpread = useCallback(() => {
