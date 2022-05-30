@@ -8,7 +8,6 @@ export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   rotation: number[];
   scaling: number[];
   type: PlaskTransformNodeType;
-  className: 'PlaskTransformNode';
   id: string;
   jointIds: string[];
 }
@@ -149,6 +148,7 @@ export class PlaskTransformNode extends PlaskEntity {
    */
   public setRotation(rotation: Vector3 | Quaternion) {
     rotation.toArray(this.rotation);
+    this.toTransformNode();
   }
 
   /**
@@ -157,9 +157,10 @@ export class PlaskTransformNode extends PlaskEntity {
    */
   public setScaling(scaling: Vector3) {
     scaling.toArray(this.scaling);
+    this.toTransformNode();
   }
 
-  public serialize() {
+  public serialize(): PlaskTransformNodeSpec {
     const obj = super.serialize();
 
     return {
