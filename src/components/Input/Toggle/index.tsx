@@ -18,7 +18,7 @@ const Toggle = ({ defaultChecked = false, disabled = false, onChange }: Props) =
       onChange(!checked);
       setChecked(!checked);
     }
-  }, [checked, onChange]);
+  }, [checked, disabled, onChange]);
 
   const classes = cx('wrapper', { disabled, checked });
   const handle = cx('handle', { disabled, checked });
