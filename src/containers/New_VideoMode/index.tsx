@@ -59,36 +59,46 @@ const VideoMode = () => {
             }
 
             // avi - 52 49 46 46 ?? ?? ?? ?? 41 56 49 20 4c 49 53 54
-            const regexAvi = new RegExp(/^(52494646)((([0-9a-fA-F]{1,2})\s?){4})(415649204c495354)$/gi);
+            const regexAvi = [
+              new RegExp(/^(52494646)((([0-9a-fA-F]{1,2})\s?){4})(415649204c495354)$/gi),
+              new RegExp(/^(49524646)((([0-9a-fA-F]{1,2})\s?){4})(56412049494c5453)$/gi),
+            ];
 
             // mov - 66 74 79 70 71 74 20 20
-            const regexMov = new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(6674797071742020)((([0-9a-fA-F]{1,2})\s?){2})/gi);
+            const regexMov = [
+              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(6674797071742020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
+              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(7466707974712020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
+            ];
 
             // mp4 - 66 74 79 70
-            const regexMp4 = new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(66747970)((([0-9a-fA-F]{1,2})\s?){8})/gi);
+            // 뒤집힌 경우 예시 - 0000 2000 7466 7079 7369 6d6f 0000 0002
+            const regexMp4 = [
+              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(66747970)((([0-9a-fA-F]{1,2})\s?){8})/gi),
+              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(74667079)((([0-9a-fA-F]{1,2})\s?){8})/gi),
+            ];
 
             // webm - 1a 45 df a3
-            const regexWebm = new RegExp(/^((1a45dfa3))((([0-9a-fA-F]{1,2})\s?){12})/gi);
+            const regexWebm = [new RegExp(/^((1a45dfa3))((([0-9a-fA-F]{1,2})\s?){12})/gi), new RegExp(/^((451aa3df))((([0-9a-fA-F]{1,2})\s?){12})/gi)];
 
-            if (regexAvi.test(header)) {
+            if (regexAvi[0].test(header) || regexAvi[1].test(header)) {
               extension = 'avi';
               resolve(extension);
               return;
             }
 
-            if (regexMov.test(header)) {
+            if (regexMov[0].test(header) || regexMov[1].test(header)) {
               extension = 'mov';
               resolve(extension);
               return;
             }
 
-            if (regexMp4.test(header)) {
+            if (regexMp4[0].test(header) || regexMp4[1].test(header)) {
               extension = 'mp4';
               resolve(extension);
               return;
             }
 
-            if (regexWebm.test(header)) {
+            if (regexWebm[0].test(header) || regexWebm[1].test(header)) {
               extension = 'webm';
               resolve(extension);
               return;
