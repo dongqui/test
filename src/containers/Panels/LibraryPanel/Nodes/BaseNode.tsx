@@ -32,7 +32,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   // TODO: visualized node 상태관리
 
   const currentVisualizedIngredient = animationIngredients.filter((ingredient) => visualizedAssetIds.includes(ingredient.assetId) && ingredient.current)[0];
-  const currentVisualizedMotion = nodes.find((node) => node.animation?.uid === currentVisualizedIngredient?.id);
+  const currentVisualizedMotion = nodes.find((node) => currentVisualizedIngredient && node.animation?.uid === currentVisualizedIngredient?.id);
   const closedAndHasVisualizedDescendant = getDescendantNodes(nodes, id).some((node) => node?.id === currentVisualizedMotion?.id) && !showChildren;
   const isVisualizedUICondition = currentVisualizedMotion?.id === id || closedAndHasVisualizedDescendant;
 

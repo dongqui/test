@@ -14,11 +14,12 @@ import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes } from 'utils/common';
 import { getInitialPoses, getCustomAnimationIngredients } from 'utils/RP';
-import { WARNING_07, WARNING_01 } from 'constants/Text';
+import { IMPORT_ERROR_UNKNOWN, WARNING_07, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import { PlaskRetargetMap, PlaskPose, PlaskAsset, ServerAnimationLayer, ServerAnimation } from 'types/common';
 import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
+import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -27,6 +28,11 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
   const baseScene = plaskProject.screenList[0].scene;
 
   try {
+    const extension = getFileExtension(file.name).toLowerCase();
+    if (extension !== 'glb' && extension !== 'fbx') {
+      throw new InvalidFormatImportError(IMPORT_ERROR_INVALID_FORMAT);
+    }
+
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
     const { assetsUid, modelUrl, uid }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
 
@@ -36,8 +42,11 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
     // TODO: handling this in sever
     const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelUrl, '', baseScene);
     const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
-    if (!skeletons?.length || !skeletons[0].bones?.length || !meshes?.length) {
-      throw new Error('Load asset container failed');
+    if (!skeletons?.length || !skeletons[0].bones?.length) {
+      throw new NoBoneImportError(IMPORT_ERROR_NO_BONE);
+    }
+    if (!meshes?.length) {
+      throw new NoMeshImportError(IMPORT_ERROR_NO_MESH);
     }
 
     plaskEngine.assetModule.preprocessAssetContainerData(assetsUid, assetContainer);
@@ -51,7 +60,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
     const modelNode = convertServerResponseToNode(modelWithRetargetmapRes);
 
-    const extension = getFileExtension(modelNode.name).toLowerCase();
     const fileName = modelNode.name.split('.').slice(0, -1).join('.');
     const nodeName = getNodeName(lpNode.nodes, fileName, extension);
     const initialPoses: PlaskPose[] = getInitialPoses(transformNodes, skeletons);
@@ -119,14 +127,16 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       );
     }
   } catch (e) {
-    console.log(e);
+    const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(
-      globalUIActions.openModal('AlertModal', {
-        title: 'Warning',
-        message: WARNING_07,
-        confirmText: 'Close',
-        confirmColor: 'negative',
-      }),
+      globalUIActions.openModal(
+        '_AlertModal',
+        {
+          message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNOWN,
+          title: 'Import failed',
+        },
+        `import_error_${file.name}`,
+      ),
     );
   } finally {
     yield put(globalUIActions.closeModal('LoadingModal'));

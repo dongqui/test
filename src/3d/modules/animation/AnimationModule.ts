@@ -15,19 +15,20 @@ import {
   ServerAnimationRequest,
   ServerAnimationLayer,
   ServerAnimationLayerRequest,
-  ServerAnimationTrack,
   ServerAnimationTrackRequest,
-  ServerTransformKey,
   ServerTransformKeyRequest,
   VectorTransformKey,
+  ArrayOfThreeNumbers,
+  ArrayOfFourNumbers,
 } from 'types/common';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import { getRandomStringKey } from 'utils/common';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_MIN_CUTOFF, MOCAP_QUATERNION_BETA, MOCAP_QUATERNION_MIN_CUTOFF } from 'utils/const';
 import OneEuroFilterForQuaternion from 'utils/RP/OneEuroFilterForQuaternion';
 import OneEuroFilterForVector from 'utils/RP/OneEuroFilterForVector';
 import { Module } from '../Module';
-import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;

@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
 import { partition } from 'lodash';
 
-import * as TEXT from 'constants/Text';
+import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import Box from 'components/Layout/Box';
@@ -44,17 +44,7 @@ const LibraryPanel: FunctionComponent = () => {
             confirmText: 'Close',
           }),
         );
-
-        return;
-      }
-
-      for (const file of filesExceptVideo) {
-        dispatch(lpNodeActions.addModelAsync.request(file));
-      }
-
-      if (videos.length > 0) {
-        const videoBlobURL = URL.createObjectURL(videos[0]);
-
+      } else if (isInvalidFileFormat) {
         dispatch(
           globalUIActions.openModal('_AlertModal', {
             message: IMPORT_ERROR_INVALID_FORMAT,
@@ -62,7 +52,7 @@ const LibraryPanel: FunctionComponent = () => {
           }),
         );
       } else {
-        dispatch(lpNodeActions._fileUpload(files));
+        dispatch(lpNodeActions.fileUpload(files));
       }
     },
     [dispatch],

@@ -52,7 +52,7 @@ const Authentication = ({ statusCode, message }: Props) => {
         <button className={cx('button-back')} onClick={handleBack}>
           Go Back
         </button>
-        <LinkedButton href={`${process.env.NEXT_PUBLIC_HOMEPAGE_URL}/signin`} variant="outlined" size="large" color="secondary">
+        <LinkedButton href={`${process.env.NEXT_PUBLIC_HOMEPAGE_URL}/signin`} variant="outlined" size="large" color="primary">
           Home
         </LinkedButton>
       </div>
