@@ -134,11 +134,6 @@ export class PlaskTransformNode extends PlaskEntity {
     this.toTransformNode();
   }
 
-  public async onInitialize(): Promise<void> {
-    // We must sync with babylon
-    // this.toTransformNode();
-  }
-
   /**
    * Helper that updates the current position and updates the referenced `TransformNode`
    * @param position

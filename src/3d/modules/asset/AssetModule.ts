@@ -10,7 +10,6 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { Channel } from 'redux-saga';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { PlaskAsset } from '3d/entities/PlaskAsset';
 
 /**
  * Options used to export scene to a .glb format file.
@@ -190,14 +189,7 @@ export class AssetModule extends Module {
                 const targetTransformNode = bone.getTransformNode();
                 if (targetTransformNode) {
                   const sourceEvent: PointerEvent = event.sourceEvent;
-                  if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-                    // TODO : 3D Modules should just use state as readonly
-                    // Do not dispatch, but instead do :
-                    // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
-                    this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: targetTransformNode.getPlaskEntity() }));
-                  } else {
-                    this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: targetTransformNode.getPlaskEntity() }));
-                  }
+                  this.plaskEngine.selectorModule.userRequestSelect([targetTransformNode.getPlaskEntity()], sourceEvent.ctrlKey || sourceEvent.metaKey);
                 }
               }),
             );

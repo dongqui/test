@@ -209,14 +209,7 @@ export class IKModule extends Module {
           this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
 
           const sourceEvent: PointerEvent = event.sourceEvent;
-          if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-            // TODO : 3D Modules should just use state as readonly
-            // Do not dispatch, but instead do :
-            // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
-            this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: pickedIkHandle.getPlaskEntity() }));
-          } else {
-            this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: pickedIkHandle.getPlaskEntity() }));
-          }
+          this.plaskEngine.selectorModule.userRequestSelect([pickedIkHandle.getPlaskEntity()], sourceEvent.ctrlKey || sourceEvent.metaKey);
         }),
       );
     }

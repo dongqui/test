@@ -7,7 +7,6 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
-import { PlaskAsset } from '3d/entities/PlaskAsset';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import plaskEngine from '3d/PlaskEngine';
 
@@ -29,9 +28,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   const { assetId } = action.payload;
 
   try {
-    const requestSameAsset = visualizedAssetIds.length > 0 && visualizedAssetIds[0] === action.payload.assetId;
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
-    const visualizedAssets = plaskEngine.getEntitiesByPredicate((entity) => entity.className == 'PlaskAsset' && (entity as PlaskAsset).assetId === visualizedAssetIds[0]);
 
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
@@ -42,24 +39,12 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
       yield put(plaskProjectActions.unrenderAsset({ assetId }));
       plaskEngine.ikModule.removeIK();
-    }
-
-    // visualize new asset
-    if (!requestSameAsset) {
-      // TODO : redundant with what's below
-      let currentVisualizedAsset = visualizedAssets[0] as PlaskAsset;
-      if (!currentVisualizedAsset) {
-        currentVisualizedAsset = new PlaskAsset();
-      } else {
-        currentVisualizedAsset = currentVisualizedAsset.clone();
-      }
-      currentVisualizedAsset.assetId = assetId;
-
-      yield put(selectingDataActions.addEntity({ targets: [currentVisualizedAsset] }));
+      plaskEngine.assetModule.unvisualizeModel(prevAssetId);
     }
 
     if (assetId && !visualizedAssetIds.includes(assetId)) {
       // TODO: simplify call with asset from assetList
+      plaskEngine.assetModule.visualizeModel(assetId);
       let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(assetId);
       plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(assetId));
       yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
