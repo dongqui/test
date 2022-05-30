@@ -14,10 +14,10 @@ interface Props {
 const Toggle = ({ defaultChecked = false, disabled = false, onChange }: Props) => {
   const [checked, setChecked] = useState(defaultChecked);
   const handleChange = useCallback(() => {
-    if (onChange) {
+    if (!disabled && onChange) {
       onChange(!checked);
+      setChecked(!checked);
     }
-    setChecked(!checked);
   }, [checked, onChange]);
 
   const classes = cx('wrapper', { disabled, checked });

@@ -18,6 +18,7 @@
 
   &.disabled {
     background-color: $contentbg-base;
+    cursor: default;
   }
 }
 
