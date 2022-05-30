@@ -16,7 +16,10 @@ export interface RequestNodeResponse {
   scenesUid: string;
   assetsUid: string;
   modelUrl?: string;
-  mocap?: PlaskMocapData;
+  mocap?: {
+    motionNumber: number;
+    trackData: PlaskMocapData;
+  }[];
   scenesLibraryModelAnimations?: scenesLibraryModelAnimation[];
 }
 export interface CreateFolderOrMocapBodyData {
@@ -33,4 +36,12 @@ export interface AddModelResponse extends RequestNodeResponse {
 export interface PostMotionData {
   animation: ServerAnimationRequest;
   animationLayer: ServerAnimationLayerRequest[];
+}
+
+export interface addMocapByJsonData {
+  name: string;
+  json: {
+    motionNumber: number;
+    trackData: PlaskMocapData;
+  }[];
 }

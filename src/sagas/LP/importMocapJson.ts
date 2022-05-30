@@ -1,7 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
 import { channel } from 'redux-saga';
 import { select, put, SagaReturnType, take } from 'redux-saga/effects';
-import produce from 'immer';
 import { isEqual } from 'lodash';
 
 import { RootState } from 'reducers';
@@ -9,6 +7,8 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { MocapJson } from 'types/common';
 import { BONE_NAMES, TRACK_DATA_PROPERTY } from 'constants/index';
+import * as api from 'api';
+import { convertServerResponseToNode } from 'utils/LP/converters';
 
 const readJsonChannel = channel();
 
@@ -21,31 +21,21 @@ export function* watchReadJsonChannel() {
 
 export default function* importMocapJson(action: ReturnType<typeof lpNodeActions.importMocapJson>) {
   const { lpNode }: RootState = yield select();
-  const mocapJsonFile = action.payload.mocapJson;
+  const mocapJsonFile = action.payload;
 
   const reader = new FileReader();
 
-  reader.onload = function (e) {
+  reader.onload = async function (e) {
     if (typeof e?.target?.result === 'string') {
       try {
         const json = JSON.parse(e.target.result);
         checkMocapJson(json);
-
-        const nodes = produce(lpNode.nodes, (draft) => {
-          const newMocapNode: LP.Node = {
-            // parentid, filepath 수정
-            id: uuidv4(),
-            parentId: '__root__',
-            name: mocapJsonFile.name,
-            filePath: '\\root',
-            childNodeIds: [],
-            extension: 'json',
-            type: 'Mocap',
-            mocapData: json.data.result[0].trackData,
-          };
-          draft.push(newMocapNode);
+        const reponseNode = await api.addMocapByJson(lpNode.sceneId, {
+          name: mocapJsonFile.name,
+          json: json.data.result,
         });
-        readJsonChannel.put(lpNodeActions.changeNode({ nodes }));
+        const mocap = convertServerResponseToNode(reponseNode);
+        readJsonChannel.put(lpNodeActions.addNodes([mocap]));
       } catch (e) {
         console.log(e);
         readJsonChannel.put(

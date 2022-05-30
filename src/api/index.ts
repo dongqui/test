@@ -5,3 +5,4 @@ export { createFolderOrMocap as createFolderOrMocap } from './LP';
 export { addModel as addModel } from './LP';
 export { createRetargetMap as createRetargetMap } from './LP';
 export { postMotion as postMotion } from './LP';
+export { addMocapByJson as addMocapByJson } from './LP';

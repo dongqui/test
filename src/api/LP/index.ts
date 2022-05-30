@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import requestApi from '../requestApi';
-import { CreateFolderOrMocapBodyData, PostMotionData } from 'types/LP';
+import { CreateFolderOrMocapBodyData, PostMotionData, addMocapByJsonData } from 'types/LP';
 import { PlaskRetargetMap } from 'types/common';
 import axios, { Canceler } from 'axios';
 
@@ -62,6 +62,16 @@ export async function addMocap(sceneId: string, formData: FormData, cancelTokenR
   return response.data;
 }
 
+export async function addMocapByJson(sceneId: string, data: addMocapByJsonData) {
+  const response = await requestApi({
+    method: 'POST',
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: `/library/${sceneId}/json`,
+    data,
+  });
+  return response.data;
+}
+
 export async function createRetargetMap(sceneId: string, libraryId: string, data: Omit<PlaskRetargetMap, 'id' | 'assetId'>) {
   const response = await requestApi({
     method: 'POST',
@@ -74,6 +84,7 @@ export async function createRetargetMap(sceneId: string, libraryId: string, data
 }
 
 export async function postMotion(sceneId: string, libraryId: string, data: PostMotionData) {
+  console.log(JSON.stringify(data));
   const response = await requestApi({
     method: 'POST',
     base: process.env.NEXT_PUBLIC_BACKEND_API_URL,

@@ -15,11 +15,12 @@ import handleExportAsset from './exportAsset';
 import handleDeleteMotion from './deleteMotion';
 import handleDeleteModel from './deleteModel';
 import watchDeleteNodeSocketActions from './deleteNode';
-import handleFileUpload from './fileUpload';
+import handleFileUpload, { watchConfirmSwitchCModelhannel } from './fileUpload';
 import handleAddModel from './addModel';
 import initNodes from './initNodes';
 import handleApplyMocapToModel from './applyMocapToModel';
 import addAssetsAndAnimationIngredients from './addAssetsAndAnimationIngredients';
+import importMocapJson, { watchReadJsonChannel } from './importMocapJson';
 
 export default function* LPSaga() {
   yield all([
@@ -42,8 +43,7 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
     takeLatest(getType(lpNodeActions.applyMocapToModel.request), handleApplyMocapToModel),
     takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
-    takeEvery(lpNodeActions._FILE_UPLOAD, _fileUpload),
-    takeEvery(lpNodeActions.IMPORT_MOCAP_JSON, importMocapJson),
+    takeLatest(getType(lpNodeActions.importMocapJson), importMocapJson),
     watchClickJointChannel(),
     // watchConfirmOnError(),
     watchDeleteNodeSocketActions(),

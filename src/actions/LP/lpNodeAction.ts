@@ -64,11 +64,6 @@ interface ExportAssetParams {
   format: ExportFormat;
 }
 
-interface FileUploadParams {
-  file: File | string;
-  showLoading: boolean;
-}
-
 interface MoveNodeSendParam {
   type: 'move';
   data: {
@@ -139,8 +134,8 @@ export const setSceneId = createAction('node/SET_SCENE_ID', (sceneId: string) =>
 export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
 export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
 export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: RequestNodeResponse[]) => nodesFromServer)();
-
-export const fileUpload = createAction('node/FILE_UPLOAD', (params: FileUploadParams) => ({ ...params }))();
+export const fileUpload = createAction('node/FILE_UPLOAD', (files: File[]) => files)();
+export const importMocapJson = createAction('node/IMPORT_MOCAP_JSON', (mocapJson: File) => mocapJson)();
 
 export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
 export const addEmptyMotionAsnyc = createAsyncAction('node/ADD_EMPTY_MOTION_REQUEST', 'node/ADD_EMPTY_MOTION_SUCCESS', 'node/ADD_EMPTY_MOTION_FAILURE')<

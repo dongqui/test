@@ -11,7 +11,7 @@ export function convertServerResponseToNode(response: RequestNodeResponse): LP.N
     modelUrl: response.modelUrl || '',
     childNodeIds: [],
     extension: response.type === 'MODEL' ? getFileExtension(response.name) : '',
-    mocapData: response.mocap,
+    mocapData: response.mocap && response.mocap[0].trackData,
     animation: response.scenesLibraryModelAnimations && response.scenesLibraryModelAnimations[0],
     retargetMap: response.retargetMap,
   };
