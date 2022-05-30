@@ -44,7 +44,7 @@ const VideoMode = () => {
 
   const headerInspector = async (file: File) => {
     const load = async () => {
-      return new Promise((resolve, reject) => {
+      return new Promise<string>((resolve, reject) => {
         const fileReader = new FileReader();
 
         fileReader.onloadend = async (e: ProgressEvent<FileReader>) => {
@@ -130,11 +130,10 @@ const VideoMode = () => {
     }
 
     const file = files[0];
+    console.log(file.type);
 
     // avi, mp4, mov, webm
-    const isAcceptableFormat = ['video/x-msvideo', 'video/mp4', 'video/quicktime', 'video/webm'];
-
-    const videoURL = URL.createObjectURL(files[0]);
+    const acceptableFormats = ['avi', 'mp4', 'mov', 'webm'];
 
     const extension = await headerInspector(file)
       .then((res) => {
@@ -145,9 +144,17 @@ const VideoMode = () => {
         return err;
       });
 
-    console.log('extension > ' + extension);
+    const isAcceptableVideo = acceptableFormats.includes(extension);
+
+    console.log('extension > ' + extension, isAcceptableVideo);
+
+    if (!isAcceptableVideo) {
+      return;
+    }
 
     if (videoRef && videoRef.current) {
+      const videoURL = URL.createObjectURL(files[0]);
+
       videoRef.current.src = videoURL;
     }
   };
