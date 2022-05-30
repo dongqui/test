@@ -1,5 +1,7 @@
 .transport-controls {
   position: absolute;
   left: 50%;
+  //transform: translateX(-50%);
   display: flex;
+  background-color: inherit;
 }

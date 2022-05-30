@@ -14,11 +14,11 @@ const cx = classNames.bind(styles);
 
 interface Props {
   // TODO: delete
-  lpNode?: LP.Node[];
+  lpNodes?: LP.Node[];
   isPreventContextmenu?: boolean;
 }
 
-const LPBody: FunctionComponent<Props> = () => {
+const LPBody: FunctionComponent<Props> = ({ lpNodes }) => {
   const dispatch = useDispatch();
   const { nodes, draggedNode } = useSelector((state) => state.lpNode);
 
@@ -46,7 +46,7 @@ const LPBody: FunctionComponent<Props> = () => {
     dispatch(lpNodeActions.dropNodeOnRoot());
   };
 
-  const rootPathNodes = nodes.filter((node) => node.parentId === '__root__');
+  const rootPathNodes = (lpNodes ?? nodes).filter((node) => node.parentId === '__root__');
 
   return (
     <div className={cx('inner')} onContextMenu={handleContextMenu} onClick={handleClick} onDrop={handleDrop} data-cy="lp-body">

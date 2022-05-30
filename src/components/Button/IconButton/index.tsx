@@ -8,18 +8,18 @@ import styles from './IconButton.module.scss';
 const cx = classNames.bind(styles);
 
 interface BaseProps {
-  variant: ButtonColor | 'outline' | 'ghost';
+  type: ButtonColor | 'outline' | 'ghost';
   icon: FunctionComponent;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  variant: 'primary',
+  type: 'primary',
 };
 
-const IconButton: FunctionComponent<Props> = ({ variant, icon, disabled, onClick, className, children, ...rest }) => {
-  const classes = cx('icon-button', className, variant, {
+const IconButton: FunctionComponent<Props> = ({ type, icon, disabled, onClick, className, children, ...rest }) => {
+  const classes = cx('icon-button', className, type, {
     disabled,
   });
 

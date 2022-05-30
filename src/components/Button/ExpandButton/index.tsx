@@ -1,26 +1,26 @@
 import { ButtonHTMLAttributes, FunctionComponent, memo, MouseEvent, useCallback } from 'react';
+import { IconWrapper, SvgPath } from 'components/Icon';
 
 import classNames from 'classnames/bind';
 import styles from './ExpandButton.module.scss';
-import { IconWrapper, SvgPath } from 'components/Icon';
 
 const cx = classNames.bind(styles);
 
 interface BaseProps {
   content: FunctionComponent | string;
-  variant?: 'default' | 'ghost';
+  type?: 'default' | 'ghost';
   fullSize?: boolean;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  variant: 'default',
+  type: 'default',
   fullSize: false,
 };
 
-const ExpandButton: FunctionComponent<Props> = ({ content, variant, color, fullSize, disabled, onClick, className, children, ...rest }) => {
-  const classes = cx('expand', className, variant, {
+const ExpandButton: FunctionComponent<Props> = ({ content, type, color, fullSize, disabled, onClick, className, children, ...rest }) => {
+  const classes = cx('expand', className, type, {
     disabled,
     fullSize,
     isText: typeof content === 'string',
@@ -38,7 +38,7 @@ const ExpandButton: FunctionComponent<Props> = ({ content, variant, color, fullS
   return (
     <button className={classes} onClick={handleClick} {...rest}>
       {typeof content === 'string' ? <span className={cx('button-content')}>{content}</span> : <IconWrapper className={cx('button-content')} icon={content} />}
-      <IconWrapper hasFrame={true} icon={SvgPath.EmptyDownArrow} />
+      <IconWrapper icon={SvgPath.EmptyDownArrow} className={cx('button-arrow')} />
     </button>
   );
 };

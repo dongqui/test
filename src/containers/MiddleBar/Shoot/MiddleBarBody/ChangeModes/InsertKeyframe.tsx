@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { IconButton } from 'components/Button';
 import * as animationDataActions from 'actions/animationDataAction';
 
 import classNames from 'classnames/bind';
@@ -23,7 +24,8 @@ const InsertKeyframe = () => {
   }, [_playState, _selectedTargets.length, dispatch]);
 
   return (
-    <IconWrapper className={cx({ disabled: _selectedTargets.length === 0 || _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />
+    // <IconWrapper className={cx({ disabled: _selectedTargets.length === 0 || _playState === 'play' })} icon={SvgPath.InsertKeyframe} hasFrame={false} onClick={handleClickButton} />
+    <IconButton type="default" icon={SvgPath.InsertKeyframe} onClick={handleClickButton} disabled={_selectedTargets.length === 0 || _playState === 'play'} />
   );
 };
 

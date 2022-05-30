@@ -7,23 +7,23 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  color?: 'primary';
+  type?: 'primary';
   text?: string;
   fullSize?: boolean;
   defaultState?: boolean;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  color: 'primary',
+  type: 'primary',
   size: 'small',
   defaultState: false,
 };
 
-const ToggleButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, defaultState, onClick, className, children, ...rest }) => {
+const ToggleButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, defaultState, onClick, className, children, ...rest }) => {
   const [toggleState, setToggleState] = useState(defaultState ?? false);
-  const classes = cx('toggle', className, size, color, {
+  const classes = cx('toggle', className, size, type, {
     disabled,
     fullSize,
     state: toggleState,

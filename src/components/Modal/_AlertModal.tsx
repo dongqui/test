@@ -30,7 +30,7 @@ export default function _AlertModal({ onClose, message, title, onClickFooterButt
         <header>
           <IconWrapper icon={SvgPath['ErrorWarning']} />
           <h6>{title}</h6>
-          <IconButton onClick={onClose} variant="ghost" icon={SvgPath['ModalClose']} />
+          <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
         <div className={cx('body')}>
           <Html content={message} />
