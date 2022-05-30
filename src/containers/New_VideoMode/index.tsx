@@ -42,31 +42,79 @@ const VideoMode = () => {
     [windowHeight],
   );
 
-  const headerInspector = (file: File) => {
-    const blob = file;
-    const fileReader = new FileReader();
-    fileReader.onloadend = (e: ProgressEvent<FileReader>) => {
-      if (e.target && e.target.readyState === FileReader.DONE) {
-        const arr = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
+  const headerInspector = async (file: File) => {
+    const load = async () => {
+      return new Promise((resolve, reject) => {
+        const fileReader = new FileReader();
 
-        let header = '';
-        const temp = [];
-        for (let i = 0; i < arr.length; i++) {
-          header += arr[i].toString(16);
-          temp.push(arr[i].toString(16));
-        }
+        fileReader.onloadend = async (e: ProgressEvent<FileReader>) => {
+          let extension = '';
 
-        // 52 49 46 46 ?? ?? ?? ?? 41 56 49 20 4c 49 53 54 - avi
-        // 66 74 79 70 (69 73 6f 6d) // (4d 53 4e 56) - mp4
-        // ?? ?? ?? ?? 66 74 79 70 71 74 20 20 - mov
-        // 1a 45 df a3 - webm
-      }
+          if (e.target && e.target.readyState === FileReader.DONE) {
+            const arr = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
+
+            let header = '';
+            for (let i = 0; i < arr.length; i++) {
+              header += arr[i].toString(16);
+            }
+
+            // avi - 52 49 46 46 ?? ?? ?? ?? 41 56 49 20 4c 49 53 54
+            const regexAvi = new RegExp(/^(52494646)((([0-9a-fA-F]{1,2})\s?){4})(415649204c495354)$/gi);
+
+            // mov - 66 74 79 70 71 74 20 20
+            const regexMov = new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(6674797071742020)((([0-9a-fA-F]{1,2})\s?){2})/gi);
+
+            // mp4 - 66 74 79 70
+            const regexMp4 = new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(66747970)((([0-9a-fA-F]{1,2})\s?){8})/gi);
+
+            // webm - 1a 45 df a3
+            const regexWebm = new RegExp(/^((1a45dfa3))((([0-9a-fA-F]{1,2})\s?){12})/gi);
+
+            if (regexAvi.test(header)) {
+              extension = 'avi';
+              resolve(extension);
+              return;
+            }
+
+            if (regexMov.test(header)) {
+              extension = 'mov';
+              resolve(extension);
+              return;
+            }
+
+            if (regexMp4.test(header)) {
+              extension = 'mp4';
+              resolve(extension);
+              return;
+            }
+
+            if (regexWebm.test(header)) {
+              extension = 'webm';
+              resolve(extension);
+              return;
+            }
+
+            reject('Not supported extension');
+          }
+        }; // onloadend
+
+        fileReader.readAsArrayBuffer(file);
+      });
     };
 
-    fileReader.readAsArrayBuffer(blob);
+    const extension = load()
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err;
+      });
+
+    return extension;
   };
 
-  const handleDrop = (files: File[]) => {
+  const handleDrop = async (files: File[]) => {
     if (files.length > 1) {
       return;
     }
@@ -77,6 +125,17 @@ const VideoMode = () => {
     const isAcceptableFormat = ['video/x-msvideo', 'video/mp4', 'video/quicktime', 'video/webm'];
 
     const videoURL = URL.createObjectURL(files[0]);
+
+    const extension = await headerInspector(file)
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        console.log(err);
+        return err;
+      });
+
+    console.log('extension > ' + extension);
 
     if (videoRef && videoRef.current) {
       videoRef.current.src = videoURL;
