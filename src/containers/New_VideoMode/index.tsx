@@ -58,12 +58,6 @@ const VideoMode = () => {
               header += arr[i].toString(16);
             }
 
-            // avi - 52 49 46 46 ?? ?? ?? ?? 41 56 49 20 4c 49 53 54
-            const regexAvi = [
-              new RegExp(/^(52494646)((([0-9a-fA-F]{1,2})\s?){4})(415649204c495354)$/gi),
-              new RegExp(/^(49524646)((([0-9a-fA-F]{1,2})\s?){4})(56412049494c5453)$/gi),
-            ];
-
             // mov - 66 74 79 70 71 74 20 20
             const regexMov = [
               new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(6674797071742020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
@@ -79,12 +73,6 @@ const VideoMode = () => {
 
             // webm - 1a 45 df a3
             const regexWebm = [new RegExp(/^((1a45dfa3))((([0-9a-fA-F]{1,2})\s?){12})/gi), new RegExp(/^((451aa3df))((([0-9a-fA-F]{1,2})\s?){12})/gi)];
-
-            if (regexAvi[0].test(header) || regexAvi[1].test(header)) {
-              extension = 'avi';
-              resolve(extension);
-              return;
-            }
 
             if (regexMov[0].test(header) || regexMov[1].test(header)) {
               extension = 'mov';
@@ -132,8 +120,8 @@ const VideoMode = () => {
     const file = files[0];
     console.log(file.type);
 
-    // avi, mp4, mov, webm
-    const acceptableFormats = ['avi', 'mp4', 'mov', 'webm'];
+    // mp4, mov, webm
+    const acceptableFormats = ['mp4', 'mov', 'webm'];
 
     const extension = await headerInspector(file)
       .then((res) => {
