@@ -80,16 +80,16 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const [blendValue, setBlendValue] = useState<number>(1);
 
   useEffect(() => {
-    setIsIKOn(true);
+    setPoleAngleValue(0);
+    setBlendValue(1);
+    setIsIKOn(false);
     controlTargets.forEach((controlTarget) => {
       const controller = readMetadata('ikController', controlTarget.reference);
       if (controller) {
+        setIsIKOn(true);
         setBlendValue(controller.blend);
         setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
-      } else {
-        setPoleAngleValue(0);
-        setBlendValue(1);
-        setIsIKOn(false);
+        return;
       }
     });
   }, [controlTargets]);
