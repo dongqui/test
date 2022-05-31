@@ -71,6 +71,8 @@ export default function* addAssetsAndAnimationIngredients(action: ReturnType<typ
         },
       }),
     );
+
+    // temporal code
     yield put({ type: 'ADDED_NEW_ASSET' });
   } catch (e) {
   } finally {

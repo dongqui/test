@@ -14,7 +14,7 @@ import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { createRetargetMap, isRetargetError } from 'utils/LP/Retarget';
 import { getFileExtension, filterAnimatableTransformNodes } from 'utils/common';
 import { getInitialPoses, getCustomAnimationIngredients } from 'utils/RP';
-import { IMPORT_ERROR_UNKNOWN, WARNING_07, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
+import { IMPORT_ERROR_UNKNOWN, WARNING_01, IMPORT_ERROR_NO_BONE, IMPORT_ERROR_NO_MESH, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import { PlaskRetargetMap, PlaskPose, PlaskAsset, ServerAnimationLayer, ServerAnimation } from 'types/common';
 import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';

@@ -9,7 +9,6 @@ import handleCancelVisulization from './cancelVisulization';
 import handleAddEmptyMotion from './addEmptyMotion';
 import handleDuplicateMotion from './duplicateMotion';
 import watchMoveNodeSocketActions from './moveNode';
-// import { watchConfirmOnError, handleDropMocapOnModel } from './dropMocapOnModel';
 import watchEditNodeNameSocketActions from './editNodeName';
 import handleExportAsset from './exportAsset';
 import handleDeleteMotion from './deleteMotion';
@@ -30,13 +29,9 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.duplicateMotion), handleDuplicateMotion),
     takeLatest(getType(lpNodeActions.duplicateMotionAsync.request), handleDuplicateMotion),
     takeLatest(getType(lpNodeActions.visualizeMotion), handleVisualizeMotion),
-    // takeLatest(getType(lpNodeActions.dropNodeOnFolder), handleDropNodeOnFolder),
-    // takeLatest(getType(lpNodeActions.dropMocapOnModel), handleDropMocapOnModel),
-    // takeLatest(getType(lpNodeActions.editNodeName), handleEditNodeName),
     takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
     takeLatest(getType(lpNodeActions.deleteMotion), handleDeleteMotion),
     takeLatest(getType(lpNodeActions.deleteModel), handleDeleteModel),
-    // takeLatest(getType(lpNodeActions.deleteFolderOrMocap), handleDeleteFolderOrMocap),
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.initNodes), initNodes),
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
@@ -45,7 +40,6 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
     takeLatest(getType(lpNodeActions.importMocapJson), importMocapJson),
     watchClickJointChannel(),
-    // watchConfirmOnError(),
     watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),
     watchEditNodeNameSocketActions(),

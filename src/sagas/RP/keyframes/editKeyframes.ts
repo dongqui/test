@@ -1,11 +1,13 @@
-import { put, select, takeLatest } from 'redux-saga/effects';
+import { put, select, all, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
+import { Vector3 } from '@babylonjs/core';
+import { getType } from 'typesafe-actions';
+
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframesActions from 'actions/keyframes';
 import { RootState } from 'reducers';
 import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTransformKeys } from 'utils/RP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
-import { Vector3 } from '@babylonjs/core';
 
 function getSelectedLayer(state: RootState) {
   return state.trackList.selectedLayer;
@@ -23,7 +25,7 @@ function getCurrentFrameIndex(state: RootState) {
   return state.animatingControls.currentTimeIndex;
 }
 
-function* worker() {
+function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.editKeyframesSocket.request>) {
   const _selectedLayer = getSelectedLayer(yield select()); // === selectedLayerId (inappropriate )
   const _propertyTrackList = getPropertyTrackList(yield select());
   const _animationIngredients = getAnimationIngredients(yield select());
@@ -160,6 +162,49 @@ function* worker() {
         }
       });
 
+      const _targetTrackIds: string[] = [...targetTrackIds];
+      for (const trackId of targetTrackIds) {
+        if (trackId.includes('//rotation')) {
+          _targetTrackIds.push(trackId.replace('//rotation', '//rotationQuaternion'));
+        }
+      }
+
+      const updatedLayer = newAnimationIngredient.layers.find((layer) => layer.id === _selectedLayer);
+      const tracks = updatedLayer?.tracks.filter((track) => _targetTrackIds.includes(track.id));
+      if (!tracks) {
+        return;
+      }
+
+      yield put(
+        keyframesActions.editKeyframesSocket.send({
+          type: 'put-frames',
+          data: {
+            layerId: _selectedLayer,
+            tracks: tracks?.map((track) => {
+              const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
+              return {
+                id: track.id,
+                targetId: track.targetId,
+                filterBeta: track.filterBeta,
+                filterMinCutoff: track.filterMinCutoff,
+                name: track.name,
+                property: track.property,
+                transformKeysMap: [
+                  {
+                    frameIndex: transformKey?.frame,
+                    property: track.property,
+                    transformKey:
+                      track.property === 'rotationQuaternion'
+                        ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                        : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+                  },
+                ],
+              };
+            }),
+          },
+        }),
+      );
+
       yield put(
         animationDataActions.editAnimationIngredient({
           animationIngredient: newAnimationIngredient,
@@ -171,8 +216,15 @@ function* worker() {
   }
 }
 
+function* handleEditKeyframesReceive(action: ReturnType<typeof keyframesActions.editKeyframesSocket.receive>) {
+  // It's optimistic UI for now... but have to fix
+}
+
 function* watchEditKeyframes() {
-  yield takeLatest(animationDataActions.EDIT_KEYFRAMES, worker);
+  yield all([
+    takeLatest(getType(keyframesActions.editKeyframesSocket.request), handleEditKeyframesRequest),
+    takeLatest(getType(keyframesActions.editKeyframesSocket.receive), handleEditKeyframesReceive),
+  ]);
 }
 
 export default watchEditKeyframes;

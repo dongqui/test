@@ -10,7 +10,6 @@ function getAnimationIngredients(state: RootState) {
 }
 
 function* handleDeleteLayerRequest(action: ReturnType<typeof trackListActions.deleteLayerSocket.request>) {
-  console.log(action.payload);
   yield put(
     trackListActions.deleteLayerSocket.send({
       type: 'delete-layer',
