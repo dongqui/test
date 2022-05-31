@@ -42,7 +42,7 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = true;
+const FEATURE_HISTORY = false;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -196,11 +196,10 @@ export class PlaskEngine {
    */
   public async onEntitiesChanged(currentEntities: EntityMap, previousEntities: EntityMap) {
     // TODO : make it a static prop
-    const entityOrder = ['PlaskAsset', 'PlaskTransformNode'];
+    const entityOrder = ['PlaskTransformNode'];
 
     // Entities update
     if (currentEntities !== previousEntities) {
-      console.log('Length diff : ', Object.keys(currentEntities).length, Object.keys(previousEntities).length);
       for (const entityClass of entityOrder) {
         for (const entityId in currentEntities) {
           const currentEntity = currentEntities[entityId];
@@ -215,7 +214,6 @@ export class PlaskEngine {
       // Remove any entity that is not present in the new state
       for (const entityId in previousEntities) {
         if (!currentEntities[entityId]) {
-          console.log('entity disposed');
           this._entityStore.unregisterEntity(previousEntities[entityId]);
         }
       }
