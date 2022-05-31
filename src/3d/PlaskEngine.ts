@@ -361,7 +361,7 @@ export class PlaskEngine {
   private _onSceneReady() {
     // callback to call when scene is ready
     this.scene.useRightHandedSystem = true;
-    this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#202020'));
+    this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#343638'));
 
     // add default elements to the scene
     this._grounds = createGrounds(this.scene, true);
