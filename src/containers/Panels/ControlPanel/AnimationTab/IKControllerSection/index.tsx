@@ -54,7 +54,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
 
-  const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
+  const [controlTargets, setControlTargets] = useState<Array<PlaskTransformNode>>([]);
 
   useEffect(() => {
     if (visualizedRetargetMap) {
@@ -67,16 +67,9 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   // select control target according to the selected target
   useEffect(() => {
-    if (_selectedTargets.length === 0) {
-      // case nothing is selected
-      setControlTarget(null);
-    } else if (_selectedTargets.length === 1) {
-      // case single target is selected
-      setControlTarget(_selectedTargets[0].reference);
-    } else {
-      // case multi targets are selected
-      setControlTarget(null);
-    }
+    const targets = _selectedTargets.filter((target) => readMetadata('ikController', target.reference));
+    plaskEngine.ikModule.setSelectedIk(targets.map((ik) => readMetadata('ikController', ik.reference)));
+    setControlTargets(targets);
   }, [_selectableObjects, _selectedTargets]);
 
   // IK Valid
@@ -88,20 +81,18 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setIsIKOn(true);
-    const controller = controlTarget ? readMetadata('ikController', controlTarget) : null;
-    if (controller) {
-      // TODO: Temp approach, need to check
-      console.log(`ControlTarget Blend: ${controller.blend}`);
-      console.log(`ControlTarget Angle: ${controller.poleAngle}`);
-      setBlendValue(controller.blend);
-      setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
-    } else {
-      console.log('Reset');
-      setPoleAngleValue(0);
-      setBlendValue(1);
-      setIsIKOn(false);
-    }
-  }, [controlTarget]);
+    controlTargets.forEach((controlTarget) => {
+      const controller = readMetadata('ikController', controlTarget.reference);
+      if (controller) {
+        setBlendValue(controller.blend);
+        setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
+      } else {
+        setPoleAngleValue(0);
+        setBlendValue(1);
+        setIsIKOn(false);
+      }
+    });
+  }, [controlTargets]);
 
   const IKControllerData = [
     {
@@ -246,7 +237,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}
-              color="default"
+              type="default"
               disabled={!isAllActive || !isIKOn}
               fullSize={true}
             />
@@ -269,7 +260,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
           />
         </div>
       )}
-      {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
+      {!(isAllActive && controlTargets.length == 0) && <div className={cx('inactive-overlay')}></div>}
     </PlaskCard>
   );
 };

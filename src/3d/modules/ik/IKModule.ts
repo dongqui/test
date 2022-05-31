@@ -46,7 +46,7 @@ export class IKModule extends Module {
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _fkControlledJoints: { ikNode: TransformNode; fkNode: TransformNode }[] = [];
-  private _selectedIk: Nullable<IKController> = null;
+  private _selectedIkControllers: Array<IKController> = [];
   private _ghostMeshes: Mesh[] = [];
   private _ghost = {
     skeleton: null as Nullable<Skeleton>,
@@ -210,12 +210,11 @@ export class IKModule extends Module {
           pickedIkHandle.renderOutline = true;
           pickedIkHandle.outlineColor = Color3.White();
 
+          this.setSelectedIk([controller]);
+
           for (const elem of controller.fkInfluenceChain!) {
             this._activeTransformNodes.push(elem);
           }
-
-          this._selectedIk = controller;
-          this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
 
           const sourceEvent: PointerEvent = event.sourceEvent;
           this.plaskEngine.selectorModule.userRequestSelect([pickedIkHandle.getPlaskEntity()], sourceEvent.ctrlKey || sourceEvent.metaKey);
@@ -237,20 +236,27 @@ export class IKModule extends Module {
   }
 
   /**
+   * Sets selectedIk
+   * @param selectedIK
+   */
+  public setSelectedIk(selectedIK: Array<IKController>) {
+    this._selectedIkControllers = selectedIK;
+  }
+
+  /**
    * Sets the blend value for the current selected controller
    * @param value
    */
   public setIKControllerBlend(value: number = 0) {
     // Evaluate if a IK Controller is selected
-    const scene = this.plaskEngine.scene;
-    if (this._selectedIk) {
-      this._selectedIk.blend = value;
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.blend = value;
 
       let newColor = new Color3();
       Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
-      let targetMat = this._selectedIk.handle.material as StandardMaterial;
+      let targetMat = selectedIK.handle.material as StandardMaterial;
       targetMat.emissiveColor = newColor;
-    }
+    });
   }
 
   /**
@@ -258,9 +264,9 @@ export class IKModule extends Module {
    * @param value
    */
   public setIKControllerPoleAngle(value: number = 0) {
-    if (this._selectedIk) {
-      this._selectedIk.poleAngle = value;
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.poleAngle = value;
+    });
   }
 
   /**
@@ -268,23 +274,22 @@ export class IKModule extends Module {
    */
   public setIKtoFK() {
     // Evaluate if a IK Controller is selected
-    if (this._selectedIk) {
-      this._selectedIk.handle.setAbsolutePosition(this._selectedIk.fkTarget!.absolutePosition);
-      this._selectedIk.poleAngle = this._selectedIk.fkController!.poleAngle;
-      this._selectedIk.controller.update();
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.handle.setAbsolutePosition(selectedIK.fkTarget!.absolutePosition);
+      selectedIK.poleAngle = selectedIK.fkController!.poleAngle;
+      selectedIK.controller.update();
+    });
   }
 
   /**
    * Sets FK position to IK for the current selected controller
    */
   public setFKtoIK() {
-    // Evaluate if a IK Controller is selected
-    if (this._selectedIk) {
-      this._selectedIk.fkTarget!.setAbsolutePosition(this._selectedIk.target.absolutePosition);
-      this._selectedIk.fkController!.poleAngle = this._selectedIk.poleAngle;
-      this._selectedIk.fkController!.update();
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.fkTarget!.setAbsolutePosition(selectedIK.target.absolutePosition);
+      selectedIK.fkController!.poleAngle = selectedIK.poleAngle;
+      selectedIK.fkController!.update();
+    });
   }
 
   /**
@@ -293,7 +298,8 @@ export class IKModule extends Module {
    */
   public getIKKeyframeData() {
     // Evaluate if a IK Controller is selected
-    if (this._selectedIk) {
+
+    this._selectedIkControllers.forEach((selectedIK) => {
       const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
         (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
       );
@@ -305,11 +311,11 @@ export class IKModule extends Module {
           targetAnimation.id,
           targetLayerId,
           targetCurrentTimeindex,
-          this._getKeyframeDataForController(this._selectedIk),
+          this._getKeyframeDataForController(selectedIK),
         );
         return animationIngredients;
       }
-    }
+    });
     return null;
   }
 
