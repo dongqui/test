@@ -204,7 +204,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
     const result = await axios({
       method: 'POST',
-      url: 'https://shootapi.myplask.com:6500/mocap-upload-api-common',
+      url: 'https://ml-mocap-lb.plask.ai:6500/mocap-upload-api-common',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       cancelToken: new axios.CancelToken((cancel) => {
@@ -514,10 +514,11 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
             {!recordState && <div className={cx('disable-control')} />}
           </div>
           {/* api 연동 */}
-          {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setReadyExtract(true)} />}
+          <FilledButton className={cx('extract-button', { disabled: !recordState })} disabled={!recordState} onClick={() => setReadyExtract(true)}>
+            Extract Motion
+          </FilledButton>
           {/* api 점검중 */}
           {/* {recordState && <FilledButton className={cx('extract-button')} text="Extract Motion" onClick={() => setIsServerUpdating(true)} />} */}
-          {!recordState && <FilledButton className={cx('extract-button', 'disabled')} text="Extract Motion" />}
           {!deviceList.length && !videoURL && <div className={cx('disable-overlay')} />}
         </div>
       </Box>

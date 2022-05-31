@@ -30,6 +30,9 @@ import OneEuroFilterForVector from 'utils/RP/OneEuroFilterForVector';
 import { Module } from '../Module';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
+/**
+ * Module that handles all animation related stuff in the 3D engine
+ */
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
 

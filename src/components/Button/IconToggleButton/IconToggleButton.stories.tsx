@@ -4,7 +4,6 @@ import _IconToggleButton from './';
 import { SvgPath } from 'components/Icon';
 
 export default {
-  title: 'Buttons',
   component: _IconToggleButton,
   argTypes: {
     variant: {
@@ -24,5 +23,5 @@ export const IconToggleButton = Template.bind({});
 IconToggleButton.args = {
   disabled: false,
   icon: SvgPath.Search,
-  variant: 'primary',
+  type: 'primary',
 };

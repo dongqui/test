@@ -7,14 +7,9 @@
   height: 100%;
   padding: 0 8px;
   color: white;
+  background-color: inherit;
 
   span {
     font: $header-title;
-  }
-
-  .plus {
-    width: 16px;
-    padding-top: 4px;
-    cursor: pointer;
   }
 }

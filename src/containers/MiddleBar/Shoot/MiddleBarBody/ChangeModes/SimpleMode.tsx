@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { useLSResizeState, useLSResizeDispatch } from 'contexts/LS/ResizeContext';
-import { IconWrapper, SvgPath } from 'components/Icon';
+import { SvgPath } from 'components/Icon';
+import { IconToggleButton } from 'components/Button';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -18,7 +19,7 @@ const SimpleMode = () => {
     });
   }, [resizeDispatch, resizeState.simpleMode]);
 
-  return <IconWrapper className={cx({ active: resizeState.simpleMode })} icon={SvgPath.SimpleMode} onClick={handleChange} hasFrame={false} />;
+  return <IconToggleButton icon={SvgPath.SimpleMode} defaultState={resizeState.simpleMode} onClick={handleChange} />;
 };
 
 export default SimpleMode;

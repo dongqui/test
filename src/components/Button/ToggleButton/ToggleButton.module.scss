@@ -6,9 +6,10 @@
   @include basic-button-style();
   color: $content-active;
   background-color: var(--grey020);
+  transition: unset;
 
-  &:active,
-  &:hover {
+  &:active:not(.state),
+  &:hover:not(.state) {
     filter: var(--button-filter);
   }
 

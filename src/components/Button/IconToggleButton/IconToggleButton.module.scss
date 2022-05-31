@@ -5,6 +5,8 @@
   @include reset-button-style();
   @include basic-button-style();
   background-color: var(--grey020);
+  transition: unset;
+
   width: 26px;
   height: 24px;
   display: flex;
@@ -19,8 +21,8 @@
     height: 16px;
   }
 
-  &:active,
-  &:hover {
+  &:active:not(.state),
+  &:hover:not(.state) {
     filter: var(--button-filter);
   }
 
