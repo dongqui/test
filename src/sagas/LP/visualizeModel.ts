@@ -30,7 +30,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     const { modelNode, animationIngredientId } = action.payload;
 
     if (!modelNode.childNodeIds.length) {
-      yield put(lpNodeActions.addEmptyMotionAsnyc.request({ assetId: modelNode.assetId!, nodeId: modelNode.id }));
+      yield put(lpNodeActions.addEmptyMotionAsync.request({ assetId: modelNode.assetId!, nodeId: modelNode.id }));
       yield take('ADDED_EMPTY_MOTION');
     }
 
