@@ -23,7 +23,7 @@ import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { GizmoModule } from '3d/modules/gizmo/GizmoModule';
 import * as selectingDataActions from 'actions/selectingDataAction';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode } from 'types/common';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace } from 'types/common';
 import { RootState } from 'reducers';
 import { addMetadata } from 'utils/RP/metadata';
 import { copyTransformFrom } from 'utils/RP/copyPose';
@@ -90,12 +90,21 @@ export class IKModule extends Module {
     }
   }
 
-  private _onSelectionChange(objects: TransformNode[]) {
-    // TODO Maybe parameters should be PlaskTransformNode for every module?
+  private _onSelectionChange(objects: PlaskTransformNode[]) {
+    this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.LOCAL);
     if (objects.length === 1) {
-      objects[0].metadata.plask?.ikController && this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+      switch (objects[0].type) {
+        case 'controller':
+          this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.WORLD);
+          this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+          break;
+        case 'joint':
+          break;
+        case 'unknwown':
+          break;
+      }
     }
-    this._activeTransformNodes = objects;
+    this._activeTransformNodes = objects.map((node) => node.reference);
   }
 
   /**

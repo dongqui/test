@@ -18,6 +18,7 @@ import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { readMetadata } from 'utils/RP/metadata';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 type GizmoDragObserver = Nullable<
   Observer<{
@@ -73,13 +74,15 @@ export class GizmoModule extends Module {
     this._gizmoManager.dispose();
   }
 
-  private _onSelectionChange(selectedTargets: TransformNode[]) {
+  private _onSelectionChange(selectedTargets: PlaskTransformNode[]) {
     // Clear previous outline
     this._clearOutline();
 
+    const selectedTargetsNodes = selectedTargets.map((node) => node.reference);
+
     // Update active targets
     this._activeTargets.length = 0;
-    for (const target of selectedTargets) {
+    for (const target of selectedTargetsNodes) {
       this._activeTargets.push(target);
     }
 
