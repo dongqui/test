@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs';
-import {Typography} from "components/Typography";
-import { defaultVariantMapping } from "components/Typography/Typography";
+import { Typography as Tg } from "components/Typography";
+import { TypographyType } from "components/Typography/Typography";
 
 <Meta title="Typography" />
 
@@ -37,14 +37,4 @@ browser에 따라 최소 font-size 값이 정해져 있어서, 일부 폰트의 
   <span style={{fontWeight: 500, fontSize: "var(--font-size-8)" }}>medium</span><br/>
   <span style={{fontWeight: 600, fontSize: "var(--font-size-8)" }}>semi bold</span><br/>
   <span style={{fontWeight: 700, fontSize: "var(--font-size-8)" }}>bold</span><br/>
-</div>
-
-<br/>
-<h2>Typography (2x)</h2>
-
-Typography의 경우 필요에 의해 조합으로 추가되는 방식입니다.<br/>
-(아래 보기는 2배 확대된 모습입니다.)
-
-<div style={{ zoom: 2 }}>
-  {Object.keys(defaultVariantMapping).map(key => <Typography component='span' variant={key} br>{key}</Typography> )}
 </div>

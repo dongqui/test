@@ -1,36 +1,24 @@
-import { ElementType, Fragment, memo, ReactNode } from 'react';
-import typo from './typography.json';
+import { Fragment, memo, ReactNode } from 'react';
 
 import classNames from 'classnames/bind';
 import styles from './Typography.module.scss';
 
 const cx = classNames.bind(styles);
 
-export const defaultVariantMapping = { ...typo.common, ...typo.special };
-type defaultVariant = keyof typeof defaultVariantMapping;
+export type TypographyType = 'title' | 'body' | 'button' | 'list';
 
-interface BaseProps {
-  br?: boolean;
+interface Props {
   children?: ReactNode;
   className?: string;
-  component?: ElementType;
-  variant?: defaultVariant;
-  variantMapping?: object;
+  type?: TypographyType;
 }
 
-export type Props = BaseProps;
-
-const Typography = ({ br = false, children, className, component = 'div', variant = 'body', variantMapping = defaultVariantMapping }: Props) => {
-  const classes = cx('wrapper', className);
-  const C = component;
+const Typography = ({ children, className, type = 'body' }: Props) => {
+  const classes = cx('wrapper', type, className);
 
   return (
     <Fragment>
-      {/*@ts-ignore*/}
-      <C className={classes} style={{ font: variantMapping[variant] }}>
-        {children}
-      </C>
-      {br && <br />}
+      <div className={classes}>{children}</div>
     </Fragment>
   );
 };
