@@ -1,4 +1,7 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import * as globalUIActions from 'actions/Common/globalUI';
+import { IMPORT_ERROR_INVALID_FORMAT, WARNING_02 } from 'constants/Text';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
@@ -10,6 +13,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const VideoMode = () => {
+  const dispatch = useDispatch();
   const [windowWidth, windowHeight] = useWindowSize();
 
   const boxProps = useMemo(
@@ -114,6 +118,15 @@ const VideoMode = () => {
 
   const handleDrop = async (files: File[]) => {
     if (files.length > 1) {
+      // Upload one video file at a time.
+      // Warning close
+      dispatch(
+        globalUIActions.openModal('AlertModal', {
+          title: 'Warning',
+          message: WARNING_02,
+          confirmText: 'Close',
+        }),
+      );
       return;
     }
 
@@ -134,9 +147,13 @@ const VideoMode = () => {
 
     const isAcceptableVideo = acceptableFormats.includes(extension);
 
-    console.log('extension > ' + extension, isAcceptableVideo);
-
     if (!isAcceptableVideo) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
+          title: 'Import failed',
+        }),
+      );
       return;
     }
 
