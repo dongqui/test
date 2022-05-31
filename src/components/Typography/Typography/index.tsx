@@ -1,4 +1,4 @@
-import { Fragment, memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 
 import classNames from 'classnames/bind';
 import styles from './Typography.module.scss';
@@ -16,11 +16,7 @@ interface Props {
 const Typography = ({ children, className, type = 'body' }: Props) => {
   const classes = cx('wrapper', type, className);
 
-  return (
-    <Fragment>
-      <div className={classes}>{children}</div>
-    </Fragment>
-  );
+  return <div className={classes}>{children}</div>;
 };
 
 export default memo(Typography);
