@@ -44,12 +44,6 @@ const DirectoryContextMenu = ({ nodeId }: Props) => {
       <ContextMenuItem dataCy="contextmenu-edit-name" onClick={handleEditName}>
         Edit name
       </ContextMenuItem>
-      {/* <ContextMenuItem  onClick={}>
-        Copy
-      </ContextMenuItem>
-      <ContextMenuItem  onClick={}>
-        Paste
-      </ContextMenuItem> */}
       <ContextMenuItem dataCy="contextmenu-new-directory" onClick={handleNewDirectory}>
         New directory
       </ContextMenuItem>

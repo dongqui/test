@@ -33,15 +33,6 @@ interface SelectNodeParams {
   assetId?: string | null;
 }
 
-interface MoveNodeParams {
-  nodeId: string;
-}
-
-interface DropMocapOnModelParams {
-  nodeId: string;
-  assetId?: string;
-}
-
 interface EditNodeNameRequestParams {
   nodeId: string;
   newName: string;
@@ -87,13 +78,6 @@ interface EditNodeNameReceiveParam {
     name: string;
   };
 }
-interface DeleteMotionReceiveParam {
-  type: 'delete';
-  data: {
-    animationId: string;
-  };
-}
-
 interface DeleteNodeSendParams {
   type: 'delete';
   scenesLibraryId: string;
@@ -112,11 +96,6 @@ interface DeleteNodeReceiveParam {
 interface ApplyMocapToModelRequestParams {
   nodeId: string;
   assetId?: string;
-}
-interface ApplyMocapToModelSendParams {}
-interface ApplyMocapToModelReceiveParams {
-  type: 'apply-mocap-to-model';
-  data: {};
 }
 
 export const addAssetsAndAnimationIngredients = createAction('node/ADD_ASSETS_AND_ANIMATION_INGRIDIENTS', (modelNode: LP.Node) => modelNode)();
@@ -137,27 +116,34 @@ export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: Reque
 export const fileUpload = createAction('node/FILE_UPLOAD', (files: File[]) => files)();
 export const importMocapJson = createAction('node/IMPORT_MOCAP_JSON', (mocapJson: File) => mocapJson)();
 
-export const addEmptyMotion = createAction('node/ADD_EMPTY_MOTION', (params: AddEmptyMotionParams) => ({ ...params }))();
-export const addEmptyMotionAsnyc = createAsyncAction('node/ADD_EMPTY_MOTION_REQUEST', 'node/ADD_EMPTY_MOTION_SUCCESS', 'node/ADD_EMPTY_MOTION_FAILURE')<
+export const addEmptyMotionAsync = createAsyncAction('node/ADD_EMPTY_MOTION_REQUEST', 'node/ADD_EMPTY_MOTION_SUCCESS', 'node/ADD_EMPTY_MOTION_FAILURE')<
   AddEmptyMotionParams,
   LP.Node,
   Error
 >();
+
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
+
 export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
+
+export const initDefaultSceneModelData = createAsyncAction(
+  'node/INIT_DEFAULT_SCENE_MODEL_DATA_REQUEST',
+  'node/INIT_DEFAULT_SCENE_MODEL_DATA_SUCCESS',
+  'node/INIT_DEFAULT_SCENE_MODEL_DATA_FAILURE',
+)<LP.Node[], LP.Node[], Error>();
+
 export const applyMocapToModel = createAsyncAction('node/APPLY_MOCAP_TO_MODEL_REQUEST', 'node/APPLY_MOCAP_TO_MODEL_SUCCESS', 'node/APPLY_MOCAP_TO_MODEL_FAILURE')<
   ApplyMocapToModelRequestParams,
   LP.Node[],
   Error
 >();
-export const duplicateMotion = createAction('node/DUPLICATE_MOTION', (params: DuplicateMotionParams) => ({ ...params }))();
+
 export const duplicateMotionAsync = createAsyncAction('node/DUPLICATE_MOTION_REQUEST', 'node/DUPLICATE_MOTIONSUCCESS', 'node/DUPLICATE_MOTION_FAILURE')<
   DuplicateMotionParams,
   LP.Node[],
   Error
 >();
 
-// export const deleteFolderOrMocap = createAction('node/DELETE_FOLDER_OR_MOCAP', (params: DeleteFolderOrMocapParams) => ({ ...params }))();
 export const deleteNodeSocket = createSocketActions(
   'node/DELETE_NODE_REQUEST',
   'node/DELETE_NODE_SEND',
@@ -166,7 +152,6 @@ export const deleteNodeSocket = createSocketActions(
   'node/DELETE_NODE_FAILURE',
 )<string, DeleteNodeSendParams, DeleteNodeReceiveParam, LP.Node[], string>();
 
-export const dropNodeOnFolderOrRoot = createAction('node/MOVE_NODE', (params: MoveNodeParams) => ({ ...params }))();
 export const moveNodeSocket = createSocketActions(
   'node/MOVE_NODE_OR_ROOT_REQUEST',
   'node/MOVE_NODE_OR_ROOT_SEND',
@@ -175,7 +160,6 @@ export const moveNodeSocket = createSocketActions(
   'node/MOVE_NODE_OR_ROOT_FAILURE',
 )<string, MoveNodeSendParam, MoveNodeReceiveParam, LP.Node[], string>();
 
-export const editNodeName = createAction('node/EDIT_NODE_NAME', (params: EditNodeNameRequestParams) => ({ ...params }))();
 export const editNodeNameSocket = createSocketActions(
   'node/UPDATE_NODE_NAME_REQUEST',
   'node/UPDATE_NODE_NAME_SEND',
@@ -183,5 +167,3 @@ export const editNodeNameSocket = createSocketActions(
   'node/UPDATE_NODE_NAME_UPDATE',
   'node/UPDATE_NODE_NAME_FAILURE',
 )<EditNodeNameRequestParams, EditNodeNameSendParams, EditNodeNameReceiveParam, LP.Node[], string>();
-
-export const dropMocapOnModel = createAction('node/DROP_MOCAP_ON_MODEL', (params: DropMocapOnModelParams) => ({ ...params }))();

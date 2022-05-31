@@ -31,7 +31,7 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
   });
 
   useEffect(() => {
-    // is here best place to connect socket?
+    // is here the best place to connect socket?
     function initProjectAuth() {
       tokenManager.set(token);
       dispatch(lpActions.setSceneId(sceneId));

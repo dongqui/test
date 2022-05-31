@@ -14,7 +14,7 @@ import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
 import { ServerAnimationLayer, ServerAnimation } from 'types/common';
 
-export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
+export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotionAsync.request>) {
   const { plaskProject, lpNode }: RootState = yield select();
   const { assetId, nodeId } = action.payload;
   const modelNode = find(lpNode.nodes, { id: nodeId });

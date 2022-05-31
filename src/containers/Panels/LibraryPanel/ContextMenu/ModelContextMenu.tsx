@@ -38,7 +38,7 @@ const ModelContextMenu = ({ node }: Props) => {
     const hasMotions = childNodeIds.length !== 0;
 
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotionAsnyc.request({ nodeId: id, assetId: assetId || '' }));
+      dispatch(lpNodeActions.addEmptyMotionAsync.request({ nodeId: id, assetId: assetId || '' }));
     }
     dispatch(lpNodeActions.visualizeModel(node));
   };
@@ -52,7 +52,7 @@ const ModelContextMenu = ({ node }: Props) => {
   const handleAddEmptyMotion = () => {
     if (assetId) {
       dispatch(
-        lpNodeActions.addEmptyMotionAsnyc.request({
+        lpNodeActions.addEmptyMotionAsync.request({
           nodeId: id,
           assetId,
         }),

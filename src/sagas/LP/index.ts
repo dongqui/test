@@ -20,13 +20,13 @@ import initNodes from './initNodes';
 import handleApplyMocapToModel from './applyMocapToModel';
 import addAssetsAndAnimationIngredients from './addAssetsAndAnimationIngredients';
 import importMocapJson, { watchReadJsonChannel } from './importMocapJson';
+import handleInitDefaultSceneModelData from './initDefaultSceneModelData';
 
 export default function* LPSaga() {
   yield all([
     takeLatest(getType(lpNodeActions.visualizeModel), handleVisualizeModel),
     takeLatest(getType(lpNodeActions.cancelVisulization), handleCancelVisulization),
-    takeLatest(getType(lpNodeActions.addEmptyMotionAsnyc.request), handleAddEmptyMotion),
-    takeLatest(getType(lpNodeActions.duplicateMotion), handleDuplicateMotion),
+    takeLatest(getType(lpNodeActions.addEmptyMotionAsync.request), handleAddEmptyMotion),
     takeLatest(getType(lpNodeActions.duplicateMotionAsync.request), handleDuplicateMotion),
     takeLatest(getType(lpNodeActions.visualizeMotion), handleVisualizeMotion),
     takeLatest(getType(lpNodeActions.exportAsset), handleExportAsset),
@@ -39,6 +39,7 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.applyMocapToModel.request), handleApplyMocapToModel),
     takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
     takeLatest(getType(lpNodeActions.importMocapJson), importMocapJson),
+    takeLatest(getType(lpNodeActions.initDefaultSceneModelData.request), handleInitDefaultSceneModelData),
     watchClickJointChannel(),
     watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),

@@ -13,7 +13,6 @@ import styles from './LPBody.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  // TODO: delete
   lpNodes?: LP.Node[];
   isPreventContextmenu?: boolean;
 }
