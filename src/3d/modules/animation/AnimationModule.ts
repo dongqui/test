@@ -632,10 +632,6 @@ export class AnimationModule extends Module {
       const rotationQuaternionTotalTransformKeys = this.getTotalTransformKeys(rotationQuaternionTransformKeysList, 'rotationQuaternion');
       const scalingTotalTransformKeys = this.getTotalTransformKeys(scalingTransformKeysList, 'scaling');
 
-      if (target.name == 'leftArm' || target.name == 'leftForeArm' || target.name == 'leftHand') {
-        console.log(target.name, positionTotalTransformKeys, rotationQuaternionTotalTransformKeys, scalingTotalTransformKeys);
-      }
-
       const newPositionAnimation = new Animation(`${target.name}|position`, 'position', fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
       newPositionAnimation.setKeys(positionTotalTransformKeys);
 
@@ -711,6 +707,7 @@ export class AnimationModule extends Module {
    * @param transformKeysList - target transformKeys list (array of arrays of transformKey)
    * @param property - property of target track
    */
+  // TODO : Change PlaskProperty to something more generic (Vector3, Quaternion, float)
   public getTotalTransformKeys(transformKeysList: Array<IAnimationKey[]>, property: Omit<PlaskProperty, 'rotation'>) {
     const unionFrames = this._getUnionFrames(transformKeysList);
     const linearInterpolatedTransformKeysList = transformKeysList.map((transformKeys) =>
