@@ -13,6 +13,7 @@ import {
   PlaskMocapData,
   PlaskPose,
   PlaskProperty,
+  PlaskPropertyFormat,
   PlaskRetargetMap,
   PlaskTrack,
   QuaternionTransformKey,
@@ -563,9 +564,7 @@ export class AnimationModule extends Module {
     const transformKeysListForTargetId: {
       [id in string]: {
         target: Mesh | TransformNode;
-        positionTransformKeysList: Array<IAnimationKey[]>;
-        rotationQuaternionTransformKeysList: Array<IAnimationKey[]>;
-        scalingTransformKeysList: Array<IAnimationKey[]>;
+        transformKeysMap: { [key in PlaskProperty]?: Array<IAnimationKey[]> };
       };
     } = {};
 
@@ -576,92 +575,52 @@ export class AnimationModule extends Module {
 
         layer.tracks.forEach((track) => {
           // don't use emtpy track
-          if (track.transformKeys.length > 0) {
-            if (track.property !== 'rotation') {
-              // rotation track is only for the TimelinePanel
-              // we use rotationQuaternion track for creating animationGroup
+          if (!track.transformKeys.length) {
+            return;
+          }
 
-              if (track.property === 'position') {
-                if (transformKeysListForTargetId[track.targetId]) {
-                  transformKeysListForTargetId[track.targetId].positionTransformKeysList.push(
-                    useFilter ? this.filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                  );
-                } else {
-                  transformKeysListForTargetId[track.targetId] = {
-                    target: track.target,
-                    positionTransformKeysList: [useFilter ? this.filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                    rotationQuaternionTransformKeysList: [],
-                    scalingTransformKeysList: [],
-                  };
-                }
-              } else if (track.property === 'rotationQuaternion') {
-                if (transformKeysListForTargetId[track.targetId]) {
-                  transformKeysListForTargetId[track.targetId].rotationQuaternionTransformKeysList.push(
-                    useFilter ? this.filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                  );
-                } else {
-                  transformKeysListForTargetId[track.targetId] = {
-                    target: track.target,
-                    positionTransformKeysList: [],
-                    rotationQuaternionTransformKeysList: [useFilter ? this.filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                    scalingTransformKeysList: [],
-                  };
-                }
-              } else if (track.property === 'scaling') {
-                if (transformKeysListForTargetId[track.targetId]) {
-                  transformKeysListForTargetId[track.targetId].scalingTransformKeysList.push(
-                    useFilter ? this.filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
-                  );
-                } else {
-                  transformKeysListForTargetId[track.targetId] = {
-                    target: track.target,
-                    positionTransformKeysList: [],
-                    rotationQuaternionTransformKeysList: [],
-                    scalingTransformKeysList: [useFilter ? this.filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
-                  };
-                }
-              }
-            }
+          if (track.property === 'rotation') {
+            // rotation track is only for the TimelinePanel
+            // we use rotationQuaternion track for creating animationGroup
+            return;
+          }
+
+          const propertyFormat = PlaskPropertyFormat[track.property];
+          if (!transformKeysListForTargetId[track.targetId]) {
+            transformKeysListForTargetId[track.targetId] = {
+              target: track.target,
+              transformKeysMap: {},
+            };
+          }
+          if (!transformKeysListForTargetId[track.targetId].transformKeysMap[track.property]) {
+            transformKeysListForTargetId[track.targetId].transformKeysMap[track.property] = [];
+          }
+
+          if (propertyFormat === Animation.ANIMATIONTYPE_VECTOR3) {
+            transformKeysListForTargetId[track.targetId].transformKeysMap[track.property]!.push(
+              useFilter ? this.filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+            );
+          } else if (propertyFormat === Animation.ANIMATIONTYPE_QUATERNION) {
+            transformKeysListForTargetId[track.targetId].transformKeysMap[track.property]!.push(
+              useFilter ? this.filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
+            );
+          } else if (propertyFormat === Animation.ANIMATIONTYPE_FLOAT) {
+            transformKeysListForTargetId[track.targetId].transformKeysMap[track.property]!.push(track.transformKeys);
           }
         });
       }
     });
 
-    Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, positionTransformKeysList, rotationQuaternionTransformKeysList, scalingTransformKeysList }]) => {
-      const positionTotalTransformKeys = this.getTotalTransformKeys(positionTransformKeysList, 'position');
-      const rotationQuaternionTotalTransformKeys = this.getTotalTransformKeys(rotationQuaternionTransformKeysList, 'rotationQuaternion');
-      const scalingTotalTransformKeys = this.getTotalTransformKeys(scalingTransformKeysList, 'scaling');
+    Object.entries(transformKeysListForTargetId).forEach(([targetId, { target, transformKeysMap }]) => {
+      let propertyName: PlaskProperty;
+      for (propertyName in transformKeysMap) {
+        const totalTransformKeys = this.getTotalTransformKeys(transformKeysMap[propertyName]!, propertyName);
+        const newAnimation = new Animation(`${target.name}|${propertyName}`, propertyName, fps, PlaskPropertyFormat[propertyName], Animation.ANIMATIONLOOPMODE_CYCLE);
+        newAnimation.setKeys(totalTransformKeys);
 
-      const newPositionAnimation = new Animation(`${target.name}|position`, 'position', fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
-      newPositionAnimation.setKeys(positionTotalTransformKeys);
-
-      const newRotationQuaternionAnimation = new Animation(
-        `${target.name}|rotationQuaternion`,
-        'rotationQuaternion',
-        fps,
-        Animation.ANIMATIONTYPE_QUATERNION,
-        Animation.ANIMATIONLOOPMODE_CYCLE,
-      );
-      newRotationQuaternionAnimation.setKeys(rotationQuaternionTotalTransformKeys);
-
-      // prettier-ignore
-      const newScalingAnimation = new Animation(
-      `${target.name}|scaling`,
-      'scaling',
-      fps,
-      Animation.ANIMATIONTYPE_VECTOR3,
-      Animation.ANIMATIONLOOPMODE_CYCLE,
-    );
-      newScalingAnimation.setKeys(scalingTotalTransformKeys);
-
-      if (newPositionAnimation.getKeys().length > 0) {
-        newAnimationGroup.addTargetedAnimation(newPositionAnimation, target);
-      }
-      if (newRotationQuaternionAnimation.getKeys().length > 0) {
-        newAnimationGroup.addTargetedAnimation(newRotationQuaternionAnimation, target);
-      }
-      if (newScalingAnimation.getKeys().length > 0) {
-        newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
+        if (newAnimation.getKeys().length > 0) {
+          newAnimationGroup.addTargetedAnimation(newAnimation, target);
+        }
       }
     });
 
@@ -709,19 +668,24 @@ export class AnimationModule extends Module {
    */
   // TODO : Change PlaskProperty to something more generic (Vector3, Quaternion, float)
   public getTotalTransformKeys(transformKeysList: Array<IAnimationKey[]>, property: Omit<PlaskProperty, 'rotation'>) {
+    // All the unique frames in order
     const unionFrames = this._getUnionFrames(transformKeysList);
+    // Gets each transformKey array to have a value on the unique frames, by linearly interpolating to fill the gaps
     const linearInterpolatedTransformKeysList = transformKeysList.map((transformKeys) =>
       this._getLinearInterpolatedTransformKeys(transformKeys, unionFrames, property === 'rotationQuaternion'),
     );
 
+    // Sums all layers (each transformKeys in transformKeysList) for each frame
     const totalTransformKeys = zipWith(...linearInterpolatedTransformKeysList, (...transformKeys) => {
-      let value: Vector3 | Quaternion;
+      let value: Vector3 | number | Quaternion;
       if (property === 'position') {
         value = this._getPositionSum(transformKeys.map((key) => key.value));
       } else if (property === 'rotationQuaternion') {
         value = this._getRotationQuaternionSum(transformKeys.map((key) => key.value));
-      } else {
+      } else if (property === 'scaling') {
         value = this._getScalingSum(transformKeys.map((key) => key.value));
+      } else {
+        value = this._combine(transformKeys.map((key) => key.value));
       }
 
       return {
@@ -829,6 +793,30 @@ export class AnimationModule extends Module {
     });
 
     return total;
+  }
+
+  /**
+   * Combines multiple values by taking the average
+   * @param values
+   */
+
+  private _combine<T extends Vector3[] | number[]>(values: T) {
+    if (!values.length) {
+      throw new Error('Empty combine frames');
+    }
+
+    if (values[0] instanceof Vector3) {
+      const total = Vector3.Zero();
+      (values as Vector3[]).reduce((accumulator: Vector3, value: Vector3) => accumulator.addInPlace(value), total);
+      return total.scaleInPlace(1 / values.length);
+    }
+    if (typeof values[0] === 'number') {
+      const total = 0;
+      (values as number[]).reduce((accumulator: number, value: number) => accumulator + value, total);
+      return total / values.length;
+    }
+
+    throw new Error('Unsupported keyframe type');
   }
 
   /**
