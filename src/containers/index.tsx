@@ -19,14 +19,14 @@ interface Props {
 }
 
 const Index: FunctionComponent<Props> = ({ browserType, error, token, sceneId, data }) => {
-  if (error) {
-    return <Authentication statusCode={error.statusCode} message={error.message} />;
-  }
-
+  // if (error) {
+  //   return <Authentication statusCode={error.statusCode} message={error.message} />;
+  // }
+  console.log(token, '@@@');
   return (
     <main>
       <ResizeProvider>
-        <Plask browserType={browserType} token={token} sceneId={sceneId} data={data} />
+        <Plask browserType={browserType} token={token} sceneId={sceneId} data={data || []} />
       </ResizeProvider>
     </main>
   );
