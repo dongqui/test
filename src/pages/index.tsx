@@ -10,9 +10,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let { sceneUid } = query;
   let token = context.req?.cookies?.authToken;
   if (process.env.NODE_ENV === 'development') {
-    token = process.env.DEV_TOKEN || '';
-    sceneUid = process.env.DEV_SCENE_ID;
+    token = process.env.DEV_LOCAL_TOKEN || '';
+    sceneUid = process.env.DEV_LOCAL_SCENE_ID;
   }
+  if (token && !sceneUid) {
+    await requestApi({
+      method: 'GET',
+      url: `/scenes`,
+      headers: {
+        Authorization: `bearer ${token}`,
+      },
+    })
+      .then((reeponse) => {
+        sceneUid = reeponse.data;
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+
   /**
    * Possible error cases when accessing the app from the homepage
    * 401.1 - Invalid token
