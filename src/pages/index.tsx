@@ -9,6 +9,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { query } = context;
   let { sceneUid } = query;
   let token = Cookies.get('authToken');
+  console.log(token);
   if (process.env.NODE_ENV === 'development') {
     token = process.env.DEV_TOKEN;
     sceneUid = process.env.DEV_SCENE_ID;
