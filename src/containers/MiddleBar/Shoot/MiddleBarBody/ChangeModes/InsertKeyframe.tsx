@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
-import * as animationDataActions from 'actions/animationDataAction';
+import * as keyframeActions from 'actions/keyframes';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -19,7 +19,7 @@ const InsertKeyframe = () => {
 
   const handleClickButton = useCallback(() => {
     if (_selectedTargets.length !== 0 && _playState !== 'play') {
-      dispatch(animationDataActions.editKeyframes());
+      dispatch(keyframeActions.editKeyframesSocket.request());
     }
   }, [_playState, _selectedTargets.length, dispatch]);
 

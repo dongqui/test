@@ -65,23 +65,25 @@ export interface PlaskAsset {
 }
 
 export interface ServerAnimation {
-  id: string; // uid -> id
-  scenesLibraryId: string; // don't know what is
+  uid: string; // uid -> id
+  scenesLibraryUid: string; // don't know what is
   name: string;
   fps: number;
   isMocapAnimation: boolean;
   isDeleted: boolean;
 }
-
+export type ServerAnimationRequest = Omit<ServerAnimation, 'uid' | 'scenesLibraryUid'>;
 export interface ServerAnimationLayer {
-  id: string; // uid -> id
-  animationId: string; // scenes_library_model_animation_id -> animationId
+  uid: string;
   name: string;
   // isLocked: boolean; // related to TP node not the animation itself
   isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
   isDeleted: boolean;
   useFilter: boolean; // destructure filter related data
-  tracks: ServerAnimationTrack[]; // boneTracks -> tracks
+  tracks: ServerAnimationTrackRequest[]; // boneTracks -> tracks
+}
+export interface ServerAnimationLayerRequest extends Omit<ServerAnimationLayer, 'uid' | 'tracks'> {
+  tracks: ServerAnimationTrackRequest[];
 }
 
 // BoneTrack -> NameTrack
@@ -96,6 +98,9 @@ export interface ServerAnimationTrack {
   filterMinCutoff: number;
   transformKeysMap: Map<number, ServerTransformKey>; // boneFrameMap -> transformKeysMap
 }
+export interface ServerAnimationTrackRequest extends Omit<ServerAnimationTrack, 'transformKeysMap'> {
+  transformKeysMap: ServerTransformKeyRequest[];
+}
 
 export interface VectorTransformKey {
   x: number;
@@ -107,6 +112,9 @@ export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
   transformKey: VectorTransformKey | QuaternionTransformKey;
   // isLocked: boolean;
+}
+export interface ServerTransformKeyRequest extends ServerTransformKey {
+  frameIndex: number;
 }
 
 export interface AnimationIngredient {

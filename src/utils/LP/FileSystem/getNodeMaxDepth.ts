@@ -1,5 +1,4 @@
 import { max, find } from 'lodash';
-import LP from '../../../../@types/Container/LP';
 
 const getNodeMaxDepth = (arr: string[], maximum: number, original: number[], nodes: LP.Node[]) => {
   arr.map((el) => {

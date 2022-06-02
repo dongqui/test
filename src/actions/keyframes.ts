@@ -1,6 +1,7 @@
-import { PlaskTrack } from 'types/common';
+import { PlaskTrack, VectorTransformKey, QuaternionTransformKey, ServerAnimationTrackRequest } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
+import { createSocketActions } from './helper';
 
 export type KeyframesAction =
   | ReturnType<typeof initializeKeyframes>
@@ -86,10 +87,61 @@ export const createKeyframes = (params: any) => ({
   },
 });
 
+interface deleteKeyframesSendParams {
+  type: 'delete-frames';
+  data: {
+    layerId: string;
+    deletedTracks: {
+      trackId: string;
+      deletedIndexes: number[];
+    }[];
+  };
+}
+interface deleteKeyframesReceiveParams {
+  type: 'delete-frames';
+  data: {
+    layerId: string;
+    deletedTracks: {
+      trackId: string;
+      deletedIndexes: number[];
+    }[];
+    scenesUid: string;
+    animationUid: string;
+  };
+}
 // 키프레임 삭제
 export const deleteKeyframes = () => ({
   type: 'keyframes/DELETE_KEYFRAMES' as const,
 });
+export const deleteKeyframesSocket = createSocketActions(
+  'keyframes/DELETE_KEYFRAMES_REQUEST',
+  'keyframes/DELETE_KEYFRAMES_SEND',
+  'keyframes/DELETE_KEYFRAMES_RECEIVE',
+  'keyframes/DELETE_KEYFRAMES_UPDATE',
+  'keyframes/DELETE_KEYFRAMES_FAILURE',
+)<undefined, deleteKeyframesSendParams, deleteKeyframesReceiveParams, undefined, Error>();
+
+interface editKeyframesSendParams {
+  type: 'put-frames';
+  data: {
+    layerId: string;
+    tracks: ServerAnimationTrackRequest[];
+  };
+}
+interface editKeyframesReceiveParams {
+  type: 'put-frames';
+  data: {
+    layerId: string;
+    tracks: ServerAnimationTrackRequest[];
+  };
+}
+export const editKeyframesSocket = createSocketActions(
+  'keyframes/EDIT_KEYFRAMES_REQUEST',
+  'keyframes/EDIT_KEYFRAMES_SEND',
+  'keyframes/EDIT_KEYFRAMES_RECEIVE',
+  'keyframes/EDIT_KEYFRAMES_UPDATE',
+  'keyframes/EDIT_KEYFRAMES_FAILURE',
+)<undefined, editKeyframesSendParams, editKeyframesReceiveParams, undefined, Error>();
 
 // 키프레임 드래드 드랍
 export interface DragDropKeyframes {
@@ -99,6 +151,32 @@ export const dragDropKeyframes = (params: DragDropKeyframes) => ({
   type: 'keyframes/DRAG_DROP_KEYFRAMES' as const,
   payload: { ...params },
 });
+
+interface MoveKeyframesRequestParams {
+  timeDiff: number;
+}
+interface MoveKeyframesSendParams {
+  type: 'move-frames';
+  data: {
+    layerId: string;
+    movedTracks: {
+      trackId: string;
+      movedFrames: {
+        frameIndexFrom: number;
+        frameIndexTo: number;
+      }[];
+    }[];
+  };
+}
+interface MoveKeyframesReceiveParams {}
+
+export const moveKeyframesSocket = createSocketActions(
+  'keyframes/MOVE_KEYFRAMES_REQUEST',
+  'keyframes/MOVE_KEYFRAMES_SEND',
+  'keyframes/MOVE_KEYFRAMES_RECEIVE',
+  'keyframes/MOVE_KEYFRAMES_UPDATE',
+  'keyframes/MOVE_KEYFRAMES_FAILURE',
+)<MoveKeyframesRequestParams, MoveKeyframesSendParams, MoveKeyframesReceiveParams, undefined, Error>();
 
 // 키프레임 붙이기
 export interface Paste {
@@ -111,3 +189,14 @@ export const paste = (params: Paste) => ({
     ...params,
   },
 });
+
+interface PasteKeyframesSendParams extends editKeyframesSendParams {}
+interface PasteKeyframesReceiveParams {}
+
+export const pasteKeyframesSocket = createSocketActions(
+  'keyframes/PASTE_KEYFRAMES_REQUEST',
+  'keyframes/PASTE_KEYFRAMES_SEND',
+  'keyframes/PASTE_KEYFRAMES_RECEIVE',
+  'keyframes/PASTE_KEYFRAMES_UPDATE',
+  'keyframes/PASTE_KEYFRAMES_FAILURE',
+)<undefined, PasteKeyframesSendParams, PasteKeyframesReceiveParams, undefined, Error>();

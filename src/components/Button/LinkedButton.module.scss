@@ -1,0 +1,95 @@
+@import "styles/libraries/_mixins";
+
+@mixin button-size-large() {
+  width: 156px;
+  height: 56px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+@mixin button-size-medium() {
+  width: 79px;
+  height: 40px;
+}
+
+@mixin button-size-small() {
+  width: 63px;
+  height: 32px;
+}
+
+.filled {
+  @include reset-button-style();
+  @include basic-button-style();
+
+  &.large {
+    @include button-size-large();
+  }
+
+  &.medium {
+    @include button-size-medium();
+  }
+
+  &.small {
+    @include button-size-small();
+  }
+
+  &.primary {
+    background-color: #fff;
+    color: var(--grey010);
+
+    &:focus,
+    &:hover {
+      background-color: var(--grey060);
+      color: var(--grey010);
+    }
+  }
+
+  &.secondary {
+    background-color: #0f88ff;
+    color: #fff;
+
+    &:focus,
+    &:hover {
+      background-color: lighten($color:  #0f88ff, $amount: 4%);
+    }
+  }
+
+  &.error {
+    background-color: var(--vivid-red);
+    color: var(--grey070);
+  }
+}
+
+.outlined {
+  @include reset-button-style();
+  @include basic-button-style();
+
+  &.large {
+    @include button-size-large();
+  }
+
+  &.medium {
+    @include button-size-medium();
+  }
+
+  &.small {
+    @include button-size-small();
+  }
+
+  &.primary {
+    border: 1px solid var(--grey050);
+    background-color: transparent;
+    color: var(--grey060);
+  }
+
+  &.secondary {
+    border: 1px solid var(--blue200);
+    background-color: transparent;
+    color: var(--grey070);
+  }
+
+  &.error {
+    background-color: var(--vivid-red);
+    color: var(--grey070);
+  }
+}

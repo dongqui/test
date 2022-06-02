@@ -27,7 +27,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
         // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteMotion({ nodeId, parentId, assetId }));
+          dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
         },
         onCancel: () => {},
       }),
@@ -40,7 +40,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   const handleDuplicate = () => {
     dispatch(
-      lpNodeActions.duplicateMotion({
+      lpNodeActions.duplicateMotionAsync.request({
         nodeId,
         parentId,
         nodeName,
@@ -60,7 +60,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   const handleCancelVisualization = () => {
     if (assetId) {
-      dispatch(lpNodeActions.cancelVisulization({ assetId }));
+      dispatch(lpNodeActions.cancelVisulization(assetId));
     }
   };
 
