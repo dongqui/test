@@ -207,6 +207,8 @@ const VideoMode = () => {
     muted: true,
   };
 
+  console.log(isCameraLoaded, cameraDeviceList);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -219,6 +221,12 @@ const VideoMode = () => {
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           {/* RP */}
           <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} {...videoOptions} />
+          {cameraDeviceList.length === 0 && (
+            <div className={cx('notification')}>
+              <IconWrapper className={cx('icon-no-camera')} icon={SvgPath.NoCamera} />
+              <div className={cx('no-camera-text')}>There is no connected camera.</div>
+            </div>
+          )}
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           CP
