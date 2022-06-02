@@ -116,6 +116,8 @@ const VideoMode = () => {
     return extension;
   };
 
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+
   const handleDrop = async (files: File[]) => {
     if (files.length > 1) {
       // Upload one video file at a time.
@@ -159,6 +161,7 @@ const VideoMode = () => {
 
     if (videoRef && videoRef.current) {
       const videoURL = URL.createObjectURL(files[0]);
+      setIsVideoLoaded(true);
 
       videoRef.current.src = videoURL;
     }
@@ -221,7 +224,7 @@ const VideoMode = () => {
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           {/* RP */}
           <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} {...videoOptions} />
-          {cameraDeviceList.length === 0 && (
+          {cameraDeviceList.length === 0 && !isVideoLoaded && (
             <div className={cx('notification')}>
               <IconWrapper className={cx('icon-no-camera')} icon={SvgPath.NoCamera} />
               <div className={cx('no-camera-text')}>There is no connected camera.</div>
