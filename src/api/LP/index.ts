@@ -84,7 +84,6 @@ export async function createRetargetMap(sceneId: string, libraryId: string, data
 }
 
 export async function postMotion(sceneId: string, libraryId: string, data: PostMotionData) {
-  console.log(JSON.stringify(data));
   const response = await requestApi({
     method: 'POST',
     base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
