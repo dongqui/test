@@ -13,7 +13,7 @@ import plaskEngine from '3d/PlaskEngine';
 
 const clickJointChannel = channel();
 
-export function* watchClickJointChannel() {
+export function* watchClickJointChannelFromModelVisualize() {
   while (true) {
     const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect | typeof selectingDataActions.defaultSingleSelect> = yield take(clickJointChannel);
     yield put(action);
@@ -25,8 +25,9 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   // so when users visualize a model, if there is already another model visualized that model will be unvisualized.
   // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.`
   const plaskProjectSelector = (state: RootState) => state.plaskProject;
-
   try {
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+
     const { modelNode, animationIngredientId } = action.payload;
 
     if (!modelNode.childNodeIds.length) {
@@ -34,12 +35,12 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       yield take('ADDED_EMPTY_MOTION');
     }
 
-    const plaskProject: PlaskProject = yield select(plaskProjectSelector);
+    const { plaskProject, lpNode }: RootState = yield select();
     const { visualizedAssetIds, assetList } = plaskProject;
 
     const asset = find(assetList, { id: modelNode.assetId });
     if (!asset) {
-      yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode));
+      yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode, modelNode.childNodeIds[0]));
       yield take('ADDED_NEW_ASSET');
     }
 
@@ -70,5 +71,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         confirmColor: 'negative',
       }),
     );
+  } finally {
+    yield put(globalUIActions.closeModal('LoadingModal'));
   }
 }
