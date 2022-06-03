@@ -33,6 +33,7 @@ const MotionNode = ({ node }: Props) => {
     if (!assetId || !isDroppedOnRP(e)) {
       return;
     }
+    e.stopPropagation();
 
     dispatch(
       lpNodeActions.visualizeMotion({

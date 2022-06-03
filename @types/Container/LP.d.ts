@@ -3,10 +3,6 @@ import { PlaskMocapData, PlaskRetargetMap, ServerAnimation, ServerAnimationLayer
 export = LP;
 export as namespace LP;
 
-interface Animation extends ServerAnimation {
-  scenesLibraryModelAnimationLayers: ServerAnimationLayer[];
-}
-
 interface BaseNode {
   id: string;
   parentId;
@@ -25,9 +21,9 @@ declare namespace LP {
     modelUrl?: string;
     childNodeIds: string[];
     extension: string;
-    mocapData?: PlaskMocapData;
     retargetMap?: Omit<PlaskRetargetMap, 'id' | 'assetId'>;
-    animation?: Animation;
+    animationId?: string;
+    mocapId?: string;
   }
 
   interface DirectoryNode extends BaseNode {

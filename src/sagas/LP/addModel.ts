@@ -75,11 +75,6 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
     );
 
     const motionNodes = motionNodesRes.map(convertServerResponseToNode);
-    const animationIngredients = motionNodes.map((motionNode) => {
-      const animationLayers = motionNode?.animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
-      const animation = omitBy(motionNode?.animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-      return AnimationModule.serverDataToIngredient(animation, animationLayers, transformNodes, false, assetsUid);
-    });
 
     const nextNodes = produce(lpNode.nodes, (draft) => {
       modelNode.childNodeIds = motionNodes.map((node) => node.id);
@@ -96,17 +91,15 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       skeleton: skeletons[0] ?? null,
       bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
       transformNodes,
-      animationIngredientIds: motionNodes.map((motion) => motion?.animation?.uid!),
+      animationIngredientIds: [],
       retargetMapId: modelNode.id,
     };
 
-    yield put(animationDataActions.addAnimationIngredients({ animationIngredients: animationIngredients }));
-    yield put(plaskProjectActions.addAnimationIngredients({ assetId: modelNode.assetId!, animationIngredientIds: animationIngredients.map((ingredient) => ingredient.id) }));
     yield put(plaskProjectActions.addAsset({ asset: newAsset }));
     yield put(
       animationDataActions.addAsset({
         transformNodes: filterAnimatableTransformNodes(transformNodes),
-        animationIngredients,
+        animationIngredients: [],
         retargetMap: {
           ...rawRetargetMap,
           id: modelNode.id,

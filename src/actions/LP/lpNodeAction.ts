@@ -98,7 +98,10 @@ interface ApplyMocapToModelRequestParams {
   assetId?: string;
 }
 
-export const addAssetsAndAnimationIngredients = createAction('node/ADD_ASSETS_AND_ANIMATION_INGRIDIENTS', (modelNode: LP.Node) => modelNode)();
+export const addAssetsAndAnimationIngredients = createAction('node/ADD_ASSETS_AND_ANIMATION_INGRIDIENTS', (modelNode: LP.Node, motionNodeId?: string) => ({
+  modelNode,
+  motionNodeId,
+}))();
 export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
 export const visualizeModel = createAction('node/VISUALIZE_MODEL', (modelNode: LP.Node, animationIngredientId?: string) => ({ modelNode, animationIngredientId }))();
 export const visualize = createAction('node/VISUALIZE_MODEL', (node: LP.Node) => node)();

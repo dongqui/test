@@ -16,11 +16,8 @@ export interface RequestNodeResponse {
   scenesUid: string;
   assetsUid: string;
   modelUrl?: string;
-  mocap?: {
-    motionNumber: number;
-    trackData: PlaskMocapData;
-  }[];
-  scenesLibraryModelAnimations?: scenesLibraryModelAnimation[];
+  mocap?: string;
+  animationUid?: string[];
 }
 export interface CreateFolderOrMocapBodyData {
   name: string;

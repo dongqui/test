@@ -50,11 +50,6 @@ async function generateDataFromDefaultModels(defaultModelNode: LP.Node, baseScen
   );
 
   const motionNodes = motionNodesRes.map(convertServerResponseToNode);
-  const animationIngredients = motionNodes.map((motionNode) => {
-    const animationLayers = motionNode?.animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
-    const animation = omitBy(motionNode?.animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-    return AnimationModule.serverDataToIngredient(animation, animationLayers, transformNodes, false, modelNode.assetId!);
-  });
 
   const newAsset: PlaskAsset = {
     id: modelNode.assetId!,
@@ -66,13 +61,12 @@ async function generateDataFromDefaultModels(defaultModelNode: LP.Node, baseScen
     skeleton: skeletons[0] ?? null,
     bones: skeletons[0] ? skeletons[0].bones.filter((bone) => !bone.name.toLowerCase().includes('scene')) : [],
     transformNodes,
-    animationIngredientIds: motionNodes.map((motion) => motion?.animation?.uid!),
+    animationIngredientIds: [],
     retargetMapId: modelNode.id,
   };
 
   return {
     asset: newAsset,
-    animationIngredients,
     modelNode: {
       ...modelNode,
       childNodeIds: motionNodes.map((node) => node.id),
@@ -88,18 +82,16 @@ export default function* handleInitDefaultSceneModelData(action: ReturnType<type
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
-    const defaultData: { asset: PlaskAsset; animationIngredients: AnimationIngredient[]; modelNode: LP.Node; motionNodes: LP.Node[] }[] = yield all(
+    const defaultData: { asset: PlaskAsset; modelNode: LP.Node; motionNodes: LP.Node[] }[] = yield all(
       defaultModelNodes.map((defaultModelNode) => call(generateDataFromDefaultModels, defaultModelNode, baseScene, lpNode.sceneId, lpNode.nodes)),
     );
 
-    for (const { asset, animationIngredients, modelNode, motionNodes } of defaultData) {
-      yield put(animationDataActions.addAnimationIngredients({ animationIngredients: animationIngredients }));
-      yield put(plaskProjectActions.addAnimationIngredients({ assetId: asset.id, animationIngredientIds: animationIngredients.map((ingredient) => ingredient.id) }));
+    for (const { asset, modelNode, motionNodes } of defaultData) {
       yield put(plaskProjectActions.addAsset({ asset }));
       yield put(
         animationDataActions.addAsset({
           transformNodes: filterAnimatableTransformNodes(asset.transformNodes),
-          animationIngredients,
+          animationIngredients: [],
           retargetMap: {
             ...modelNode.retargetMap!,
             id: modelNode.id,

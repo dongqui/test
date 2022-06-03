@@ -3,8 +3,8 @@ import { getType } from 'typesafe-actions';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import handleAddDirectory from './addDirectory';
-import { handleVisualizeModel, watchClickJointChannel } from './visualizeModel';
-import handleVisualizeMotion from './visualizeMotion';
+import { handleVisualizeModel, watchClickJointChannelFromModelVisualize } from './visualizeModel';
+import handleVisualizeMotion, { watchClickJointChannelFromMotionVizsualize } from './visualizeMotion';
 import handleCancelVisulization from './cancelVisulization';
 import handleAddEmptyMotion from './addEmptyMotion';
 import handleDuplicateMotion from './duplicateMotion';
@@ -40,7 +40,8 @@ export default function* LPSaga() {
     takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
     takeLatest(getType(lpNodeActions.importMocapJson), importMocapJson),
     takeLatest(getType(lpNodeActions.initDefaultSceneModelData.request), handleInitDefaultSceneModelData),
-    watchClickJointChannel(),
+    watchClickJointChannelFromMotionVizsualize(),
+    watchClickJointChannelFromModelVisualize(),
     watchDeleteNodeSocketActions(),
     watchMoveNodeSocketActions(),
     watchEditNodeNameSocketActions(),

@@ -263,3 +263,17 @@ export type SelectingData = {
 export type ButtonColor = 'default' | 'primary' | 'negative';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
+
+export interface ServerAnimationResponse extends ServerAnimation {
+  scenesLibraryModelAnimationLayers: ServerAnimationLayer[];
+}
+
+export interface MocapDataResponse {
+  id: number;
+  uid: string;
+  assetsId: number;
+  data: {
+    motionNumber: number;
+    trackData: PlaskMocapData;
+  }[];
+}

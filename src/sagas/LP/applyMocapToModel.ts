@@ -16,7 +16,7 @@ import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import { RequestNodeResponse } from 'types/LP';
 import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
-import { ServerAnimationLayer, ServerAnimation } from 'types/common';
+import { ServerAnimationLayer, ServerAnimation, MocapDataResponse, ServerAnimationResponse } from 'types/common';
 
 const handleConfirmOnError = channel();
 
@@ -32,7 +32,6 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
   const { draggedNode, nodes } = lpNode;
   const { assetList } = plaskProject;
   const { nodeId } = action.payload;
-
   const modelNode = find(nodes, { id: nodeId });
   const targetRetargetMap = modelNode?.retargetMap;
   const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
@@ -52,11 +51,11 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     );
     return;
   }
-
-  if (!draggedNode || !modelNode || !targetRetargetMap || !draggedNode?.mocapData) {
+  if (!draggedNode || !modelNode || !targetRetargetMap || !draggedNode?.mocapId) {
     return;
   }
 
+  yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
   const _targetAsset = assetList.find((asset) => asset.id === modelNode?.assetId);
   if (!_targetAsset) {
     yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode));
@@ -69,7 +68,8 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     return;
   }
 
-  // const nodeName = handleDuplicateName(lpNode.nodes, draggedNode.name, nodeId); TODO: 중복 처리
+  const mocapData: MocapDataResponse = yield call(api.getMocapData, draggedNode.mocapId);
+
   const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
     [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
     modelNode.assetId!,
@@ -77,7 +77,7 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     targetRetargetMap,
     targetAsset.initialPoses,
     filterAnimatableTransformNodes(targetAsset.transformNodes),
-    draggedNode.mocapData,
+    mocapData.data[0].trackData,
     3000,
   );
 
@@ -87,8 +87,10 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     animationLayer: serverAnimationLayers,
   });
   const motionNode = convertServerResponseToNode(motionNodesRes);
-  const animationLayers = motionNode?.animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
-  const animation = omitBy(motionNode?.animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
+
+  const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
+  const animationLayers = _animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
+  const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
   const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
 
   const nextNodes = produce(nodes, (draft) => {
@@ -97,7 +99,7 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     draft.push(motionNode);
   });
 
-  if (motionNode.assetId && motionNode?.animation?.uid) {
+  if (motionNode.assetId && motionNode.animationId) {
     yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
     yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
     yield put(plaskProjectActions.addAnimationIngredient({ assetId: motionNode.assetId, animationIngredientId: animationIngredient.id }));
@@ -105,4 +107,6 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     yield put(lpNodeActions.visualizeModel(modelNode, animationIngredient.id));
     forceClickAnimationPlayAndStop();
   }
+
+  yield put(globalUIActions.closeModal('LoadingModal'));
 }
