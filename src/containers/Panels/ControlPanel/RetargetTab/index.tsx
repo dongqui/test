@@ -10,6 +10,7 @@ import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import * as cpActions from 'actions/CP';
 import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { checkIsTargetMesh } from 'utils/RP';
 
@@ -189,7 +190,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     if (currentSourceBoneName && currentTargetTransformNode && visualizedRetargetMap) {
       isSelectedTargetBoneOption.current = false;
       dispatch(
-        animationDataActions.assignBoneMapping({
+        cpActions.assignRetargetmapAsync.request({
           assetId: visualizedRetargetMap.assetId,
           sourceBoneName: currentSourceBoneName,
           targetTransformNodeId: currentTargetTransformNode.id || RETARGET_TARGET_BONE_NONE,

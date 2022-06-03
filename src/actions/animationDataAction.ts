@@ -1,5 +1,5 @@
 import { TransformNode } from '@babylonjs/core';
-import { AnimationIngredient, PlaskRetargetMap, RetargetSourceBoneType } from 'types/common';
+import { AnimationIngredient, PlaskRetargetMap } from 'types/common';
 
 export type AnimationDataAction =
   | ReturnType<typeof addAsset>
@@ -259,18 +259,10 @@ export const changeTrackFilterMinCutoff = (params: ChangeTrackFilterMinCutoff) =
   },
 });
 
-interface AssignBoneMapping {
-  assetId: string;
-
-  sourceBoneName: RetargetSourceBoneType;
-
-  targetTransformNodeId: string;
-}
-
 /**
  * 수동 리타겟팅에서 source와 target을 mapping합니다.
  */
-export const assignBoneMapping = (params: AssignBoneMapping) => ({
+export const assignBoneMapping = (params: PlaskRetargetMap) => ({
   type: ASSIGN_BONE_MAPPING,
   payload: {
     ...params,

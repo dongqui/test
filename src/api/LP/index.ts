@@ -72,7 +72,7 @@ export async function addMocapByJson(sceneId: string, data: addMocapByJsonData) 
   return response.data;
 }
 
-export async function createRetargetMap(sceneId: string, libraryId: string, data: Omit<PlaskRetargetMap, 'id' | 'assetId'>) {
+export async function putRetargetMap(sceneId: string, libraryId: string, data: Omit<PlaskRetargetMap, 'id' | 'assetId'>) {
   const response = await requestApi({
     method: 'POST',
     base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
