@@ -1,5 +1,4 @@
 import { AbstractMesh, ActionManager, Bone, ExecuteCodeAction, Matrix, Mesh, MeshBuilder, Nullable, Scene, Vector3, VertexBuffer } from '@babylonjs/core';
-import { addMetadata } from './metadata';
 
 /**
  * Inner Function to compute the bone's absolute bind pose
@@ -60,9 +59,6 @@ const addJointSpheres = (bones: Bone[], mesh: AbstractMesh, scene: Scene, assetI
     sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
     sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
     sphere.position = anchorPoint.clone();
-    // if (bone.name !== 'Armature') {
-    //   addMetadata('hasTracks', true, bone.getTransformNode()!);
-    // }
     sphereBoneGroups.push([sphere, bone]);
   });
 

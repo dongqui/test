@@ -1,4 +1,4 @@
-import { Bone, Color3, Mesh, MeshBuilder, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3 } from '@babylonjs/core';
+import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
@@ -16,6 +16,28 @@ export type IKControllerParams = {
   upVector: Vector3;
   bendAxis: Vector3;
 };
+
+class IKHandle extends Mesh {
+  constructor(name: string, scene: Scene, private _ikController: IKController) {
+    super(name, scene);
+  }
+
+  public get blend() {
+    return this._ikController.blend;
+  }
+
+  public set blend(value: number) {
+    this._ikController.blend = value;
+  }
+
+  public get poleAngle() {
+    return this._ikController.poleAngle;
+  }
+
+  public set poleAngle(value: number) {
+    this._ikController.poleAngle = value;
+  }
+}
 
 export class IKController {
   /**
@@ -78,15 +100,14 @@ export class IKController {
   public lockToFk = false;
 
   private _createHandle(limb: string, assetId: string, size: number): Mesh {
-    const ikControllerHandle = MeshBuilder.CreateTorus(
-      'ik_ctrl_handle_' + limb + '//' + assetId,
-      {
-        diameter: size,
-        thickness: 0.1 * size,
-        tessellation: 32,
-      },
-      this.scene,
-    );
+    const ikControllerHandle = new IKHandle('ik_ctrl_handle_' + limb + '//' + assetId, this.scene, this);
+
+    const vertexData = CreateTorusVertexData({
+      diameter: size,
+      thickness: 0.1 * size,
+      tessellation: 32,
+    });
+    vertexData.applyToMesh(ikControllerHandle);
     ikControllerHandle.renderingGroupId = 1;
     ikControllerHandle.material = new StandardMaterial(ikControllerHandle.name, this.scene);
     (ikControllerHandle.material as StandardMaterial).diffuseColor = Color3.Black();

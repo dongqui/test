@@ -1,31 +1,10 @@
 /* eslint-disable prettier/prettier */
-import {
-  Color3,
-  Mesh,
-  MeshBuilder,
-  Nullable,
-  Space,
-  StandardMaterial,
-  Vector3,
-  Skeleton,
-  AssetContainer,
-  ExecuteCodeAction,
-  ActionManager,
-  ActionEvent,
-  Quaternion,
-} from '@babylonjs/core';
-import { Bone } from '@babylonjs/core/Bones/bone';
+import { Color3, Mesh, Nullable, StandardMaterial, Vector3, Skeleton, AssetContainer, ExecuteCodeAction, ActionManager, ActionEvent } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
-import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Slider, Button } from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { GizmoModule } from '3d/modules/gizmo/GizmoModule';
-import * as selectingDataActions from 'actions/selectingDataAction';
 import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace } from 'types/common';
-import { RootState } from 'reducers';
-import { addMetadata } from 'utils/RP/metadata';
 import { copyTransformFrom } from 'utils/RP/copyPose';
 import { IKController } from './IKController';
 
@@ -114,6 +93,7 @@ export class IKModule extends Module {
    */
   public addIK(assetId: string) {
     this._initializeControllers(assetId);
+    this._generateIkAnimationData(assetId);
     return this._generateIkPlaskTransformNodes(assetId);
   }
 
@@ -126,6 +106,7 @@ export class IKModule extends Module {
     this._ghost.skeleton = null;
     this._ghost.rootMesh = null;
 
+    this._removeIkAnimationData();
     for (const controller of this.ikControllers) {
       controller.dispose();
     }
@@ -136,6 +117,38 @@ export class IKModule extends Module {
       mesh.dispose();
     }
     this._ghostMeshes.length = 0;
+  }
+
+  private _generateIkAnimationData(assetId: string) {
+    // Find animation ingredient for an assetId
+    const animationIngredient = this.plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+    if (!animationIngredient || !animationIngredient.layers.length) {
+      throw new Error('Invalid or inexistent animation ingredient created for this asset, cannot add IK tracks.');
+    }
+
+    const layer = animationIngredient.layers.find((layer) => layer.name.startsWith('baseLayer')) || animationIngredient.layers[0];
+    for (const controller of this.ikControllers) {
+      const tracks = this.plaskEngine.animationModule.createTracksForProperties(animationIngredient.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
+      for (const track of tracks) {
+        layer.tracks.push(track);
+        console.log(`track ${track.name} created`);
+      }
+    }
+  }
+
+  private _removeIkAnimationData() {
+    // Find ikTracks in all animation ingredient and remove them
+    for (const animationIngredient of this.plaskEngine.animationModule.animationIngredients) {
+      for (const controller of this.ikControllers) {
+        for (const layer of animationIngredient.layers) {
+          for (let i = layer.tracks.length - 1; i >= 0; i--) {
+            if (layer.tracks[i].name.includes(controller.handle.name)) {
+              layer.tracks.splice(i, 1);
+            }
+          }
+        }
+      }
+    }
   }
 
   private _getKeyframeDataForController(pickedIkCtrl: IKController) {
@@ -227,8 +240,6 @@ export class IKModule extends Module {
     const result = [];
     for (const ikController of this.ikControllers) {
       const ptn = new PlaskTransformNode(ikController.handle);
-      const jointIds = ikController.fkInfluenceChain!.map((node: TransformNode) => node.id);
-      ptn.jointIds = jointIds;
       result.push(ptn);
     }
 
