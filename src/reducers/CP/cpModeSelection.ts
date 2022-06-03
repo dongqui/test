@@ -1,4 +1,4 @@
-import { SwitchCpMode, CpModeSwitchAction } from 'actions/CP/cpModeSelection';
+import { SwitchCpMode, CpModeSwitchAction } from 'actions/CP';
 
 const defaultState: SwitchCpMode = {
   mode: 'Animation',

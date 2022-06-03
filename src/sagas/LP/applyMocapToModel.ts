@@ -8,7 +8,7 @@ import { forceClickAnimationPlayAndStop, filterAnimatableTransformNodes } from '
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
-import * as cpActions from 'actions/CP/cpModeSelection';
+import * as cpActions from 'actions/CP';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as TEXT from 'constants/Text';
 import plaskEngine from '3d/PlaskEngine';

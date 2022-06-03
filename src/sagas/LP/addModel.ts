@@ -53,7 +53,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
 
     const rawAnimationIngredients = getCustomAnimationIngredients(assetsUid, transformNodes, animationGroups);
     const rawRetargetMap: PlaskRetargetMap = yield call(createRetargetMap, assetsUid, skeletons);
-    const modelWithRetargetmapRes: RequestNodeResponse = yield call(api.createRetargetMap, lpNode.sceneId, uid, {
+    const modelWithRetargetmapRes: RequestNodeResponse = yield call(api.putRetargetMap, lpNode.sceneId, uid, {
       hipSpace: rawRetargetMap.hipSpace,
       values: rawRetargetMap.values,
     });

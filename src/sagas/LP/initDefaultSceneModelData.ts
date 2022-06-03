@@ -29,7 +29,7 @@ async function generateDataFromDefaultModels(defaultModelNode: LP.Node, baseScen
 
   const rawAnimationIngredients = getCustomAnimationIngredients(defaultModelNode.assetId, transformNodes, animationGroups);
   const rawRetargetMap: PlaskRetargetMap = await createRetargetMap(defaultModelNode.assetId, skeletons);
-  const modelWithRetargetmapRes: RequestNodeResponse = await api.createRetargetMap(sceneId, defaultModelNode.id, {
+  const modelWithRetargetmapRes: RequestNodeResponse = await api.putRetargetMap(sceneId, defaultModelNode.id, {
     hipSpace: rawRetargetMap.hipSpace,
     values: rawRetargetMap.values,
   });
