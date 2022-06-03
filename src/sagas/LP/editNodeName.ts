@@ -56,7 +56,7 @@ export function* handleEditNodeNameReceive(action: ReturnType<typeof lpNodeActio
   }
 
   if (targetNode.type === 'MOTION') {
-    const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode?.animation?.uid === animationIngredient.id);
+    const animationIngredient = animationData.animationIngredients.find((animationIngredient) => targetNode?.animationId === animationIngredient.id);
     if (animationIngredient) {
       yield put(
         animationDataActions.editAnimationIngredient({
