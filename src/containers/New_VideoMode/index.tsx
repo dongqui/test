@@ -167,6 +167,45 @@ const VideoMode = () => {
     }
   };
 
+  const handleCaptureThumbnail = useCallback(() => {
+    if (canvasRef.current && videoRef.current) {
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+
+      const canvasContext = canvasRef.current.getContext('2d');
+
+      if (canvasContext) {
+        canvasContext.drawImage(videoRef.current as CanvasImageSource, 0, 0);
+      }
+
+      return canvasRef.current.toDataURL('image/webp');
+    }
+  }, []);
+
+  const [thumbnailList, setThumbnailList] = useState<String[]>([]);
+
+  const handleLoadMetadata = useCallback(() => {
+    if (videoRef.current) {
+      console.log(videoRef.current.duration);
+
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+
+      const datumPoint = videoRef.current.duration / 20;
+      const thumbnailList = [];
+
+      for (let i = 0; i < 20; i++) {
+        const thumbnail = handleCaptureThumbnail();
+        if (thumbnail) {
+          thumbnailList.push(thumbnail);
+        }
+        videoRef.current.currentTime += datumPoint;
+      }
+
+      setThumbnailList(thumbnailList);
+    }
+  }, [handleCaptureThumbnail]);
+
   const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
   const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [currentStream, setCurrentStream] = useState<MediaStream>();
@@ -212,6 +251,10 @@ const VideoMode = () => {
 
   console.log(isCameraLoaded, cameraDeviceList);
 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  console.log(thumbnailList);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -223,7 +266,8 @@ const VideoMode = () => {
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           {/* RP */}
-          <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} {...videoOptions} />
+          <canvas className={cx('thumbnail-generator')} ref={canvasRef} />
+          <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} onLoadedMetadata={handleLoadMetadata} {...videoOptions} />
           {cameraDeviceList.length === 0 && !isVideoLoaded && (
             <div className={cx('notification')}>
               <IconWrapper className={cx('icon-no-camera')} icon={SvgPath.NoCamera} />

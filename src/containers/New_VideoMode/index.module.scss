@@ -104,3 +104,14 @@
     font-weight: 400;
   }
 }
+
+.thumbnail-generator {
+  display: block;
+  height: 1px;
+  left: 0;
+  object-fit: contain;
+  position: fixed;
+  top: 0;
+  width: 1px;
+  z-index: -1;
+}
