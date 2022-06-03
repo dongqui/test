@@ -6,6 +6,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { useWindowSize } from 'hooks/common';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import ControlPanel from 'containers/New_VideoMode/ControlPanel';
 
 const cx = classNames.bind(styles);
 
@@ -59,7 +60,7 @@ const VideoMode = () => {
           RP
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
-          CP
+          <ControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>

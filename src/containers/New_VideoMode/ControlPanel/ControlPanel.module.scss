@@ -1,0 +1,55 @@
+@import "styles/libraries/colors";
+
+.wrapper {
+}
+
+.section {
+  padding: 0 16px;
+
+  & > .section-title {
+    display: flex;
+    align-items: center;
+
+    height: 40px;
+
+    & > .tag {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-weight: 400;
+      font-size: var(--font-size-3);
+      line-height: 13px;
+      margin-left: 8px;
+      padding: 3.5px 4px;
+      background-color: var(--blue016);
+      color: $primary;
+      border-radius: 6px;
+    }
+  }
+
+  & > .section-item {
+    display: flex;
+    align-items: center;
+
+    height: 36px;
+
+    justify-content: space-between;
+
+    &.section-text {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    & > .switch {
+      width: 140px;
+    }
+
+    & > .section-comments {
+      color: $content-medium;
+      font-size: var(--font-size-3);
+      font-weight: 300;
+      line-height: 13px;
+    }
+  }
+}
