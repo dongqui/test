@@ -93,3 +93,23 @@ export async function postMotion(sceneId: string, libraryId: string, data: PostM
 
   return response.data;
 }
+
+export async function getAnimation(animationId: string) {
+  const response = await requestApi({
+    method: 'GET',
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: `/library/get/${animationId}/animations`,
+  });
+
+  return response.data;
+}
+
+export async function getMocapData(mocapId: string) {
+  const response = await requestApi({
+    method: 'GET',
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: `/library/get/${mocapId}/mocap`,
+  });
+
+  return response.data;
+}
