@@ -1,4 +1,4 @@
-import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
+import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
@@ -40,16 +40,27 @@ class IKHandle extends Mesh {
 }
 
 export class IKController {
+  public onBlendUpdatedObservable: Observable<void> = new Observable<void>();
+  public onPoleAngleUpdatedObservable: Observable<void> = new Observable<void>();
+
   /**
    * The blend between FK and IK
    */
-  public blend = 1;
+  private _blend = 1;
+  public set blend(value: number) {
+    this._blend = value;
+    this.onBlendUpdatedObservable.notifyObservers();
+  }
+  public get blend() {
+    return this._blend;
+  }
 
   /**
    * The pole angle
    */
   public set poleAngle(value: number) {
     this.controller.poleAngle = value;
+    this.onPoleAngleUpdatedObservable.notifyObservers();
   }
 
   public get poleAngle() {
@@ -138,6 +149,8 @@ export class IKController {
     this.target.dispose();
     this.fkTarget?.dispose();
     this.handle.dispose();
+    this.onBlendUpdatedObservable.clear();
+    this.onPoleAngleUpdatedObservable.clear();
   }
 
   constructor(params: IKControllerParams, public scene: Scene) {
