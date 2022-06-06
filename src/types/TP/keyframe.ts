@@ -9,7 +9,7 @@ export interface Vector3 {
   z: number;
 }
 
-export interface TrasnformKey {
+export interface TransformKey {
   time: number;
 
   /**
@@ -20,7 +20,7 @@ export interface TrasnformKey {
 }
 
 // 키프레임 데이터 타입
-export interface Keyframe extends TrasnformKey {
+export interface Keyframe extends TransformKey {
   /**
    * @description 삭제 된 키프레임인지 체크
    * @default false false인 경우 화면에 키프레임이 보임. true인 경우 화면에 키프레임이 보이지 않음
@@ -40,11 +40,11 @@ export type TimeEditorTrack = TrackIdentifier & {
 };
 
 // 선택 된 키프레임 데이터 타입
-export type SelectedKeyframe = TrackIdentifier & TrasnformKey;
+export type SelectedKeyframe = TrackIdentifier & TransformKey;
 
 // 선택 된 키프레임들을 cluster
 export type ClusteredKeyframe = TrackIdentifier & {
-  keyframes: TrasnformKey[];
+  keyframes: TransformKey[];
 };
 
 export interface UpdatedTransformKey {
