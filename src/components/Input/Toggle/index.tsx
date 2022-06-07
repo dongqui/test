@@ -14,8 +14,10 @@ interface Props {
 const Toggle = ({ defaultChecked = false, disabled = false, onChange }: Props) => {
   const [checked, setChecked] = useState(defaultChecked);
   const handleChange = useCallback(() => {
-    if (!disabled && onChange) {
-      onChange(!checked);
+    if (!disabled) {
+      if (onChange) {
+        onChange(!checked);
+      }
       setChecked(!checked);
     }
   }, [checked, disabled, onChange]);

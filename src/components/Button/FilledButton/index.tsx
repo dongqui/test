@@ -13,6 +13,7 @@ interface BaseProps {
   text?: string;
   fullSize?: boolean;
   dataCy?: string;
+  buttonType?: 'submit' | 'reset' | 'button';
 }
 
 export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
@@ -22,7 +23,7 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const FilledButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
+const FilledButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, buttonType, ...rest }) => {
   const classes = cx('filled', className, size, type, {
     disabled,
     fullSize,
@@ -38,7 +39,7 @@ const FilledButton: FunctionComponent<Props> = ({ size, text, type, fullSize, di
   );
 
   return (
-    <button className={classes} onClick={handleClick} data-cy={dataCy} {...rest}>
+    <button className={classes} onClick={handleClick} data-cy={dataCy} type={buttonType} {...rest}>
       {text || children}
     </button>
   );
