@@ -1,7 +1,7 @@
 import produce from 'immer';
 
 import { KeyframesState } from 'reducers/keyframes';
-import { ClusteredKeyframe, Keyframe, TrasnformKey, TimeEditorTrack } from 'types/TP/keyframe';
+import { ClusteredKeyframe, Keyframe, TransformKey, TimeEditorTrack } from 'types/TP/keyframe';
 import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
@@ -13,7 +13,7 @@ class PropertyKeyframeRepository implements Repository {
     this.state = state;
   }
 
-  private createNextKeyframeValue = (time: number, trasnformKey: TrasnformKey): Keyframe => {
+  private createNextKeyframeValue = (time: number, trasnformKey: TransformKey): Keyframe => {
     return { isSelected: true, isDeleted: false, time, value: trasnformKey.value };
   };
 
