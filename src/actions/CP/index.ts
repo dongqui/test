@@ -12,6 +12,11 @@ interface AssignBoneMapping {
   targetTransformNodeId: string;
 }
 
+interface EditHipspaceParams {
+  assetId: string;
+  hipSpace: number;
+}
+
 export const SWITCH_CP_MODE = 'modeSelection/SWITCH_CP_MODE' as const;
 
 export const switchMode = (params: SwitchCpMode) => ({
@@ -24,3 +29,5 @@ export const assignRetargetmapAsync = createAsyncAction('CP/ASSIGN_RETARGETMAP_R
   undefined,
   undefined
 >();
+
+export const editHipspaceAsync = createAsyncAction('CP/EDIT_HIPSPACE_REQUEST', 'CP/EDIT_HIPSPACE_SUCCESS', 'CP/EDIT_HIPSPACE_FAILURE')<EditHipspaceParams, undefined, undefined>();
