@@ -26,9 +26,11 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
   const childrenKeyframes = useMemo(() => {
     let index = 0;
     while (index < propertyKeyframes.length) {
+      // TODO : change getBoneTrackIndex so we retrieve the bone associated with a property track in a clean way
       const boneIndex = getBoneTrackIndex(propertyKeyframes[index].trackNumber as number);
       if (boneIndex === trackNumber) {
         const start = index - 1 === -1 ? 0 : index;
+        // TODO : 3 tracks hard coded, this should be removed by the above comment
         return propertyKeyframes.slice(start, index + 3);
       }
       index += 3;
@@ -40,9 +42,13 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
   const childrenTrackList = useMemo(() => {
     let index = 0;
     while (index < propertyTrackList.length) {
+      // TODO : change getBoneTrackIndex so we retrieve the bone associated with a property track in a clean way
+
       const boneIndex = getBoneTrackIndex(propertyTrackList[index].trackNumber);
       if (boneIndex === trackNumber) {
         const start = index - 1 === -1 ? 0 : index;
+        // TODO : 3 tracks hard coded, this should be removed by the above comment
+
         return propertyTrackList.slice(start, index + 3);
       }
       index += 3;
