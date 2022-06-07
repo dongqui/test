@@ -1060,6 +1060,13 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@babylonjs/controls@^2.0.0-alpha.1":
+  version "2.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@babylonjs/controls/-/controls-2.0.0-alpha.1.tgz#c31654c2bbe16f5ab689197264f7646332497704"
+  integrity sha512-aiL3kvy9A5RH+RYtngNdWpfDDbq/yGEKSCtj6TwInl0qY36XdlgPs832OVMlpT97CSY5c3nG7BSWnBoFIPg5qQ==
+  dependencies:
+    tslib "^2.3.1"
+
 "@babylonjs/core@5.0.0-alpha.61":
   version "5.0.0-alpha.61"
   resolved "https://registry.npmjs.org/@babylonjs/core/-/core-5.0.0-alpha.61.tgz"
