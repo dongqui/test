@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import Image from 'next/image';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { IMPORT_ERROR_INVALID_FORMAT, WARNING_02 } from 'constants/Text';
 import Box, { BoxProps } from 'components/Layout/Box';
@@ -182,29 +183,54 @@ const VideoMode = () => {
     }
   }, []);
 
-  const [thumbnailList, setThumbnailList] = useState<String[]>([]);
+  const [thumbnailList, setThumbnailList] = useState<string[]>([]);
+  const [duration, setDuration] = useState(0);
 
   const handleLoadMetadata = useCallback(() => {
-    if (videoRef.current) {
+    if (videoRef.current && isVideoLoaded) {
       console.log(videoRef.current.duration);
 
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
+      let count = 0;
 
       const datumPoint = videoRef.current.duration / 20;
-      const thumbnailList = [];
+      console.log(datumPoint);
+      const thumbnailList: string[] = [];
 
-      for (let i = 0; i < 20; i++) {
-        const thumbnail = handleCaptureThumbnail();
-        if (thumbnail) {
-          thumbnailList.push(thumbnail);
+      const checkDuration = setInterval(() => {
+        if (videoRef.current) {
+          if (videoRef.current.duration !== Infinity) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+            clearInterval(checkDuration);
+            setDuration(videoRef.current.duration);
+
+            const setScreenshot = setInterval(() => {
+              if (videoRef.current) {
+                if (count < 20) {
+                  count++;
+                  const thumbnail = handleCaptureThumbnail();
+                  if (thumbnail) {
+                    thumbnailList.push(thumbnail);
+                  }
+                  videoRef.current.currentTime += datumPoint;
+                } else {
+                  videoRef.current.currentTime = 0;
+                  setThumbnailList(thumbnailList);
+                  clearInterval(setScreenshot);
+                }
+              }
+            }, 150);
+          } else {
+            videoRef.current.currentTime += 1e101;
+          }
         }
-        videoRef.current.currentTime += datumPoint;
-      }
+      }, 500);
 
-      setThumbnailList(thumbnailList);
+      setIsVideoLoaded(true);
     }
-  }, [handleCaptureThumbnail]);
+  }, [handleCaptureThumbnail, isVideoLoaded]);
 
   const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
   const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -284,20 +310,30 @@ const VideoMode = () => {
           MB
         </Box>
         <Box id="TP" {...boxProps.TP}>
-          <div className={cx('dropzone')}>
-            <BaseDropzone onDrop={handleDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
-              {({ open }) => (
-                <div className={cx('dropzone-guide')}>
-                  <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
-                  <div className={cx('dropzone-guide-text')}>
-                    Drag and drop <br />
-                    or
-                  </div>
-                  <OutlineButton onClick={open}>Browse File</OutlineButton>
+          {thumbnailList.length > 0 && isVideoLoaded ? (
+            <div className={cx('thumbnail-list')}>
+              {thumbnailList.map((thumbnail, index) => (
+                <div className={cx('thumbnail')} key={index}>
+                  <Image src={thumbnail} alt="timeline thumbanil" className={cx('thumbnail-image', 'no-select')} width={100} height={80} />
                 </div>
-              )}
-            </BaseDropzone>
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className={cx('dropzone')}>
+              <BaseDropzone onDrop={handleDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+                {({ open }) => (
+                  <div className={cx('dropzone-guide')}>
+                    <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
+                    <div className={cx('dropzone-guide-text')}>
+                      Drag and drop <br />
+                      or
+                    </div>
+                    <OutlineButton onClick={open}>Browse File</OutlineButton>
+                  </div>
+                )}
+              </BaseDropzone>
+            </div>
+          )}
         </Box>
       </Box>
     </div>
