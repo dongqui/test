@@ -47,7 +47,7 @@ export class PlaskGizmoManager implements IDisposable {
   private _scaleRatio;
   private _gizmoAxisCache;
 
-  public boundingBoxDragBehavior: SixDofDragBehavior;
+  public screenPlaneDragBehavior: SixDofDragBehavior;
   public attachableMeshes: Nullable<Array<AbstractMesh>>;
   public attachableNodes: Nullable<Array<Node>>;
   public usePointerToAttachGizmos: boolean;
@@ -84,7 +84,7 @@ export class PlaskGizmoManager implements IDisposable {
     /**
      * When bounding box gizmo is enabled, this can be used to track drag/end events
      */
-    this.boundingBoxDragBehavior = new SixDofDragBehavior();
+    this.screenPlaneDragBehavior = new SixDofDragBehavior();
     /**
      * Array of meshes which will have the gizmo attached when a pointer selected them. If null, all meshes are attachable. (Default: null)
      */
@@ -200,12 +200,12 @@ export class PlaskGizmoManager implements IDisposable {
    * @param mesh The mesh the gizmo's should be attached to
    */
   attachToMesh(mesh: Nullable<AbstractMesh>): void {
-    // if (this._attachedMesh) {
-    //   this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
-    // }
-    // if (this._attachedNode) {
-    //   this._attachedNode.removeBehavior(this.boundingBoxDragBehavior);
-    // }
+    if (this._attachedMesh) {
+      this._attachedMesh.removeBehavior(this.screenPlaneDragBehavior);
+    }
+    if (this._attachedNode) {
+      this._attachedNode.removeBehavior(this.screenPlaneDragBehavior);
+    }
     this._attachedMesh = mesh;
     this._attachedNode = null;
     for (var key in this.gizmos) {
@@ -214,9 +214,9 @@ export class PlaskGizmoManager implements IDisposable {
         gizmo.attachedMesh = mesh;
       }
     }
-    // if (this.boundingBoxGizmoEnabled && this._attachedMesh) {
-    //   this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
-    // }
+    if (this.planeDragGizmoEnabled && this._attachedMesh) {
+      this._attachedMesh.addBehavior(this.screenPlaneDragBehavior);
+    }
     this.onAttachedToMeshObservable.notifyObservers(mesh);
   }
   /**
@@ -224,12 +224,12 @@ export class PlaskGizmoManager implements IDisposable {
    * @param node The node the gizmo's should be attached to
    */
   attachToNode(node: Nullable<Node>): void {
-    // if (this._attachedMesh) {
-    //   this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
-    // }
-    // if (this._attachedNode) {
-    //   this._attachedNode.removeBehavior(this.boundingBoxDragBehavior);
-    // }
+    if (this._attachedMesh) {
+      this._attachedMesh.removeBehavior(this.screenPlaneDragBehavior);
+    }
+    if (this._attachedNode) {
+      this._attachedNode.removeBehavior(this.screenPlaneDragBehavior);
+    }
     this._attachedMesh = null;
     this._attachedNode = node;
     for (var key in this.gizmos) {
@@ -238,9 +238,9 @@ export class PlaskGizmoManager implements IDisposable {
         gizmo.attachedNode = node;
       }
     }
-    // if (this.boundingBoxGizmoEnabled && this._attachedNode) {
-    //   this._attachedNode.addBehavior(this.boundingBoxDragBehavior);
-    // }
+    if (this.planeDragGizmoEnabled && this._attachedNode) {
+      this._attachedNode.addBehavior(this.screenPlaneDragBehavior);
+    }
     this.onAttachedToNodeObservable.notifyObservers(node);
   }
   /**
@@ -310,7 +310,7 @@ export class PlaskGizmoManager implements IDisposable {
   set planeDragGizmoEnabled(value: boolean) {
     if (value) {
       if (!this.gizmos.planeDragGizmo) {
-        this.gizmos.planeDragGizmo = new ScreenPlaneDragGizmo(this.scene.activeCamera!.getDirection(new Vector3(0, 0, 1)), Color3.White(), this._defaultUtilityLayer);
+        this.gizmos.planeDragGizmo = new ScreenPlaneDragGizmo(this.scene, this.scene.activeCamera!.getDirection(new Vector3(0, 0, 1)), Color3.White(), this._defaultUtilityLayer);
       }
       if (this._attachedNode) {
         this.gizmos.planeDragGizmo.attachedNode = this._attachedNode;
@@ -358,7 +358,7 @@ export class PlaskGizmoManager implements IDisposable {
     if (this._defaultUtilityLayer !== UtilityLayerRenderer._DefaultUtilityLayer) {
       (_b = this._defaultUtilityLayer) === null || _b === void 0 ? void 0 : _b.dispose();
     }
-    // this.boundingBoxDragBehavior.detach();
+    this.screenPlaneDragBehavior.detach();
     this.onAttachedToMeshObservable.clear();
   }
 }
