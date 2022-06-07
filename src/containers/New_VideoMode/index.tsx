@@ -4,9 +4,10 @@ import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useWindowSize } from 'hooks/common';
+import ControlPanel from './ControlPanel';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import ControlPanel from 'containers/New_VideoMode/ControlPanel';
 
 const cx = classNames.bind(styles);
 
