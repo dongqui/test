@@ -85,8 +85,8 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     setCurrentSourceBoneName(undefined);
     setCurrentTargetTransformNode(undefined);
     setCanAssign(false);
-    setHipSpace(106);
-  }, [_visualizedAssetIds]);
+    setHipSpace(visualizedRetargetMap?.hipSpace || 0);
+  }, [_visualizedAssetIds, visualizedRetargetMap]);
 
   // rp 선택에 의한 targetTransformNode 변경
   useEffect(() => {
@@ -225,7 +225,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const dispatchChangedHipSpace = useCallback(
     (hipSpace: number) => {
       if (visualizedRetargetMap) {
-        dispatch(animationDataActions.changeHipSpace({ assetId: visualizedRetargetMap.assetId, hipSpace: hipSpace }));
+        dispatch(cpActions.editHipspaceAsync.request({ assetId: visualizedRetargetMap.assetId, hipSpace }));
       }
     },
     [visualizedRetargetMap, dispatch],

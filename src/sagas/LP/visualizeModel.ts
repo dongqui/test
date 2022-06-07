@@ -1,15 +1,18 @@
 import { channel } from 'redux-saga';
-import { select, put, SagaReturnType, take } from 'redux-saga/effects';
-import { find } from 'lodash';
+import { select, put, SagaReturnType, take, call } from 'redux-saga/effects';
+import { find, omitBy } from 'lodash';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as TEXT from 'constants/Text';
-import { PlaskProject } from 'types/common/index';
+import { PlaskProject, ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskAsset } from 'types/common/index';
 import plaskEngine from '3d/PlaskEngine';
+import * as api from 'api';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
 
 const clickJointChannel = channel();
 
@@ -37,11 +40,32 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
     const { plaskProject, lpNode }: RootState = yield select();
     const { visualizedAssetIds, assetList } = plaskProject;
+    const motionNode = find(lpNode.nodes, { id: modelNode.childNodeIds[0] });
 
-    const asset = find(assetList, { id: modelNode.assetId });
+    let asset = find(assetList, { id: modelNode.assetId });
+
     if (!asset) {
-      yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode, modelNode.childNodeIds[0]));
+      yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode, motionNode?.id));
       yield take('ADDED_NEW_ASSET');
+    }
+
+    if (!asset) {
+      const assetList: PlaskAsset[] = yield select((state: RootState) => state.plaskProject.assetList);
+      asset = assetList.find((a) => a.id === modelNode.assetId);
+      if (!asset) {
+        throw Error('No asset');
+      }
+    }
+
+    const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode?.animationId === id);
+    if (!targetAnimationIngredientId) {
+      const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
+      const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
+      const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
+      const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+
+      yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
+      yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
 
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;

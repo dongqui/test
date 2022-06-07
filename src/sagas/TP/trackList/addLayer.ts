@@ -84,7 +84,7 @@ function* handleAddLayerReceive(action: ReturnType<typeof trackListActions.addLa
   if (!targetAnimationIngredient || !baselayer) {
     return;
   }
-  console.log(getAnimationIngredients(yield select()));
+
   const tracks: PlaskTrack[] = newLayerResponse.tracks.map((serverTrack, index) => {
     const transformKeys: IAnimationKey[] = [];
     if (serverTrack.property === 'rotationQuaternion') {
@@ -136,7 +136,6 @@ function* handleAddLayerReceive(action: ReturnType<typeof trackListActions.addLa
       },
     }),
   );
-  console.log(getAnimationIngredients(yield select()));
 }
 
 export default function* watchAddLayerSocketActions() {
