@@ -31,7 +31,7 @@ const VideoMode = () => {
         height: windowHeight - 180 - 36,
       } as BoxProps,
       CP: {
-        width: 240,
+        width: 250,
       } as BoxProps,
       MB: {
         height: 32,

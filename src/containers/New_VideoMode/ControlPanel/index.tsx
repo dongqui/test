@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Typography as Tg } from 'components/Typography';
 
 import classNames from 'classnames/bind';
@@ -26,6 +26,8 @@ const ControlPanel = ({}: Props) => {
       value: 1,
     },
   ];
+  const defaultSelectOptionIndex = 0;
+  const [isMulti, setIsMulti] = useState(Boolean(defaultSelectOptionIndex));
   const handleClick = (data: any) => console.log(data);
 
   return (
@@ -44,16 +46,33 @@ const ControlPanel = ({}: Props) => {
                 <div className={cx('section-item')}>
                   <Tg>Model</Tg>
                   <Controller
-                    defaultValue={selectOption[0].key}
+                    defaultValue={selectOption[defaultSelectOptionIndex].key}
                     control={props.control}
                     name="model"
-                    render={({ field }) => <Switch className={cx('switch')} onChange={field.onChange} defaultKey={selectOption[0].key} options={selectOption} />}
+                    render={({ field }) => (
+                      <Switch
+                        className={cx('switch')}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setIsMulti(!isMulti);
+                        }}
+                        defaultKey={selectOption[defaultSelectOptionIndex].key}
+                        options={selectOption}
+                      />
+                    )}
                   />
                 </div>
-                <div className={cx('section-item')}>
-                  <Tg>Foot lock</Tg>
-                  <Controller defaultValue={false} control={props.control} name="Foot lock" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
-                </div>
+                {isMulti && (
+                  <div className={cx('section-item', 'section-text')}>
+                    <Tg className={cx('section-comments')}>We recommend videos with no more than 10 people.</Tg>
+                  </div>
+                )}
+                {!isMulti && (
+                  <div className={cx('section-item')}>
+                    <Tg>Foot lock</Tg>
+                    <Controller defaultValue={false} control={props.control} name="Foot lock" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
+                  </div>
+                )}
                 <div className={cx('section-item')}>
                   <Tg>T-pose</Tg>
                   <Controller defaultValue={false} control={props.control} name="T-pose" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
