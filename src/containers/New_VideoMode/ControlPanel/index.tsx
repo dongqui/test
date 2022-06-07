@@ -5,6 +5,9 @@ import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
+import { BaseForm } from 'components/Form';
+import _Switch from 'components/Input/Switch';
+import { Controller } from 'react-hook-form';
 
 const cx = classNames.bind(styles);
 
@@ -23,6 +26,7 @@ const ControlPanel = ({}: Props) => {
       value: 1,
     },
   ];
+  const handleClick = (data: any) => console.log(data);
 
   return (
     <div className={cx('wrapper')}>
@@ -33,26 +37,39 @@ const ControlPanel = ({}: Props) => {
             <Tg>Beta</Tg>
           </div>
         </div>
-        <div className={cx('section-item')}>
-          <Tg>Model</Tg>
-          <Switch className={cx('switch')} onChange={() => {}} defaultKey={selectOption[0].key} options={selectOption} />
-        </div>
-        <div className={cx('section-item')}>
-          <Tg>Foot lock</Tg>
-          <Toggle />
-        </div>
-        <div className={cx('section-item')}>
-          <Tg>T-pose</Tg>
-          <Toggle />
-        </div>
-        <div className={cx('section-item', 'section-text')}>
-          <Tg className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Tg>
-        </div>
-        <div className={cx('section-item')}>
-          <FilledButton fullSize>
-            <Tg type="button">Extract</Tg>
-          </FilledButton>
-        </div>
+        <BaseForm onSubmit={handleClick}>
+          {(props) => {
+            return (
+              <Fragment>
+                <div className={cx('section-item')}>
+                  <Tg>Model</Tg>
+                  <Controller
+                    defaultValue={selectOption[0].key}
+                    control={props.control}
+                    name="model"
+                    render={({ field }) => <Switch className={cx('switch')} onChange={field.onChange} defaultKey={selectOption[0].key} options={selectOption} />}
+                  />
+                </div>
+                <div className={cx('section-item')}>
+                  <Tg>Foot lock</Tg>
+                  <Controller defaultValue={false} control={props.control} name="Foot lock" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
+                </div>
+                <div className={cx('section-item')}>
+                  <Tg>T-pose</Tg>
+                  <Controller defaultValue={false} control={props.control} name="T-pose" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
+                </div>
+                <div className={cx('section-item', 'section-text')}>
+                  <Tg className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Tg>
+                </div>
+                <div className={cx('section-item')}>
+                  <FilledButton fullSize buttonType="submit">
+                    <Tg type="button">Extract</Tg>
+                  </FilledButton>
+                </div>
+              </Fragment>
+            );
+          }}
+        </BaseForm>
       </div>
     </div>
   );

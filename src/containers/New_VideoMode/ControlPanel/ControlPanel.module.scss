@@ -27,29 +27,29 @@
       border-radius: 6px;
     }
   }
+}
 
-  & > .section-item {
+.section-item {
+  display: flex;
+  align-items: center;
+
+  height: 36px;
+
+  justify-content: space-between;
+
+  &.section-text {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+  }
 
-    height: 36px;
+  & > .switch {
+    width: 140px;
+  }
 
-    justify-content: space-between;
-
-    &.section-text {
-      display: flex;
-      align-items: flex-start;
-    }
-
-    & > .switch {
-      width: 140px;
-    }
-
-    & > .section-comments {
-      color: $content-medium;
-      font-size: var(--font-size-3);
-      font-weight: 300;
-      line-height: 13px;
-    }
+  & > .section-comments {
+    color: $content-medium;
+    font-size: var(--font-size-3);
+    font-weight: 300;
+    line-height: 13px;
   }
 }
