@@ -1,13 +1,12 @@
 import { Fragment, useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { Typography as Tg } from 'components/Typography';
-
-import classNames from 'classnames/bind';
-import styles from './ControlPanel.module.scss';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
 import { BaseForm } from 'components/Form';
-import _Switch from 'components/Input/Switch';
-import { Controller } from 'react-hook-form';
+
+import classNames from 'classnames/bind';
+import styles from './ControlPanel.module.scss';
 
 const cx = classNames.bind(styles);
 
