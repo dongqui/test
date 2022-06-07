@@ -11,7 +11,7 @@ export class ScreenPlaneDragGizmo extends PlaneDragGizmo {
     unlit.disableLighting = true;
     unlit.emissiveColor = new Color3(1, 1, 1);
     cube.material = unlit;
-    // this.setCustomMesh(cube);
+    this.setCustomMesh(cube);
 
     console.log(dragPlaneNormal);
 
