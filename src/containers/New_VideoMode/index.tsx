@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import { Timeline } from '@babylonjs/controls';
 import Image from 'next/image';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { IMPORT_ERROR_INVALID_FORMAT, WARNING_02 } from 'constants/Text';
@@ -110,7 +111,6 @@ const VideoMode = () => {
         return res;
       })
       .catch((err) => {
-        console.log(err);
         return err;
       });
 
@@ -118,6 +118,7 @@ const VideoMode = () => {
   };
 
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [currentVideoURL, setVideoURL] = useState<string>();
 
   const handleDrop = async (files: File[]) => {
     if (files.length > 1) {
@@ -134,7 +135,6 @@ const VideoMode = () => {
     }
 
     const file = files[0];
-    console.log(file.type);
 
     // mp4, mov, webm
     const acceptableFormats = ['mp4', 'mov', 'webm'];
@@ -144,7 +144,6 @@ const VideoMode = () => {
         return res;
       })
       .catch((err) => {
-        console.log(err);
         return err;
       });
 
@@ -162,7 +161,9 @@ const VideoMode = () => {
 
     if (videoRef && videoRef.current) {
       const videoURL = URL.createObjectURL(files[0]);
+
       setIsVideoLoaded(true);
+      setVideoURL(videoURL);
 
       videoRef.current.src = videoURL;
     }
@@ -186,51 +187,94 @@ const VideoMode = () => {
   const [thumbnailList, setThumbnailList] = useState<string[]>([]);
   const [duration, setDuration] = useState(0);
 
-  const handleLoadMetadata = useCallback(() => {
-    if (videoRef.current && isVideoLoaded) {
-      console.log(videoRef.current.duration);
+  // const timelineRef = useRef<HTMLCanvasElement>(null);
+  const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
+  const handleLoadMetadata = useCallback(() => {
+    if (videoRef && videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
       let count = 0;
 
       const datumPoint = videoRef.current.duration / 20;
-      console.log(datumPoint);
+
       const thumbnailList: string[] = [];
 
-      const checkDuration = setInterval(() => {
-        if (videoRef.current) {
-          if (videoRef.current.duration !== Infinity) {
-            videoRef.current.pause();
-            videoRef.current.currentTime = 0;
-            clearInterval(checkDuration);
-            setDuration(videoRef.current.duration);
+      if (timelineRef && currentVideoURL) {
+        const timeline = new Timeline(timelineRef, {
+          totalDuration: 60,
+          thumbnailWidth: 128,
+          thumbnailHeight: 120,
+          loadingTextureURI: '/images/ArrowDown.png',
+          getThumbnailCallback: (time: number, done: (input: any) => void) => {
+            // This is strictly for demo purpose and should not be used in prod as it creates as many videos
+            // as there are thumbnails all over the timeline.
+            const hiddenVideo = document.createElement('video');
+            document.body.append(hiddenVideo);
+            hiddenVideo.style.display = 'none';
 
-            const setScreenshot = setInterval(() => {
-              if (videoRef.current) {
-                if (count < 20) {
-                  count++;
-                  const thumbnail = handleCaptureThumbnail();
-                  if (thumbnail) {
-                    thumbnailList.push(thumbnail);
-                  }
-                  videoRef.current.currentTime += datumPoint;
-                } else {
-                  videoRef.current.currentTime = 0;
-                  setThumbnailList(thumbnailList);
-                  clearInterval(setScreenshot);
-                }
+            hiddenVideo.setAttribute('playsinline', '');
+            hiddenVideo.muted = true;
+            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
+            hiddenVideo.loop = false;
+
+            hiddenVideo.onloadeddata = () => {
+              if (time === 0) {
+                done(hiddenVideo);
+              } else {
+                hiddenVideo.onseeked = () => {
+                  done(hiddenVideo);
+                };
+                hiddenVideo.currentTime = time;
               }
-            }, 150);
-          } else {
-            videoRef.current.currentTime += 1e101;
+            };
+
+            // hiddenVideo.src = '/video/exo.mp4?' + time;
+            hiddenVideo.src = currentVideoURL;
+            hiddenVideo.load();
+          },
+        });
+
+        timeline.runRenderLoop(() => {
+          if (videoRef.current && !videoRef.current.paused) {
+            timeline.setCurrentTime(videoRef.current.currentTime);
           }
-        }
-      }, 500);
+        });
+      }
+
+      // const checkDuration = setInterval(() => {
+      //   if (videoRef.current) {
+      //     if (videoRef.current.duration !== Infinity) {
+      //       videoRef.current.pause();
+      //       videoRef.current.currentTime = 0;
+      //       clearInterval(checkDuration);
+      //       // setDuration(videoRef.current.duration);
+
+      //       const setScreenshot = setInterval(() => {
+      //         if (videoRef.current) {
+      //           if (count < 20) {
+      //             count++;
+      //             const thumbnail = handleCaptureThumbnail();
+      //             if (thumbnail) {
+      //               thumbnailList.push(thumbnail);
+      //             }
+      //             videoRef.current.currentTime += datumPoint;
+      //           } else {
+      //             videoRef.current.currentTime = 0;
+      //             setThumbnailList(thumbnailList);
+      //             clearInterval(setScreenshot);
+      //           }
+      //         }
+      //       }, 150);
+      //     } else {
+      //       videoRef.current.currentTime += 1e101;
+      //     }
+      //   }
+      // }, 500);
 
       setIsVideoLoaded(true);
     }
-  }, [handleCaptureThumbnail, isVideoLoaded]);
+  }, [currentVideoURL, timelineRef]);
 
   const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
   const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -275,11 +319,7 @@ const VideoMode = () => {
     muted: true,
   };
 
-  console.log(isCameraLoaded, cameraDeviceList);
-
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  console.log(thumbnailList);
 
   return (
     <div className={cx('wrapper')}>
@@ -310,14 +350,15 @@ const VideoMode = () => {
           MB
         </Box>
         <Box id="TP" {...boxProps.TP}>
-          {thumbnailList.length > 0 && isVideoLoaded ? (
-            <div className={cx('thumbnail-list')}>
-              {thumbnailList.map((thumbnail, index) => (
-                <div className={cx('thumbnail')} key={index}>
-                  <Image src={thumbnail} alt="timeline thumbanil" className={cx('thumbnail-image', 'no-select')} width={100} height={80} />
-                </div>
-              ))}
-            </div>
+          {isVideoLoaded ? (
+            // <div className={cx('thumbnail-list')}>
+            //   {thumbnailList.map((thumbnail, index) => (
+            //     <div className={cx('thumbnail')} key={index}>
+            //       <Image src={thumbnail} alt="timeline thumbanil" className={cx('thumbnail-image', 'no-select')} width={100} height={80} />
+            //     </div>
+            //   ))}
+            // </div>
+            <canvas id="timelineCanvas" width="1024" height="160" />
           ) : (
             <div className={cx('dropzone')}>
               <BaseDropzone onDrop={handleDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
