@@ -112,7 +112,7 @@ export class IKController {
 
   private _createHandle(limb: string, assetId: string, size: number): Mesh {
     const ikControllerHandle = new IKHandle('ik_ctrl_handle_' + limb + '//' + assetId, this.scene, this);
-    ikControllerHandle.id = 'ik_ctrl_handle_' + limb;
+    ikControllerHandle.id = 'ik_ctrl_handle//' + limb + '_ik';
 
     const vertexData = CreateTorusVertexData({
       diameter: size,

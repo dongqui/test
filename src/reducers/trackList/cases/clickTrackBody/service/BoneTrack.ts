@@ -47,9 +47,9 @@ class BoneTrackService extends StateUpdate implements Service {
   };
 
   private selectLeftClick = () => {
-    const { payload } = this;
+    const { payload, state } = this;
     const { clickLeft } = new LeftClick();
-    return clickLeft({ payload });
+    return clickLeft({ state, payload });
   };
 
   selectClickType = () => {

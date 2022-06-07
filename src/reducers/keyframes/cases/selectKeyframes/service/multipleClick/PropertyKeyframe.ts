@@ -35,7 +35,7 @@ class TransformKeyframeMultipleClick implements MultipleClick {
   private filterSelectedBoneKeyframes = ({ state, payload }: Params) => {
     const { boneTrackList, selectedBoneKeyframes } = state;
     const { time, trackNumber } = payload;
-    const boneNumber = getBoneTrackIndex(trackNumber);
+    const boneNumber = getBoneTrackIndex(boneTrackList[trackNumber]);
     const { trackId, trackType } = this.findEditorTrack(boneTrackList, boneNumber);
     const selectedBone = { trackType, trackId, trackNumber: boneNumber, time };
     return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, [selectedBone]);

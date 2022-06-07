@@ -5,6 +5,7 @@ import { KeyframesState } from 'reducers/keyframes';
 import { getBoneTrackIndex, findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 class BoneKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -19,11 +20,12 @@ class BoneKeyframeRepository implements Repository {
   };
 
   // 각 bone 하위의 선택 된 property keyframes time 계산
-  private getSelectedPropertyTimes = () => {
+  private getSelectedPropertyTimes = (propertyTrackList: TimeEditorTrack[]) => {
     const { selectedPropertyKeyframes } = this.state;
     const selectedTimes = new Map<number, Set<number>>();
-    selectedPropertyKeyframes.forEach(({ keyframes, trackNumber }) => {
-      const boneNumber = getBoneTrackIndex(trackNumber);
+    selectedPropertyKeyframes.forEach((clusteredKF) => {
+      const { keyframes, trackNumber } = clusteredKF;
+      const boneNumber = getBoneTrackIndex(clusteredKF);
       const prevTimes = selectedTimes.get(boneNumber);
       const times: number[] = [];
       keyframes.forEach((keyframe) => {
@@ -40,26 +42,32 @@ class BoneKeyframeRepository implements Repository {
 
   // 하위 property keyframe들이 모두 삭제되었는지 확인
   private isAllDeleted = (trackList: TimeEditorTrack[], trackNumber: number, time: number) => {
-    let deletedCount = 0;
-    for (let property = trackNumber + 1; property <= trackNumber + 3; property++) {
-      const trackIndex = findElementIndex(trackList, property, 'trackNumber');
-      const { keyframes } = trackList[trackIndex];
-      const keyframeIndex = findElementIndex(keyframes, time, 'time');
-      if (keyframeIndex === -1) {
-        deletedCount += 1;
-      } else {
-        const isDeleted = trackList[trackIndex].keyframes[keyframeIndex].isDeleted;
-        if (isDeleted) deletedCount += 1;
+    let boneKeyframeExists = false;
+    const selectedTracks = findChildrenTracks(trackNumber, trackList) as TimeEditorTrack[];
+
+    for (const track of selectedTracks) {
+      if (this.isExistedPropertyKeyframe(track, time)) {
+        boneKeyframeExists = true;
+        break;
       }
     }
-    return deletedCount === 3;
+
+    return !boneKeyframeExists;
+  };
+
+  // 삭제 된 property keyframe인지 확인
+  private isExistedPropertyKeyframe = (track: TimeEditorTrack, time: number) => {
+    const keyframeIndex = findElementIndex(track.keyframes, time, 'time');
+    if (keyframeIndex === -1) return false;
+    const isExisted = !track.keyframes[keyframeIndex].isDeleted;
+    return isExisted;
   };
 
   // 하위 property keyframes들이 모두 삭제 된 경우 탐색
   private getDeletedBoneTimes = (propertyTrackList: TimeEditorTrack[]) => {
     const { boneTrackList } = this.state;
     const deletedBoneTimes: ClusteredKeyframe[] = [];
-    const selectedPropertyTimes = this.getSelectedPropertyTimes();
+    const selectedPropertyTimes = this.getSelectedPropertyTimes(propertyTrackList);
     for (const [boneNumber, propertyTimes] of selectedPropertyTimes.entries()) {
       propertyTimes.forEach((time) => {
         const isAllDeleted = this.isAllDeleted(propertyTrackList, boneNumber, time);

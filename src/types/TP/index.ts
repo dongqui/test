@@ -11,14 +11,6 @@ export type TrackType = 'layer' | 'bone' | 'property';
 
 // 트랙 식별자 타입
 export interface TrackIdentifier {
-  /**
-   * @description TP쪽에서 트랙을 탐색하기 위한 트랙별 번호 규칙
-   * @default -1 layer 트랙의 number는 -1로 세팅
-   * @default 0 bone 트랙의 number는 끝자리를 0으로 세팅(0, 10, 20...)
-   * @default 1 position 트랙의 number는 끝자리를 1으로 세팅(1, 11, 21...)
-   * @default 2 rotation 트랙의 number는 끝자리를 2으로 세팅(2, 12, 22...)
-   * @default 3 scale 트랙의 number는 끝자리를 3으로 세팅(3, 13, 23...)
-   */
   trackNumber: number;
 
   /**
@@ -30,4 +22,5 @@ export interface TrackIdentifier {
   trackId: string;
 
   trackType: TrackType;
+  parentTrackNumber?: number;
 }

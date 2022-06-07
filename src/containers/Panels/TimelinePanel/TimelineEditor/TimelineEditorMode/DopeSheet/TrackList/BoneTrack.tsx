@@ -2,6 +2,7 @@ import { useMemo, Fragment, FunctionComponent } from 'react';
 
 import { TimeEditorTrack } from 'types/TP/keyframe';
 import { BoneTrack } from 'types/TP/track';
+import { PropertyTrack as PropertyTrackAlias } from 'types/TP/track';
 import { useSelector } from 'reducers';
 import { getBoneTrackIndex } from 'utils/TP';
 
@@ -10,6 +11,7 @@ import Keyframe from './Keyframe';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 const cx = classNames.bind(styles);
 
@@ -25,35 +27,12 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
   // 자식이 될 property 키프레임 필터링
   const childrenKeyframes = useMemo(() => {
     let index = 0;
-    while (index < propertyKeyframes.length) {
-      // TODO : change getBoneTrackIndex so we retrieve the bone associated with a property track in a clean way
-      const boneIndex = getBoneTrackIndex(propertyKeyframes[index].trackNumber as number);
-      if (boneIndex === trackNumber) {
-        const start = index - 1 === -1 ? 0 : index;
-        // TODO : 3 tracks hard coded, this should be removed by the above comment
-        return propertyKeyframes.slice(start, index + 3);
-      }
-      index += 3;
-    }
-    return [];
+    return findChildrenTracks(trackNumber, propertyKeyframes) as TimeEditorTrack[];
   }, [trackNumber, propertyKeyframes]);
 
   // 자식이 될 property 트랙 리스트 필터링
   const childrenTrackList = useMemo(() => {
-    let index = 0;
-    while (index < propertyTrackList.length) {
-      // TODO : change getBoneTrackIndex so we retrieve the bone associated with a property track in a clean way
-
-      const boneIndex = getBoneTrackIndex(propertyTrackList[index].trackNumber);
-      if (boneIndex === trackNumber) {
-        const start = index - 1 === -1 ? 0 : index;
-        // TODO : 3 tracks hard coded, this should be removed by the above comment
-
-        return propertyTrackList.slice(start, index + 3);
-      }
-      index += 3;
-    }
-    return [];
+    return findChildrenTracks(trackNumber, propertyTrackList) as PropertyTrackAlias[];
   }, [trackNumber, propertyTrackList]);
 
   return (

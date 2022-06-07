@@ -17,10 +17,12 @@ class KeyframeService implements Service {
   }
 
   changeSelectedTargets = (plaskTracks: PlaskTrack[]): Partial<KeyframesState> => {
+    const context = { trackUid: 0 };
+
     return {
-      layerTrack: this.layerTrackRepo.initializeTimeEditorTrack(plaskTracks) as TimeEditorTrack,
-      boneTrackList: this.boneTrackRepo.initializeTimeEditorTrack(plaskTracks) as TimeEditorTrack[],
-      propertyTrackList: this.propertyTrackRepo.initializeTimeEditorTrack(plaskTracks) as TimeEditorTrack[],
+      layerTrack: this.layerTrackRepo.initializeTimeEditorTrack(plaskTracks, context) as TimeEditorTrack,
+      boneTrackList: this.boneTrackRepo.initializeTimeEditorTrack(plaskTracks, context) as TimeEditorTrack[],
+      propertyTrackList: this.propertyTrackRepo.initializeTimeEditorTrack(plaskTracks, context) as TimeEditorTrack[],
       selectedLayerKeyframes: this.layerTrackRepo.clearSelectedKeyframes(),
       selectedBoneKeyframes: this.boneTrackRepo.clearSelectedKeyframes(),
       selectedPropertyKeyframes: this.propertyTrackRepo.clearSelectedKeyframes(),

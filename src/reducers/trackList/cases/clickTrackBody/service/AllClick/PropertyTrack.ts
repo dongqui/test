@@ -29,7 +29,7 @@ class PropertyTrackAllClick implements AllClick {
 
   public clickSelectAll = ({ state, payload }: Params): SelectedTracks => {
     const { selectedBones, selectedProperties } = state;
-    const boneNumber = getBoneTrackIndex(payload.trackNumber);
+    const boneNumber = getBoneTrackIndex(state.propertyTrackList[payload.trackNumber]);
     const propertySiblings = this.setPropertySiblings(boneNumber);
     const nextSelectedProperties = [...selectedProperties, ...propertySiblings];
     return { selectedBones, selectedProperties: nextSelectedProperties };
@@ -37,7 +37,7 @@ class PropertyTrackAllClick implements AllClick {
 
   public clickUnselectAll = ({ state, payload }: Params): SelectedTracks => {
     const { selectedBones, selectedProperties } = state;
-    const boneNumber = getBoneTrackIndex(payload.trackNumber);
+    const boneNumber = getBoneTrackIndex(state.propertyTrackList[payload.trackNumber]);
     const propertySiblings = this.setPropertySiblings(boneNumber);
     const nextSelectedBones = this.filterSelectedTracks(selectedBones, [boneNumber]);
     const nextSelectedProperties = this.filterSelectedTracks(selectedProperties, propertySiblings);

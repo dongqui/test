@@ -92,9 +92,7 @@ const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
       </div>
       <ul>
         {isPointedDownCaret &&
-          propertyTrackList.map(
-            (propertyTrack) => getBoneTrackIndex(propertyTrack.trackNumber) === trackNumber && <PropertyTrackItem key={propertyTrack.trackName} {...propertyTrack} />,
-          )}
+          propertyTrackList.map((propertyTrack) => getBoneTrackIndex(propertyTrack) === trackNumber && <PropertyTrackItem key={propertyTrack.trackName} {...propertyTrack} />)}
       </ul>
     </li>
   );

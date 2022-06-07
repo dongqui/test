@@ -2,7 +2,7 @@ import produce, { Draft } from 'immer';
 
 import { TimeEditorTrack, TransformKey, ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
-import { findElementIndex, getBoneTrackIndex } from 'utils/TP';
+import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
 
