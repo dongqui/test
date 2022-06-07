@@ -78,7 +78,6 @@ function* handleAddLayerRequest(action: ReturnType<typeof trackListActions.addLa
 
 function* handleAddLayerReceive(action: ReturnType<typeof trackListActions.addLayerSocket.receive>) {
   const newLayerResponse = action.payload.data;
-  console.log(action.payload);
   const animationIngredients = getAnimationIngredients(yield select());
   const targetAnimationIngredient = animationIngredients.find((animationIngredient) => animationIngredient.id === newLayerResponse.animationUid);
   const baselayer = targetAnimationIngredient?.layers[0];
