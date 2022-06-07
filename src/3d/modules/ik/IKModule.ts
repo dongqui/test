@@ -78,8 +78,13 @@ export class IKModule extends Module {
           this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
           break;
         case 'joint':
+          this.ikControllers.forEach((ikController) => {
+            if (ikController.fkInfluenceChain?.includes(objects[0].reference)) {
+              this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+            }
+          });
           break;
-        case 'unknwown':
+        case 'unknown':
           break;
       }
     }

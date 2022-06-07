@@ -205,6 +205,12 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   const dropdownOptions = [
     {
+      text: 'Deactivate IK',
+      handleSelect: () => {
+        // TODO Deactivate
+      },
+    },
+    {
       text: 'Delete all IK controllers',
       handleSelect: () => {
         dispatch(

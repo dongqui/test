@@ -2,7 +2,7 @@ import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
-export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknwown';
+export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknown';
 export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   position: number[];
   rotation: number[];
@@ -35,7 +35,7 @@ export class PlaskTransformNode extends PlaskEntity {
   public position: number[] = [];
   public rotation: number[] = [];
   public scaling: number[] = [];
-  public type: PlaskTransformNodeType = 'unknwown';
+  public type: PlaskTransformNodeType = 'unknown';
   public className = 'PlaskTransformNode';
 
   public id: string = '';
