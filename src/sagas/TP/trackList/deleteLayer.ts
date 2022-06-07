@@ -21,7 +21,6 @@ function* handleDeleteLayerRequest(action: ReturnType<typeof trackListActions.de
 }
 
 function* handleDeleteLayerReceive(action: ReturnType<typeof trackListActions.deleteLayerSocket.receive>) {
-  console.log(action.payload.data);
   const { layerId, animationUid } = action.payload.data;
 
   const animationIngredients = getAnimationIngredients(yield select());
