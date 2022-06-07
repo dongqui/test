@@ -1,6 +1,5 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import * as BABYLON from '@babylonjs/core';
 import { isNull } from 'lodash';
 
 import { StaticRangeInput } from 'components/ControlPanel';
@@ -21,6 +20,8 @@ import { editAnimationIngredient } from 'actions/animationDataAction';
 import { changeSelectedTargets } from 'actions/trackList';
 import { readMetadata } from 'utils/RP/metadata';
 import { addEntity, addSelectableObjects, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
+import { IKController } from '3d/modules/ik/IKController';
+import { Tools } from '@babylonjs/core';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -83,16 +84,31 @@ const IKControllerSection: FunctionComponent<Props> = ({
     setPoleAngleValue(0);
     setBlendValue(1);
     setIsIKOn(false);
-    controlTargets.forEach((controlTarget) => {
-      const controller = readMetadata('ikController', controlTarget.reference);
+
+    // Use only first control target to display active values
+    if (controlTargets[0]) {
+      const controller = readMetadata('ikController', controlTargets[0].reference) as IKController;
       if (controller) {
         setIsIKOn(true);
         setBlendValue(controller.blend);
-        setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
-        return;
+        setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+
+        const blendObserver = controller.onBlendUpdatedObservable.add(() => {
+          setBlendValue(controller.blend);
+        });
+        const poleAngleObserver = controller.onPoleAngleUpdatedObservable.add(() => {
+          setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+        });
+        return () => {
+          controller.onBlendUpdatedObservable.remove(blendObserver);
+          controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
+        };
       }
-    });
+    }
   }, [controlTargets]);
+
+  // Updating blend and pole angle from 3D
+  useEffect(() => {});
 
   const IKControllerData = [
     {
@@ -121,7 +137,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
         // setPoleAngleValue(parseFloat(event.target.value));
-        plaskEngine.ikModule.setIKControllerPoleAngle(BABYLON.Tools.ToRadians(parseFloat(event.target.value)));
+        plaskEngine.ikModule.setIKControllerPoleAngle(Tools.ToRadians(parseFloat(event.target.value)));
       },
       onChangeEnd: useCallback((inputValue: number) => {
         setPoleAngleValue(inputValue);
@@ -188,6 +204,12 @@ const IKControllerSection: FunctionComponent<Props> = ({
   }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = [
+    {
+      text: 'Deactivate IK',
+      handleSelect: () => {
+        // TODO Deactivate
+      },
+    },
     {
       text: 'Delete all IK controllers',
       handleSelect: () => {

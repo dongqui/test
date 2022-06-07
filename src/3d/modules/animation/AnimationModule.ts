@@ -2,9 +2,6 @@ import { PlaskEngine } from '3d/PlaskEngine';
 import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
 import produce from 'immer';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
-import * as animatingControlsActions from 'actions/animatingControlsAction';
-import * as animationDataActions from 'actions/animationDataAction';
-import * as keyframesActions from 'actions/keyframes';
 import {
   AnimationIngredient,
   ArrayOfFourNumbers,
@@ -66,6 +63,7 @@ export class AnimationModule extends Module {
       layer.tracks.forEach((track) => {
         const transformKeysMap = new Map<number, ServerTransformKey>();
         track.transformKeys.forEach((transformKey) => {
+          // TODO : test PlaskPropertyFormat[track.property]
           const serverTransformKey: ServerTransformKey = {
             property: track.property,
             transformKey:
@@ -127,6 +125,8 @@ export class AnimationModule extends Module {
       const tracks: PlaskTrack[] = [];
       serverTracks.forEach((serverTrack) => {
         const transformKeys: IAnimationKey[] = [];
+        // TODO : test PlaskPropertyFormat[serverTrack.property]
+
         if (serverTrack.property === 'rotationQuaternion') {
           for (let [frame, transformKey] of serverTrack.transformKeysMap.entries()) {
             const quaternionKey = transformKey.transformKey as QuaternionTransformKey;
@@ -355,64 +355,93 @@ export class AnimationModule extends Module {
   }
 
   /**
-   * create our custom animation data(animationIngredient) from AnimationGroup
-   * @param assetId - asset's id
-   * @param animationIngredientName - name of the motion
-   * @param targetedAnimations - animations with target used as the source for animationIngredient keyframes
-   * @param targets - targets of the animations(transformNode or mesh)
-   * @param isMocapAnimation - whether if the animation is from mocap data
-   * @param current - if the animationIngredient is visualized currently
+   * Create PlaskTracks for a target TransformNode
+   * @param animationIngredientName
+   * @param targets A list of transform nodes to assign tracks to. 1 track of each property will be created for each target
+   * @param trackProperties List of properties to create an animation track of
+   * @param layerId Id of the layer to add the tracks to
+   * @param isMocapAnimation If the animation tracks are coming from mocap
+   * @param targetedAnimations Optional array of existing animations, to fill the created track with existing aniamation data
    */
-  public createAnimationIngredient(
-    assetId: string,
+  public createTracksForProperties(
     animationIngredientName: string,
-    targetedAnimations: TargetedAnimation[],
-    targets: (TransformNode | Mesh)[],
-    isMocapAnimation: boolean,
-    current: boolean,
-  ): AnimationIngredient {
-    // add 'baseLayer//' in front of the baseLayer's id
-    const layerId = `baseLayer//${getRandomStringKey()}`;
-
+    targets: TransformNode[],
+    trackProperties: PlaskProperty[],
+    layerId: string,
+    isMocapAnimation = false,
+    targetedAnimations: TargetedAnimation[] = [],
+  ): PlaskTrack[] {
     const tracks: PlaskTrack[] = [];
-
     // 1) to maintain tracks's order 2) to handle animation with key only for one property
     // using the way creating empty tracks and then fill them
     targets.forEach((target) => {
-      const positionTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|position`, layerId, target, 'position', [], isMocapAnimation);
-      const rotationTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotation`, layerId, target, 'rotation', [], isMocapAnimation);
-      // prettier-ignore
-      const rotationQuaternionTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotationQuaternion`, layerId, target, 'rotationQuaternion', [], isMocapAnimation)
-      const scalingTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|scaling`, layerId, target, 'scaling', [], isMocapAnimation);
+      for (const property of trackProperties) {
+        const track = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|${property}`, layerId, target, property, [], isMocapAnimation);
+        tracks.push(track);
+      }
 
+      // Fill tracks with animation data, if provided
       targetedAnimations
         .filter((targetAnimation) => targetAnimation.target.id === target.id)
         .forEach(({ target: t, animation: a }) => {
-          if (a.targetProperty === 'position') {
-            positionTrack.transformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // use integer frame
-          } else if (a.targetProperty === 'rotationQuaternion') {
+          let track = tracks.find((track) => track.property === a.targetProperty);
+          if (!track) {
+            console.warn(`Could not fill animation data with ${a.targetProperty} : not supported in this context`);
+            return;
+          }
+
+          if (a.targetProperty === 'rotation') {
+            // Will be handled by rotationquaternion
+            return;
+          }
+          if (a.targetProperty === 'rotationQuaternion') {
+            // Fills euler rotation track
             const quaternionTransformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // use integer frame
-            rotationQuaternionTrack.transformKeys = quaternionTransformKeys;
+            track.transformKeys = quaternionTransformKeys;
+
+            track = tracks.find((track) => track.property === 'rotation');
 
             const eulerTransformKeys: IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
               const q: Quaternion = transformKey.value;
               const e = q.toEulerAngles();
               return { frame: transformKey.frame, value: e };
             });
-            rotationTrack.transformKeys = eulerTransformKeys;
-          } else if (a.targetProperty === 'scaling') {
-            scalingTrack.transformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // use integer frame
+            if (!track) {
+              console.warn(`Could not convert rotationQuaternion to an euler track.`);
+              return;
+            }
+            track.transformKeys = eulerTransformKeys;
           }
         });
-
-      tracks.push(positionTrack);
-      tracks.push(rotationTrack);
-      tracks.push(rotationQuaternionTrack);
-      tracks.push(scalingTrack);
     });
+    return tracks;
+  }
 
+  /**
+   * create our custom animation data(animationIngredient) from AnimationGroup
+   * @param assetId - asset's id
+   * @param animationIngredientName - name of the motion
+   * @param targetedAnimations - animations with target used as the source for animationIngredient keyframes (can be empty to create empty tracks)
+   * @param targets - targets of the animations(transformNode or mesh)
+   * @param isMocapAnimation - whether if the animation is from mocap data
+   * @param current - if the animationIngredient is visualized currently
+   * @param trackProperties The default tracks to create
+   */
+  public createAnimationIngredient(
+    assetId: string,
+    animationIngredientName: string,
+    targetedAnimations: TargetedAnimation[],
+    targets: TransformNode[],
+    isMocapAnimation: boolean,
+    current: boolean,
+    trackProperties: PlaskProperty[] = ['position', 'rotation', 'rotationQuaternion', 'scaling'],
+    existingLayerId?: string,
+  ): AnimationIngredient {
+    // add 'baseLayer//' in front of the baseLayer's id
+    const layerId = existingLayerId || `baseLayer//${getRandomStringKey()}`;
+
+    const tracks = this.createTracksForProperties(animationIngredientName, targets, trackProperties, layerId, isMocapAnimation, targetedAnimations);
     const baseLayer: PlaskLayer = { id: layerId, name: 'Base Layer', isIncluded: true, useFilter: false, tracks };
-
     const animationIngredient = {
       id: getRandomStringKey(),
       name: animationIngredientName,
@@ -666,7 +695,6 @@ export class AnimationModule extends Module {
    * @param transformKeysList - target transformKeys list (array of arrays of transformKey)
    * @param property - property of target track
    */
-  // TODO : Change PlaskProperty to something more generic (Vector3, Quaternion, float)
   public getTotalTransformKeys(transformKeysList: Array<IAnimationKey[]>, property: Omit<PlaskProperty, 'rotation'>) {
     // All the unique frames in order
     const unionFrames = this._getUnionFrames(transformKeysList);
@@ -754,6 +782,21 @@ export class AnimationModule extends Module {
     }
   }
 
+  public getInvertTransformForKeyframe(property: PlaskProperty, value: Quaternion | Vector3 | number, otherValue: Quaternion | Vector3 | number) {
+    if (property === 'position' || property === 'rotation') {
+      return (value as Vector3).subtract(otherValue as Vector3);
+    } else if (property === 'rotationQuaternion') {
+      return (value as Quaternion)
+        .toEulerAngles()
+        .subtract((otherValue as Quaternion).toEulerAngles())
+        .toQuaternion();
+    } else if (property === 'scaling') {
+      value = (value as Vector3).divide(new Vector3((otherValue as Vector3).x || 1, (otherValue as Vector3).y || 1, (otherValue as Vector3).z || 1));
+    }
+    // All other properties are averaged so value does not need to be altered
+    return value;
+  }
+
   /**
    *  return sum of position values in the give array
    * @param values - target position array
@@ -811,8 +854,8 @@ export class AnimationModule extends Module {
       return total.scaleInPlace(1 / values.length);
     }
     if (typeof values[0] === 'number') {
-      const total = 0;
-      (values as number[]).reduce((accumulator: number, value: number) => accumulator + value, total);
+      let total = 0;
+      total = (values as number[]).reduce((accumulator: number, value: number) => accumulator + value, total);
       return total / values.length;
     }
 
@@ -895,6 +938,14 @@ export class AnimationModule extends Module {
         this._currentAnimationGroup.start(true, this.playSpeed, this.startTimeIndex, this.endTimeIndex).pause().goToFrame(targetTimeIndex);
       }
     }
+  }
+
+  /**
+   * Returns the currently used animation ingredient for an assetId
+   * @param assetId
+   */
+  public getCurrentAnimationIngredient(assetId: string) {
+    return this.animationIngredients.find((animationIngredient) => assetId.includes(animationIngredient.assetId) && animationIngredient.current);
   }
 
   public get currentAnimationGroup() {

@@ -9,7 +9,11 @@ import {
   PlaneRotationGizmo,
   PointerEventTypes,
   TransformNode,
+  CreateSphere,
   Vector3,
+  CreateBox,
+  PlaneDragGizmo,
+  Material,
 } from '@babylonjs/core';
 
 import * as animationDataActions from 'actions/animationDataAction';
@@ -19,6 +23,7 @@ import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { readMetadata } from 'utils/RP/metadata';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskGizmoManager } from './PlaskGizmoManager';
 
 type GizmoDragObserver = Nullable<
   Observer<{
@@ -30,7 +35,7 @@ type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; point
 
 export class GizmoModule extends Module {
   private _isAutokeyMode: boolean = false;
-  private _gizmoManager!: GizmoManager;
+  private _gizmoManager!: PlaskGizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _currentGizmoMode: GizmoMode = GizmoMode.POSITION;
   private _currentGizmoSpace: GizmoSpace = GizmoSpace.LOCAL;
@@ -57,7 +62,8 @@ export class GizmoModule extends Module {
   };
 
   public initialize() {
-    this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
+    this._gizmoManager = new PlaskGizmoManager(this.plaskEngine.scene);
+
     this._gizmoManager.usePointerToAttachGizmos = false;
     this._currentGizmoMode = GizmoMode.POSITION;
     this._gizmoManager.positionGizmoEnabled = true; // position
@@ -67,7 +73,6 @@ export class GizmoModule extends Module {
     this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => this._onSelectionChange(objects));
     this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.add((event) => this._changePointerIcon(event));
   }
-
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
     this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.clear();
@@ -299,6 +304,20 @@ export class GizmoModule extends Module {
 
   private _attachGizmo(selectedTargets: TransformNode[]) {
     this._clearObservers();
+
+    // if (!this._planeDragGizmo) {
+    //   this._planeDragGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.White(), this._gizmoManager.utilityLayer, this._gizmoManager.gizmos.positionGizmo);
+    //   this._planeDragGizmo.isEnabled = false;
+    //   const customMesh = CreateBox('screenspaceBox', { size: 0.01 }, this._planeDragGizmo.gizmoLayer.utilityLayerScene);
+    //   this._planeDragGizmo.setCustomMesh(customMesh);
+    //   this._planeDragGizmo.dragBehavior.onDragObservable.add(() => {
+    //     const cam = this.plaskEngine.scene.activeCamera;
+    //     if (!cam) return;
+
+    //     const F = cam.getDirection(new Vector3(0, 0, 1));
+    //     this._planeDragGizmo.dragBehavior.options.dragPlaneNormal?.copyFrom(F.normalize());
+    //   });
+    // }
     if (selectedTargets.length === 0) {
       // Deselection
       this._gizmoManager.attachToNode(null);
@@ -308,22 +327,27 @@ export class GizmoModule extends Module {
         // Enable gizmo for the current mode
         case GizmoMode.POSITION: {
           this._gizmoManager.positionGizmoEnabled = true;
+          this._gizmoManager.planeDragGizmoEnabled = true;
           this._gizmoManager.rotationGizmoEnabled = false;
           this._gizmoManager.scaleGizmoEnabled = false;
+
           this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           this._gizmoManager.gizmos.positionGizmo!.updateGizmoRotationToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           break;
         }
         case GizmoMode.ROTATION: {
           this._gizmoManager.positionGizmoEnabled = false;
+          this._gizmoManager.planeDragGizmoEnabled = false;
           this._gizmoManager.rotationGizmoEnabled = true;
           this._gizmoManager.scaleGizmoEnabled = false;
+
           this._gizmoManager.gizmos.rotationGizmo!.updateGizmoPositionToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           this._gizmoManager.gizmos.rotationGizmo!.updateGizmoRotationToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           break;
         }
         case GizmoMode.SCALE: {
           this._gizmoManager.positionGizmoEnabled = false;
+          this._gizmoManager.planeDragGizmoEnabled = false;
           this._gizmoManager.rotationGizmoEnabled = false;
           this._gizmoManager.scaleGizmoEnabled = true;
           break;
