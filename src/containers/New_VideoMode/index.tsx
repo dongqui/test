@@ -202,7 +202,7 @@ const VideoMode = () => {
 
       if (timelineRef && currentVideoURL) {
         const timeline = new Timeline(timelineRef, {
-          totalDuration: 60,
+          totalDuration: videoRef.current.duration,
           thumbnailWidth: 128,
           thumbnailHeight: 120,
           loadingTextureURI: '/images/ArrowDown.png',
@@ -358,7 +358,7 @@ const VideoMode = () => {
             //     </div>
             //   ))}
             // </div>
-            <canvas id="timelineCanvas" width="1024" height="160" />
+            <canvas id="timelineCanvas" width={windowWidth} height="148" />
           ) : (
             <div className={cx('dropzone')}>
               <BaseDropzone onDrop={handleDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
