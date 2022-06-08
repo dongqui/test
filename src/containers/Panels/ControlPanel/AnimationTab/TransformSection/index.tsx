@@ -446,7 +446,7 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
           inputTitle="Euler"
           inputInfo={inputData.euler}
           dropdownList={rotationTypeDropdownData}
-          activeStatus={isAllActive && !isNull(controlTarget) && controlTarget.getPlaskEntity().transformable.rotation.eular}
+          activeStatus={isAllActive && !isNull(controlTarget) && controlTarget.getPlaskEntity().transformable.rotation.euler}
         />
       ) : (
         // prettier-ignore

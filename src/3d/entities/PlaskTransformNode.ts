@@ -17,7 +17,7 @@ export interface Transformable {
   position: boolean;
   rotation: {
     quaternion: boolean;
-    eular: boolean;
+    euler: boolean;
   };
   scale: boolean;
 }
@@ -38,7 +38,7 @@ export class PlaskTransformNode extends PlaskEntity {
         this._transformable = {
           position: true,
           rotation: {
-            eular: false,
+            euler: false,
             quaternion: false,
           },
           scale: false,
@@ -61,7 +61,7 @@ export class PlaskTransformNode extends PlaskEntity {
   private _transformable: Transformable = {
     position: true,
     rotation: {
-      eular: true,
+      euler: true,
       quaternion: true,
     },
     scale: true,
