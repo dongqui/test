@@ -6,13 +6,13 @@
 .section {
   padding: 0 16px;
 
-  & > .section-title {
+  .section-title {
     display: flex;
     align-items: center;
 
     height: 40px;
 
-    & > .tag {
+    .tag {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -42,11 +42,11 @@
     align-items: flex-start;
   }
 
-  & > .switch {
+  .switch {
     width: 140px;
   }
 
-  & > .section-comments {
+  .section-comments {
     color: $content-medium;
     font-size: var(--font-size-3);
     font-weight: 300;

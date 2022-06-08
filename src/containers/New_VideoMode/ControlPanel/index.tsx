@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react';
 import { Controller } from 'react-hook-form';
-import { Typography as Tg } from 'components/Typography';
+import { Typography } from 'components/Typography';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
 import { BaseForm } from 'components/Form';
@@ -27,23 +27,24 @@ const ControlPanel = ({}: Props) => {
   ];
   const defaultSelectOptionIndex = 0;
   const [isMulti, setIsMulti] = useState(Boolean(defaultSelectOptionIndex));
-  const handleClick = (data: any) => console.log(data);
+  // TODO: handler와 api 연결
+  const handleSubmit = (data: any) => console.log(data);
 
   return (
     <div className={cx('wrapper')}>
       <div className={cx('section')}>
         <div className={cx('section-title')}>
-          <Tg type="title">Extract option</Tg>
+          <Typography type="title">Extract option</Typography>
           <div className={cx('tag')}>
-            <Tg>Beta</Tg>
+            <Typography>Beta</Typography>
           </div>
         </div>
-        <BaseForm onSubmit={handleClick}>
+        <BaseForm onSubmit={handleSubmit}>
           {(props) => {
             return (
               <Fragment>
                 <div className={cx('section-item')}>
-                  <Tg>Model</Tg>
+                  <Typography>Model</Typography>
                   <Controller
                     defaultValue={selectOption[defaultSelectOptionIndex].key}
                     control={props.control}
@@ -63,25 +64,25 @@ const ControlPanel = ({}: Props) => {
                 </div>
                 {isMulti && (
                   <div className={cx('section-item', 'section-text')}>
-                    <Tg className={cx('section-comments')}>We recommend videos with no more than 10 people.</Tg>
+                    <Typography className={cx('section-comments')}>We recommend videos with no more than 10 people.</Typography>
                   </div>
                 )}
                 {!isMulti && (
                   <div className={cx('section-item')}>
-                    <Tg>Foot lock</Tg>
+                    <Typography>Foot lock</Typography>
                     <Controller defaultValue={false} control={props.control} name="Foot lock" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
                   </div>
                 )}
                 <div className={cx('section-item')}>
-                  <Tg>T-pose</Tg>
+                  <Typography>T-pose</Typography>
                   <Controller defaultValue={false} control={props.control} name="T-pose" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
                 </div>
                 <div className={cx('section-item', 'section-text')}>
-                  <Tg className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Tg>
+                  <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
                 </div>
                 <div className={cx('section-item')}>
                   <FilledButton fullSize buttonType="submit">
-                    <Tg type="button">Extract</Tg>
+                    <Typography type="button">Extract</Typography>
                   </FilledButton>
                 </div>
               </Fragment>
