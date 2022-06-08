@@ -35,7 +35,7 @@ export default function* LPSaga() {
     takeEvery(getType(lpNodeActions.fileUpload), handleFileUpload),
     takeEvery(getType(lpNodeActions.initNodes), initNodes),
     takeLatest(getType(lpNodeActions.addDirectoryAsync.request), handleAddDirectory),
-    takeLatest(getType(lpNodeActions.addModelAsync.request), handleAddModel),
+    takeEvery(getType(lpNodeActions.addModelAsync.request), handleAddModel),
     takeLatest(getType(lpNodeActions.applyMocapToModel.request), handleApplyMocapToModel),
     takeLatest(getType(lpNodeActions.addAssetsAndAnimationIngredients), addAssetsAndAnimationIngredients),
     takeLatest(getType(lpNodeActions.importMocapJson), importMocapJson),

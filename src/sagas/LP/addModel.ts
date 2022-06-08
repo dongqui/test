@@ -33,7 +33,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       throw new InvalidFormatImportError(IMPORT_ERROR_INVALID_FORMAT);
     }
 
-    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, file.name));
     const { assetsUid, modelUrl, uid }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, file);
 
     if (!assetsUid || !modelUrl) {
@@ -75,11 +75,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
     );
 
     const motionNodes = motionNodesRes.map(convertServerResponseToNode);
-
-    const nextNodes = produce(lpNode.nodes, (draft) => {
-      modelNode.childNodeIds = motionNodes.map((node) => node.id);
-      draft.push(modelNode, ...motionNodes);
-    });
+    modelNode.childNodeIds = motionNodes.map((node) => node.id);
 
     const newAsset: PlaskAsset = {
       id: modelNode.assetId!,
@@ -108,7 +104,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       }),
     );
 
-    yield put(lpNodeActions.addModelAsync.success(nextNodes));
+    yield put(lpNodeActions.addModelAsync.success([modelNode, ...motionNodes]));
     if (isRetargetError(rawRetargetMap)) {
       yield put(
         globalUIActions.openModal('AlertModal', {
@@ -132,7 +128,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       ),
     );
   } finally {
-    yield put(globalUIActions.closeModal('LoadingModal'));
+    yield put(globalUIActions.closeModal(file.name));
   }
 }
 
