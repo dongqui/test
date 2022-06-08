@@ -127,7 +127,7 @@ export const addEmptyMotionAsync = createAsyncAction('node/ADD_EMPTY_MOTION_REQU
 
 export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 
-export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, LP.Node[], Error>();
+export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, { nodes: LP.Node[] }, Error>();
 
 export const initDefaultSceneModelData = createAsyncAction(
   'node/INIT_DEFAULT_SCENE_MODEL_DATA_REQUEST',

@@ -35,9 +35,9 @@ export default function Modal() {
 
   return (
     <Fragment>
-      {modals.map((modal) => {
+      {modals.map((modal, i) => {
         const Modal = Modals[modal.name];
-        return <Modal key={modal.alias} onClose={handleClose(modal.alias || modal.name)} {...(modal.props as any)} />;
+        return <Modal key={modal.name + i} onClose={handleClose(modal.alias || modal.name)} {...(modal.props as any)} />;
       })}
     </Fragment>
   );

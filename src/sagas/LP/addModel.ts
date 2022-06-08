@@ -104,7 +104,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       }),
     );
 
-    yield put(lpNodeActions.addModelAsync.success([modelNode, ...motionNodes]));
+    yield put(lpNodeActions.addModelAsync.success({ nodes: [modelNode, ...motionNodes] }));
     if (isRetargetError(rawRetargetMap)) {
       yield put(
         globalUIActions.openModal('AlertModal', {
