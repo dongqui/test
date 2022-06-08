@@ -52,6 +52,12 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     return;
   }
   if (!draggedNode || !modelNode || !targetRetargetMap || !draggedNode?.mocapId) {
+    yield put(
+      globalUIActions.openModal('_AlertModal', {
+        message: 'This model file is broken.',
+        title: 'Import failed',
+      }),
+    );
     return;
   }
 
