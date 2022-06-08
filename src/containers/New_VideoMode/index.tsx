@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState, useCallback, useRef } from 'react';
+import { Fragment, useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Timeline } from '@babylonjs/controls';
 import Image from 'next/image';
@@ -21,7 +21,7 @@ const VideoMode = () => {
   const boxProps = useMemo(
     () => ({
       US: {
-        height: windowHeight - 180 - 36,
+        height: windowHeight - 180 - 38,
       } as BoxProps,
       LS: {
         height: 180,
@@ -31,12 +31,14 @@ const VideoMode = () => {
       } as BoxProps,
       LP: {
         width: 240,
+        height: windowHeight - 180 - 38,
       } as BoxProps,
       RP: {
-        height: windowHeight - 180 - 36,
+        height: windowHeight - 180 - 38,
       } as BoxProps,
       CP: {
         width: 240,
+        height: windowHeight - 180 - 38,
       } as BoxProps,
       MB: {
         height: 32,
@@ -190,6 +192,8 @@ const VideoMode = () => {
   // const timelineRef = useRef<HTMLCanvasElement>(null);
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
+  const [timeline, setTimeline] = useState<Timeline>();
+
   const handleLoadMetadata = useCallback(() => {
     if (videoRef && videoRef.current) {
       videoRef.current.pause();
@@ -201,45 +205,47 @@ const VideoMode = () => {
       const thumbnailList: string[] = [];
 
       if (timelineRef && currentVideoURL) {
-        const timeline = new Timeline(timelineRef, {
-          totalDuration: videoRef.current.duration,
-          thumbnailWidth: 128,
-          thumbnailHeight: 120,
-          loadingTextureURI: '/images/Loading.png',
-          getThumbnailCallback: (time: number, done: (input: any) => void) => {
-            // This is strictly for demo purpose and should not be used in prod as it creates as many videos
-            // as there are thumbnails all over the timeline.
-            const hiddenVideo = document.createElement('video');
-            document.body.append(hiddenVideo);
-            hiddenVideo.style.display = 'none';
+        setTimeline(
+          new Timeline(timelineRef, {
+            totalDuration: videoRef.current.duration,
+            thumbnailWidth: 128,
+            thumbnailHeight: 120,
+            loadingTextureURI: '/images/Loading.png',
+            getThumbnailCallback: (time: number, done: (input: any) => void) => {
+              // This is strictly for demo purpose and should not be used in prod as it creates as many videos
+              // as there are thumbnails all over the timeline.
+              const hiddenVideo = document.createElement('video');
+              document.body.append(hiddenVideo);
+              hiddenVideo.style.display = 'none';
 
-            hiddenVideo.setAttribute('playsinline', '');
-            hiddenVideo.muted = true;
-            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
-            hiddenVideo.loop = false;
+              hiddenVideo.setAttribute('playsinline', '');
+              hiddenVideo.muted = true;
+              hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
+              hiddenVideo.loop = false;
 
-            hiddenVideo.onloadeddata = () => {
-              if (time === 0) {
-                done(hiddenVideo);
-              } else {
-                hiddenVideo.onseeked = () => {
+              hiddenVideo.onloadeddata = () => {
+                if (time === 0) {
                   done(hiddenVideo);
-                };
-                hiddenVideo.currentTime = time;
-              }
-            };
+                } else {
+                  hiddenVideo.onseeked = () => {
+                    done(hiddenVideo);
+                  };
+                  hiddenVideo.currentTime = time;
+                }
+              };
 
-            // hiddenVideo.src = '/video/exo.mp4?' + time;
-            hiddenVideo.src = currentVideoURL;
-            hiddenVideo.load();
-          },
-        });
+              // hiddenVideo.src = '/video/exo.mp4?' + time;
+              hiddenVideo.src = currentVideoURL;
+              hiddenVideo.load();
+            },
+          }),
+        );
 
-        timeline.runRenderLoop(() => {
-          if (videoRef.current && !videoRef.current.paused) {
-            timeline.setCurrentTime(videoRef.current.currentTime);
-          }
-        });
+        // timeline.runRenderLoop(() => {
+        //   if (videoRef.current && !videoRef.current.paused) {
+        //     timeline.setCurrentTime(videoRef.current.currentTime);
+        //   }
+        // });
       }
 
       // const checkDuration = setInterval(() => {
@@ -275,6 +281,16 @@ const VideoMode = () => {
       setIsVideoLoaded(true);
     }
   }, [currentVideoURL, timelineRef]);
+
+  useEffect(() => {
+    if (timeline) {
+      timeline.runRenderLoop(() => {
+        if (videoRef.current && !videoRef.current.paused) {
+          timeline.setCurrentTime(videoRef.current.currentTime);
+        }
+      });
+    }
+  }, [timeline]);
 
   const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
   const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -321,6 +337,16 @@ const VideoMode = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [number, setNumber] = useState(0);
+
+  const handleClick = useCallback(() => {
+    if (timeline && videoRef.current) {
+      // timeline.setCurrentTime(number + 1);
+      videoRef.current.currentTime = number + 1;
+      setNumber(number + 1);
+    }
+  }, [number, timeline]);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -348,6 +374,7 @@ const VideoMode = () => {
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
           MB
+          <button onClick={handleClick}>qaaaa</button>
         </Box>
         <Box id="TP" {...boxProps.TP}>
           {isVideoLoaded ? (
@@ -358,7 +385,12 @@ const VideoMode = () => {
             //     </div>
             //   ))}
             // </div>
-            <canvas id="timelineCanvas" width={windowWidth} height="148" />
+            <Fragment>
+              <div className={cx('ruler')}>ruler</div>
+              <div className={cx('timeline')}>
+                <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
+              </div>
+            </Fragment>
           ) : (
             <div className={cx('dropzone')}>
               <BaseDropzone onDrop={handleDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>

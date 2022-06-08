@@ -115,3 +115,16 @@
   width: 1px;
   z-index: -1;
 }
+
+.ruler {
+  background-color: var(--grey010);
+  height: 16px;
+}
+
+.timeline {
+  padding: 18px 86px;
+}
+
+.timeline-canvas {
+  border-radius: 24px;
+}
