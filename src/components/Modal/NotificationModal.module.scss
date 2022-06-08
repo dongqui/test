@@ -1,0 +1,53 @@
+@import "styles/libraries/colors";
+@import "styles/libraries/typography";
+
+.container {
+  width: 64rem;
+  background-color: var(--grey010);
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 6.4rem;
+  padding: 2rem;
+
+  h3 {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 19px;
+    color: #e4e5e7;
+  }
+}
+
+.body {
+  img {
+    width: 100%;
+  }
+  background-color: $content-active;
+}
+
+.footer {
+  padding: 1.6rem 2rem;
+
+  /* size-14/300 -$modal-body */
+  font-style: normal;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 150%;
+
+  /* or 21px */
+  display: flex;
+  align-items: center;
+
+  /* grey/090-$content-active-$content-hover */
+  color: #e4e5e7;
+
+  a {
+    color: var(--blue065);
+    text-decoration: none;
+  }
+}

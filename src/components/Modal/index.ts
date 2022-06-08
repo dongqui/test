@@ -5,3 +5,4 @@ export { default as ConfirmModal } from './ConfirmModal';
 export { default as LoadingModal } from './LoadingModal';
 export { default as DropZoneModal } from './DropZoneModal';
 export { default as _AlertModal } from './_AlertModal';
+export { default as NotificationModal } from './NotificationModal';
