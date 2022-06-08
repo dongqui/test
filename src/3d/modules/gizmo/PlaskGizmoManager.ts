@@ -156,6 +156,8 @@ export class PlaskGizmoManager implements IDisposable {
       if (!_this.usePointerToAttachGizmos) {
         return;
       }
+      // TODO Gizmo Hover
+
       if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh) {
           var node: Nullable<Node> = pointerInfo.pickInfo.pickedMesh;

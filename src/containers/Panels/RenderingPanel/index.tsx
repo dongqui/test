@@ -502,33 +502,34 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * contextMenu
    */
-
+  // TODO Block
   const transformChildren = useMemo(
     () => [
       {
         label: 'Position',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION,
+        // disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION || !_selectedTargets[0]?.transformable.position,
+        disabled: !_selectedTargets[0]?.transformable.position,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
         },
       },
       {
         label: 'Rotation',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.ROTATION,
+        disabled: !_selectedTargets[0]?.transformable.rotation.euler || !_selectedTargets[0]?.transformable.rotation.quaternion,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
         },
       },
       {
         label: 'Scale',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.SCALE,
+        disabled: !_selectedTargets[0]?.transformable.scale,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
         },
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plaskEngine.gizmoModule.currentGizmoMode],
+    [plaskEngine.gizmoModule.currentGizmoMode, _selectedTargets[0]],
   );
 
   const orientChildren = useMemo(
