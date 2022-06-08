@@ -205,7 +205,7 @@ const VideoMode = () => {
           totalDuration: videoRef.current.duration,
           thumbnailWidth: 128,
           thumbnailHeight: 120,
-          loadingTextureURI: '/images/ArrowDown.png',
+          loadingTextureURI: '/images/Loading.png',
           getThumbnailCallback: (time: number, done: (input: any) => void) => {
             // This is strictly for demo purpose and should not be used in prod as it creates as many videos
             // as there are thumbnails all over the timeline.
