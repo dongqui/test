@@ -6,6 +6,7 @@ import { SelectKeyframes } from 'actions/keyframes';
 import { findElementIndex } from 'utils/TP';
 
 import { HorizontalSelection } from './index';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 interface Params {
   state: KeyframesState;
@@ -34,11 +35,12 @@ class BoneKeyframeHorizontal implements HorizontalSelection {
   private getSelectedProperties = ({ state, payload }: Params) => {
     const { trackNumber } = payload;
     const selectedProperties: SelectedKeyframe[] = [];
-    for (let transform = trackNumber + 1; transform <= trackNumber + 3; transform++) {
-      const { keyframes, trackId, trackType, parentTrackNumber } = this.findTrack(state.propertyTrackList, transform);
+    const childTracks = findChildrenTracks(trackNumber, state.propertyTrackList);
+    for (const childTrack of childTracks) {
+      const { keyframes, trackId, trackType, parentTrackNumber } = childTrack;
       keyframes.forEach((keyframe) => {
         const { time, value, isDeleted } = keyframe;
-        if (!isDeleted) selectedProperties.push({ trackNumber: transform, trackId, time, value, trackType, parentTrackNumber });
+        if (!isDeleted) selectedProperties.push({ trackNumber: childTrack.trackNumber, trackId, time, value, trackType, parentTrackNumber });
       });
     }
     return this.clusterKeyframes.initializeClusterKeyframes(selectedProperties);

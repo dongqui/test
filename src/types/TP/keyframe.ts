@@ -1,14 +1,9 @@
+import { Quaternion, Vector3 } from '@babylonjs/core';
 import { TrackIdentifier } from './index';
 
 /**
  * @description postion, rotation, scale 키프레임이 가지고 있는 value
  */
-export interface Vector3 {
-  x: number;
-  y: number;
-  z: number;
-}
-
 export interface TransformKey {
   time: number;
 
@@ -16,7 +11,7 @@ export interface TransformKey {
    * @description property keyframe이 가지고 있는 value 데이터
    * @optional property keyframe인 경우 value에다가 Vector3값을 할당
    */
-  value?: Vector3;
+  value?: Vector3 | Quaternion | number;
 }
 
 // 키프레임 데이터 타입
@@ -54,7 +49,7 @@ export interface UpdatedTransformKey {
 
   to: number;
 
-  value: Vector3;
+  value: Quaternion | Vector3 | number;
 }
 
 export interface UpdatedPropertyKeyframes {
