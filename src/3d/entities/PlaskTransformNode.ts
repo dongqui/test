@@ -10,6 +10,16 @@ export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   type: PlaskTransformNodeType;
   id: string;
   jointIds: string[];
+  transformable: Transformable;
+}
+
+export interface Transformable {
+  position: boolean;
+  rotation: {
+    quaternion: boolean;
+    eular: boolean;
+  };
+  scale: boolean;
 }
 
 /**
@@ -25,6 +35,14 @@ export class PlaskTransformNode extends PlaskEntity {
       const className = transformNode.getClassName();
       if (className === 'Mesh') {
         this.type = 'controller';
+        this._transformable = {
+          position: true,
+          rotation: {
+            eular: false,
+            quaternion: false,
+          },
+          scale: false,
+        };
       } else if (className === 'TransformNode') {
         this.type = 'joint';
       }
@@ -40,7 +58,21 @@ export class PlaskTransformNode extends PlaskEntity {
 
   public id: string = '';
   private _jointIds: string[] = [];
+  private _transformable: Transformable = {
+    position: true,
+    rotation: {
+      eular: true,
+      quaternion: true,
+    },
+    scale: true,
+  };
 
+  public get transformable() {
+    return this._transformable;
+  }
+  public set transformable(transformable: Transformable) {
+    this._transformable = transformable;
+  }
   /**
    * The joint ids impacted by this entity.
    * If not set, returns and array containing the transformNode id
@@ -115,7 +147,7 @@ export class PlaskTransformNode extends PlaskEntity {
     this.type = other.type;
     this.id = other.id;
     this.jointIds = other.jointIds;
-
+    this.transformable = other.transformable;
     // More efficient than instanceof
     if ((other as PlaskTransformNode).className === 'PlaskTransformNode') {
       const otherPtn = other as PlaskTransformNode;
@@ -162,7 +194,6 @@ export class PlaskTransformNode extends PlaskEntity {
 
   public serialize(): PlaskTransformNodeSpec {
     const obj = super.serialize();
-
     return {
       position: this.position,
       rotation: this.rotation,
@@ -170,6 +201,7 @@ export class PlaskTransformNode extends PlaskEntity {
       type: this.type,
       id: this.id,
       jointIds: this.jointIds,
+      transformable: this.transformable,
       ...obj,
     };
   }
