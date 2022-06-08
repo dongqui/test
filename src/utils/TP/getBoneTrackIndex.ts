@@ -8,7 +8,7 @@ import { TrackIdentifier } from 'types/TP';
  */
 
 const fnGetBoneTrackIndex = (track: TrackIdentifier): number => {
-  if (track.trackType !== 'property' || typeof track.parentTrackNumber === 'undefined') {
+  if (track.trackType !== 'property' || track.parentTrackNumber === -1) {
     throw new Error('This is not a property track, no bone associated');
   }
 

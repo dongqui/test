@@ -56,10 +56,10 @@ class PropertyKeyframeRepository implements Repository {
     const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(selectedPropertyKeyframes, (draft) => {
       copiedPropertyKeyframes.forEach((copied) => {
-        const { trackNumber, trackId, keyframes } = copied;
+        const { trackNumber, trackId, keyframes, parentTrackNumber } = copied;
         let trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
         if (trackIndex === -1) {
-          draft.push({ keyframes: [], trackType: 'property', trackNumber: trackNumber, trackId: trackId });
+          draft.push({ keyframes: [], trackType: 'property', trackNumber: trackNumber, trackId: trackId, parentTrackNumber });
           draft.sort((a, b) => a.trackNumber - b.trackNumber);
           trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
         }

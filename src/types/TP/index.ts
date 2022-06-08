@@ -22,5 +22,5 @@ export interface TrackIdentifier {
   trackId: string;
 
   trackType: TrackType;
-  parentTrackNumber?: number;
+  parentTrackNumber: number;
 }

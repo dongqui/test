@@ -1,11 +1,14 @@
 import { TrackListState } from 'reducers/trackList';
+import { PropertyTrack } from 'types/TP/track';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 import { AllClick, SelectedTracks } from './index';
 
 class BoneTrackAllClick implements AllClick {
-  private setSelectedTracks = (boneNumber: number): SelectedTracks => {
+  private setSelectedTracks = (boneNumber: number, propertyTrackList: PropertyTrack[]): SelectedTracks => {
+    const childTracks = findChildrenTracks(boneNumber, propertyTrackList);
     const selectedProperties: number[] = [];
-    for (let transform = boneNumber + 1; transform <= boneNumber + 3; transform++) {
-      selectedProperties.push(transform);
+    for (const child of childTracks) {
+      selectedProperties.push(child.trackNumber);
     }
     return { selectedBones: [boneNumber], selectedProperties };
   };
@@ -15,7 +18,7 @@ class BoneTrackAllClick implements AllClick {
     const nextSelectedBones: number[] = [];
     const nextSelectedProperties: number[] = [];
     state.boneTrackList.forEach(({ trackNumber }) => {
-      const { selectedBones, selectedProperties } = this.setSelectedTracks(trackNumber);
+      const { selectedBones, selectedProperties } = this.setSelectedTracks(trackNumber, state.propertyTrackList);
       nextSelectedBones.push(...selectedBones);
       nextSelectedProperties.push(...selectedProperties);
     });

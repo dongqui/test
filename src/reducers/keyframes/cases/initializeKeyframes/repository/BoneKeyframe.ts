@@ -38,7 +38,7 @@ class BoneKeyframeRepository implements Repository {
         frames = frames.concat(this.getPropertyFrames(track));
       }
       const boneKeyFrames = this.getBoneKeyframes(frames);
-      boneTimeEditorTrackList.push({ trackId: targetId, trackType: 'bone', trackNumber: context.trackUid, keyframes: boneKeyFrames });
+      boneTimeEditorTrackList.push({ trackId: targetId, trackType: 'bone', trackNumber: context.trackUid, keyframes: boneKeyFrames, parentTrackNumber: -1 });
       context.trackUid++;
     }
 

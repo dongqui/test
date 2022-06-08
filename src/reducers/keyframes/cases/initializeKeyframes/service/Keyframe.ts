@@ -32,7 +32,7 @@ class KeyframeService implements Service {
 
   clearAnimation = (): Partial<KeyframesState> => {
     return {
-      layerTrack: { trackId: '', trackType: 'layer', trackNumber: -1, keyframes: [] },
+      layerTrack: { trackId: '', trackType: 'layer', trackNumber: -1, keyframes: [], parentTrackNumber: -1 },
       boneTrackList: [],
       propertyTrackList: [],
       selectedLayerKeyframes: [],

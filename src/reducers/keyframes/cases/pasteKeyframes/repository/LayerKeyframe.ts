@@ -51,7 +51,7 @@ class LayerKeyframeRepository implements Repository {
     const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     return produce(selectedLayerKeyframes, (draft) => {
       if (!draft[0]) {
-        draft[0] = { keyframes: [], trackType: 'layer', trackNumber: -1, trackId: layerTrack.trackId };
+        draft[0] = { keyframes: [], trackType: 'layer', trackNumber: -1, trackId: layerTrack.trackId, parentTrackNumber: -1 };
       }
       copiedLayerKeyframes[0]?.keyframes.forEach((keyframe) => {
         const nextTime = timeDiff + keyframe.time;

@@ -25,6 +25,7 @@ class BoneTrackRepository implements Repository {
           trackType: 'bone',
           isPointedDownCaret: false,
           isSelected: false,
+          parentTrackNumber: -1,
         });
       }
     });

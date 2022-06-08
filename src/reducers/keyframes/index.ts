@@ -24,7 +24,7 @@ export interface KeyframesState {
 }
 
 const initialState: KeyframesState = {
-  layerTrack: { trackId: '', trackType: 'layer', trackNumber: -1, keyframes: [] },
+  layerTrack: { trackId: '', trackType: 'layer', trackNumber: -1, keyframes: [], parentTrackNumber: -1 },
   boneTrackList: [],
   propertyTrackList: [],
 

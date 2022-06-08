@@ -27,8 +27,8 @@ class TransformKeyframeMultipleClick implements MultipleClick {
 
   private filterSelectedLayerKeyframes = ({ state, payload }: Params) => {
     const { selectedLayerKeyframes, layerTrack } = state;
-    const { trackId, trackNumber, trackType } = layerTrack;
-    const selectedLayer = { trackId, trackNumber, trackType, time: payload.time };
+    const { trackId, trackNumber, trackType, parentTrackNumber } = layerTrack;
+    const selectedLayer = { trackId, trackNumber, trackType, time: payload.time, parentTrackNumber };
     return this.clusterKeyframes.filterKeyframeTimes(selectedLayerKeyframes, [selectedLayer]);
   };
 
@@ -36,26 +36,26 @@ class TransformKeyframeMultipleClick implements MultipleClick {
     const { boneTrackList, selectedBoneKeyframes } = state;
     const { time, trackNumber } = payload;
     const boneNumber = getBoneTrackIndex(boneTrackList[trackNumber]);
-    const { trackId, trackType } = this.findEditorTrack(boneTrackList, boneNumber);
-    const selectedBone = { trackType, trackId, trackNumber: boneNumber, time };
+    const { trackId, trackType, parentTrackNumber } = this.findEditorTrack(boneTrackList, boneNumber);
+    const selectedBone = { trackType, trackId, trackNumber: boneNumber, time, parentTrackNumber };
     return this.clusterKeyframes.filterKeyframeTimes(selectedBoneKeyframes, [selectedBone]);
   };
 
   private filterSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { propertyTrackList, selectedPropertyKeyframes } = state;
-    const { trackNumber, trackType, time } = payload;
+    const { trackNumber, trackType, time, parentTrackNumber } = payload;
     const { trackId, keyframes } = this.findEditorTrack(propertyTrackList, payload.trackNumber);
     const value = this.findKeyframeValue(keyframes, time);
-    const selectedKeyframe = { time, trackNumber, trackType, trackId, value };
+    const selectedKeyframe = { time, trackNumber, trackType, trackId, value, parentTrackNumber };
     return this.clusterKeyframes.filterKeyframeTimes(selectedPropertyKeyframes, [selectedKeyframe]);
   };
 
   private addSelectedPropertyKeyframes = ({ state, payload }: Params) => {
     const { selectedPropertyKeyframes, propertyTrackList } = state;
-    const { trackNumber, trackType, time } = payload;
+    const { trackNumber, trackType, time, parentTrackNumber } = payload;
     const { trackId, keyframes } = this.findEditorTrack(propertyTrackList, payload.trackNumber);
     const value = this.findKeyframeValue(keyframes, time);
-    const selectedKeyframe = { trackNumber, trackType, trackId, time, value };
+    const selectedKeyframe = { trackNumber, trackType, trackId, time, value, parentTrackNumber };
     return this.clusterKeyframes.addKeyframeTimes(selectedPropertyKeyframes, [selectedKeyframe]);
   };
 

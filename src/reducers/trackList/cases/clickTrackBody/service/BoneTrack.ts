@@ -36,7 +36,7 @@ class BoneTrackService extends StateUpdate implements Service {
     const { state, payload } = this;
     const { clickRightNotSelectedTrack, clickRightSelectedTrack } = new RightClick();
     const isSelectedTrack = state.selectedBones.includes(payload.trackNumber);
-    return isSelectedTrack ? clickRightSelectedTrack({ state }) : clickRightNotSelectedTrack({ payload });
+    return isSelectedTrack ? clickRightSelectedTrack({ state }) : clickRightNotSelectedTrack({ payload, state });
   };
 
   private selectMultipleClick = () => {

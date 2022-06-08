@@ -59,7 +59,7 @@ class BoneKeyframeRepository implements Repository {
       copiedBoneKeyframes.forEach((copied) => {
         let trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
         if (trackIndex === -1) {
-          draft.push({ keyframes: [], trackType: 'bone', trackNumber: copied.trackNumber, trackId: copied.trackId });
+          draft.push({ keyframes: [], trackType: 'bone', trackNumber: copied.trackNumber, trackId: copied.trackId, parentTrackNumber: copied.parentTrackNumber });
           draft.sort((a, b) => a.trackNumber - b.trackNumber);
           trackIndex = findElementIndex(draft, copied.trackNumber, 'trackNumber');
         }

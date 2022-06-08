@@ -74,9 +74,9 @@ class BoneKeyframeRepository implements Repository {
         if (isAllDeleted) {
           const index = findElementIndex(deletedBoneTimes, boneNumber);
           if (index === -1) {
-            const { trackId, trackType } = this.findTrack(boneTrackList, boneNumber);
+            const { trackId, trackType, parentTrackNumber } = this.findTrack(boneTrackList, boneNumber);
             const keyframes = [{ time }];
-            deletedBoneTimes.push({ trackId, trackType, trackNumber: boneNumber, keyframes });
+            deletedBoneTimes.push({ trackId, trackType, trackNumber: boneNumber, keyframes, parentTrackNumber });
           } else {
             deletedBoneTimes[index].keyframes.push({ time });
           }

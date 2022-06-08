@@ -4,7 +4,6 @@ import { TimeEditorTrack } from 'types/TP/keyframe';
 import { BoneTrack } from 'types/TP/track';
 import { PropertyTrack as PropertyTrackAlias } from 'types/TP/track';
 import { useSelector } from 'reducers';
-import { getBoneTrackIndex } from 'utils/TP';
 
 import { PropertyTrack } from './index';
 import Keyframe from './Keyframe';
@@ -20,7 +19,7 @@ interface Props extends TimeEditorTrack, BoneTrack {
 }
 
 const BoneTrackComponent: FunctionComponent<Props> = (props) => {
-  const { trackNumber, trackId, keyframes, isPointedDownCaret, isSelected, translateY } = props;
+  const { trackNumber, trackId, keyframes, isPointedDownCaret, isSelected, translateY, parentTrackNumber } = props;
   const propertyKeyframes = useSelector((state) => state.keyframes.propertyTrackList);
   const propertyTrackList = useSelector((state) => state.trackList.propertyTrackList);
 
@@ -41,7 +40,16 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
         <rect className={cx({ selected: isSelected })} height="24" width="200000" transform="translate(-5000 0)" />
         {keyframes.map(
           (keyframe) =>
-            !keyframe.isDeleted && <Keyframe key={`${keyframe.time}_${keyframe.isSelected}`} trackId={trackId} trackType="bone" trackNumber={trackNumber} {...keyframe} />,
+            !keyframe.isDeleted && (
+              <Keyframe
+                key={`${keyframe.time}_${keyframe.isSelected}`}
+                parentTrackNumber={parentTrackNumber}
+                trackId={trackId}
+                trackType="bone"
+                trackNumber={trackNumber}
+                {...keyframe}
+              />
+            ),
         )}
         <line x1="-5000" y1="24" x2="150000" y2="24" strokeWidth="1" />
       </g>
