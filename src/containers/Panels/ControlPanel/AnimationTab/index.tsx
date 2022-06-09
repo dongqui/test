@@ -27,30 +27,26 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
     <Fragment>
       <SelectionTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
 
-      {_selectedTargets.length > 0 ? (
-        <div>
-          <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
-          <IKControllerSection
-            isAllActive={isAllActive}
-            visualizedAssetIds={_visualizedAssetIds}
-            retargetMaps={_retargetMaps}
-            seletedLayer={_selectedLayer}
-            animationIngredients={_animationIngredients}
-            selectableObjects={_selectableObjects}
-            selectedTargets={_selectedTargets}
-          />
-          <FilterSection
-            isAllActive={isAllActive}
-            visualizedAssetIds={_visualizedAssetIds}
-            selectedTargets={_selectedTargets}
-            seletedLayer={_selectedLayer}
-            animationIngredients={_animationIngredients}
-            playState={_playState}
-            playDirection={_playDirection}
-          />
-        </div>
-      ) : (
-        <div></div>
+      {_selectedTargets.length > 0 && <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />}
+      <IKControllerSection
+        isAllActive={isAllActive}
+        visualizedAssetIds={_visualizedAssetIds}
+        retargetMaps={_retargetMaps}
+        seletedLayer={_selectedLayer}
+        animationIngredients={_animationIngredients}
+        selectableObjects={_selectableObjects}
+        selectedTargets={_selectedTargets}
+      />
+      {_selectedTargets.length > 0 && (
+        <FilterSection
+          isAllActive={isAllActive}
+          visualizedAssetIds={_visualizedAssetIds}
+          selectedTargets={_selectedTargets}
+          seletedLayer={_selectedLayer}
+          animationIngredients={_animationIngredients}
+          playState={_playState}
+          playDirection={_playDirection}
+        />
       )}
     </Fragment>
   );
