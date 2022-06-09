@@ -42,6 +42,8 @@ declare namespace Field {
     }[];
   };
 
+  type ToggleProps = {};
+
   type BaseComponentProps = ControllerRenderProps;
 
   type RenderProps<T extends {}> = ControllerRenderProps & {

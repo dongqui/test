@@ -25,6 +25,6 @@ export const Toggle = Template.bind({});
 
 // TODO: add default props
 Toggle.args = {
-  defaultChecked: false,
+  defaultValue: false,
   disabled: false,
 };

@@ -6,13 +6,13 @@ import styles from './Toggle.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  defaultChecked?: boolean;
+  defaultValue?: boolean;
   disabled?: boolean;
   onChange?: (checked: boolean) => void;
 }
 
-const Toggle = ({ defaultChecked = false, disabled = false, onChange }: Props) => {
-  const [checked, setChecked] = useState(defaultChecked);
+const Toggle = ({ defaultValue = false, disabled = false, onChange }: Props) => {
+  const [checked, setChecked] = useState(defaultValue);
   const handleChange = useCallback(() => {
     if (!disabled) {
       if (onChange) {

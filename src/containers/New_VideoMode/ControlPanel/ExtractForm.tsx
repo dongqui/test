@@ -1,5 +1,4 @@
-import { Fragment, useState } from 'react';
-import { Controller } from 'react-hook-form';
+import { Fragment, useEffect, useState } from 'react';
 import { Typography } from 'components/Typography';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
@@ -29,6 +28,11 @@ const ExtractForm = ({ fieldProps }: Props) => {
   ];
   const defaultSelectOptionIndex = 0;
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
+  useEffect(() => {
+    if (isMulti) {
+      fieldProps.control.unregister('Foot lock');
+    }
+  }, [fieldProps.control, isMulti]);
 
   return (
     <Fragment>
@@ -52,12 +56,12 @@ const ExtractForm = ({ fieldProps }: Props) => {
       {!isMulti && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
-          <Controller defaultValue={false} control={fieldProps.control} name="Foot lock" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
+          <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="Foot lock" render={(props) => <Toggle {...props} />} defaultValue={false} />
         </div>
       )}
       <div className={cx('section-item')}>
         <Typography>T-pose</Typography>
-        <Controller defaultValue={false} control={fieldProps.control} name="T-pose" render={({ field }) => <Toggle onChange={field.onChange} defaultChecked={false} />} />
+        <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="T-pose" render={(props) => <Toggle {...props} />} defaultValue={false} />
       </div>
       <div className={cx('section-item', 'section-text')}>
         <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
