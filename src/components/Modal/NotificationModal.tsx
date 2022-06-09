@@ -16,23 +16,20 @@ interface Props {
   title: string;
 }
 
-// TODO: naming component
-export default function NotificationModal({
-  onClose,
-  title = 'New Feature - Auto Save',
-  message = 'You can save what you have worked on the Plask from now on. Don’t worry anymore. Want to know what can be saved? <a href="https://knowledge.plask.ai/en/scene_save" target="_blank" rel="noopener noreferrer">Learn more</a>',
-}: Props) {
+// TODO: make body more flexible
+export default function NotificationModal({ onClose, title, message }: Props) {
   return (
-    <BaseModal>
+    <BaseModal hasPadding={false}>
       <div className={cx('container')}>
         <header className={cx('header')}>
           <h3>New Feature - Auto Save</h3>
           <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
-        <div className={cx('body')}>{/* <Image
-            alt="Notification contents"
-            src=""
-          /> */}</div>
+        <div className={cx('body')}>
+          <video autoPlay loop muted width="640" height="360">
+            <source src="/video/scene_save.mp4" type="video/mp4" />
+          </video>
+        </div>
         <footer className={cx('footer')}>
           <Html content={message} />
         </footer>

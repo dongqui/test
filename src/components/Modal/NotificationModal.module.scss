@@ -21,10 +21,10 @@
 }
 
 .body {
-  img {
-    width: 100%;
+  video {
+    display: block;
   }
-  background-color: $content-active;
+  background-color: $content-inactive;
 }
 
 .footer {
