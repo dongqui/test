@@ -20,7 +20,7 @@
   }
 
   svg {
-    // temporal code - we should handle this IconButton component
+    // temporal code - we should handle this IconButton componen
     padding-top: 4px;
   }
 }
@@ -33,11 +33,14 @@
 }
 
 .footer {
-  padding: 1.6rem 2rem;
-  font: $modal-body;
-  color: $content-high;
+  padding: 1.6rem 2rem;  
+  div {
+    color: $content-high;
+    font: $modal-body;
+  }  
 
   a {
+    font: $modal-body;
     color: var(--blue065);
     text-decoration: none;
   }
