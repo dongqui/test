@@ -96,12 +96,22 @@ export class IKModule extends Module {
     // Positioning IK Handle to FL
     if (this.contactData) {
       if (this.finishProjections) {
+
+        if (this.leftFootFL) {
+          this.leftFootFL.handle.position = this.leftFootLookingPosition[Math.floor(Scalar.Lerp(
+            0,
+            this.leftFootLookingPosition.length,
+            (this.plaskEngine.state.animatingControls.currentTimeIndex/this.plaskEngine.state.animatingControls.endTimeIndex)
+          ))];
+        }
+
         this.leftFootPositionsProjected.forEach((point) => {
           if (this.plaskEngine.state.animatingControls.currentTimeIndex >= point.startPoint && this.plaskEngine.state.animatingControls.currentTimeIndex <= point.endPoint) {
             if (this.leftFootFL) {
               // Is not working
               //this.leftFootFL.poleAngle = this.poleAngleAdjust(this.leftFootFL);
-              this.leftFootFL.handle.position = point.middlePosition;
+
+              //this.leftFootFL.handle.position = point.middlePosition;
               
               if (this.plaskEngine.state.animatingControls.currentTimeIndex < point.middlePoint) {
                 this.leftFootFL.blend = Scalar.SmoothStep(
@@ -119,12 +129,22 @@ export class IKModule extends Module {
           }
         });
 
+        if (this.rightFootFL) {
+          this.rightFootFL.handle.position = this.rightFootLookingPosition[Math.floor(Scalar.Lerp(
+            0,
+            this.rightFootLookingPosition.length,
+            (this.plaskEngine.state.animatingControls.currentTimeIndex/this.plaskEngine.state.animatingControls.endTimeIndex)
+          ))];
+        }
+
         this.rightFootPositionsProjected.forEach((point) => {
           if (this.plaskEngine.state.animatingControls.currentTimeIndex >= point.startPoint && this.plaskEngine.state.animatingControls.currentTimeIndex <= point.endPoint) {
             if (this.rightFootFL) {
               // Is not working
               //this.rightFootFL.poleAngle = this.poleAngleAdjust(this.rightFootFL);
-              this.rightFootFL.handle.position = point.middlePosition;
+
+              //this.rightFootFL.handle.position = point.middlePosition;
+
               if (this.plaskEngine.state.animatingControls.currentTimeIndex < point.middlePoint) {
                 this.rightFootFL.blend = Scalar.SmoothStep(
                   0, 
@@ -419,26 +439,7 @@ export class IKModule extends Module {
   public leftFootFL: IKController | undefined = undefined;
   public rightFootFL: IKController | undefined = undefined;
   public finishProjections: boolean = false;
-  /*
-  public hipData: { position: ArrayOfThreeNumbers; rotationQuaternion: ArrayOfFourNumbers}[] = [];
-  public hipPositions: Vector3[] = [];
-  public hipJoint: Mesh | undefined = undefined;
-  public leftFootJointLocalPos: Vector3 | undefined = undefined;
-  public rightFootJointLocalPos: Vector3 | undefined = undefined;
-  public hipLeftFootPositions: Vector3[] = [];
-  public hipRightFootPositions: Vector3[] = [];
 
-  public footsJointsClone(hipJoint: Mesh, leftFootJointRef: Mesh, rightFootJointRef: Mesh) {
-      if (leftFootJointRef && rightFootJointRef) {
-      this.hipJoint = hipJoint;
-      console.log(this.hipJoint.position);
-      this.leftFootJointLocalPos = leftFootJointRef.position;
-      console.log(this.leftFootJointLocalPos);
-      this.rightFootJointLocalPos = rightFootJointRef.position;
-      console.log(this.rightFootJointLocalPos);
-    }
-  }
-  */
   public footLockingData(index: number) {
     if (this.contactData) {
 
@@ -514,183 +515,6 @@ export class IKModule extends Module {
         this.rightContactToggle = this.contactData.data.result[0].trackData[11].transformKeys[index].value;
       }
 
-      // Generate Floor Projection motion flow w/ Adjusted Values
-      // to perform Foot Locking with IK Controllers
-      // While IK Controllers keyframing is not working
-      function generateProjectedLine( footPositionsContacts: {contact: number; position: ArrayOfThreeNumbers; }[], lowestYPosition: number , IKController: IKController | undefined, scene: any) {
-        const footPositionsProjected: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition:Vector3;}[] = [];
-        const projectionPoints: Vector3[] = [];
-        const pointsToEvaluateCenter: Vector3[] = [];
-        let startPoint: number = 0;
-        let startPosition: Vector3 = new Vector3(); 
-        let middlePoint: number = 0;
-        let middlePosition: Vector3 = new Vector3(); 
-        let endPoint: number = 0;
-        let endPosition: Vector3 = new Vector3();
-        let curvePoints: Vector3[] = [];
-
-        footPositionsContacts.forEach((value, index) => {
-          // Evaluate foot contact
-          if (value.contact == 1) {
-
-            // Store initial point of this contacts region
-            if (index == 0) {
-              projectionPoints.push(new Vector3(value.position[0], lowestYPosition, value.position[2]));
-              startPoint = index;
-              startPosition =  new Vector3(value.position[0], lowestYPosition, value.position[2]);
-            } else if (footPositionsContacts[index-1].contact == 0 && footPositionsContacts[index+1].contact == 1) {
-              projectionPoints.push(new Vector3(footPositionsContacts[index-1].position[0], lowestYPosition, footPositionsContacts[index-1].position[2]));
-              startPoint = index-1;
-              startPosition = new Vector3(footPositionsContacts[index-1].position[0], lowestYPosition, footPositionsContacts[index-1].position[2]);
-            }
-            // Store point to evaluate the center of this contacts region
-            pointsToEvaluateCenter.push(new Vector3(value.position[0], lowestYPosition, value.position[2]));
-          } else {
-            // Evaluate if there is a region of contacts points to evaluate its center point
-            // And it needs to be bigger than 1 to not use false/positive indication
-            if (pointsToEvaluateCenter.length > 1) {
-              const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-              const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-              pointsToEvaluateCenter.forEach(vec => {
-                min.x = Math.min(min.x, vec.x);
-                min.y = Math.min(min.y, vec.y);
-                min.z = Math.min(min.z, vec.z);
-                max.x = Math.max(max.x, vec.x);
-                max.y = Math.max(max.y, vec.y);
-                max.z = Math.max(max.z, vec.z);
-              })
-              const result = max.add(min).scale(0.5);
-              projectionPoints.push(result);
-              // Store middle point (centered) of this contacts region
-              middlePoint = Math.ceil(((index-1) - startPoint)/2)+startPoint;
-              middlePosition = result;
-              
-              // Generate Keyframe
-              // NOT WORKING yet
-              //this.setFLKeyframeData(middlePosition, middlePoint, IKController);
-
-              // Store end point of this contacts region
-              if (index < footPositionsContacts.length && value.contact == 0) {
-                projectionPoints.push(new Vector3(footPositionsContacts[index].position[0], lowestYPosition, footPositionsContacts[index].position[2]));
-                endPoint = index;
-                endPosition = new Vector3(footPositionsContacts[index].position[0], lowestYPosition, footPositionsContacts[index].position[2]);
-                footPositionsProjected.push({ startPoint: startPoint, startPosition: startPosition, middlePoint: middlePoint, middlePosition: middlePosition, endPoint: endPoint, endPosition:endPosition});
-                if (footPositionsProjected.length > 1) {
-                  console.log(footPositionsProjected, footPositionsProjected.length);
-                  const hermite = Curve3.CreateHermiteSpline(footPositionsProjected[footPositionsProjected.length-2].middlePosition, footPositionsProjected[footPositionsProjected.length-2].endPosition, footPositionsProjected[footPositionsProjected.length-1].middlePosition, footPositionsProjected[footPositionsProjected.length-1].startPosition, footPositionsProjected[footPositionsProjected.length-1].middlePoint - footPositionsProjected[footPositionsProjected.length-2].middlePoint);
-                  const hermiteLine = MeshBuilder.CreateLines("", {points: hermite.getPoints()}, scene);
-                  hermiteLine.color = Color3.White();
-                  for (const point of hermite.getPoints()) {
-                    curvePoints.push(point);
-                  }
-                }
-              }
-              pointsToEvaluateCenter.length = 0;
-            }
-          }
-        })
-        // generate the motion flow of Foot Locking action
-        // const projectionCurve = new Curve3(projectionPoints);
-        // const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, scene);
-        // projectionCurveLine.color = Color3.Blue();
-        //console.log(footPositionsProjected);
-
-        // const catmullRom = Curve3.CreateCatmullRomSpline(projectionPoints, Math.floor(footPositionsContacts.length/(projectionPoints.length-1)), false);
-        // const catmullRomLine = MeshBuilder.CreateLines('', {points: catmullRom.getPoints()}, scene);
-        //console.log(catmullRom.getPoints().length);
-        //console.log(curvePoints.length, curvePoints);
-        return footPositionsProjected
-      }
-
-      /*
-      // SECOND APPROACH (motion flow based on Hips positions interpolated to Foots)
-      const hip = this.hipJoint;
-      function generateNewFootsPaths(path: Path3D) {
-        if (hip) {
-          const tangents = path.getTangents();
-          const binormals = path.getBinormals();
-          const curvePath = path.getCurve();
-          for (let i=0; i < curvePath.length; i++) {
-            hip.position = curvePath[i];
-            hip.rotationQuaternion = Quaternion.FromLookDirectionRH(tangents[i], binormals[i]);
-          }  
-        }
-      }
-
-      // This code is to store original motion flow of hipData
-      if ( !this.hipData[index] ) {
-        // Grabbing hip data (position)
-        this.hipData.push({
-          position: this.plaskEngine.scene.getMeshByName('hips_joint')?.position.asArray() as ArrayOfThreeNumbers,
-          rotationQuaternion: this.plaskEngine.scene.getTransformNodeByName('hips')?.rotationQuaternion.asArray() as ArrayOfFourNumbers
-        });
-        //console.log(this.hipData);
-      }
-      
-      if ( this.hipData.length >= this.contactData.data.result[0].trackData[0].transformKeys.length &&
-            this.hipPositions.length == 0
-        ){
-        
-        for (let i = 0; i < this.hipData.length; i++){
-          this.hipPositions.push(new Vector3(this.hipData[i].position[0], this.hipData[i].position[1], this.hipData[i].position[2]));
-        }
-
-        const normal = new Vector3(0, 1, 0);
-        const path3D = new Path3D(this.hipPositions, normal);
-        const tangents = path3D.getTangents();
-        const normals = path3D.getNormals();
-        const binormals = path3D.getBinormals();
-        const curve = path3D.getCurve();
-        const curveLine = MeshBuilder.CreateLines('', {points: curve}, this.plaskEngine.scene);
-        curveLine.color = Color3.Yellow();
-
-        // for (let i = 0; i < path3D.getCurve().length; i++) {
-        //   let tg = MeshBuilder.CreateLines('tg', {points: [curve[i], curve[i].add(tangents[i])]}, this.plaskEngine.scene);
-        //   tg.color = Color3.Red();
-        //   let no = MeshBuilder.CreateLines('no', {points: [curve[i], curve[i].add(normals[i])]}, this.plaskEngine.scene);
-        //   no.color = Color3.Blue();
-        //   let bi = MeshBuilder.CreateLines('bi', {points: [curve[i], curve[i].add(binormals[i])]}, this.plaskEngine.scene);
-        //   bi.color = Color3.Green();
-        // }
-
-          //this.hipJoint.position = this.plaskEngine.scene.getTransformNodeByName('hips').position;
-          //this.hipJoint.rotationQuaternion = this.plaskEngine.scene.getTransformNodeByName('hips').rotationQuaternion;
-          //this.hipJoint.position = new Vector3(this.hipData[this.hipData.length-1].position[0], this.hipData[this.hipData.length-1].position[1], this.hipData[this.hipData.length-1].position[2]);
-          //this.hipJoint.rotationQuaternion = new Quaternion(this.hipData[this.hipData.length-1].rotationQuaternion[0], this.hipData[this.hipData.length-1].rotationQuaternion[1], this.hipData[this.hipData.length-1].rotationQuaternion[2], this.hipData[this.hipData.length-1].rotationQuaternion[3]);
-          for (let i = 0; i < curve.length; i++) {
-            if (this.hipJoint) {
-              this.hipJoint.position = curve[i];
-              //this.hipJoint.rotationQuaternion = Quaternion.FromLookDirectionLH(tangents[i], binormals[i]);
-              let matrixHipJointLeft = this.hipJoint.computeWorldMatrix(true);
-              let matrixHipJointRight = this.hipJoint.computeWorldMatrix(true);
-              let hipJointLocalPos_1 = this.hipJoint.position;
-              let hipJointLocalPos_2 = this.hipJoint.position;
-              let localPosLeftJoint = hipJointLocalPos_1.addInPlace(new Vector3(0.0, 0.0, -4.0));
-              let globalPosLeftJoint = Vector3.TransformCoordinates(localPosLeftJoint, matrixHipJointLeft);
-              let localPosRightJoint = hipJointLocalPos_2.addInPlace(new Vector3(0.0, 0.0, 4.0));
-              let globalPosRightJoint = Vector3.TransformCoordinates(localPosRightJoint, matrixHipJointRight);
-    
-              this.hipLeftFootPositions.push(globalPosLeftJoint);
-              this.hipRightFootPositions.push(globalPosRightJoint);  
-            }
-          }
-
-        
-        // Generate Hip motion flow
-        //const projectionCurve = new Curve3(this.hipPositions);
-        //const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, this.plaskEngine.scene);
-        //projectionCurveLine.color = Color3.Yellow();
-        
-        const projectionLeftCurve = new Curve3(this.hipLeftFootPositions);
-        const projectionLeftCurveLine = MeshBuilder.CreateLines('', {points: projectionLeftCurve.getPoints()}, this.plaskEngine.scene);
-        projectionLeftCurveLine.color = Color3.Purple();
-
-        const projectionRightCurve = new Curve3(this.hipRightFootPositions);
-        const projectionRightCurveLine = MeshBuilder.CreateLines('', {points: projectionRightCurve.getPoints()}, this.plaskEngine.scene);
-        projectionRightCurveLine.color = Color3.Purple();
-      }
-      */
-      
       // Stop Foot's values capture
       if ( this.leftFootPositionsContacts.length >= this.contactData.data.result[0].trackData[0].transformKeys.length && 
         this.rightFootPositionsContacts.length >= this.contactData.data.result[0].trackData[0].transformKeys.length && 
@@ -699,12 +523,12 @@ export class IKModule extends Module {
         this.plaskEngine.state.animatingControls.currentAnimationGroup?.stop();
         this.plaskEngine.scene.animationGroups[0].stop();
         
-        this.leftFootPositionsProjected = generateProjectedLine(this.leftFootPositionsContacts, this.leftLowestYPosition, this.leftFootFL, this.plaskEngine.scene);
         this.leftFootFL = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_leftFoot'));
+        this.leftFootPositionsProjected = this.generateProjectedLine(this.leftFootPositionsContacts, this.leftLowestYPosition, this.leftFootFL, this.plaskEngine.scene);
         this.leftFootFL.poleAngle = this.poleAngleAdjust(this.leftFootFL);
 
-        this.rightFootPositionsProjected = generateProjectedLine(this.rightFootPositionsContacts, this.rightLowestYPosition, this.rightFootFL, this.plaskEngine.scene);
         this.rightFootFL = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_rightFoot'));
+        this.rightFootPositionsProjected = this.generateProjectedLine(this.rightFootPositionsContacts, this.rightLowestYPosition, this.rightFootFL, this.plaskEngine.scene);
         this.rightFootFL.poleAngle = this.poleAngleAdjust(this.rightFootFL);
 
         if (this.leftFootPositionsProjected && this.rightFootPositionsProjected) this.finishProjections = true;
@@ -712,6 +536,95 @@ export class IKModule extends Module {
         //console.log(this.hipPositions);
       }
     }
+  }
+
+  // Generate Floor Projection motion flow w/ Adjusted Values
+  // to perform Foot Locking with IK Controllers
+  // While IK Controllers keyframing is not working
+  public generateProjectedLine( footPositionsContacts: {contact: number; position: ArrayOfThreeNumbers; }[], lowestYPosition: number , IKController: IKController | undefined, scene: any) {
+    const footPositionsProjected: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition:Vector3;}[] = [];
+    const projectionPoints: Vector3[] = [];
+    const pointsToEvaluateCenter: Vector3[] = [];
+    let startPoint: number = 0;
+    let startPosition: Vector3 = new Vector3(); 
+    let middlePoint: number = 0;
+    let middlePosition: Vector3 = new Vector3(); 
+    let endPoint: number = 0;
+    let endPosition: Vector3 = new Vector3();
+    let curvePoints: Vector3[] = [];
+
+    footPositionsContacts.forEach((value, index) => {
+      // Evaluate foot contact
+      if (value.contact == 1) {
+
+        // Store initial point of this contacts region
+        if (index == 0) {
+          projectionPoints.push(new Vector3(value.position[0], lowestYPosition, value.position[2]));
+          startPoint = index;
+          startPosition =  new Vector3(value.position[0], lowestYPosition, value.position[2]);
+        } else if (footPositionsContacts[index-1].contact == 0 && footPositionsContacts[index+1].contact == 1) {
+          projectionPoints.push(new Vector3(footPositionsContacts[index-1].position[0], lowestYPosition, footPositionsContacts[index-1].position[2]));
+          startPoint = index-1;
+          startPosition = new Vector3(footPositionsContacts[index-1].position[0], lowestYPosition, footPositionsContacts[index-1].position[2]);
+        }
+        // Store point to evaluate the center of this contacts region
+        pointsToEvaluateCenter.push(new Vector3(value.position[0], lowestYPosition, value.position[2]));
+      } else {
+        // Evaluate if there is a region of contacts points to evaluate its center point
+        // And it needs to be bigger than 1 to not use false/positive indication
+        if (pointsToEvaluateCenter.length > 1) {
+          const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+          const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+          pointsToEvaluateCenter.forEach(vec => {
+            min.x = Math.min(min.x, vec.x);
+            min.y = Math.min(min.y, vec.y);
+            min.z = Math.min(min.z, vec.z);
+            max.x = Math.max(max.x, vec.x);
+            max.y = Math.max(max.y, vec.y);
+            max.z = Math.max(max.z, vec.z);
+          })
+          const result = max.add(min).scale(0.5);
+          projectionPoints.push(result);
+          // Store middle point (centered) of this contacts region
+          middlePoint = Math.ceil(((index-1) - startPoint)/2)+startPoint;
+          middlePosition = result;
+          
+          // Generate Keyframe
+          // NOT WORKING yet
+          //this.setFLKeyframeData(middlePosition, middlePoint, IKController);
+
+          // Store end point of this contacts region
+          if (index < footPositionsContacts.length && value.contact == 0) {
+            projectionPoints.push(new Vector3(footPositionsContacts[index].position[0], lowestYPosition, footPositionsContacts[index].position[2]));
+            endPoint = index;
+            endPosition = new Vector3(footPositionsContacts[index].position[0], lowestYPosition, footPositionsContacts[index].position[2]);
+            footPositionsProjected.push({ startPoint: startPoint, startPosition: startPosition, middlePoint: middlePoint, middlePosition: middlePosition, endPoint: endPoint, endPosition:endPosition});
+            if (footPositionsProjected.length > 1) {
+              console.log(footPositionsProjected, footPositionsProjected.length);
+              const hermite = Curve3.CreateHermiteSpline(footPositionsProjected[footPositionsProjected.length-2].middlePosition, footPositionsProjected[footPositionsProjected.length-2].endPosition, footPositionsProjected[footPositionsProjected.length-1].middlePosition, footPositionsProjected[footPositionsProjected.length-1].startPosition, footPositionsProjected[footPositionsProjected.length-1].middlePoint - footPositionsProjected[footPositionsProjected.length-2].middlePoint);
+              const hermiteLine = MeshBuilder.CreateLines("", {points: hermite.getPoints()}, scene);
+              hermiteLine.color = Color3.White();
+              for (const point of hermite.getPoints()) {
+                curvePoints.push(point);
+              }
+            }
+          }
+          pointsToEvaluateCenter.length = 0;
+        }
+      }
+    })
+
+    if (IKController) {
+      if (IKController.handle.name.includes('leftFoot')){
+        this.leftFootLookingPosition = curvePoints;
+        //console.log(this.leftFootLookingPosition);
+      } else {
+        this.rightFootLookingPosition = curvePoints;
+        //console.log(this.rightFootLookingPosition);
+      }
+    }
+
+    return footPositionsProjected
   }
 
   public poleAngleAdjust(footFL: IKController) {
@@ -807,8 +720,6 @@ export class IKModule extends Module {
       //console.log(this.contactData);
     }
     assetManager.load();
-
-    //this.footsJointsClone(scene.getMeshByName('hips_joint') as Mesh, scene.getMeshByName('leftFoot_joint') as Mesh, scene.getMeshByName('rightFoot_joint') as Mesh);
     //////////////////////////////////////////////////////////////
 
     // TODO : retrieve skeleton and body more cleanly
