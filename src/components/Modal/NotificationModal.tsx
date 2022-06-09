@@ -22,7 +22,7 @@ export default function NotificationModal({ onClose, title, message }: Props) {
     <BaseModal hasPadding={false}>
       <div className={cx('container')}>
         <header className={cx('header')}>
-          <h3>New Feature - Auto Save</h3>
+          <h3>{title}</h3>
           <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
         <div className={cx('body')}>
