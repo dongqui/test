@@ -311,8 +311,8 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
           closeCallback: () => {
             if (!localStorage.getItem('onboarding_1')) {
               dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
-              localStorage.setItem('notification', 'true');
             }
+            localStorage.setItem('notification', 'true');
           },
         }),
       );
