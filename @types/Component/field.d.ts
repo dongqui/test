@@ -26,7 +26,7 @@ declare namespace Field {
     list: {
       value: string;
       label: string;
-      disaled?: boolean;
+      disabled?: boolean;
     }[];
     initialValue: {
       value: string;
@@ -35,7 +35,6 @@ declare namespace Field {
   };
 
   type SwitchProps = {
-    // onChange: (key: string) => void;
     options: {
       key: string;
       label: string;
@@ -46,7 +45,6 @@ declare namespace Field {
   type BaseComponentProps = ControllerRenderProps;
 
   type RenderProps<T extends {}> = ControllerRenderProps & {
-    value: string;
     error?: FieldError;
   } & Omit<BaseFieldProps, keyof FormProps & keyof BaseProps>;
 

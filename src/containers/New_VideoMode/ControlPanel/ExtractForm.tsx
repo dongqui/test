@@ -27,7 +27,7 @@ const ExtractForm = ({ fieldProps }: Props) => {
       value: true,
     },
   ];
-  const defaultSelectOptionIndex = 1;
+  const defaultSelectOptionIndex = 0;
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
 
   return (
@@ -40,25 +40,9 @@ const ExtractForm = ({ fieldProps }: Props) => {
           options={selectOption}
           control={fieldProps.control}
           render={(props) => <Switch {...props} />}
-          name="switch"
           defaultValue={selectOption[defaultSelectOptionIndex].key}
+          name="switch"
         />
-        {/*<Controller*/}
-        {/*  defaultValue={selectOption[defaultSelectOptionIndex].key}*/}
-        {/*  control={fieldProps.control}*/}
-        {/*  name="model"*/}
-        {/*  render={({ field }) => (*/}
-        {/*    <Switch*/}
-        {/*      className={cx('switch')}*/}
-        {/*      onChange={(e) => {*/}
-        {/*        field.onChange(e);*/}
-        {/*        setIsMulti(!isMulti);*/}
-        {/*      }}*/}
-        {/*      defaultKey={selectOption[defaultSelectOptionIndex].key}*/}
-        {/*      options={selectOption}*/}
-        {/*    />*/}
-        {/*  )}*/}
-        {/*/>*/}
       </div>
       {isMulti && (
         <div className={cx('section-item', 'section-text')}>

@@ -13,6 +13,16 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
     },
   });
 
+  const onChangeInner = useCallback(
+    (val: Q) => {
+      if (onChange) {
+        onChange(val);
+      }
+      setValue(val);
+      field.onChange(val);
+    },
+    [field, onChange],
+  );
   const renderInner = useCallback(
     (field: ControllerRenderProps) => {
       const renderProps: Field.RenderProps<T> = {
@@ -21,18 +31,12 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
         ...rest,
         defaultValue,
         value,
-        onChange: (val: Q) => {
-          if (onChange) {
-            onChange(val);
-          }
-          setValue(val);
-          field.onChange(val);
-        },
+        onChange: onChangeInner,
       };
 
       return render(renderProps);
     },
-    [defaultValue, fieldState.error, onChange, render, rest, value],
+    [defaultValue, fieldState.error, onChangeInner, render, rest, value],
   );
 
   return <Controller control={control} name={name} render={({ field }) => renderInner(field)} />;
