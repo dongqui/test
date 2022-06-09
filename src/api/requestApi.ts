@@ -54,11 +54,12 @@ const requestApi = async (payload: Payload, hasToken = true) => {
   /**
    * @todo 현재 timeout 미지정. length * 7-8s 예상 중
    */
+
   const options = {
-    ...rest,
     headers,
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    baseURL: base || process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: url,
+    ...rest,
     // timeout: 15000,
   };
 
