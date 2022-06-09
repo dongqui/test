@@ -1,4 +1,4 @@
-import { ReactElement, InputHTMLAttributes } from 'react';
+import { ReactElement, InputHTMLAttributes, ChangeEvent } from 'react';
 import { Control, FieldError, ControllerRenderProps } from 'react-hook-form';
 
 export = Field;
@@ -34,6 +34,15 @@ declare namespace Field {
     };
   };
 
+  type SwitchProps = {
+    // onChange: (key: string) => void;
+    options: {
+      key: string;
+      label: string;
+      value: string | boolean;
+    }[];
+  };
+
   type BaseComponentProps = ControllerRenderProps;
 
   type RenderProps<T extends {}> = ControllerRenderProps & {
@@ -45,15 +54,17 @@ declare namespace Field {
     control: Control;
   }
 
-  type BaseProps = {
+  type BaseProps<Q> = {
     render: (renderProps: RenderProps) => ReactElement;
     name: string;
     required?: boolean;
-    defaultValue?: string;
-    value: string;
+    defaultValue: Q;
+    onChange?: (value: Q) => void;
+    // value: string | boolean;
+    className?: string;
   };
 
-  type BaseFieldProps<T> = FormProps & BaseProps & T;
+  type BaseFieldProps<T, Q> = FormProps & BaseProps<Q> & T;
 }
 
 export default Field;

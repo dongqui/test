@@ -18,14 +18,14 @@ interface Props {
   type?: 'default' | 'primary';
   disabled?: boolean;
   fullSize?: boolean;
-  defaultKey: string;
+  defaultValue: string;
   onChange: (key: string) => void;
   className?: string;
 }
 
-const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type = 'default', onChange, className }: Props) => {
+const Switch = ({ defaultValue, disabled = false, fullSize = false, options, type = 'default', onChange, className }: Props) => {
   // set to default index only if that index exists on options
-  const [selectedKey, setSelectedKey] = useState(defaultKey);
+  const [selectedKey, setSelectedKey] = useState(defaultValue);
 
   const classes = cx('btn-group', className, { fullsize: fullSize, disabled });
   const handleChange = useCallback(
