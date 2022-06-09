@@ -1,89 +1,59 @@
-import { find, cloneDeep } from 'lodash';
-import { select, put } from 'redux-saga/effects';
+import { find } from 'lodash';
+import { select, put, take, call } from 'redux-saga/effects';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
-import { checkCreateDuplicates } from 'utils/LP/FileSystem';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as plaskProjectActions from 'actions/plaskProjectAction';
-import * as animationDataActions from 'actions/animationDataAction';
-import { Mesh, TransformNode } from '@babylonjs/core';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
+import { RequestNodeResponse } from 'types/LP';
+import * as api from 'api';
+import { convertServerResponseToNode } from 'utils/LP/converters';
 
-export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotion>) {
-  const { plaskProject, selectingData, animationData, lpNode }: RootState = yield select();
-  const { animationTransformNodes } = animationData;
-  const { visualizedAssetIds } = plaskProject;
-  const { selectableObjects } = selectingData.present;
+export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotionAsync.request>) {
+  const { plaskProject, lpNode }: RootState = yield select();
   const { assetId, nodeId } = action.payload;
+  const modelNode = find(lpNode.nodes, { id: nodeId });
 
-  if (assetId) {
-    const cloneLPNode = cloneDeep(lpNode.nodes);
-
-    let targets: (TransformNode | Mesh)[] = [];
-    if (visualizedAssetIds.includes(assetId)) {
-      // if target model is already visualized, include its controllers
-      targets = selectableObjects
-        .filter((object) => object.id.split('//')[0] === assetId && !object.reference.name.toLowerCase().includes('armature'))
-        .map((object) => object.reference);
-    } else {
-      // if target model is not visualized yet, include only transformNodes
-      targets = animationTransformNodes.filter((transformNode) => transformNode.id.split('//')[0] === assetId);
-    }
-
-    const currentPathNodeName = lpNode.nodes
-      .filter((node) => {
-        if (node.parentId === nodeId) {
-          if (node.name.includes('empty motion')) {
-            return true;
-          }
-          return false;
-        }
-      })
-      .map((filteredNode) => filteredNode.name);
-
-    const check = checkCreateDuplicates('empty motion', currentPathNodeName);
-    const nodeName = check === '0' ? 'empty motion' : `empty motion (${check})`;
-    const parentModel = find(cloneLPNode, { id: nodeId });
-    const animationIngredientCurrent = parentModel?.childNodeIds.length === 0;
-    const nextAnimationIngredient = plaskEngine.animationModule.createAnimationIngredient(assetId, nodeName, [], targets, false, animationIngredientCurrent);
-
-    const afterNodes = produce(cloneLPNode, (draft) => {
-      parentModel?.childNodeIds.push(nextAnimationIngredient.id);
-      const motion: LP.Node = {
-        id: nextAnimationIngredient.id,
-        // parentId: nextAnimationIngredient.assetId,
-        assetId: assetId,
-        parentId: nodeId,
-        name: nextAnimationIngredient.name,
-        filePath: parentModel?.filePath + `\\${parentModel?.name}`,
-        childNodeIds: [],
-        extension: '',
-        type: 'Motion',
-      };
-
-      draft.push(motion);
-    });
-
-    yield put(
-      lpNodeActions.changeNode({
-        nodes: afterNodes,
-      }),
-    );
-
-    yield put(
-      animationDataActions.addAnimationIngredient({
-        animationIngredient: nextAnimationIngredient,
-      }),
-    );
-
-    yield put(
-      plaskProjectActions.addAnimationIngredient({
-        assetId: assetId,
-        animationIngredientId: nextAnimationIngredient.id,
-      }),
-    );
+  if (!modelNode) {
+    return;
   }
+
+  const _asset = find(plaskProject.assetList, { id: assetId });
+  if (!_asset) {
+    yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode));
+    yield take('ADDED_NEW_ASSET');
+  }
+
+  const newState: RootState = yield select();
+  const asset = _asset || find(newState.plaskProject.assetList, { id: assetId });
+
+  if (!asset) {
+    return;
+  }
+
+  const animationIngredientCurrent = modelNode?.childNodeIds.length === 0;
+  const rawAnimationIngredient = plaskEngine.animationModule.createAnimationIngredient(assetId, 'empty motion', [], asset?.transformNodes, false, animationIngredientCurrent);
+  const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(rawAnimationIngredient, 30, false);
+  const motionRes: RequestNodeResponse = yield call(api.postMotion, lpNode.sceneId, modelNode.id, {
+    animation: serverAnimation,
+    animationLayer: serverAnimationLayers,
+  });
+  const motionNode = convertServerResponseToNode(motionRes);
+
+  const nextNodes = produce(lpNode.nodes, (draft) => {
+    const parentModelNode = find(draft, { id: motionNode.parentId });
+    parentModelNode?.childNodeIds.push(motionNode.id);
+    draft.push(motionNode);
+  });
+  yield put(
+    lpNodeActions.changeNode({
+      nodes: nextNodes,
+    }),
+  );
+
   forceClickAnimationPlayAndStop();
+
+  yield put({ type: 'ADDED_EMPTY_MOTION' });
 }

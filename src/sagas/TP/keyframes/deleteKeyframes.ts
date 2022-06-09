@@ -1,6 +1,8 @@
-import { call, put, select, takeLatest } from 'redux-saga/effects';
+import { call, put, select, takeLatest, all } from 'redux-saga/effects';
 import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
+import { getType } from 'typesafe-actions';
+
 import { isUndefined } from 'lodash';
 import * as keyframesActions from 'actions/keyframes';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -21,8 +23,7 @@ function getSelectedLayer(state: RootState) {
   return state.trackList.selectedLayer;
 }
 
-// 키프레임 삭제 비즈니스 로직
-function* worker() {
+function* handleDeleteKeyFramesRequest(action: ReturnType<typeof keyframesActions.deleteKeyframesSocket.request>) {
   const selectedPropertyKeyframes = getSelectedPropertyKeyframes(yield select());
   const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, selectedPropertyKeyframes, 0);
   yield put(keyframesActions.deleteKeyframes());
@@ -60,12 +61,50 @@ function* worker() {
       }
     });
     yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+    const _targetTransformKeys = [...targetTransformKeys];
+    for (const transformkey of targetTransformKeys) {
+      if (transformkey.trackId.includes('//rotation')) {
+        _targetTransformKeys.push({ ...transformkey, trackId: transformkey.trackId.replace('//rotation', '//rotationQuaternion') });
+      }
+    }
+
+    const deletedTracks: { trackId: string; deletedIndexes: number[] }[] = [];
+    for (const transformKey of _targetTransformKeys) {
+      if (!transformKey?.trackId || transformKey.from === undefined) {
+        continue;
+      }
+      const track = deletedTracks.find((t) => t.trackId === transformKey.trackId);
+      if (track) {
+        track.deletedIndexes.push(transformKey.from);
+      } else {
+        deletedTracks.push({
+          trackId: transformKey.trackId,
+          deletedIndexes: [transformKey.from],
+        });
+      }
+    }
+    console.log(deletedTracks);
+    yield put(
+      keyframesActions.deleteKeyframesSocket.send({
+        type: 'delete-frames',
+        data: {
+          layerId: selectedLayer,
+          deletedTracks,
+        },
+      }),
+    );
   }
+}
+function* handleDeleteKeyFramesReceive(action: ReturnType<typeof keyframesActions.deleteKeyframesSocket.receive>) {
+  console.log(action.payload);
 }
 
 // 키프레임 드래그 드랍 입력 감지
 function* watchDeleteframes() {
-  yield takeLatest(keyframesActions.ENTER_KEYFRAME_DELETE_KEY, worker);
+  yield all([
+    takeLatest(getType(keyframesActions.deleteKeyframesSocket.request), handleDeleteKeyFramesRequest),
+    takeLatest(getType(keyframesActions.deleteKeyframesSocket.receive), handleDeleteKeyFramesReceive),
+  ]);
 }
 
 export default watchDeleteframes;

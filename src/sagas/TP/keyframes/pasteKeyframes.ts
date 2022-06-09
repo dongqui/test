@@ -1,9 +1,11 @@
-import { call, put, select, takeLatest } from 'redux-saga/effects';
+import { call, put, select, takeLatest, all } from 'redux-saga/effects';
 import produce from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { isUndefined } from 'lodash';
+import { getType } from 'typesafe-actions';
+
 import * as animationDataActions from 'actions/animationDataAction';
-import * as keyframesAction from 'actions/keyframes';
+import * as keyframesActions from 'actions/keyframes';
 import { PlaskTrack } from 'types/common';
 import { UpdatedPropertyKeyframes, ClusteredKeyframe } from 'types/TP/keyframe';
 import { RootState } from 'reducers';
@@ -39,7 +41,7 @@ function findSmallestTime(copiedPropertyKeyframes: ClusteredKeyframe[]) {
   return smallestFrame;
 }
 
-function* worker() {
+function* handlePasteKeyFramesRequest(action: ReturnType<typeof keyframesActions.pasteKeyframesSocket.request>) {
   const scrubberTime = getCurrentTimeIndex(yield select());
   const copiedPropertyKeyframes = getCopiedPropertyKeyframes(yield select());
 
@@ -47,7 +49,7 @@ function* worker() {
     const smallestFrame = findSmallestTime(copiedPropertyKeyframes);
     const updatedPropertyKeyframes: UpdatedPropertyKeyframes = yield call(setUpdatedPropertyKeyframes, copiedPropertyKeyframes, scrubberTime - smallestFrame);
 
-    yield put(keyframesAction.paste({ currentTimeIndex: scrubberTime }));
+    yield put(keyframesActions.paste({ currentTimeIndex: scrubberTime }));
 
     const { animationIngredientId: targetAnimationIngredientId, layerId: targetLayerId, transformKeys: targetTransformKeys } = updatedPropertyKeyframes;
     const animationIngredients = getAnimationIngredients(yield select());
@@ -83,12 +85,61 @@ function* worker() {
         }
       });
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
+
+      const targetTrackIds = targetTransformKeys.map((key) => key.trackId);
+      const _targetTrackIds: string[] = [...targetTrackIds];
+      for (const trackId of targetTrackIds) {
+        if (trackId.includes('//rotation')) {
+          _targetTrackIds.push(trackId.replace('//rotation', '//rotationQuaternion'));
+        }
+      }
+      const updatedLayer = newAnimationIngredient.layers.find((layer) => layer.id === selectedLayer);
+      const tracks = updatedLayer?.tracks.filter((track) => _targetTrackIds.includes(track.id));
+      if (!tracks) {
+        return;
+      }
+
+      yield put(
+        keyframesActions.editKeyframesSocket.send({
+          type: 'put-frames',
+          data: {
+            layerId: selectedLayer,
+            tracks: tracks?.map((track) => {
+              const transformKey = track.transformKeys.find((key) => key.frame === scrubberTime)!;
+              return {
+                id: track.id,
+                targetId: track.targetId,
+                filterBeta: track.filterBeta,
+                filterMinCutoff: track.filterMinCutoff,
+                name: track.name,
+                property: track.property,
+                transformKeysMap: [
+                  {
+                    frameIndex: transformKey?.frame,
+                    property: track.property,
+                    transformKey:
+                      track.property === 'rotationQuaternion'
+                        ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                        : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+                  },
+                ],
+              };
+            }),
+          },
+        }),
+      );
     }
   }
 }
 
+function* handlePasteKeyFramesReceive(action: ReturnType<typeof keyframesActions.pasteKeyframesSocket.receive>) {}
+
+// 키프레임 드래그 드랍 입력 감지
 function* watchPasteKeyframes() {
-  yield takeLatest(keyframesAction.ENTER_PASTE_KEY, worker);
+  yield all([
+    takeLatest(getType(keyframesActions.pasteKeyframesSocket.request), handlePasteKeyFramesRequest),
+    takeLatest(getType(keyframesActions.pasteKeyframesSocket.receive), handlePasteKeyFramesReceive),
+  ]);
 }
 
 export default watchPasteKeyframes;

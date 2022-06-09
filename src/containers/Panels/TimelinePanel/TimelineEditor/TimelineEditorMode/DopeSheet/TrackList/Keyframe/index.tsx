@@ -65,7 +65,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         label: 'Delete Keyframe',
         onClick: () => {
           document.getElementById('timeline-editor-svg')?.focus();
-          dispatch(keyframeActions.enterKeyframeDeleteKey());
+          dispatch(keyframeActions.deleteKeyframesSocket.request());
         },
         disabled: !isSelected || TimeIndex.getPlayState() === 'play',
       },
@@ -106,7 +106,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         const scaleX = ScaleLinear.getKeyframeX();
         const originTime = Math.round(scaleX.invert(event.subject.x as number));
         const currentTime = Math.round(scaleX.invert(event.x as number));
-        dispatch(keyframeActions.enterKeyframeDragDropKey({ timeDiff: currentTime - originTime }));
+        dispatch(keyframeActions.moveKeyframesSocket.request({ timeDiff: currentTime - originTime }));
         document.body.style.cursor = 'default';
       }
     },
