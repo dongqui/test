@@ -23,7 +23,7 @@ type AnimationEventType =
 
 function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.request>): Promise<Socket> {
   const { sceneId, token } = action.payload;
-  const socket = io(`wss://dev-socket-app.plask.ai/scenes?scenesId=${sceneId}&token=${token}`, {
+  const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_WEB_SOCKET_URL}/scenes?scenesId=${sceneId}&token=${token}`, {
     transports: ['websocket'],
   });
   return new Promise((resolve) => {
