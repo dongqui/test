@@ -23,6 +23,8 @@ type AnimationEventType =
 
 function createSocketIO(action: ReturnType<typeof socketActions.connectSocket.request>): Promise<Socket> {
   const { sceneId, token } = action.payload;
+  console.log(process.env.NEXT_PUBLIC_BACKEND_WEB_SOCKET_URL, 'NEXT_PUBLIC_BACKEND_WEB_SOCKET_URL');
+  console.log(process.env.NEXT_PUBLIC_BACKEND_API_URL, 'NEXT_PUBLIC_BACKEND_API_URL');
   const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_WEB_SOCKET_URL}/scenes?scenesId=${sceneId}&token=${token}`, {
     transports: ['websocket'],
   });
