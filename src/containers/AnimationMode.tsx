@@ -298,6 +298,17 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
       if (!localStorage.getItem('onboarding_1')) {
         dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
       }
+      if (!localStorage.getItem('notification')) {
+        // Temporal code
+        dispatch(
+          commonActions.openModal('NotificationModal', {
+            message:
+              'You can save your work on Plask as of June 9th, 2022. See a list of savable items <a href="https://knowledge.plask.ai/en/scene_save" target="_blank" rel="noopener noreferrer">here.</a>',
+            title: 'New Feature',
+          }),
+        );
+        localStorage.setItem('notification', 'true');
+      }
     }, 2000);
   }, [dispatch]);
 

@@ -10,13 +10,7 @@ interface State {
 }
 
 const defaultState: State = {
-  modals: [
-    {
-      name: 'NotificationModal',
-      props: {},
-      alias: '',
-    },
-  ],
+  modals: [],
   contextMenu: null,
   onboardingStep: null,
 };
