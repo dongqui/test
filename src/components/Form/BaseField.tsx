@@ -32,6 +32,7 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
         defaultValue,
         value,
         onChange: onChangeInner,
+        ref: undefined,
       };
 
       return render(renderProps);

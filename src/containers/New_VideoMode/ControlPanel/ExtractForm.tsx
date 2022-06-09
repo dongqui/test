@@ -63,7 +63,7 @@ const ExtractForm = ({ fieldProps }: Props) => {
         <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
       </div>
       <div className={cx('section-item')}>
-        <FilledButton fullSize buttonType="submit">
+        <FilledButton fullSize type="submit">
           <Typography type="button">Extract</Typography>
         </FilledButton>
       </div>
