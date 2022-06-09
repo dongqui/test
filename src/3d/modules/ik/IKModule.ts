@@ -18,6 +18,7 @@ import {
   Quaternion,
   Scalar,
   Plane,
+  Path3D,
 } from '@babylonjs/core';
 import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -101,6 +102,7 @@ export class IKModule extends Module {
               // Is not working
               //this.leftFootFL.poleAngle = this.poleAngleAdjust(this.leftFootFL);
               this.leftFootFL.handle.position = point.middlePosition;
+              
               if (this.plaskEngine.state.animatingControls.currentTimeIndex < point.middlePoint) {
                 this.leftFootFL.blend = Scalar.SmoothStep(
                   0, 
@@ -112,6 +114,7 @@ export class IKModule extends Module {
                   0, 
                   (this.plaskEngine.state.animatingControls.currentTimeIndex - point.middlePoint) / (point.endPoint - point.middlePoint));
               }
+              
             }
           }
         });
@@ -404,6 +407,8 @@ export class IKModule extends Module {
   public rightFootPositionsContacts: { contact: number; position: ArrayOfThreeNumbers; }[] = [];
   public leftFootPositionsProjected: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition:Vector3;}[] = [];
   public rightFootPositionsProjected: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition:Vector3;}[] = [];
+  public leftFootLookingPosition: Vector3[] = [];
+  public rightFootLookingPosition: Vector3[] = [];
   public captureFlag: boolean = false;
   public leftContactToggle: number = -1;
   public rightContactToggle: number = -1;
@@ -414,13 +419,32 @@ export class IKModule extends Module {
   public leftFootFL: IKController | undefined = undefined;
   public rightFootFL: IKController | undefined = undefined;
   public finishProjections: boolean = false;
-  public hipPositionsPath: Vector3[] = [];
+  /*
+  public hipData: { position: ArrayOfThreeNumbers; rotationQuaternion: ArrayOfFourNumbers}[] = [];
+  public hipPositions: Vector3[] = [];
+  public hipJoint: Mesh | undefined = undefined;
+  public leftFootJointLocalPos: Vector3 | undefined = undefined;
+  public rightFootJointLocalPos: Vector3 | undefined = undefined;
+  public hipLeftFootPositions: Vector3[] = [];
+  public hipRightFootPositions: Vector3[] = [];
 
+  public footsJointsClone(hipJoint: Mesh, leftFootJointRef: Mesh, rightFootJointRef: Mesh) {
+      if (leftFootJointRef && rightFootJointRef) {
+      this.hipJoint = hipJoint;
+      console.log(this.hipJoint.position);
+      this.leftFootJointLocalPos = leftFootJointRef.position;
+      console.log(this.leftFootJointLocalPos);
+      this.rightFootJointLocalPos = rightFootJointRef.position;
+      console.log(this.rightFootJointLocalPos);
+    }
+  }
+  */
   public footLockingData(index: number) {
     if (this.contactData) {
 
-      // This code is just to draw the original motion flow of Left foot
-      // and already separate its Contacts and Positions data
+      // FIRST APPROACH (motion flow based on Foots positions)
+
+      // This code is to store the original motion flow of Left foot
       if ( !this.leftFootPositionsContacts[index] ) {
         // Grabbing leftFoot data (contact and position)
         this.leftFootPositionsContacts.push({
@@ -428,7 +452,6 @@ export class IKModule extends Module {
           position: this.plaskEngine.scene.getMeshByName('leftFoot_joint')?.position.asArray() as ArrayOfThreeNumbers
         });    
         //console.log(index, this.leftFootPositionsContacts[index]);
-        //this.hipPositionsPath.push(this.plaskEngine.scene.getMeshByName('hips_joint').position)
 
         // Store the lowest Y position of LeftFoot to adjust projected line further
         if (this.leftFootPositionsContacts[index].position[1] < this.leftLowestYPosition) {
@@ -456,8 +479,7 @@ export class IKModule extends Module {
         this.leftContactToggle = this.contactData.data.result[0].trackData[9].transformKeys[index].value;
       }
       
-      // This code is just to draw the original motion flow of Right foot
-      // and already separate its Contacts and Positions data
+      // This code is to store the original motion flow of Right foot
       if ( !this.rightFootPositionsContacts[index] ) {
         // Grabbing rightFoot data (contact and position)
         this.rightFootPositionsContacts.push({
@@ -492,8 +514,8 @@ export class IKModule extends Module {
         this.rightContactToggle = this.contactData.data.result[0].trackData[11].transformKeys[index].value;
       }
 
-      // Generate Floor Projection w/ Adjusted Values in a
-      // Array to perform Foot Locking with IK Controllers
+      // Generate Floor Projection motion flow w/ Adjusted Values
+      // to perform Foot Locking with IK Controllers
       // While IK Controllers keyframing is not working
       function generateProjectedLine( footPositionsContacts: {contact: number; position: ArrayOfThreeNumbers; }[], lowestYPosition: number , IKController: IKController | undefined, scene: any) {
         const footPositionsProjected: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition:Vector3;}[] = [];
@@ -505,6 +527,7 @@ export class IKModule extends Module {
         let middlePosition: Vector3 = new Vector3(); 
         let endPoint: number = 0;
         let endPosition: Vector3 = new Vector3();
+        let curvePoints: Vector3[] = [];
 
         footPositionsContacts.forEach((value, index) => {
           // Evaluate foot contact
@@ -552,20 +575,122 @@ export class IKModule extends Module {
                 endPoint = index;
                 endPosition = new Vector3(footPositionsContacts[index].position[0], lowestYPosition, footPositionsContacts[index].position[2]);
                 footPositionsProjected.push({ startPoint: startPoint, startPosition: startPosition, middlePoint: middlePoint, middlePosition: middlePosition, endPoint: endPoint, endPosition:endPosition});
+                if (footPositionsProjected.length > 1) {
+                  console.log(footPositionsProjected, footPositionsProjected.length);
+                  const hermite = Curve3.CreateHermiteSpline(footPositionsProjected[footPositionsProjected.length-2].middlePosition, footPositionsProjected[footPositionsProjected.length-2].endPosition, footPositionsProjected[footPositionsProjected.length-1].middlePosition, footPositionsProjected[footPositionsProjected.length-1].startPosition, footPositionsProjected[footPositionsProjected.length-1].middlePoint - footPositionsProjected[footPositionsProjected.length-2].middlePoint);
+                  const hermiteLine = MeshBuilder.CreateLines("", {points: hermite.getPoints()}, scene);
+                  hermiteLine.color = Color3.White();
+                  for (const point of hermite.getPoints()) {
+                    curvePoints.push(point);
+                  }
+                }
               }
               pointsToEvaluateCenter.length = 0;
             }
           }
         })
         // generate the motion flow of Foot Locking action
-        const projectionCurve = new Curve3(projectionPoints);
-        const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, scene);
-        projectionCurveLine.color = Color3.Blue();
-        console.log(footPositionsProjected);
+        // const projectionCurve = new Curve3(projectionPoints);
+        // const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, scene);
+        // projectionCurveLine.color = Color3.Blue();
+        //console.log(footPositionsProjected);
 
+        // const catmullRom = Curve3.CreateCatmullRomSpline(projectionPoints, Math.floor(footPositionsContacts.length/(projectionPoints.length-1)), false);
+        // const catmullRomLine = MeshBuilder.CreateLines('', {points: catmullRom.getPoints()}, scene);
+        //console.log(catmullRom.getPoints().length);
+        //console.log(curvePoints.length, curvePoints);
         return footPositionsProjected
       }
 
+      /*
+      // SECOND APPROACH (motion flow based on Hips positions interpolated to Foots)
+      const hip = this.hipJoint;
+      function generateNewFootsPaths(path: Path3D) {
+        if (hip) {
+          const tangents = path.getTangents();
+          const binormals = path.getBinormals();
+          const curvePath = path.getCurve();
+          for (let i=0; i < curvePath.length; i++) {
+            hip.position = curvePath[i];
+            hip.rotationQuaternion = Quaternion.FromLookDirectionRH(tangents[i], binormals[i]);
+          }  
+        }
+      }
+
+      // This code is to store original motion flow of hipData
+      if ( !this.hipData[index] ) {
+        // Grabbing hip data (position)
+        this.hipData.push({
+          position: this.plaskEngine.scene.getMeshByName('hips_joint')?.position.asArray() as ArrayOfThreeNumbers,
+          rotationQuaternion: this.plaskEngine.scene.getTransformNodeByName('hips')?.rotationQuaternion.asArray() as ArrayOfFourNumbers
+        });
+        //console.log(this.hipData);
+      }
+      
+      if ( this.hipData.length >= this.contactData.data.result[0].trackData[0].transformKeys.length &&
+            this.hipPositions.length == 0
+        ){
+        
+        for (let i = 0; i < this.hipData.length; i++){
+          this.hipPositions.push(new Vector3(this.hipData[i].position[0], this.hipData[i].position[1], this.hipData[i].position[2]));
+        }
+
+        const normal = new Vector3(0, 1, 0);
+        const path3D = new Path3D(this.hipPositions, normal);
+        const tangents = path3D.getTangents();
+        const normals = path3D.getNormals();
+        const binormals = path3D.getBinormals();
+        const curve = path3D.getCurve();
+        const curveLine = MeshBuilder.CreateLines('', {points: curve}, this.plaskEngine.scene);
+        curveLine.color = Color3.Yellow();
+
+        // for (let i = 0; i < path3D.getCurve().length; i++) {
+        //   let tg = MeshBuilder.CreateLines('tg', {points: [curve[i], curve[i].add(tangents[i])]}, this.plaskEngine.scene);
+        //   tg.color = Color3.Red();
+        //   let no = MeshBuilder.CreateLines('no', {points: [curve[i], curve[i].add(normals[i])]}, this.plaskEngine.scene);
+        //   no.color = Color3.Blue();
+        //   let bi = MeshBuilder.CreateLines('bi', {points: [curve[i], curve[i].add(binormals[i])]}, this.plaskEngine.scene);
+        //   bi.color = Color3.Green();
+        // }
+
+          //this.hipJoint.position = this.plaskEngine.scene.getTransformNodeByName('hips').position;
+          //this.hipJoint.rotationQuaternion = this.plaskEngine.scene.getTransformNodeByName('hips').rotationQuaternion;
+          //this.hipJoint.position = new Vector3(this.hipData[this.hipData.length-1].position[0], this.hipData[this.hipData.length-1].position[1], this.hipData[this.hipData.length-1].position[2]);
+          //this.hipJoint.rotationQuaternion = new Quaternion(this.hipData[this.hipData.length-1].rotationQuaternion[0], this.hipData[this.hipData.length-1].rotationQuaternion[1], this.hipData[this.hipData.length-1].rotationQuaternion[2], this.hipData[this.hipData.length-1].rotationQuaternion[3]);
+          for (let i = 0; i < curve.length; i++) {
+            if (this.hipJoint) {
+              this.hipJoint.position = curve[i];
+              //this.hipJoint.rotationQuaternion = Quaternion.FromLookDirectionLH(tangents[i], binormals[i]);
+              let matrixHipJointLeft = this.hipJoint.computeWorldMatrix(true);
+              let matrixHipJointRight = this.hipJoint.computeWorldMatrix(true);
+              let hipJointLocalPos_1 = this.hipJoint.position;
+              let hipJointLocalPos_2 = this.hipJoint.position;
+              let localPosLeftJoint = hipJointLocalPos_1.addInPlace(new Vector3(0.0, 0.0, -4.0));
+              let globalPosLeftJoint = Vector3.TransformCoordinates(localPosLeftJoint, matrixHipJointLeft);
+              let localPosRightJoint = hipJointLocalPos_2.addInPlace(new Vector3(0.0, 0.0, 4.0));
+              let globalPosRightJoint = Vector3.TransformCoordinates(localPosRightJoint, matrixHipJointRight);
+    
+              this.hipLeftFootPositions.push(globalPosLeftJoint);
+              this.hipRightFootPositions.push(globalPosRightJoint);  
+            }
+          }
+
+        
+        // Generate Hip motion flow
+        //const projectionCurve = new Curve3(this.hipPositions);
+        //const projectionCurveLine = MeshBuilder.CreateLines('', {points: projectionCurve.getPoints()}, this.plaskEngine.scene);
+        //projectionCurveLine.color = Color3.Yellow();
+        
+        const projectionLeftCurve = new Curve3(this.hipLeftFootPositions);
+        const projectionLeftCurveLine = MeshBuilder.CreateLines('', {points: projectionLeftCurve.getPoints()}, this.plaskEngine.scene);
+        projectionLeftCurveLine.color = Color3.Purple();
+
+        const projectionRightCurve = new Curve3(this.hipRightFootPositions);
+        const projectionRightCurveLine = MeshBuilder.CreateLines('', {points: projectionRightCurve.getPoints()}, this.plaskEngine.scene);
+        projectionRightCurveLine.color = Color3.Purple();
+      }
+      */
+      
       // Stop Foot's values capture
       if ( this.leftFootPositionsContacts.length >= this.contactData.data.result[0].trackData[0].transformKeys.length && 
         this.rightFootPositionsContacts.length >= this.contactData.data.result[0].trackData[0].transformKeys.length && 
@@ -573,7 +698,7 @@ export class IKModule extends Module {
         this.captureFlag = true;
         this.plaskEngine.state.animatingControls.currentAnimationGroup?.stop();
         this.plaskEngine.scene.animationGroups[0].stop();
-
+        
         this.leftFootPositionsProjected = generateProjectedLine(this.leftFootPositionsContacts, this.leftLowestYPosition, this.leftFootFL, this.plaskEngine.scene);
         this.leftFootFL = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_leftFoot'));
         this.leftFootFL.poleAngle = this.poleAngleAdjust(this.leftFootFL);
@@ -584,7 +709,7 @@ export class IKModule extends Module {
 
         if (this.leftFootPositionsProjected && this.rightFootPositionsProjected) this.finishProjections = true;
 
-        //console.log(this.hipPositionsPath);
+        //console.log(this.hipPositions);
       }
     }
   }
@@ -595,11 +720,11 @@ export class IKModule extends Module {
         let vec3 = footFL.fkInfluenceChain[2].position;
 
         let plane: Plane = Plane.FromPoints(vec1, vec2, vec3);
-        let dir: Vector3 = Vector3.Cross(vec3, plane.normal);
+        let dir: Vector3 = Vector3.Cross(vec3.subtract(vec2).normalize(), plane.normal);
 
-        console.log(footFL?.poleAngle, footFL?.targetInfluenceChain[2].forward, footFL?.fkInfluenceChain[2].forward);
-        console.log(Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward, dir, plane.normal));
-        return - Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward, dir, plane.normal);                
+        //console.log(footFL?.poleAngle, footFL?.targetInfluenceChain[2].forward, footFL?.fkInfluenceChain[2].forward);
+        //console.log(Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward, dir, plane.normal));
+        return Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward.normalize(), dir, plane.normal);                
   }
 
   public setFLKeyframeData(position: Vector3, index: number, IKController: IKController | undefined) {
@@ -611,7 +736,7 @@ export class IKModule extends Module {
     const targetCurrentTimeindex = index;
 
     if (targetAnimation && IKController) {
-      console.log("INI", IKController.handle.id);
+      //console.log("INI", IKController.handle.id);
       const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(
         targetAnimation.id,
         targetLayerId,
@@ -679,9 +804,11 @@ export class IKModule extends Module {
     const jsonLoadTask = assetManager.addTextFileTask("FLJson", "./0525_new_contact_1.json");
     jsonLoadTask.onSuccess = (task) => {
       this.contactData = JSON.parse(task.text);
-      console.log(this.contactData);
+      //console.log(this.contactData);
     }
     assetManager.load();
+
+    //this.footsJointsClone(scene.getMeshByName('hips_joint') as Mesh, scene.getMeshByName('leftFoot_joint') as Mesh, scene.getMeshByName('rightFoot_joint') as Mesh);
     //////////////////////////////////////////////////////////////
 
     // TODO : retrieve skeleton and body more cleanly
