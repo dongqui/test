@@ -188,6 +188,7 @@ const VideoMode = () => {
 
   const [thumbnailList, setThumbnailList] = useState<string[]>([]);
   const [duration, setDuration] = useState(0);
+  const [rulerValues, setRulerValues] = useState<number[]>([]);
 
   // const timelineRef = useRef<HTMLCanvasElement>(null);
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
@@ -203,6 +204,10 @@ const VideoMode = () => {
       const datumPoint = videoRef.current.duration / 20;
 
       const thumbnailList: string[] = [];
+
+      const videoDuration = videoRef.current.duration;
+      setDuration(videoDuration);
+      setRulerValues(Array.from([0, 1, 2, 3, 4, 5], (x) => Math.round((x * videoDuration) / 5)));
 
       if (timelineRef && currentVideoURL) {
         setTimeline(
@@ -386,7 +391,11 @@ const VideoMode = () => {
             //   ))}
             // </div>
             <Fragment>
-              <div className={cx('ruler')}>ruler</div>
+              <div className={cx('ruler')}>
+                {rulerValues.map((value) => (
+                  <div key={value}>{value}s</div>
+                ))}
+              </div>
               <div className={cx('timeline')}>
                 <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
               </div>

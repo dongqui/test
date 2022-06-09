@@ -117,8 +117,11 @@
 }
 
 .ruler {
+  display: flex;
+  justify-content: space-between;
   background-color: var(--grey010);
   height: 16px;
+  padding: 0 86px;
 }
 
 .timeline {
@@ -126,5 +129,5 @@
 }
 
 .timeline-canvas {
-  border-radius: 24px;
+  border-radius: 16px;
 }
