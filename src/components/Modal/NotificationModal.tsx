@@ -12,18 +12,23 @@ const cx = classnames.bind(styles);
 
 interface Props {
   onClose: () => void;
+  closeCallback?: () => void;
   message: string;
   title: string;
 }
 
 // TODO: make body more flexible
-export default function NotificationModal({ onClose, title, message }: Props) {
+export default function NotificationModal({ onClose, title, message, closeCallback }: Props) {
+  function handleClose() {
+    closeCallback && closeCallback();
+    onClose();
+  }
   return (
     <BaseModal hasPadding={false}>
       <div className={cx('container')}>
         <header className={cx('header')}>
           <h3>{title}</h3>
-          <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
+          <IconButton onClick={handleClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
         <div className={cx('body')}>
           <video autoPlay loop muted width="640" height="360">

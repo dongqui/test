@@ -33,9 +33,11 @@
 }
 
 .footer {
-  padding: 1.6rem 2rem;
-  font: $modal-body;
-  color: $content-high;
+  padding: 1.6rem 2rem;  
+  div {
+    color: $content-high;
+    font: $modal-body;
+  }  
 
   a {
     color: var(--blue065);
