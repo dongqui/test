@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useEffect, useState, useCallback, useRef } from 'react';
+import { Fragment, useMemo, useEffect, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { Timeline } from '@babylonjs/controls';
 import Image from 'next/image';
@@ -344,13 +344,20 @@ const VideoMode = () => {
 
   const [number, setNumber] = useState(0);
 
-  const handleClick = useCallback(() => {
-    if (timeline && videoRef.current) {
-      // timeline.setCurrentTime(number + 1);
-      videoRef.current.currentTime = number + 1;
-      setNumber(number + 1);
-    }
-  }, [number, timeline]);
+  const handleChangeCurrentTime = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      if (timeline && videoRef.current) {
+        console.log(event.target.value, Number(event.target.value), duration, (Number(event.target.value) / duration) * 100);
+        // timeline.setCurrentTime(number + 1);
+
+        videoRef.current.currentTime = Number(event.target.value);
+        // const value = Number(((Number(event.target.value) / duration) * 100).toFixed(3));
+        const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
+        setNumber(value);
+      }
+    },
+    [duration, timeline],
+  );
 
   return (
     <div className={cx('wrapper')}>
@@ -379,7 +386,6 @@ const VideoMode = () => {
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
           MB
-          <button onClick={handleClick}>qaaaa</button>
         </Box>
         <Box id="TP" {...boxProps.TP}>
           {isVideoLoaded ? (
@@ -392,9 +398,26 @@ const VideoMode = () => {
             // </div>
             <Fragment>
               <div className={cx('ruler')}>
-                {rulerValues.map((value) => (
-                  <div key={value}>{value}s</div>
-                ))}
+                <div className={cx('indicator-wrapper')}>
+                  <input
+                    className={cx('indicator')}
+                    type="range"
+                    id="currentTime"
+                    min={0}
+                    max={duration}
+                    step="0.001"
+                    value={videoRef.current?.currentTime}
+                    onChange={handleChangeCurrentTime}
+                  />
+                  <label className={cx('indicator-value')} id="currentTime" style={{ left: `${number}%` }}>
+                    {number.toFixed(1)}
+                  </label>
+                </div>
+                <div className={cx('ruler-inner')}>
+                  {rulerValues.map((value) => (
+                    <div key={value}>{value}s</div>
+                  ))}
+                </div>
               </div>
               <div className={cx('timeline')}>
                 <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
