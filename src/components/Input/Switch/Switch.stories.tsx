@@ -64,12 +64,6 @@ const Template: ComponentStory<typeof _Switch> = (args) => {
                 name="switch"
                 render={({ field }) => <_Switch {...args} className={cx('switch-story')} onChange={field.onChange} />}
               />
-              {/*<BaseField<Field.SwitchProps>*/}
-              {/*  render={({ onChange, ...rest }) => <_Switch {...args} defaultKey={rest.defaultValue} className={cx('switch-story')} onChange={onChange} />}*/}
-              {/*  control={props.control}*/}
-              {/*  name="form-switch"*/}
-              {/*  defaultValue="opt2"*/}
-              {/*/>*/}
               <button type="submit">Submit</button>
             </Fragment>
           )}
@@ -97,6 +91,6 @@ Switch.args = {
   type: 'primary',
   disabled: false,
   fullSize: false,
-  defaultKey: 'opt2',
+  defaultValue: 'opt2',
   onChange: (key) => console.log(key),
 };
