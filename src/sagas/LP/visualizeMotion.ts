@@ -14,6 +14,7 @@ import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { goToSpecificPoses } from 'utils/RP';
 import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
 const clickJointChannel = channel();
 
@@ -82,7 +83,15 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
-      plaskEngine.assetModule.clearAssetFromScene(prevAssetId);
+      // Find transform node
+      const ptns = plaskEngine.getEntitiesByPredicate((entity) => entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).id.includes(prevAssetId));
+      yield put(selectingDataActions.removeEntity({ targets: ptns }));
+
+      yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
+      yield put(plaskProjectActions.unrenderAsset({ assetId: prevAssetId }));
+      plaskEngine.ikModule.removeIK();
+      plaskEngine.assetModule.unvisualizeModel(prevAssetId);
+
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
 
@@ -91,7 +100,16 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     if (modelNode?.assetId && !visualizedAssetIds.includes(modelNode.assetId)) {
       const asset = find(newPlaskProject.assetList, { id: modelNode.assetId });
       if (asset?.animationIngredientIds[0]) {
-        plaskEngine.assetModule.visualizeModel(modelNode.assetId, clickJointChannel);
+        plaskEngine.assetModule.visualizeModel(modelNode.assetId);
+        let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(modelNode.assetId);
+        // Auto add ik code
+        // plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(modelNode.assetId));
+        yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
+        // This appends PlaskTransformNodes to state.selectableObjects
+        yield put(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
+
+        // This only sets state.visualizedAssetIds
+        yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
     }
 

@@ -90,7 +90,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         yield put(
           animationDataActions.changeCurrentAnimationIngredient({ assetId: modelNode.assetId, animationIngredientId: animationIngredientId || asset?.animationIngredientIds[0] }),
         );
-        // TODO: simplify call with asset from assetList
         plaskEngine.assetModule.visualizeModel(modelNode.assetId);
         let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(modelNode.assetId);
         // Auto add ik code

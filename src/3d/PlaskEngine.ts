@@ -141,14 +141,6 @@ export class PlaskEngine {
       this._tick(current.getTime() - last.getTime());
       last = current;
     });
-
-    // Debug
-    (window as any).printEntities = () => {
-      console.log('Entities length : ', Object.keys(this._entityStore.entities).length);
-      console.log(this._entityStore.entities);
-      console.log('Entities in redux state : ', Object.keys(this.state.selectingData.present.allEntitiesMap).length);
-      console.log(this.state.selectingData.present.allEntitiesMap);
-    };
   }
 
   private _tick(elapsed: number) {
@@ -423,5 +415,4 @@ export class PlaskEngine {
 }
 
 const engine = new PlaskEngine();
-(window as any).engine = engine;
 export default engine;
