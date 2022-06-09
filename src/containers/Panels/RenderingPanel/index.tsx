@@ -6,6 +6,7 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
+import * as keyframeActions from 'actions/keyframes';
 import { useSelector } from 'reducers';
 import { ArrayOfThreeNumbers, GizmoMode, GizmoSpace, PlaskProperty } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
@@ -332,7 +333,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           if (multiKeyController[event.key].pressed) {
             // k with v not pressed
             if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
-              dispatch(animationDataActions.editKeyframes());
+              dispatch(keyframeActions.editKeyframesSocket.request());
             }
           }
           break;
@@ -602,7 +603,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         disabled: _selectedTargets.length === 0 || _playState === 'play',
         onClick: () => {
           if (!(_selectedTargets.length === 0 || _playState === 'play')) {
-            dispatch(animationDataActions.editKeyframes());
+            dispatch(keyframeActions.editKeyframesSocket.request());
           }
         },
       },

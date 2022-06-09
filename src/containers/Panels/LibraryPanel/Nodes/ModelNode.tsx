@@ -13,7 +13,7 @@ interface Props {
 }
 
 const ModelNode = ({ node }: Props) => {
-  const { id, assetId, filePath, extension, name, parentId, type, childNodeIds } = node;
+  const { id, assetId, extension, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
 
@@ -23,26 +23,19 @@ const ModelNode = ({ node }: Props) => {
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('ModelContextMenu', e, {
-        nodeId: id,
-        assetId,
-        nodeName: name,
-        parentId,
-        type,
-        childNodeIds,
+        node,
       }),
     );
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    if (draggedNode?.type !== 'Mocap' || !draggedNode?.mocapData) {
+    if (draggedNode?.type !== 'MOCAP' || !draggedNode?.mocapId) {
       return;
     }
-
     e.stopPropagation();
     dispatch(
-      lpNodeActions.dropMocapOnModel({
+      lpNodeActions.applyMocapToModel.request({
         nodeId: id,
-        filePath,
         assetId,
       }),
     );
@@ -55,14 +48,14 @@ const ModelNode = ({ node }: Props) => {
 
     const hasMotions = childNodeIds.length !== 0;
     if (!hasMotions) {
-      dispatch(lpNodeActions.addEmptyMotion({ nodeId: id, assetId }));
+      dispatch(lpNodeActions.addEmptyMotionAsync.request({ nodeId: id, assetId }));
     }
-    dispatch(lpNodeActions.visualizeNode({ assetId }));
+    dispatch(lpNodeActions.visualizeModel(node));
   };
 
   const handleEditName = (newName: string) => {
     const nameWithExtension = `${newName}.${extension}`;
-    dispatch(lpNodeActions.editNodeName({ newName: nameWithExtension, nodeId: id }));
+    dispatch(lpNodeActions.editNodeNameSocket.request({ newName: nameWithExtension, nodeId: id }));
   };
 
   return <BaseNode dataCy="lp-model" node={node} onContextMenu={handleContextMenu} onDrop={handleDrop} onEditName={handleEditName} onDragEnd={handleDragEnd} />;

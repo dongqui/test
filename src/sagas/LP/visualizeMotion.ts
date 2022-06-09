@@ -1,47 +1,104 @@
-import { find, filter } from 'lodash';
-import { select, put } from 'redux-saga/effects';
+import { find, omitBy } from 'lodash';
+import { select, put, take, call, SagaReturnType } from 'redux-saga/effects';
+import { channel } from 'redux-saga';
 
+import * as api from 'api';
 import { RootState } from 'reducers';
-import { goToSpecificPoses } from 'utils/RP';
-import { forceClickAnimationPlayAndStop } from 'utils/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
+import * as selectingDataActions from 'actions/selectingDataAction';
+import * as globalUIActions from 'actions/Common/globalUI';
 import plaskEngine from '3d/PlaskEngine';
+import { forceClickAnimationPlayAndStop } from 'utils/common';
+import { goToSpecificPoses } from 'utils/RP';
+import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset } from 'types/common';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
+
+const clickJointChannel = channel();
+
+export function* watchClickJointChannelFromMotionVizsualize() {
+  while (true) {
+    const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect | typeof selectingDataActions.defaultSingleSelect> = yield take(clickJointChannel);
+    yield put(action);
+  }
+}
 
 export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeActions.visualizeMotion>) {
-  const { plaskProject, animationData, lpNode }: RootState = yield select();
-  const { animationIngredients } = animationData;
-  const { screenList, assetList } = plaskProject;
+  const plaskProjectSelector = (state: RootState) => state.plaskProject;
+  const { plaskProject, lpNode }: RootState = yield select();
+  const { screenList, assetList, visualizedAssetIds } = plaskProject;
   const { assetId, nodeId, parentId } = action.payload;
 
-  if (!assetId) {
+  plaskEngine.assetModule.clearAnimationGroups(screenList);
+  const modelNode = find(lpNode.nodes, { id: parentId });
+  const motionNode = find(lpNode.nodes, { id: nodeId });
+  if (!assetId || !modelNode || !motionNode?.animationId) {
     return;
   }
+  try {
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
-  plaskEngine.assetModule.clearAnimationGroups(screenList);
+    let asset = find(assetList, { id: modelNode.assetId });
 
-  const parentModel = find(lpNode.nodes, { id: parentId });
-  // TODO 선언적으로 수정
-  if (parentModel) {
-    const motions = filter(animationIngredients, { assetId: parentModel.assetId });
-    if (motions && parentModel.assetId) {
-      const selectedMotion = find(motions, { id: nodeId });
-      if (selectedMotion) {
-        const currentAsset = assetList.find((asset) => asset.id === parentModel.assetId);
-        if (currentAsset) {
-          goToSpecificPoses(currentAsset.initialPoses);
-        }
+    if (!asset) {
+      yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode, motionNode.id));
+      yield take('ADDED_NEW_ASSET');
+    }
 
-        yield put(
-          animationDataActions.changeCurrentAnimationIngredient({
-            assetId: parentModel.assetId,
-            animationIngredientId: selectedMotion.id,
-          }),
-        );
+    if (!asset) {
+      const assetList: PlaskAsset[] = yield select((state: RootState) => state.plaskProject.assetList);
+      asset = assetList.find((a) => a.id === modelNode.assetId);
+      if (!asset) {
+        throw Error('No asset');
       }
     }
-  }
+    const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode.animationId === id);
+    if (!targetAnimationIngredientId) {
+      const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
+      const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
+      const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
+      const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
 
-  yield put(lpNodeActions.visualizeNode({ assetId }));
-  forceClickAnimationPlayAndStop(50);
+      yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
+      yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
+    }
+
+    const newRootState: RootState = yield select();
+    const targetAnimationIngredient = find(newRootState.animationData.animationIngredients, { id: motionNode?.animationId });
+
+    const currentAsset = assetList.find((asset) => asset.id === modelNode.assetId);
+    if (currentAsset) {
+      goToSpecificPoses(currentAsset.initialPoses);
+    }
+
+    yield put(
+      animationDataActions.changeCurrentAnimationIngredient({
+        assetId: modelNode.assetId!,
+        animationIngredientId: targetAnimationIngredient?.id!,
+      }),
+    );
+
+    const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;
+    if (isAnotherAssetVisualized) {
+      const prevAssetId = visualizedAssetIds[0];
+      plaskEngine.assetModule.clearAssetFromScene(prevAssetId);
+      yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
+    }
+
+    const newPlaskProject: PlaskProject = yield select(plaskProjectSelector);
+
+    if (modelNode?.assetId && !visualizedAssetIds.includes(modelNode.assetId)) {
+      const asset = find(newPlaskProject.assetList, { id: modelNode.assetId });
+      if (asset?.animationIngredientIds[0]) {
+        plaskEngine.assetModule.visualizeModel(modelNode.assetId, clickJointChannel);
+      }
+    }
+
+    forceClickAnimationPlayAndStop(50);
+  } catch (e) {
+    console.log(e);
+  } finally {
+    yield put(globalUIActions.closeModal('LoadingModal'));
+  }
 }

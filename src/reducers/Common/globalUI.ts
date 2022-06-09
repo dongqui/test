@@ -30,7 +30,7 @@ export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIA
       });
     case globalUIActions.CLOSE_MODAL:
       return Object.assign({}, state, {
-        modals: action.payload.alias ? state.modals.filter((modal) => action.payload.alias !== modal.alias) : [],
+        modals: action.payload.alias ? state.modals.filter((modal) => action.payload.alias !== modal.alias && action.payload.alias !== modal.name) : [],
       });
     case globalUIActions.OPEN_CONTEXT_MENU:
       return Object.assign({}, state, {

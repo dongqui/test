@@ -17,7 +17,6 @@ const MocapNode = ({ node }: Props) => {
     dispatch(
       globalUIActions.openContextMenu('MocapContextMenu', e, {
         nodeId: id,
-        parentId,
       }),
     );
   };

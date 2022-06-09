@@ -18,7 +18,8 @@ const DopeSheetHeader = () => {
 
   const handleAddLayerTrackButton = useCallback(() => {
     if (animationIngredientId) {
-      dispatch(trackListActions.clickAddLayerTrackButton());
+      // dispatch(trackListActions.clickAddLayerTrackButton());
+      dispatch(trackListActions.addLayerSocket.request());
     }
   }, [dispatch, animationIngredientId]);
 

@@ -151,25 +151,10 @@ export const animationData = (state = defaultState, action: AnimationDataAction)
       });
     }
     case 'animationDataAction/ASSIGN_BONE_MAPPING': {
-      const { assetId, targetTransformNodeId, sourceBoneName } = action.payload;
       return Object.assign({}, state, {
         retargetMaps: state.retargetMaps.map((retargetMap) => {
-          if (retargetMap.assetId === assetId) {
-            return {
-              ...retargetMap,
-              values: retargetMap.values.map((retargetMapValue) => {
-                // reset previous mapping
-                if (retargetMapValue.targetTransformNodeId === targetTransformNodeId && targetTransformNodeId !== RETARGET_TARGET_BONE_NONE) {
-                  return { ...retargetMapValue, targetTransformNodeId: null };
-                }
-                // assign new mapping
-                else if (retargetMapValue.sourceBoneName === sourceBoneName) {
-                  return { ...retargetMapValue, targetTransformNodeId: targetTransformNodeId };
-                } else {
-                  return retargetMapValue;
-                }
-              }),
-            };
+          if (retargetMap.assetId === action.payload.assetId) {
+            return action.payload;
           } else {
             return retargetMap;
           }

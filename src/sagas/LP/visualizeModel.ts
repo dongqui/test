@@ -1,42 +1,92 @@
 import { channel } from 'redux-saga';
-import { select, put, SagaReturnType, take } from 'redux-saga/effects';
+import { select, put, SagaReturnType, take, call } from 'redux-saga/effects';
+import { find, omitBy } from 'lodash';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as animationDataActions from 'actions/animationDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as TEXT from 'constants/Text';
+import { PlaskProject, ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskAsset } from 'types/common/index';
 import plaskEngine from '3d/PlaskEngine';
+import * as api from 'api';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
 
 const clickJointChannel = channel();
 
-export function* watchClickJointChannel() {
+export function* watchClickJointChannelFromModelVisualize() {
   while (true) {
     const action: SagaReturnType<typeof selectingDataActions.ctrlKeySingleSelect | typeof selectingDataActions.defaultSingleSelect> = yield take(clickJointChannel);
     yield put(action);
   }
 }
 
-export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.visualizeNode>) {
+export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.visualizeModel>) {
   // this callback is under assumption of sing model
   // so when users visualize a model, if there is already another model visualized that model will be unvisualized.
-  // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.
-  const { plaskProject }: RootState = yield select();
-  const { visualizedAssetIds } = plaskProject;
-  const { assetId } = action.payload;
-
+  // @TODO if Plask support multi-model, stuff should be changed to maintain ones which are already visualized.`
+  const plaskProjectSelector = (state: RootState) => state.plaskProject;
   try {
-    const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== action.payload.assetId;
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+
+    const { modelNode, animationIngredientId } = action.payload;
+
+    if (!modelNode.childNodeIds.length) {
+      yield put(lpNodeActions.addEmptyMotionAsync.request({ assetId: modelNode.assetId!, nodeId: modelNode.id }));
+      yield take('ADDED_EMPTY_MOTION');
+    }
+
+    const { plaskProject, lpNode }: RootState = yield select();
+    const { visualizedAssetIds, assetList } = plaskProject;
+    const motionNode = find(lpNode.nodes, { id: modelNode.childNodeIds[0] });
+
+    let asset = find(assetList, { id: modelNode.assetId });
+
+    if (!asset) {
+      yield put(lpNodeActions.addAssetsAndAnimationIngredients(modelNode, motionNode?.id));
+      yield take('ADDED_NEW_ASSET');
+    }
+
+    if (!asset) {
+      const assetList: PlaskAsset[] = yield select((state: RootState) => state.plaskProject.assetList);
+      asset = assetList.find((a) => a.id === modelNode.assetId);
+      if (!asset) {
+        throw Error('No asset');
+      }
+    }
+
+    const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode?.animationId === id);
+    if (!targetAnimationIngredientId) {
+      const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
+      const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
+      const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
+      const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+
+      yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
+      yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
+    }
+
+    const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
       plaskEngine.assetModule.clearAssetFromScene(prevAssetId);
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
     // visualize new asset
-    if (assetId && !visualizedAssetIds.includes(assetId)) {
-      plaskEngine.assetModule.visualizeModel(assetId, clickJointChannel);
+    const newPlaskProject: PlaskProject = yield select(plaskProjectSelector);
+    if (modelNode?.assetId && !visualizedAssetIds.includes(modelNode.assetId)) {
+      const asset = find(newPlaskProject.assetList, { id: modelNode.assetId });
+      if (asset?.animationIngredientIds[0]) {
+        yield put(
+          animationDataActions.changeCurrentAnimationIngredient({ assetId: modelNode.assetId, animationIngredientId: animationIngredientId || asset?.animationIngredientIds[0] }),
+        );
+        plaskEngine.assetModule.visualizeModel(modelNode.assetId, clickJointChannel);
+      }
     }
   } catch (e) {
+    console.log(e);
     yield put(
       globalUIActions.openModal('AlertModal', {
         title: 'Warning',
@@ -45,5 +95,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         confirmColor: 'negative',
       }),
     );
+  } finally {
+    yield put(globalUIActions.closeModal('LoadingModal'));
   }
 }

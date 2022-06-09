@@ -2,7 +2,7 @@ import { FunctionComponent, memo, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import AnimationTab from './AnimationTab';
 import RetargetTab from './RetargetTab';
-import * as cpActions from 'actions/CP/cpModeSelection';
+import * as cpActions from 'actions/CP';
 import { useSelector } from 'reducers';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import classNames from 'classnames/bind';
