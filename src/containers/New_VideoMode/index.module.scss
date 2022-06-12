@@ -188,9 +188,10 @@
 
   .indicator-line {
     border-left: 1px solid #fff;
-    height: 148px;
+    height: 134px;
     position: absolute;
     top: 0;
+    transform: translateY(14px);
   }
 }
 
