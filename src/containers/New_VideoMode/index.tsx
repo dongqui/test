@@ -415,6 +415,7 @@ const VideoMode = () => {
                     style={{ left: `${number}%`, transform: `translate(calc(-50% + 16px * (100 - ${number * 2}) / 100), -50%)` }}
                   >
                     {number.toFixed(1)}
+                    <div className={cx('indicator-line')} />
                   </label>
                 </div>
                 <div className={cx('ruler-inner')}>

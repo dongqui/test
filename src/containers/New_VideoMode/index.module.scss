@@ -185,6 +185,13 @@
     font-weight: 500;
     pointer-events: none;
   }
+
+  .indicator-line {
+    border-left: 1px solid #fff;
+    height: 148px;
+    position: absolute;
+    top: 0;
+  }
 }
 
 .timeline {
