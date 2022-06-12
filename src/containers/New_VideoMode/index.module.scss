@@ -122,6 +122,7 @@
   background-color: var(--grey010);
   width: 100%;
   height: 16px;
+  justify-content: center;
   // padding: 0 86px;
 
   .ruler-inner {
@@ -139,8 +140,8 @@
     position: relative;
     display: flex;
     justify-content: space-between;
-    width: 100%;
-    padding: 0px 70px;
+    width: calc(100% - 140px);
+    // padding: 0px 70px;
     z-index: 1;
   }
 
@@ -182,6 +183,7 @@
     color: #000;
     font-size: 9px;
     font-weight: 500;
+    pointer-events: none;
   }
 }
 

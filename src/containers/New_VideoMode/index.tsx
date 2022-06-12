@@ -409,7 +409,11 @@ const VideoMode = () => {
                     value={videoRef.current?.currentTime}
                     onChange={handleChangeCurrentTime}
                   />
-                  <label className={cx('indicator-value')} id="currentTime" style={{ left: `${number}%` }}>
+                  <label
+                    className={cx('indicator-value')}
+                    id="currentTime"
+                    style={{ left: `${number}%`, transform: `translate(calc(-50% + 16px * (100 - ${number * 2}) / 100), -50%)` }}
+                  >
                     {number.toFixed(1)}
                   </label>
                 </div>
