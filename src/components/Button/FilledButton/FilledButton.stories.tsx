@@ -23,6 +23,6 @@ FilledButton.args = {
   text: 'Button',
   fullSize: false,
   disabled: false,
-  type: 'primary',
+  buttonType: 'primary',
   size: 'small',
 };

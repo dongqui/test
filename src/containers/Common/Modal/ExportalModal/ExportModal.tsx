@@ -167,10 +167,10 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
                 <div className={cx('row')}>
                   <div className={cx('field-label')}>Motion:</div>
                   <div className={cx('field-value')}>
-                    <BaseField<Field.DropdownProps>
+                    <BaseField<Field.DropdownProps, string>
                       render={({ onChange, ...rest }) => <Dropdown name="motion" onChange={(params) => handleMotionOnChange(onChange, params)} {...rest} />}
                       control={props.control}
-                      value={values.motion}
+                      defaultValue={values.motion}
                       name="motion"
                       list={motionList}
                       initialValue={initialMotionValue}
@@ -181,10 +181,10 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
                 <div className={cx('row')}>
                   <div className={cx('field-label')}>Format:</div>
                   <div className={cx('field-value')}>
-                    <BaseField<Field.DropdownProps>
+                    <BaseField<Field.DropdownProps, string>
                       render={({ onChange, ...rest }) => <Dropdown name="format" onChange={(params) => handleFormatChange(onChange, params)} {...rest} />}
                       control={props.control}
-                      value={values.format.value}
+                      defaultValue={values.format.value}
                       name="format"
                       list={formatList}
                       initialValue={formatList[0]}

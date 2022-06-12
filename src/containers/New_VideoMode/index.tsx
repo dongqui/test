@@ -4,6 +4,8 @@ import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { useWindowSize } from 'hooks/common';
+import ControlPanel from './ControlPanel';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -30,7 +32,7 @@ const VideoMode = () => {
         height: windowHeight - 180 - 36,
       } as BoxProps,
       CP: {
-        width: 240,
+        width: 250,
       } as BoxProps,
       MB: {
         height: 32,
@@ -59,7 +61,7 @@ const VideoMode = () => {
           RP
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
-          CP
+          <ControlPanel />
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
