@@ -268,11 +268,6 @@ export class IKModule extends Module {
     // Evaluate if a IK Controller is selected
     this._selectedIkControllers.forEach((selectedIK) => {
       selectedIK.blend = value;
-
-      let newColor = new Color3();
-      Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
-      let targetMat = selectedIK.handle.material as StandardMaterial;
-      targetMat.emissiveColor = newColor;
     });
   }
 

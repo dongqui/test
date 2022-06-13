@@ -49,6 +49,12 @@ export class IKController {
   private _blend = 1;
   public set blend(value: number) {
     this._blend = value;
+
+    let newColor = new Color3();
+    Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
+    let targetMat = this.handle.material as StandardMaterial;
+    targetMat.emissiveColor = newColor;
+
     this.onBlendUpdatedObservable.notifyObservers();
   }
   public get blend() {
