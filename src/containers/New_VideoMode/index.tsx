@@ -425,8 +425,11 @@ const VideoMode = () => {
                   ))}
                 </div>
               </div>
-              <div className={cx('timeline')}>
-                <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
+              <div className={cx('timeline-wrapper')}>
+                <div className={cx('timeline')}>
+                  <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
+                </div>
+                <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
               </div>
             </Fragment>
           ) : (
