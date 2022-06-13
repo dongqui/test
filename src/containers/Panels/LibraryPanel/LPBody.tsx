@@ -43,7 +43,7 @@ const LPBody: FunctionComponent<Props> = ({ lpNodes }) => {
     dispatch(lpNodeActions.moveNodeSocket.request(''));
   };
 
-  const rootPathNodes = (lpNodes ?? nodes).filter((node) => !node.parentId);
+  const rootPathNodes = (lpNodes ?? nodes).filter((node) => !node.parentId).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   return (
     <div className={cx('inner')} onContextMenu={handleContextMenu} onClick={handleClick} onDrop={handleDrop} data-cy="lp-body">
