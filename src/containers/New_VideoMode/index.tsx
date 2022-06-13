@@ -194,9 +194,10 @@ const VideoMode = () => {
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
   const [timeline, setTimeline] = useState<Timeline>();
+  const rulerRef = useRef<HTMLInputElement>(null);
 
   const handleLoadMetadata = useCallback(() => {
-    if (videoRef && videoRef.current) {
+    if (videoRef && videoRef.current && rulerRef && rulerRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
       let count = 0;
@@ -212,7 +213,7 @@ const VideoMode = () => {
       if (timelineRef && currentVideoURL) {
         setTimeline(
           new Timeline(timelineRef, {
-            totalDuration: videoRef.current.duration,
+            totalDuration: videoRef.current.duration + 20,
             thumbnailWidth: 128,
             thumbnailHeight: 120,
             loadingTextureURI: '/images/Loading.png',
@@ -347,7 +348,6 @@ const VideoMode = () => {
   const handleChangeCurrentTime = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       if (timeline && videoRef.current) {
-        console.log(event.target.value, Number(event.target.value), duration, (Number(event.target.value) / duration) * 100);
         // timeline.setCurrentTime(number + 1);
 
         videoRef.current.currentTime = Number(event.target.value);
@@ -400,6 +400,7 @@ const VideoMode = () => {
               <div className={cx('ruler')}>
                 <div className={cx('indicator-wrapper')}>
                   <input
+                    ref={rulerRef}
                     className={cx('indicator')}
                     type="range"
                     id="currentTime"
