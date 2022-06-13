@@ -19,7 +19,7 @@ import styles from './index.module.scss';
 import { editAnimationIngredient } from 'actions/animationDataAction';
 import { changeSelectedTargets } from 'actions/trackList';
 import { readMetadata } from 'utils/RP/metadata';
-import { addEntity, addSelectableObjects, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
+import { addEntity, addSelectableObjects, defaultMultiSelect, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
 import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
 const cx = classNames.bind(styles);
@@ -162,22 +162,27 @@ const IKControllerSection: FunctionComponent<Props> = ({
     },
     {
       text: 'Bake all FK into IK',
-      onClick: () => {
-        const animationIngredient = plaskEngine.ikModule.getIKKeyframeData();
-        if (animationIngredient) {
-          dispatch(editAnimationIngredient(animationIngredient));
-          // Set FK to IK to reflect the current animation that has been updated
-          plaskEngine.ikModule.setFKtoIK();
-
-          // Refresh tracks by forcing the selection update.
-          // Could be better using ADD_KEYFRAME
-          dispatch(changeSelectedTargets());
-        }
-      },
+      onClick: () => {},
     },
     {
       text: 'Bake all IK into FK',
-      onClick: () => {},
+      onClick: () => {
+        const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+        for (const animationIngredient of animationIngredients) {
+          dispatch(editAnimationIngredient({ animationIngredient }));
+        }
+
+        // Set FK position to newly updated values
+        // TODO : not working
+        plaskEngine.ikModule.setFKtoIK();
+
+        // Select baked FK so the user notices the change
+        dispatch(defaultMultiSelect({ targets: impactedFK }));
+
+        // Refresh tracks by forcing the selection update.
+        // Could be better using ADD_KEYFRAME
+        dispatch(changeSelectedTargets());
+      },
     },
     {
       text: 'Reset to initial pose',

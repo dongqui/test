@@ -199,19 +199,17 @@ export class AnimationModule extends Module {
 
   /**
    * Edits keyframes with params so that we don't need to select targets in RenderingPanel
-   * @param targetAnimationIngredientId - id of animationIngredent to edit
+   * @param targetAnimationIngredient - animationIngredent to edit
    * @param targetLayerId - id of layer to edit
    * @param targetFrameIndex - index of frame to edit
    * @param keyframeDataList - list of data that is used to edit keyframes, including targetId, property, value
    */
   public editKeyframesWithParams(
-    targetAnimationIngredientId: string,
+    targetAnimationIngredient: AnimationIngredient,
     targetLayerId: string,
     targetFrameIndex: number,
     keyframeDataList: Array<{ targetId: string; property: PlaskProperty; value: ArrayOfThreeNumbers | ArrayOfFourNumbers }>,
   ) {
-    const targetAnimationIngredient = this.animationIngredients.find((animationIngredient) => animationIngredient.id === targetAnimationIngredientId);
-
     if (targetAnimationIngredient) {
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
         const targetLayer = draft.layers.find((layer) => layer.id === targetLayerId);
@@ -338,9 +336,7 @@ export class AnimationModule extends Module {
         }
       });
 
-      return {
-        animationIngredient: newAnimationIngredient,
-      };
+      return newAnimationIngredient;
     }
     return null;
   }

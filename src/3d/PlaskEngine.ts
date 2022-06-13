@@ -133,14 +133,7 @@ export class PlaskEngine {
       module.initialize();
     }
 
-    let last = new Date();
-    this._engine.runRenderLoop(() => {
-      this._scene.render();
-
-      const current = new Date();
-      this._tick(current.getTime() - last.getTime());
-      last = current;
-    });
+    this.startRenderLoop();
   }
 
   private _tick(elapsed: number) {
@@ -179,6 +172,27 @@ export class PlaskEngine {
         }
       }
     }
+  }
+
+  /**
+   * Stops the render loop
+   */
+  public stopRenderLoop() {
+    this._engine.stopRenderLoop();
+  }
+
+  /**
+   * Starts the render loop
+   */
+  public startRenderLoop() {
+    let last = new Date();
+    this._engine.runRenderLoop(() => {
+      this._scene.render();
+
+      const current = new Date();
+      this._tick(current.getTime() - last.getTime());
+      last = current;
+    });
   }
 
   /**

@@ -4,9 +4,10 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace } from 'types/common';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient } from 'types/common';
 import { copyTransformFrom } from 'utils/RP/copyPose';
 import { IKController } from './IKController';
+import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -309,30 +310,79 @@ export class IKModule extends Module {
   }
 
   /**
-   * Edits the current animation ingredient so it adds a keyframe inside, representing the state of the current selected IK
-   * @returns the edited animationIngredient
+   * Computes all the FK frames from the IK animation tracks
+   * @returns the edited animationIngredients for each selected IK controller
    */
-  public getIKKeyframeData() {
+  public bakeAllIKintoFK() {
     // Evaluate if a IK Controller is selected
+    const animationIngredients: AnimationIngredient[] = [];
+    const impactedFK: PlaskTransformNode[] = [];
+
+    // Stop render loop for the calculation time
+    this.plaskEngine.stopRenderLoop();
 
     this._selectedIkControllers.forEach((selectedIK) => {
-      const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
-        (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
-      );
+      // Store current values of ik
+      const currentIKPosition = selectedIK.target.absolutePosition;
+      const currentBlend = selectedIK.blend;
+      const currentPoleAngle = selectedIK.poleAngle;
+
+      let targetAnimation: Nullable<AnimationIngredient> =
+        this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
+        null;
+      if (!targetAnimation) {
+        throw new Error('Could not bake, error while fetching animation ingredients.');
+      }
       const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-      const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
+      const layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
+      if (!layers[0]) {
+        throw new Error('Could not bake, no layer is selected.');
+      }
+      if (!selectedIK.fkInfluenceChain) {
+        throw new Error('No FK found for this IK.');
+      }
+
+      const fkPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.fkInfluenceChain![0].id && track.property === 'position');
+      const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
+      const blendTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'blend');
+      const poleAngleTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'poleAngle');
+
+      const startTimeIndex = this.plaskEngine.state.animatingControls.startTimeIndex;
+      const endTimeIndex = this.plaskEngine.state.animatingControls.endTimeIndex;
+
+      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack) {
+        throw new Error('Could not bake, no keyframes added.');
+      }
+
+      // Copy FK transformKeys because we don't want new values
+      const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
+
+      for (let i = startTimeIndex; i < endTimeIndex; i++) {
+        if (!targetAnimation) {
+          throw new Error('Bake error : animation ingredients could not be produced.');
+        }
+        const positionValue = getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3;
+        const blendValue = getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number;
+        const poleAngleValue = getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number;
+        const fkPositionValue = getInterpolatedValue(fkPositionTransformKeys, 'position', i) as Vector3;
+        selectedIK.updateForValues(fkPositionValue, positionValue, blendValue, poleAngleValue);
+
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
+      }
 
       if (targetAnimation) {
-        const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(
-          targetAnimation.id,
-          targetLayerId,
-          targetCurrentTimeindex,
-          this._getKeyframeDataForController(selectedIK),
-        );
-        return animationIngredients;
+        animationIngredients.push(targetAnimation);
+        impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
       }
+
+      // Restore current values
+      selectedIK.updateForValues(selectedIK.fkInfluenceChain[0].absolutePosition, currentIKPosition, currentBlend, currentPoleAngle);
     });
-    return null;
+
+    // Resumes render loop
+    this.plaskEngine.startRenderLoop();
+
+    return { animationIngredients, impactedFK };
   }
 
   /**

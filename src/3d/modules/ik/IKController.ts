@@ -77,7 +77,7 @@ export class IKController {
    */
   public controller: BoneIKController;
   /**
-   * Target position for IK (where the handle stands)
+   * Final target position for IK (after applying blend)
    */
   public target: TransformNode;
   /**
@@ -140,6 +140,20 @@ export class IKController {
       this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     }
 
+    this.controller.update();
+  }
+
+  /**
+   * Sets the ik controller in the specified configuration
+   * @param fkOriginalAbsolutePosition Position of FK target
+   * @param ikAbsolutePosition Position of IK target
+   * @param blend Blend value
+   * @param poleAngle Pole angle
+   */
+  public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, blend: number, poleAngle: number) {
+    Vector3.LerpToRef(fkOriginalAbsolutePosition, ikAbsolutePosition, blend, TmpVectors.Vector3[0]);
+    this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
+    this.poleAngle = poleAngle;
     this.controller.update();
   }
 
