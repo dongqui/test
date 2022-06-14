@@ -1,6 +1,6 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { AbstractMesh, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, Animation, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
 
 export enum GizmoMode {
   POSITION,
@@ -65,23 +65,25 @@ export interface PlaskAsset {
 }
 
 export interface ServerAnimation {
-  id: string; // uid -> id
-  scenesLibraryId: string; // don't know what is
+  uid: string; // uid -> id
+  scenesLibraryUid: string; // don't know what is
   name: string;
   fps: number;
   isMocapAnimation: boolean;
   isDeleted: boolean;
 }
-
+export type ServerAnimationRequest = Omit<ServerAnimation, 'uid' | 'scenesLibraryUid'>;
 export interface ServerAnimationLayer {
-  id: string; // uid -> id
-  animationId: string; // scenes_library_model_animation_id -> animationId
+  uid: string;
   name: string;
   // isLocked: boolean; // related to TP node not the animation itself
   isIncluded: boolean; // from transformKey to here (including/excluding target is the layer not the keyframe)
   isDeleted: boolean;
   useFilter: boolean; // destructure filter related data
-  tracks: ServerAnimationTrack[]; // boneTracks -> tracks
+  tracks: ServerAnimationTrackRequest[]; // boneTracks -> tracks
+}
+export interface ServerAnimationLayerRequest extends Omit<ServerAnimationLayer, 'uid' | 'tracks'> {
+  tracks: ServerAnimationTrackRequest[];
 }
 
 // BoneTrack -> NameTrack
@@ -96,6 +98,9 @@ export interface ServerAnimationTrack {
   filterMinCutoff: number;
   transformKeysMap: Map<number, ServerTransformKey>; // boneFrameMap -> transformKeysMap
 }
+export interface ServerAnimationTrackRequest extends Omit<ServerAnimationTrack, 'transformKeysMap'> {
+  transformKeysMap: ServerTransformKeyRequest[];
+}
 
 export interface VectorTransformKey {
   x: number;
@@ -107,6 +112,9 @@ export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
   transformKey: VectorTransformKey | QuaternionTransformKey;
   // isLocked: boolean;
+}
+export interface ServerTransformKeyRequest extends ServerTransformKey {
+  frameIndex: number;
 }
 
 export interface AnimationIngredient {
@@ -125,7 +133,17 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
-export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'isContact';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact' | 'blend' | 'poleAngle' | 'isContact';
+export const PlaskPropertyFormat: { [key in PlaskProperty]: number } = {
+  position: Animation.ANIMATIONTYPE_VECTOR3,
+  rotation: Animation.ANIMATIONTYPE_VECTOR3,
+  rotationQuaternion: Animation.ANIMATIONTYPE_QUATERNION,
+  scaling: Animation.ANIMATIONTYPE_VECTOR3,
+  inContact: Animation.ANIMATIONTYPE_FLOAT,
+  blend: Animation.ANIMATIONTYPE_FLOAT,
+  poleAngle: Animation.ANIMATIONTYPE_FLOAT,
+  isContact: Animation.ANIMATIONTYPE_FLOAT,
+};
 export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface PlaskTrack {
@@ -255,3 +273,17 @@ export type SelectingData = {
 export type ButtonColor = 'default' | 'primary' | 'negative';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
+
+export interface ServerAnimationResponse extends ServerAnimation {
+  scenesLibraryModelAnimationLayers: ServerAnimationLayer[];
+}
+
+export interface MocapDataResponse {
+  id: number;
+  uid: string;
+  assetsId: number;
+  data: {
+    motionNumber: number;
+    trackData: PlaskMocapData;
+  }[];
+}

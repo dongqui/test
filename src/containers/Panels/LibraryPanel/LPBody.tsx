@@ -13,12 +13,11 @@ import styles from './LPBody.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  // TODO: delete
-  lpNode?: LP.Node[];
+  lpNodes?: LP.Node[];
   isPreventContextmenu?: boolean;
 }
 
-const LPBody: FunctionComponent<Props> = () => {
+const LPBody: FunctionComponent<Props> = ({ lpNodes }) => {
   const dispatch = useDispatch();
   const { nodes, draggedNode } = useSelector((state) => state.lpNode);
 
@@ -27,9 +26,7 @@ const LPBody: FunctionComponent<Props> = () => {
     dispatch(lpNodeActions.selectNode({ nodeId: null, assetId: null }));
     dispatch(
       globalUIActions.openContextMenu('LPBodyContextMenu', e, {
-        nodeId: '__root__',
-        extension: '',
-        filePath: '\\root',
+        nodeId: '',
       }),
     );
   };
@@ -39,14 +36,14 @@ const LPBody: FunctionComponent<Props> = () => {
   };
 
   const handleDrop = () => {
-    if (!draggedNode || draggedNode?.parentId === '__root__' || draggedNode.type === 'Motion') {
+    if (!draggedNode?.parentId || draggedNode.type === 'MOTION') {
       return;
     }
 
-    dispatch(lpNodeActions.dropNodeOnRoot());
+    dispatch(lpNodeActions.moveNodeSocket.request(''));
   };
 
-  const rootPathNodes = nodes.filter((node) => node.parentId === '__root__');
+  const rootPathNodes = (lpNodes ?? nodes).filter((node) => !node.parentId);
 
   return (
     <div className={cx('inner')} onContextMenu={handleContextMenu} onClick={handleClick} onDrop={handleDrop} data-cy="lp-body">

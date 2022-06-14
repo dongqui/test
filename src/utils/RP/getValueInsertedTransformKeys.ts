@@ -7,7 +7,7 @@ import { IAnimationKey, Quaternion, Vector3 } from '@babylonjs/core';
  * @param targetFrame - target frame
  * @param value - target value
  */
-const getValueInsertedTransformKeys = (transformKeys: IAnimationKey[], targetFrame: number, value: Vector3 | Quaternion): IAnimationKey[] => {
+const getValueInsertedTransformKeys = (transformKeys: IAnimationKey[], targetFrame: number, value: Vector3 | Quaternion | number): IAnimationKey[] => {
   if (transformKeys.find((key) => key.frame === targetFrame)) {
     // if a key already exist at the target frame, return after replacing the value at that frame
     return transformKeys.map((key) => (key.frame === targetFrame ? { frame: key.frame, value } : key));

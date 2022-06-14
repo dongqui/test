@@ -5,6 +5,7 @@ import ScreenVisibilityItem from './ScreenVisibilityItem';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { ExpandButton } from 'components/Button';
 
 const cx = classNames.bind(styles);
 
@@ -38,10 +39,7 @@ const ScreenVisibility: FunctionComponent<Props> = ({ itemList }) => {
   return (
     <div id="screenVisibilityWrapper" className={cx('wrapper')} ref={wrapperRef}>
       <div className={cx('header', { open: isOpen })}>
-        <button type="button" className={cx('toggle-button')} onClick={handleToggleButtonClick}>
-          <IconWrapper className={cx('eye')} icon={SvgPath.EyeOpenWhite} />
-          <IconWrapper className={cx('arrow')} icon={isOpen ? SvgPath.ChevronUp : SvgPath.ChevronDown} />
-        </button>
+        <ExpandButton className={cx('toggle-button')} type="ghost" onClick={handleToggleButtonClick} content={SvgPath.EyeOpenWhite} />
       </div>
       {isOpen && (
         <div className={cx('body')}>

@@ -12,7 +12,6 @@ import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-import HotKeyOrder from './HotKeyOrder';
 import Modal from 'containers/Common/Modal/Modal';
 import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
 
@@ -295,15 +294,33 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
   // 접속 후 2초 뒤에 온보딩 쿠키가 없을 경우, 온보딩 ui 출력
   useEffect(() => {
     setTimeout(() => {
+      // TODO:
       const localStorage = window.localStorage;
-      if (!localStorage.getItem('onboarding_1')) {
+      if (!localStorage.getItem('onboarding_1') && localStorage.getItem('notification')) {
         dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
       }
     }, 2000);
+
+    setTimeout(() => {
+      if (!localStorage.getItem('notification')) {
+        dispatch(
+          commonActions.openModal('NotificationModal', {
+            message:
+              'You can save your work on Plask as of June 9th, 2022. See a list of savable items <a href="https://knowledge.plask.ai/en/scene_save" target="_blank" rel="noopener noreferrer">here.</a>',
+            title: 'New Feature! Auto Save',
+            closeCallback: () => {
+              if (!localStorage.getItem('onboarding_1')) {
+                dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+              }
+              localStorage.setItem('notification', 'true');
+            },
+          }),
+        );
+      }
+    }, 500);
   }, [dispatch]);
 
   return (
-    // <HotKeyOrder className={className}>
     <div className={className}>
       <ContextMenuProvider>
         <Fragment>

@@ -58,6 +58,7 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
       setControlTarget(null);
     } else if (_selectedTargets.length === 1) {
       // case single target is selected
+      console.log(_selectedTargets[0].reference.getPlaskEntity());
       setControlTarget(_selectedTargets[0].reference);
     } else {
       // case multi targets are selected
@@ -435,14 +436,27 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
 
   return (
     <PlaskCard title="Transform" activeStatus={isAllActive && !isNull(controlTarget)}>
-      <AnimationInputWrapper inputTitle="Position" inputInfo={inputData.position} activeStatus={isAllActive && !isNull(controlTarget)} />
+      <AnimationInputWrapper
+        inputTitle="Position"
+        inputInfo={inputData.position}
+        activeStatus={isAllActive && !isNull(controlTarget) && controlTarget.getPlaskEntity().transformable.position}
+      />
       {currentRotationType === 'euler' ? (
-        <AnimationInputWrapper inputTitle="Euler" inputInfo={inputData.euler} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
+        <AnimationInputWrapper
+          inputTitle="Euler"
+          inputInfo={inputData.euler}
+          dropdownList={rotationTypeDropdownData}
+          activeStatus={isAllActive && !isNull(controlTarget) && controlTarget.getPlaskEntity().transformable.rotation.euler}
+        />
       ) : (
         // prettier-ignore
-        <AnimationInputWrapper inputTitle="Quaternion" inputInfo={inputData.quaternion} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget)} />
+        <AnimationInputWrapper inputTitle="Quaternion" inputInfo={inputData.quaternion} dropdownList={rotationTypeDropdownData} activeStatus={isAllActive && !isNull(controlTarget) && controlTarget.getPlaskEntity().transformable.rotation.quaternion} />
       )}
-      <AnimationInputWrapper inputTitle="Scale" inputInfo={inputData.scale} activeStatus={isAllActive && !isNull(controlTarget)} />
+      <AnimationInputWrapper
+        inputTitle="Scale"
+        inputInfo={inputData.scale}
+        activeStatus={isAllActive && !isNull(controlTarget) && controlTarget.getPlaskEntity().transformable.scale}
+      />
       {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
     </PlaskCard>
   );

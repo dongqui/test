@@ -1,4 +1,4 @@
-import { select, put } from 'redux-saga/effects';
+import { select } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';

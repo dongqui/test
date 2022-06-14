@@ -54,7 +54,13 @@ const SelectionTrackerSection: FunctionComponent<Props> = ({ isAllActive, select
     <section className={cx('bone-tracker-section')}>
       <div className={cx('container', { active: isSectionSpread })}>
         <div className={cx('inner-container')}>
-          <span className={cx('text', { active: controlTarget })}>{controlTarget ? controlTarget.name.split('//')[0] : 'None'}</span>
+          <span className={cx('text', { active: controlTarget })}>
+            {_selectedTargets.length === 0
+              ? 'No objects are selected'
+              : _selectedTargets.length > 1
+              ? 'Multiple objects are selected.'
+              : _selectedTargets[0].reference.name.split('//')[0]}
+          </span>
         </div>
         {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
       </div>

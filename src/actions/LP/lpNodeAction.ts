@@ -1,52 +1,8 @@
+import { createAction, createAsyncAction } from 'typesafe-actions';
+
+import { RequestNodeResponse } from 'types/LP';
 import { ExportFormat } from 'types/common';
-
-export const CHANGE_NODE = 'node/CHANGE_NODE' as const;
-export const VISUALIZE = 'node/VISUALIZE' as const;
-export const CHANGE_CURRENT_PATH = 'node/CHANGE_CURRENT_PATH' as const;
-export const CHANGE_CLIPBOARD = 'node/CHANGE_CLIPBOARD' as const;
-export const DELETE_FOLDER_OR_MOCAP = 'node/DELETE_FOLDER_OR_MOCAP' as const;
-export const COPY_NODE = 'node/COPY_NODE' as const;
-export const ADD_DIRECTORY = 'node/ADD_DIRECTORY' as const;
-export const VISUALIZE_NODE = 'node/VISUALIZE_NODE' as const;
-export const CANCEL_VISUALIZATION = 'node/CANCEL_VISUALIZATION' as const;
-export const ADD_EMPTY_MOTION = 'node/ADD_EMPTY_MOTION' as const;
-export const DUPLICATE_MOTION = 'node/DUPLICATE_MOTION' as const;
-export const VISUALIZE_MOTION = 'node/VISUALIZE_MOTION' as const;
-export const SELECT_NODE = 'node/SELECT_NODE' as const;
-export const DROP_NODE_ON_FOLDER = 'node/DROP_NODE_ON_FOLDER' as const;
-export const SET_DRAGGED_NODE = 'node/SET_DRAGGED_NODE' as const;
-export const DROP_MOCAP_ON_MODEL = 'node/DROP_MOCAP_ON_MODEL' as const;
-export const SET_EDITING_NODE_ID = 'node/SET_EDITING_NODE_ID' as const;
-export const EDIT_NODE_NAME = 'node/EDIT_NODE_NAME' as const;
-export const EXPORT_ASSET = 'node/EXPORT' as const;
-export const DELETE_MOTION = 'node/DELETE_MOTION' as const;
-export const FILE_UPLOAD = 'node/FILE_UPLOAD' as const;
-export const ADD_NODES = 'node/ADD_NODES' as const;
-export const DELETE_MODEL = 'node/DELETE_MODEL' as const;
-export const DROP_NODE_ON_ROOT = 'node/DROP_NODE_ON_ROOT' as const;
-export const IMPORT_MOCAP_JSON = 'node/IMPORT_MOCAP_JSON' as const;
-
-interface ChangeNodeParams {
-  nodes: LP.Node[];
-}
-interface ChangeCurrentPathParams {
-  currentPath: string;
-  id: string;
-}
-
-interface ChangeClipboardParams {
-  data: LP.Node[];
-}
-
-interface DeleteFolderOrMocapParams {
-  nodeId: string;
-  parentId?: string;
-}
-interface DeleteMotionParams {
-  nodeId: string;
-  assetId: string;
-  parentId: string;
-}
+import { createSocketActions } from '../helper';
 
 interface DeleteModelParams {
   nodeId: string;
@@ -59,12 +15,6 @@ interface AddEmptyMotionParams {
 }
 interface AddDirectoryParams {
   nodeId: string;
-  filePath: string;
-  extension: string;
-}
-
-interface VisualizeNodeParams {
-  assetId: string;
 }
 interface DuplicateMotionParams {
   parentId: string;
@@ -78,29 +28,22 @@ interface VisualizeMotionParams {
   nodeId: string;
 }
 
-interface CancelVisualizationParams {
-  assetId: string;
-}
-
 interface SelectNodeParams {
   nodeId: string | null;
   assetId?: string | null;
 }
 
-interface DropNodeOnFolderParams {
-  filePath: string;
-  nodeId: string;
-}
-
-interface DropMocapOnModelParams {
-  nodeId: string;
-  filePath: string;
-  assetId?: string;
-}
-
-interface EditNodeNameParams {
+interface EditNodeNameRequestParams {
   nodeId: string;
   newName: string;
+}
+
+interface EditNodeNameSendParams {
+  type: 'update-name' | 'rename';
+  scenesLibraryId: string;
+  data: {
+    name: string;
+  };
 }
 
 interface ExportAssetParams {
@@ -112,194 +55,118 @@ interface ExportAssetParams {
   format: ExportFormat;
 }
 
-interface FileUploadParams {
-  file: File | string;
-  showLoading: boolean;
+interface MoveNodeSendParam {
+  type: 'move';
+  data: {
+    scenesLibraryIds: string[];
+    parentScenesLibraryId: string;
+  };
 }
 
-export const changeNode = (params: ChangeNodeParams) => ({
-  type: CHANGE_NODE,
-  payload: {
-    ...params,
-  },
-});
+interface MoveNodeReceiveParam {
+  type: 'move';
+  data: {
+    scenesLibraryIds: string[];
+    parentScenesLibraryId: string;
+  };
+}
 
-export const visualize = (params: string | File) => ({
-  type: VISUALIZE,
-  payload: params,
-});
+interface EditNodeNameReceiveParam {
+  type: 'update-name';
+  scenesLibraryId: string;
+  data: {
+    name: string;
+  };
+}
+interface DeleteNodeSendParams {
+  type: 'delete';
+  scenesLibraryId: string;
+  data: {
+    descendantIds: string[];
+  };
+}
+interface DeleteNodeReceiveParam {
+  type: 'delete';
+  scenesLibraryId: string;
+  data: {
+    descendantIds: string[];
+  };
+}
 
-export const changeCurrentPath = (params: ChangeCurrentPathParams) => ({
-  type: CHANGE_CURRENT_PATH,
-  payload: {
-    ...params,
-  },
-});
+interface ApplyMocapToModelRequestParams {
+  nodeId: string;
+  assetId?: string;
+}
 
-export const changeClipboard = (params: ChangeClipboardParams) => ({
-  type: CHANGE_CLIPBOARD,
-  payload: {
-    ...params,
-  },
-});
+export const addAssetsAndAnimationIngredients = createAction('node/ADD_ASSETS_AND_ANIMATION_INGRIDIENTS', (modelNode: LP.Node, motionNodeId?: string) => ({
+  modelNode,
+  motionNodeId,
+}))();
+export const changeNode = createAction('node/CHANGE_NODE', ({ nodes }: { nodes: LP.Node[] }) => ({ nodes }))();
+export const visualizeModel = createAction('node/VISUALIZE_MODEL', (modelNode: LP.Node, animationIngredientId?: string) => ({ modelNode, animationIngredientId }))();
+export const visualize = createAction('node/VISUALIZE_MODEL', (node: LP.Node) => node)();
+export const cancelVisulization = createAction('node/CANCEL_VISUALIZATION', (assetId: string) => ({ assetId }))();
+export const visualizeMotion = createAction('node/VISUALIZE_MOTION', (params: VisualizeMotionParams) => ({ ...params }))();
+export const selectNode = createAction('node/SELECT_NODE', (params: SelectNodeParams) => ({ ...params }))();
+export const setDraggedNode = createAction('node/SET_DRAGGED_NODE', (node: LP.Node | null) => ({ node }))();
+export const setEditingNodeId = createAction('node/SET_EDITING_NODE_ID', (nodeId: string | null) => ({ nodeId }))();
+export const addNodes = createAction('node/ADD_NODES', (nodes: LP.Node[]) => ({ nodes }))();
+export const exportAsset = createAction('node/EXPORT', (params: ExportAssetParams) => ({ ...params }))();
+export const setSceneId = createAction('node/SET_SCENE_ID', (sceneId: string) => sceneId)();
+export const deleteModel = createAction('node/DELETE_MODEL', (params: DeleteModelParams) => ({ ...params }))();
+export const deleteMotion = createAction('node/DELETE_MOTION', (nodeId: string) => nodeId)();
+export const initNodes = createAction('node/INIT_NODES', (nodesFromServer: RequestNodeResponse[]) => nodesFromServer)();
+export const fileUpload = createAction('node/FILE_UPLOAD', (files: File[]) => files)();
+export const importMocapJson = createAction('node/IMPORT_MOCAP_JSON', (mocapJson: File) => mocapJson)();
 
-export const deleteFolderOrMocap = (params: DeleteFolderOrMocapParams) => ({
-  type: DELETE_FOLDER_OR_MOCAP,
-  payload: {
-    ...params,
-  },
-});
+export const addEmptyMotionAsync = createAsyncAction('node/ADD_EMPTY_MOTION_REQUEST', 'node/ADD_EMPTY_MOTION_SUCCESS', 'node/ADD_EMPTY_MOTION_FAILURE')<
+  AddEmptyMotionParams,
+  LP.Node,
+  Error
+>();
 
-export const deleteModel = (params: DeleteModelParams) => ({
-  type: DELETE_MODEL,
-  payload: {
-    ...params,
-  },
-});
+export const addDirectoryAsync = createAsyncAction('node/POST_FOLRDER_REQUEST', 'node/POST_FOLRDER_SUCCESS', 'node/POST_FOLRDER_FAILURE')<AddDirectoryParams, LP.Node, Error>();
 
-export const addDirectory = (params: AddDirectoryParams) => ({
-  type: ADD_DIRECTORY,
-  payload: {
-    ...params,
-  },
-});
+export const addModelAsync = createAsyncAction('node/POST_MODEL_REQUEST', 'node/POST_MODEL_SUCCESS', 'node/POST_MODEL_FAILURE')<File, { nodes: LP.Node[] }, Error>();
 
-export const visualizeNode = (params: VisualizeNodeParams) => ({
-  type: VISUALIZE_NODE,
-  payload: {
-    ...params,
-  },
-});
+export const initDefaultSceneModelData = createAsyncAction(
+  'node/INIT_DEFAULT_SCENE_MODEL_DATA_REQUEST',
+  'node/INIT_DEFAULT_SCENE_MODEL_DATA_SUCCESS',
+  'node/INIT_DEFAULT_SCENE_MODEL_DATA_FAILURE',
+)<LP.Node[], LP.Node[], Error>();
 
-export const cancelVisulization = (params: CancelVisualizationParams) => ({
-  type: CANCEL_VISUALIZATION,
-  payload: {
-    ...params,
-  },
-});
+export const applyMocapToModel = createAsyncAction('node/APPLY_MOCAP_TO_MODEL_REQUEST', 'node/APPLY_MOCAP_TO_MODEL_SUCCESS', 'node/APPLY_MOCAP_TO_MODEL_FAILURE')<
+  ApplyMocapToModelRequestParams,
+  LP.Node[],
+  Error
+>();
 
-export const addEmptyMotion = (params: AddEmptyMotionParams) => ({
-  type: ADD_EMPTY_MOTION,
-  payload: {
-    ...params,
-  },
-});
+export const duplicateMotionAsync = createAsyncAction('node/DUPLICATE_MOTION_REQUEST', 'node/DUPLICATE_MOTIONSUCCESS', 'node/DUPLICATE_MOTION_FAILURE')<
+  DuplicateMotionParams,
+  LP.Node[],
+  Error
+>();
 
-export const duplicateMotion = (params: DuplicateMotionParams) => ({
-  type: DUPLICATE_MOTION,
-  payload: {
-    ...params,
-  },
-});
+export const deleteNodeSocket = createSocketActions(
+  'node/DELETE_NODE_REQUEST',
+  'node/DELETE_NODE_SEND',
+  'node/DELETE_NODE_RECEIVE',
+  'node/DELETE_NODE_UPDATE',
+  'node/DELETE_NODE_FAILURE',
+)<string, DeleteNodeSendParams, DeleteNodeReceiveParam, LP.Node[], string>();
 
-export const visualizeMotion = (params: VisualizeMotionParams) => ({
-  type: VISUALIZE_MOTION,
-  payload: {
-    ...params,
-  },
-});
+export const moveNodeSocket = createSocketActions(
+  'node/MOVE_NODE_OR_ROOT_REQUEST',
+  'node/MOVE_NODE_OR_ROOT_SEND',
+  'node/MOVE_NODE_OR_ROOT_RECEIVE',
+  'node/MOVE_NODE_OR_ROOT_UPDATE',
+  'node/MOVE_NODE_OR_ROOT_FAILURE',
+)<string, MoveNodeSendParam, MoveNodeReceiveParam, LP.Node[], string>();
 
-export const selectNode = (params: SelectNodeParams) => ({
-  type: SELECT_NODE,
-  payload: {
-    ...params,
-  },
-});
-
-export const dropNodeOnFolder = (params: DropNodeOnFolderParams) => ({
-  type: DROP_NODE_ON_FOLDER,
-  payload: {
-    ...params,
-  },
-});
-
-export const setDraggedNode = (node: LP.Node | null) => ({
-  type: SET_DRAGGED_NODE,
-  payload: {
-    node,
-  },
-});
-
-export const dropMocapOnModel = (params: DropMocapOnModelParams) => ({
-  type: DROP_MOCAP_ON_MODEL,
-  payload: {
-    ...params,
-  },
-});
-
-export const setEditingNodeId = (nodeId: string | null) => ({
-  type: SET_EDITING_NODE_ID,
-  payload: {
-    nodeId,
-  },
-});
-
-export const editNodeName = (params: EditNodeNameParams) => ({
-  type: EDIT_NODE_NAME,
-  payload: {
-    ...params,
-  },
-});
-
-export const exportAsset = (params: ExportAssetParams) => ({
-  type: EXPORT_ASSET,
-  payload: {
-    ...params,
-  },
-});
-
-export const deleteMotion = (params: DeleteMotionParams) => ({
-  type: DELETE_MOTION,
-  payload: {
-    ...params,
-  },
-});
-
-export const fileUpload = (params: FileUploadParams) => ({
-  type: FILE_UPLOAD,
-  payload: {
-    ...params,
-  },
-});
-
-export const addNodes = (nodes: LP.Node[]) => ({
-  type: ADD_NODES,
-  payload: {
-    nodes,
-  },
-});
-
-export const dropNodeOnRoot = () => ({
-  type: DROP_NODE_ON_ROOT,
-  payload: {},
-});
-
-export const importMocapJson = (json: File) => ({
-  type: IMPORT_MOCAP_JSON,
-  payload: {
-    mocapJson: json,
-  },
-});
-
-export type LPNodeAction =
-  | ReturnType<typeof changeNode>
-  | ReturnType<typeof visualize>
-  | ReturnType<typeof changeCurrentPath>
-  | ReturnType<typeof changeClipboard>
-  | ReturnType<typeof deleteFolderOrMocap>
-  | ReturnType<typeof deleteModel>
-  | ReturnType<typeof deleteMotion>
-  | ReturnType<typeof changeNode>
-  | ReturnType<typeof addDirectory>
-  | ReturnType<typeof visualizeNode>
-  | ReturnType<typeof addEmptyMotion>
-  | ReturnType<typeof selectNode>
-  | ReturnType<typeof dropNodeOnFolder>
-  | ReturnType<typeof setDraggedNode>
-  | ReturnType<typeof dropMocapOnModel>
-  | ReturnType<typeof setEditingNodeId>
-  | ReturnType<typeof editNodeName>
-  | ReturnType<typeof exportAsset>
-  | ReturnType<typeof fileUpload>
-  | ReturnType<typeof addNodes>
-  | ReturnType<typeof dropNodeOnRoot>;
+export const editNodeNameSocket = createSocketActions(
+  'node/UPDATE_NODE_NAME_REQUEST',
+  'node/UPDATE_NODE_NAME_SEND',
+  'node/UPDATE_NODE_NAME_RECEIVE',
+  'node/UPDATE_NODE_NAME_UPDATE',
+  'node/UPDATE_NODE_NAME_FAILURE',
+)<EditNodeNameRequestParams, EditNodeNameSendParams, EditNodeNameReceiveParam, LP.Node[], string>();

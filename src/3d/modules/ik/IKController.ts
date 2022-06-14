@@ -1,4 +1,4 @@
-import { Bone, Color3, Mesh, MeshBuilder, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3 } from '@babylonjs/core';
+import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
@@ -17,17 +17,56 @@ export type IKControllerParams = {
   bendAxis: Vector3;
 };
 
+class IKHandle extends Mesh {
+  constructor(name: string, scene: Scene, private _ikController: IKController) {
+    super(name, scene);
+  }
+
+  public get blend() {
+    return this._ikController.blend;
+  }
+
+  public set blend(value: number) {
+    this._ikController.blend = value;
+  }
+
+  public get poleAngle() {
+    return this._ikController.poleAngle;
+  }
+
+  public set poleAngle(value: number) {
+    this._ikController.poleAngle = value;
+  }
+}
+
 export class IKController {
+  public onBlendUpdatedObservable: Observable<void> = new Observable<void>();
+  public onPoleAngleUpdatedObservable: Observable<void> = new Observable<void>();
+
   /**
    * The blend between FK and IK
    */
-  public blend = 1;
+  private _blend = 1;
+  public set blend(value: number) {
+    this._blend = value;
+
+    let newColor = new Color3();
+    Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
+    let targetMat = this.handle.material as StandardMaterial;
+    targetMat.emissiveColor = newColor;
+
+    this.onBlendUpdatedObservable.notifyObservers();
+  }
+  public get blend() {
+    return this._blend;
+  }
 
   /**
    * The pole angle
    */
   public set poleAngle(value: number) {
     this.controller.poleAngle = value;
+    this.onPoleAngleUpdatedObservable.notifyObservers();
   }
 
   public get poleAngle() {
@@ -44,7 +83,7 @@ export class IKController {
    */
   public controller: BoneIKController;
   /**
-   * Target position for IK (where the handle stands)
+   * Final target position for IK (after applying blend)
    */
   public target: TransformNode;
   /**
@@ -72,16 +111,21 @@ export class IKController {
    */
   public fkInfluenceChain?: [TransformNode, TransformNode, TransformNode];
 
+  /**
+   * Should the IK controller be locked to the FK position
+   */
+  public lockToFk = false;
+
   private _createHandle(limb: string, assetId: string, size: number): Mesh {
-    const ikControllerHandle = MeshBuilder.CreateTorus(
-      'ik_ctrl_handle_' + limb + '//' + assetId,
-      {
-        diameter: size,
-        thickness: 0.1 * size,
-        tessellation: 32,
-      },
-      this.scene,
-    );
+    const ikControllerHandle = new IKHandle('ik_ctrl_handle_' + limb + '//' + assetId, this.scene, this);
+    ikControllerHandle.id = 'ik_ctrl_handle//' + limb + '_ik';
+
+    const vertexData = CreateTorusVertexData({
+      diameter: size,
+      thickness: 0.1 * size,
+      tessellation: 32,
+    });
+    vertexData.applyToMesh(ikControllerHandle);
     ikControllerHandle.renderingGroupId = 1;
     ikControllerHandle.material = new StandardMaterial(ikControllerHandle.name, this.scene);
     (ikControllerHandle.material as StandardMaterial).diffuseColor = Color3.Black();
@@ -95,10 +139,27 @@ export class IKController {
     // Blend only if we have a FK target
     if (this.fkTarget && this.fkInfluenceChain) {
       this.fkTarget.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
+      if (this.lockToFk) {
+        this.handle.setAbsolutePosition(this.fkTarget.absolutePosition);
+      }
       Vector3.LerpToRef(this.fkTarget.absolutePosition, this.handle.absolutePosition, this.blend, TmpVectors.Vector3[0]);
       this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     }
 
+    this.controller.update();
+  }
+
+  /**
+   * Sets the ik controller in the specified configuration
+   * @param fkOriginalAbsolutePosition Position of FK target
+   * @param ikAbsolutePosition Position of IK target
+   * @param blend Blend value
+   * @param poleAngle Pole angle
+   */
+  public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, blend: number, poleAngle: number) {
+    Vector3.LerpToRef(fkOriginalAbsolutePosition, ikAbsolutePosition, blend, TmpVectors.Vector3[0]);
+    this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
+    this.poleAngle = poleAngle;
     this.controller.update();
   }
 
@@ -109,6 +170,8 @@ export class IKController {
     this.target.dispose();
     this.fkTarget?.dispose();
     this.handle.dispose();
+    this.onBlendUpdatedObservable.clear();
+    this.onPoleAngleUpdatedObservable.clear();
   }
 
   constructor(params: IKControllerParams, public scene: Scene) {
@@ -173,22 +236,5 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
-
-    // ikDrivenTransformNodes.push(transformNode, transformNode.parent as TransformNode, transformNode.parent!.parent as TransformNode);
-
-    // ikControllerHandle.metadata = {
-    //   ...ikControllerHandle.metadata,
-    //   transformNode: transformNode,
-    //   transformNode1: transformNode.parent!,
-    //   transformNode2: transformNode.parent!.parent!,
-    //   transformNodeIk: tnIk,
-    //   transformNodeIk1: tn1Ik,
-    //   transformNodeIk2: tn2Ik,
-    //   controller: ikControllerTarget,
-    //   ikController: undefined,
-    //   controllerOrig: undefined,
-    //   ikControllerOrig: undefined,
-    //   blend: 1,
-    // };
   }
 }

@@ -10,6 +10,7 @@ import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import * as cpActions from 'actions/CP';
 import { RETARGET_TARGET_BONE_NONE } from 'utils/const';
 import { checkIsTargetMesh } from 'utils/RP';
 
@@ -84,8 +85,8 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     setCurrentSourceBoneName(undefined);
     setCurrentTargetTransformNode(undefined);
     setCanAssign(false);
-    setHipSpace(106);
-  }, [_visualizedAssetIds]);
+    setHipSpace(visualizedRetargetMap?.hipSpace || 0);
+  }, [_visualizedAssetIds, visualizedRetargetMap]);
 
   // rp 선택에 의한 targetTransformNode 변경
   useEffect(() => {
@@ -189,7 +190,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
     if (currentSourceBoneName && currentTargetTransformNode && visualizedRetargetMap) {
       isSelectedTargetBoneOption.current = false;
       dispatch(
-        animationDataActions.assignBoneMapping({
+        cpActions.assignRetargetmapAsync.request({
           assetId: visualizedRetargetMap.assetId,
           sourceBoneName: currentSourceBoneName,
           targetTransformNodeId: currentTargetTransformNode.id || RETARGET_TARGET_BONE_NONE,
@@ -224,7 +225,7 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const dispatchChangedHipSpace = useCallback(
     (hipSpace: number) => {
       if (visualizedRetargetMap) {
-        dispatch(animationDataActions.changeHipSpace({ assetId: visualizedRetargetMap.assetId, hipSpace: hipSpace }));
+        dispatch(cpActions.editHipspaceAsync.request({ assetId: visualizedRetargetMap.assetId, hipSpace }));
       }
     },
     [visualizedRetargetMap, dispatch],

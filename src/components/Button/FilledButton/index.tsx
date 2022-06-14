@@ -9,21 +9,21 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  color?: ButtonColor;
+  type?: ButtonColor;
   text?: string;
   fullSize?: boolean;
   dataCy?: string;
 }
 
-export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
 
 const defaultProps: Partial<BaseProps> = {
-  color: 'primary',
+  type: 'primary',
   size: 'small',
 };
 
-const FilledButton: FunctionComponent<Props> = ({ size, text, color, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
-  const classes = cx('filled', className, size, color, {
+const FilledButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
+  const classes = cx('filled', className, size, type, {
     disabled,
     fullSize,
   });

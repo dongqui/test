@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import * as Modals from './modals';
 import * as globalUIActions from 'actions/Common/globalUI';
+import { Overlay } from 'components/Overlay';
+
 export interface Modal {
   // 모달 이름(Modal Component file 이름)
   name: keyof typeof Modals;
@@ -33,12 +35,17 @@ export default function Modal() {
     dispatch(globalUIActions.closeModal(modalAlias));
   };
 
+  if (!modals.map.length) {
+    return null;
+  }
+
   return (
     <Fragment>
-      {modals.map((modal) => {
+      {modals.map((modal, i) => {
         const Modal = Modals[modal.name];
-        return <Modal key={modal.alias} onClose={handleClose(modal.alias || modal.name)} {...(modal.props as any)} />;
+        return <Modal key={modal.name + i} onClose={handleClose(modal.alias || modal.name)} {...(modal.props as any)} />;
       })}
+      <Overlay />
     </Fragment>
   );
 }

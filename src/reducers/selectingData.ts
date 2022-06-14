@@ -23,6 +23,18 @@ export const selectingData = undoable(
           selectableObjects: action.payload.objects,
         });
       }
+      case 'selectingDataAction/ADD_SELECTABLE_OBJECTS': {
+        return Object.assign({}, state, {
+          selectableObjects: state.selectableObjects.concat(action.payload.objects),
+        });
+      }
+      case 'selectingDataAction/REMOVE_SELECTABLE_OBJECTS': {
+        const entityIdsToRemove = action.payload.objects.map((entity) => entity.entityId);
+        return Object.assign({}, state, {
+          selectableObjects: state.selectableObjects.filter((object) => !entityIdsToRemove.includes(object.entityId)),
+          selectedTargets: state.selectedTargets.filter((object) => !entityIdsToRemove.includes(object.entityId)),
+        });
+      }
       case 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS': {
         return Object.assign({}, state, {
           selectableObjects: state.selectableObjects.filter((object) => !(object.type === 'controller' && object.id.includes(action.payload.assetId))),
@@ -93,14 +105,12 @@ export const selectingData = undoable(
       case 'selectingDataAction/REMOVE_ENTITIES': {
         const obj = {} as { [key: string]: PlaskEntity };
         const removedIds = action.payload.targets.map((entity) => entity.entityId);
-        console.log('removed', removedIds);
         for (const entityId in state.allEntitiesMap) {
           if (!removedIds.includes(entityId)) {
             obj[entityId] = state.allEntitiesMap[entityId];
           }
         }
 
-        console.log('after remove ; ', obj, Object.keys(obj).length);
         return Object.assign({}, state, { allEntitiesMap: obj });
       }
       default: {

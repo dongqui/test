@@ -42,7 +42,7 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = true;
+const FEATURE_HISTORY = false;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -133,22 +133,7 @@ export class PlaskEngine {
       module.initialize();
     }
 
-    let last = new Date();
-    this._engine.runRenderLoop(() => {
-      this._scene.render();
-
-      const current = new Date();
-      this._tick(current.getTime() - last.getTime());
-      last = current;
-    });
-
-    // Debug
-    (window as any).printEntities = () => {
-      console.log('Entities length : ', Object.keys(this._entityStore.entities).length);
-      console.log(this._entityStore.entities);
-      console.log('Entities in redux state : ', Object.keys(this.state.selectingData.present.allEntitiesMap).length);
-      console.log(this.state.selectingData.present.allEntitiesMap);
-    };
+    this.startRenderLoop();
   }
 
   private _tick(elapsed: number) {
@@ -190,17 +175,37 @@ export class PlaskEngine {
   }
 
   /**
+   * Stops the render loop
+   */
+  public stopRenderLoop() {
+    this._engine.stopRenderLoop();
+  }
+
+  /**
+   * Starts the render loop
+   */
+  public startRenderLoop() {
+    let last = new Date();
+    this._engine.runRenderLoop(() => {
+      this._scene.render();
+
+      const current = new Date();
+      this._tick(current.getTime() - last.getTime());
+      last = current;
+    });
+  }
+
+  /**
    * @hidden
    * @param currentEntities
    * @param previousEntities
    */
   public async onEntitiesChanged(currentEntities: EntityMap, previousEntities: EntityMap) {
     // TODO : make it a static prop
-    const entityOrder = ['PlaskAsset', 'PlaskTransformNode'];
+    const entityOrder = ['PlaskTransformNode'];
 
     // Entities update
     if (currentEntities !== previousEntities) {
-      console.log('Length diff : ', Object.keys(currentEntities).length, Object.keys(previousEntities).length);
       for (const entityClass of entityOrder) {
         for (const entityId in currentEntities) {
           const currentEntity = currentEntities[entityId];
@@ -215,7 +220,6 @@ export class PlaskEngine {
       // Remove any entity that is not present in the new state
       for (const entityId in previousEntities) {
         if (!currentEntities[entityId]) {
-          console.log('entity disposed');
           this._entityStore.unregisterEntity(previousEntities[entityId]);
         }
       }
@@ -361,7 +365,7 @@ export class PlaskEngine {
   private _onSceneReady() {
     // callback to call when scene is ready
     this.scene.useRightHandedSystem = true;
-    this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#202020'));
+    this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#343638'));
 
     // add default elements to the scene
     this._grounds = createGrounds(this.scene, true);
@@ -425,5 +429,4 @@ export class PlaskEngine {
 }
 
 const engine = new PlaskEngine();
-(window as any).engine = engine;
 export default engine;

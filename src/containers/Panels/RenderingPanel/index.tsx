@@ -6,6 +6,7 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
+import * as keyframeActions from 'actions/keyframes';
 import { useSelector } from 'reducers';
 import { ArrayOfThreeNumbers, GizmoMode, GizmoSpace, PlaskProperty } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
@@ -17,9 +18,10 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { useObserved } from 'hooks/common/useObserved';
 import SelectorModule from '3d/modules/selector/SelectorModule';
-import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskTransformNode, PlaskTransformNodeType } from '3d/entities/PlaskTransformNode';
 import { selectionChanged } from './stateSync';
 import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
+import { Controller } from 'react-hook-form';
 
 const cx = classNames.bind(styles);
 
@@ -359,7 +361,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           if (multiKeyController[event.key].pressed) {
             // k with v not pressed
             if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
-              dispatch(animationDataActions.editKeyframes());
+              dispatch(keyframeActions.editKeyframesSocket.request());
             }
           }
           break;
@@ -423,6 +425,10 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       if (target.tagName.toLowerCase() === 'input') {
         return;
       }
+      const selectedTarget = _selectedTargets[0];
+      if (selectedTarget?.type === 'controller') {
+        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+      }
 
       switch (event.key) {
         case 'w':
@@ -434,12 +440,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         case 'e':
         case 'E':
         case 'ㄷ': {
+          if (selectedTarget?.type === 'controller') break;
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
           break;
         }
         case 'r':
         case 'R':
         case 'ㄱ': {
+          if (selectedTarget?.type === 'controller') break;
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
           break;
         }
@@ -458,7 +466,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [dispatch]);
+  }, [dispatch, _selectedTargets]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -495,33 +503,34 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * contextMenu
    */
-
+  // TODO Block
   const transformChildren = useMemo(
     () => [
       {
         label: 'Position',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION,
+        // disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION || !_selectedTargets[0]?.transformable.position,
+        disabled: !_selectedTargets[0]?.transformable.position,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
         },
       },
       {
         label: 'Rotation',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.ROTATION,
+        disabled: !_selectedTargets[0]?.transformable.rotation.euler || !_selectedTargets[0]?.transformable.rotation.quaternion,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
         },
       },
       {
         label: 'Scale',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.SCALE,
+        disabled: !_selectedTargets[0]?.transformable.scale,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
         },
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plaskEngine.gizmoModule.currentGizmoMode],
+    [plaskEngine.gizmoModule.currentGizmoMode, _selectedTargets[0]],
   );
 
   const orientChildren = useMemo(
@@ -629,7 +638,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         disabled: _selectedTargets.length === 0 || _playState === 'play',
         onClick: () => {
           if (!(_selectedTargets.length === 0 || _playState === 'play')) {
-            dispatch(animationDataActions.editKeyframes());
+            dispatch(keyframeActions.editKeyframesSocket.request());
           }
         },
       },
@@ -674,7 +683,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Bone',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Bone');
+            dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isBoneVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
           active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
@@ -682,7 +692,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Mesh',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Mesh');
+            dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isMeshVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
           active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
@@ -690,7 +701,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Gizmo',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Gizmo');
+            dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isGizmoVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Gizmo');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
@@ -707,7 +719,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     } else {
       return [];
     }
-  }, [_visibilityOptions, _screenList]);
+  }, [dispatch, _visibilityOptions, _screenList]);
 
   return (
     <div className={cx('wrapper')}>

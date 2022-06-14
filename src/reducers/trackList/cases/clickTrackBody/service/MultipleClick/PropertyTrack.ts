@@ -26,7 +26,7 @@ class MultipleClickPropertyTrack implements MultipleClick {
   public clickMultipleSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
     const { selectedBones, selectedProperties } = state;
     const { trackNumber } = payload;
-    const boneNumber = getBoneTrackIndex(trackNumber);
+    const boneNumber = getBoneTrackIndex(state.propertyTrackList[trackNumber]);
     const nextSelectedBones = this.filterSelectedTracks(selectedBones, [boneNumber]);
     const nextselectedProperties = this.filterSelectedTracks(selectedProperties, [trackNumber]);
     return { selectedBones: nextSelectedBones, selectedProperties: nextselectedProperties };

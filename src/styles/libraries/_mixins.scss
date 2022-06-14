@@ -41,7 +41,7 @@
 @mixin ellipsis($lineCount, $lineHeight) {
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
+  display: box;
   -webkit-line-clamp: $lineCount;
   -webkit-box-orient: vertical;
   word-wrap: break-word;

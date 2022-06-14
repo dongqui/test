@@ -1,0 +1,48 @@
+@import "styles/libraries/colors";
+@import "styles/libraries/typography";
+
+.container {
+  width: 64rem;
+  background-color: var(--grey010);
+  border-radius: 10px;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 6.4rem;
+  padding: 2rem;
+
+  h3 {
+    font: $modal-title;
+    color: $content-high;
+  }
+
+  svg {
+    // temporal code - we should handle this IconButton componen
+    padding-top: 4px;
+  }
+}
+
+.body {
+  video {
+    display: block;
+  }
+  background-color: $content-inactive;
+}
+
+.footer {
+  padding: 1.6rem 2rem;  
+  div {
+    color: $content-high;
+    font: $modal-body;
+  }  
+
+  a {
+    font: $modal-body;
+    color: var(--blue065);
+    text-decoration: none;
+  }
+}

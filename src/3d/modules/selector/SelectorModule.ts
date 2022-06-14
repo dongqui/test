@@ -1,7 +1,6 @@
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Observable, Observer, PointerEventTypes, PointerInfo, TransformNode, Vector2 } from '@babylonjs/core';
-import { defaultMultiSelect, addEntity } from 'actions/selectingDataAction';
 import { ScreenXY } from 'types/common';
 import { checkIsObjectIn } from 'utils/RP';
 import { Module } from '../Module';
@@ -23,7 +22,7 @@ export class SelectorModule extends Module {
   /**
    * Observable triggered when the current selection changes
    */
-  public onSelectionChangeObservable: Observable<TransformNode[]> = new Observable();
+  public onSelectionChangeObservable: Observable<PlaskTransformNode[]> = new Observable();
 
   /**
    * All selectable objects
@@ -36,7 +35,7 @@ export class SelectorModule extends Module {
    * All selected objects
    */
   public get selectedObjects() {
-    return this.plaskEngine.state.selectingData.present.selectedTargets.map((entity) => entity.reference);
+    return this.plaskEngine.state.selectingData.present.selectedTargets.map((entity) => entity);
   }
 
   private _startPosition: Nullable<Vector2> = null;

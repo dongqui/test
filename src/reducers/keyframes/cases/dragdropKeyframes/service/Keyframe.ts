@@ -36,12 +36,12 @@ class DragDropKeyframesService implements Service {
   };
 
   // bone keyframe 하위에 선택 된 property keyframe 탐색
-  private findSelectedChildrenToBone = () => {
+  private findSelectedChildrenToBone = (propertyTrackList: TimeEditorTrack[]) => {
     const { selectedPropertyKeyframes } = this.state;
     const selectedChildren = new Map<number, number[]>();
     selectedPropertyKeyframes.forEach((selectedGroup) => {
-      const { trackNumber, keyframes } = selectedGroup;
-      const boneNumber = getBoneTrackIndex(trackNumber);
+      const { keyframes } = selectedGroup;
+      const boneNumber = getBoneTrackIndex(selectedGroup);
       const currentKeyframeTimes = selectedChildren.get(boneNumber);
       const set = new Set<number>(currentKeyframeTimes);
       keyframes.forEach((keyframe) => set.add(keyframe.time));
@@ -77,7 +77,7 @@ class DragDropKeyframesService implements Service {
   private updateBoneTrackList = (propertyTrackList: TimeEditorTrack[]): BoneKeyframes => {
     const { timeDiff } = this.payload;
     const { updateTimeEditorTrack } = this.boneRepository;
-    const selectedChildren = this.findSelectedChildrenToBone();
+    const selectedChildren = this.findSelectedChildrenToBone(propertyTrackList);
     const boneTrackList = updateTimeEditorTrack(timeDiff, propertyTrackList, selectedChildren);
     return {
       boneTrackList: boneTrackList as TimeEditorTrack[],

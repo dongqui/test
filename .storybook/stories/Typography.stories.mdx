@@ -1,0 +1,52 @@
+import { Meta } from '@storybook/addon-docs';
+
+<Meta title="Typography" />
+
+<!-- TODO: import 하여서 property 목록 가져오기 -->
+
+<h1>Font System</h1>
+
+<br/>
+<h2>font-size</h2>
+
+browser에 따라 최소 font-size 값이 정해져 있어서, 일부 폰트의 경우 사이즈가 같게 나올 수도 있습니다.
+
+<div>
+  <span style={{fontSize: "var(--font-size-1)"}}>font-size-1</span><br/>
+  <span style={{fontSize: "var(--font-size-2)"}}>font-size-2</span><br/>
+  <span style={{fontSize: "var(--font-size-3)"}}>font-size-3</span><br/>
+  <span style={{fontSize: "var(--font-size-4)"}}>font-size-4</span><br/>
+  <span style={{fontSize: "var(--font-size-5)"}}>font-size-5</span><br/>
+  <span style={{fontSize: "var(--font-size-6)"}}>font-size-6</span><br/>
+  <span style={{fontSize: "var(--font-size-7)"}}>font-size-7</span><br/>
+  <span style={{fontSize: "var(--font-size-8)"}}>font-size-8</span><br/>
+  <span style={{fontSize: "var(--font-size-9)"}}>font-size-9</span><br/>
+  <span style={{fontSize: "var(--font-size-10)"}}>font-size-10</span><br/>
+  <span style={{fontSize: "var(--font-size-11)"}}>font-size-11</span><br/>
+  <span style={{fontSize: "var(--font-size-12)"}}>font-size-12</span><br/>
+</div>
+
+<br/>
+<h2>font-weight</h2>
+
+<div>
+  <span style={{fontWeight: 300, fontSize: "var(--font-size-8)" }}>light</span><br/>
+  <span style={{fontWeight: 400, fontSize: "var(--font-size-8)" }}>regular</span><br/>
+  <span style={{fontWeight: 500, fontSize: "var(--font-size-8)" }}>medium</span><br/>
+  <span style={{fontWeight: 600, fontSize: "var(--font-size-8)" }}>semi bold</span><br/>
+  <span style={{fontWeight: 700, fontSize: "var(--font-size-8)" }}>bold</span><br/>
+</div>
+
+<br/>
+<h2>Typography (2x)</h2>
+
+Typography의 경우 필요에 의해 조합으로 추가되는 방식입니다. `src/styles/libraries/_typography.scss`에서 확인할 수 있습니다.<br/>
+(아래 보기는 2배 확대된 모습입니다.)
+
+<div style={{ zoom: 2 }}>
+  <span style={{font: 'normal 600 var(--font-size-4)"Inter"'}}>header-title</span><br/>
+  <span style={{font: 'normal 600 var(--font-size-4)"Inter"'}}>iti-title</span><br/>
+  <span style={{font: 'normal 500 var(--font-size-3)"Inter"'}}>button-small</span><br/>
+  <span style={{font: 'normal 300 var(--font-size-3)"Inter"'}}>body-default</span><br/>
+  <span style={{font: 'normal 400 var(--font-size-4)"Inter"'}}>list</span><br/>
+</div>

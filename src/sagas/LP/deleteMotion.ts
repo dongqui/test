@@ -12,28 +12,26 @@ import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
   const { lpNode, plaskProject, animationData }: RootState = yield select();
-  const { nodeId, assetId, parentId } = action.payload;
+  const nodeId = action.payload;
 
   const targetMotion = find(lpNode.nodes, { id: nodeId });
-  const asset = find(plaskProject.assetList, { id: assetId });
-  const targetAnimationIngredient = find(animationData.animationIngredients, { id: targetMotion?.id });
+  const asset = find(plaskProject.assetList, { id: targetMotion?.assetId });
+  const targetAnimationIngredient = find(animationData.animationIngredients, { id: targetMotion?.animationId });
+  if (asset && targetAnimationIngredient) {
+    const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(asset.id);
+    if (isVisualizedAsset) {
+      plaskEngine.assetModule.unvisualizeModel(asset.id);
 
-  if (!targetMotion || !asset || !targetAnimationIngredient) {
-    return;
+      yield put(plaskProjectActions.unrenderAsset({}));
+      yield put(selectingDataActions.unrenderAsset({ assetId: asset.id }));
+    }
+    yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));
+    yield put(plaskProjectActions.removeAnimationIngredient({ assetId: asset.id, animationIngredientId: targetAnimationIngredient.id }));
   }
 
-  const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(assetId);
-  if (isVisualizedAsset) {
-    plaskEngine.assetModule.unvisualizeModel(assetId);
-
-    yield put(plaskProjectActions.unrenderAsset({}));
-    yield put(selectingDataActions.unrenderAsset({ assetId }));
+  if (targetMotion) {
+    const nextNodes = filterDeletedNode(lpNode.nodes, targetMotion);
+    yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+    forceClickAnimationPlayAndStop();
   }
-
-  const nextNodes = filterDeletedNode(lpNode.nodes, nodeId, parentId);
-
-  yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
-  yield put(animationDataActions.removeAnimationIngredient({ animationIngredientId: targetAnimationIngredient.id }));
-  yield put(plaskProjectActions.removeAnimationIngredient({ assetId: assetId, animationIngredientId: targetAnimationIngredient.id }));
-  forceClickAnimationPlayAndStop();
 }

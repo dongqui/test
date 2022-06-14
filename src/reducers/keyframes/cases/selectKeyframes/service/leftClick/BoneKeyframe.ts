@@ -6,6 +6,7 @@ import { ClusterKeyframes } from 'reducers/keyframes/classes';
 import { findElementIndex } from 'utils/TP';
 
 import { LeftClick } from './index';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 interface Params {
   state: KeyframesState;
@@ -36,11 +37,13 @@ class BoneKeyframeLeftClick extends ClusterKeyframes implements LeftClick {
     const { propertyTrackList } = state;
     const { trackNumber, time } = payload;
     const selectedPropertyKeyframes: SelectedKeyframe[] = [];
-    for (let propertyNumber = trackNumber + 1; propertyNumber <= trackNumber + 3; propertyNumber++) {
-      const { trackId, keyframes, trackType } = this.findEditorTrack(propertyTrackList, propertyNumber);
+    const childTracks = findChildrenTracks(trackNumber, propertyTrackList);
+    for (const childTrack of childTracks) {
+      const propertyNumber = childTrack.trackNumber;
+      const { trackId, keyframes, trackType, parentTrackNumber } = childTrack;
       const keyframe = this.findKeyframe(keyframes, payload.time);
       if (keyframe && !keyframe.isDeleted) {
-        selectedPropertyKeyframes.push({ trackNumber: propertyNumber, trackId, time, value: keyframe.value, trackType });
+        selectedPropertyKeyframes.push({ trackNumber: propertyNumber, trackId, time, value: keyframe.value, trackType, parentTrackNumber });
       }
     }
     return this.clusterKeyframes.initializeClusterKeyframes(selectedPropertyKeyframes);

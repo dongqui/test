@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import * as trackListActions from 'actions/trackList';
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { IconButton } from 'components/Button';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 import classNames from 'classnames/bind';
@@ -17,14 +18,15 @@ const DopeSheetHeader = () => {
 
   const handleAddLayerTrackButton = useCallback(() => {
     if (animationIngredientId) {
-      dispatch(trackListActions.clickAddLayerTrackButton());
+      // dispatch(trackListActions.clickAddLayerTrackButton());
+      dispatch(trackListActions.addLayerSocket.request());
     }
   }, [dispatch, animationIngredientId]);
 
   return (
     <div className={cx('dope-sheet-header')}>
       <span id={ONBOARDING_ID.EDIT_KEYFRAME}>Layers</span>
-      <IconWrapper icon={SvgPath.Plus} className={cx('plus')} onClick={handleAddLayerTrackButton} />
+      <IconButton icon={SvgPath.Plus} type="ghost" onClick={handleAddLayerTrackButton} />
     </div>
   );
 };

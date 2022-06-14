@@ -1,6 +1,5 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import * as BABYLON from '@babylonjs/core';
 import { isNull } from 'lodash';
 
 import { StaticRangeInput } from 'components/ControlPanel';
@@ -20,6 +19,9 @@ import styles from './index.module.scss';
 import { editAnimationIngredient } from 'actions/animationDataAction';
 import { changeSelectedTargets } from 'actions/trackList';
 import { readMetadata } from 'utils/RP/metadata';
+import { addEntity, addSelectableObjects, defaultMultiSelect, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
+import { IKController } from '3d/modules/ik/IKController';
+import { Tools } from '@babylonjs/core';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -53,7 +55,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
 
-  const [controlTarget, setControlTarget] = useState<Nullable<BABYLON.TransformNode | BABYLON.Mesh>>(null);
+  const [controlTargets, setControlTargets] = useState<Array<PlaskTransformNode>>([]);
 
   useEffect(() => {
     if (visualizedRetargetMap) {
@@ -66,16 +68,9 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   // select control target according to the selected target
   useEffect(() => {
-    if (_selectedTargets.length === 0) {
-      // case nothing is selected
-      setControlTarget(null);
-    } else if (_selectedTargets.length === 1) {
-      // case single target is selected
-      setControlTarget(_selectedTargets[0].reference);
-    } else {
-      // case multi targets are selected
-      setControlTarget(null);
-    }
+    const targets = _selectedTargets.filter((target) => readMetadata('ikController', target.reference));
+    plaskEngine.ikModule.setSelectedIk(targets.map((ik) => readMetadata('ikController', ik.reference)));
+    setControlTargets(targets);
   }, [_selectableObjects, _selectedTargets]);
 
   // IK Valid
@@ -86,21 +81,34 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const [blendValue, setBlendValue] = useState<number>(1);
 
   useEffect(() => {
-    setIsIKOn(true);
-    const controller = controlTarget ? readMetadata('ikController', controlTarget) : null;
-    if (controller) {
-      // TODO: Temp approach, need to check
-      console.log(`ControlTarget Blend: ${controller.blend}`);
-      console.log(`ControlTarget Angle: ${controller.poleAngle}`);
-      setBlendValue(controller.blend);
-      setPoleAngleValue(BABYLON.Tools.ToDegrees(controller.poleAngle));
-    } else {
-      console.log('Reset');
-      setPoleAngleValue(0);
-      setBlendValue(1);
-      setIsIKOn(false);
+    setPoleAngleValue(0);
+    setBlendValue(1);
+    setIsIKOn(false);
+
+    // Use only first control target to display active values
+    if (controlTargets[0]) {
+      const controller = readMetadata('ikController', controlTargets[0].reference) as IKController;
+      if (controller) {
+        setIsIKOn(true);
+        setBlendValue(controller.blend);
+        setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+
+        const blendObserver = controller.onBlendUpdatedObservable.add(() => {
+          setBlendValue(controller.blend);
+        });
+        const poleAngleObserver = controller.onPoleAngleUpdatedObservable.add(() => {
+          setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+        });
+        return () => {
+          controller.onBlendUpdatedObservable.remove(blendObserver);
+          controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
+        };
+      }
     }
-  }, [controlTarget]);
+  }, [controlTargets]);
+
+  // Updating blend and pole angle from 3D
+  useEffect(() => {});
 
   const IKControllerData = [
     {
@@ -129,7 +137,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
         // setPoleAngleValue(parseFloat(event.target.value));
-        plaskEngine.ikModule.setIKControllerPoleAngle(BABYLON.Tools.ToRadians(parseFloat(event.target.value)));
+        plaskEngine.ikModule.setIKControllerPoleAngle(Tools.ToRadians(parseFloat(event.target.value)));
       },
       onChangeEnd: useCallback((inputValue: number) => {
         setPoleAngleValue(inputValue);
@@ -153,19 +161,32 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     },
     {
-      text: 'Keyframe IK',
+      text: 'Bake all FK into IK',
+      onClick: () => {},
+    },
+    {
+      text: 'Bake all IK into FK',
       onClick: () => {
-        const animationIngredient = plaskEngine.ikModule.getIKKeyframeData();
-        if (animationIngredient) {
-          dispatch(editAnimationIngredient(animationIngredient));
-          // Set FK to IK to reflect the current animation that has been updated
-          plaskEngine.ikModule.setFKtoIK();
-
-          // Refresh tracks by forcing the selection update.
-          // Could be better using ADD_KEYFRAME
-          dispatch(changeSelectedTargets());
+        const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+        for (const animationIngredient of animationIngredients) {
+          dispatch(editAnimationIngredient({ animationIngredient }));
         }
+
+        // Set FK position to newly updated values
+        // TODO : not working
+        plaskEngine.ikModule.setFKtoIK();
+
+        // Select baked FK so the user notices the change
+        dispatch(defaultMultiSelect({ targets: impactedFK }));
+
+        // Refresh tracks by forcing the selection update.
+        // Could be better using ADD_KEYFRAME
+        dispatch(changeSelectedTargets());
       },
+    },
+    {
+      text: 'Reset to initial pose',
+      onClick: () => {},
     },
   ];
 
@@ -176,13 +197,16 @@ const IKControllerSection: FunctionComponent<Props> = ({
         message: 'This action will create IK controllers',
         confirmText: 'Confirm',
         onConfirm: () => {
-          // TODO: IK Module (Create IK Controller)
+          const assetId = _visualizedAssetIds[0];
+          const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId);
+          dispatch(addEntity({ targets: plaskTransformNodes }));
+          dispatch(addSelectableObjects({ objects: plaskTransformNodes }));
         },
         cancelText: 'Cancel',
         confirmButtonColor: 'primary',
       }),
     );
-  }, [dispatch]);
+  }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = [
     {
@@ -194,6 +218,10 @@ const IKControllerSection: FunctionComponent<Props> = ({
             message: 'This action will delete all IK controllers',
             confirmText: 'Delete',
             onConfirm: () => {
+              // TODO : also remove PlaskTransformNode from the state (including selectedTarget if it is associated with a IKController)
+              const plaskEntities = plaskEngine.ikModule.ikControllers.map((controller) => controller.handle.getPlaskEntity());
+              dispatch(removeSelectableObjects({ objects: plaskEntities }));
+              dispatch(removeEntity({ targets: plaskEntities }));
               plaskEngine.ikModule.removeIK();
             },
             cancelText: 'Cancel',
@@ -230,7 +258,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}
-              color="default"
+              type="default"
               disabled={!isAllActive || !isIKOn}
               fullSize={true}
             />
@@ -253,7 +281,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
           />
         </div>
       )}
-      {!(isAllActive && !isNull(controlTarget)) && <div className={cx('inactive-overlay')}></div>}
+      {!(isAllActive && controlTargets.length == 0) && <div className={cx('inactive-overlay')}></div>}
     </PlaskCard>
   );
 };

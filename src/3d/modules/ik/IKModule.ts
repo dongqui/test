@@ -4,39 +4,27 @@ import {
   Mesh,
   MeshBuilder,
   Nullable,
-  Space,
-  StandardMaterial,
   Vector3,
   Skeleton,
   AssetContainer,
   ExecuteCodeAction,
   ActionManager,
   ActionEvent,
-  AssetsManager,
   AnimationGroup,
   Curve3,
-  Quaternion,
   Scalar,
   Plane,
   Path3D,
   IAnimationKey,
 } from '@babylonjs/core';
-import { Bone } from '@babylonjs/core/Bones/bone';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
-import { AdvancedDynamicTexture, StackPanel, Control, TextBlock, Slider, Button } from '@babylonjs/gui';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import * as selectingDataActions from 'actions/selectingDataAction';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, PlaskTrack, AnimationIngredient } from 'types/common';
-import { RootState } from 'reducers';
-import { addMetadata } from 'utils/RP/metadata';
 import { copyTransformFrom } from 'utils/RP/copyPose';
 import { IKController } from './IKController';
-import { mixin } from 'lodash';
-import { Controller } from 'react-hook-form';
-import { getInterpolatedVector } from 'utils/RP';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient } from 'types/common';
+import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -55,13 +43,18 @@ export class IKModule extends Module {
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _fkControlledJoints: { ikNode: TransformNode; fkNode: TransformNode }[] = [];
-  private _selectedIk: Nullable<IKController> = null;
+  private _selectedIkControllers: Array<IKController> = [];
   private _ghostMeshes: Mesh[] = [];
   private _ghost = {
     skeleton: null as Nullable<Skeleton>,
     rootMesh: null as Nullable<Mesh>,
   };
 
+  /**
+   * Retrieves the retarget map for a specific assetID
+   * @param assetId
+   * @returns
+   */
   public getRetargetMap(assetId: string) {
     const map = this.plaskEngine.state.animationData.retargetMaps.find((elt) => elt.assetId === assetId);
 
@@ -187,21 +180,49 @@ export class IKModule extends Module {
     }
   }
 
-  private _onSelectionChange(objects: TransformNode[]) {
-    this._activeTransformNodes = objects;
+  private _onSelectionChange(objects: PlaskTransformNode[]) {
+    this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.LOCAL);
+    if (objects.length === 1) {
+      switch (objects[0].type) {
+        case 'controller':
+          this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.WORLD);
+          this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+          break;
+        case 'joint':
+          this.ikControllers.forEach((ikController) => {
+            if (ikController.fkInfluenceChain?.includes(objects[0].reference)) {
+              this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+            }
+          });
+          break;
+        case 'unknown':
+          break;
+      }
+    }
+    this._activeTransformNodes = objects.map((node) => node.reference);
   }
 
+  /**
+   * Adds IK controllers for a specific assetId
+   * @param assetId
+   * @returns PlaskTransformNodes to represent IK controller state
+   */
   public addIK(assetId: string) {
     this._initializeControllers(assetId);
-    return this.generateIkPlaskTransformNodes(assetId);
+    this._generateIkAnimationData(assetId);
+    return this._generateIkPlaskTransformNodes(assetId);
   }
 
+  /**
+   * Removes IK structures from the engine
+   */
   public removeIK() {
     this._ghost.skeleton?.dispose();
     this._ghost.rootMesh?.dispose();
     this._ghost.skeleton = null;
     this._ghost.rootMesh = null;
 
+    this._removeIkAnimationData();
     for (const controller of this.ikControllers) {
       controller.dispose();
     }
@@ -214,7 +235,39 @@ export class IKModule extends Module {
     this._ghostMeshes.length = 0;
   }
 
-  public pushDataList(pickedIkCtrl: IKController) {
+  private _generateIkAnimationData(assetId: string) {
+    // Find animation ingredient for an assetId
+    const animationIngredient = this.plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+    if (!animationIngredient || !animationIngredient.layers.length) {
+      throw new Error('Invalid or inexistent animation ingredient created for this asset, cannot add IK tracks.');
+    }
+
+    const layer = animationIngredient.layers.find((layer) => layer.name.startsWith('baseLayer')) || animationIngredient.layers[0];
+    for (const controller of this.ikControllers) {
+      const tracks = this.plaskEngine.animationModule.createTracksForProperties(animationIngredient.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
+      for (const track of tracks) {
+        layer.tracks.push(track);
+        console.log(`track ${track.name} created`);
+      }
+    }
+  }
+
+  private _removeIkAnimationData() {
+    // Find ikTracks in all animation ingredient and remove them
+    for (const animationIngredient of this.plaskEngine.animationModule.animationIngredients) {
+      for (const controller of this.ikControllers) {
+        for (const layer of animationIngredient.layers) {
+          for (let i = layer.tracks.length - 1; i >= 0; i--) {
+            if (layer.tracks[i].name.includes(controller.handle.name)) {
+              layer.tracks.splice(i, 1);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private _getKeyframeDataForController(pickedIkCtrl: IKController) {
     const targetDataList = [];
     targetDataList.push(
       {
@@ -286,95 +339,155 @@ export class IKModule extends Module {
           pickedIkHandle.renderOutline = true;
           pickedIkHandle.outlineColor = Color3.White();
 
+          this.setSelectedIk([controller]);
+
           for (const elem of controller.fkInfluenceChain!) {
             this._activeTransformNodes.push(elem);
           }
 
-          this._selectedIk = controller;
-
           const sourceEvent: PointerEvent = event.sourceEvent;
-          if (sourceEvent.ctrlKey || sourceEvent.metaKey) {
-            // TODO : 3D Modules should just use state as readonly
-            // Do not dispatch, but instead do :
-            // this.plaskEngine.selectorModule.onUserSelectRequest.notifyObservers(objects.map(...));
-            this.plaskEngine.dispatch(selectingDataActions.ctrlKeySingleSelect({ target: pickedIkHandle.getPlaskEntity() }));
-          } else {
-            this.plaskEngine.dispatch(selectingDataActions.defaultSingleSelect({ target: pickedIkHandle.getPlaskEntity() }));
-          }
+          this.plaskEngine.selectorModule.userRequestSelect([pickedIkHandle.getPlaskEntity()], sourceEvent.ctrlKey || sourceEvent.metaKey);
         }),
       );
     }
   }
 
-  public generateIkPlaskTransformNodes(assetId: string) {
+  private _generateIkPlaskTransformNodes(assetId: string) {
     const result = [];
     for (const ikController of this.ikControllers) {
       const ptn = new PlaskTransformNode(ikController.handle);
-      const jointIds = ikController.fkInfluenceChain!.map((node: TransformNode) => node.id);
-      ptn.jointIds = jointIds;
       result.push(ptn);
     }
 
     return result;
   }
 
+  /**
+   * Sets selectedIk
+   * @param selectedIK
+   */
+  public setSelectedIk(selectedIK: Array<IKController>) {
+    this._selectedIkControllers = selectedIK;
+  }
+
+  /**
+   * Sets the blend value for the current selected controller
+   * @param value
+   */
   public setIKControllerBlend(value: number = 0) {
     // Evaluate if a IK Controller is selected
-    const scene = this.plaskEngine.scene;
-    if (this._selectedIk) {
-      this._selectedIk.blend = value;
-
-      let newColor = new Color3();
-      Color3.LerpToRef(Color3.White(), Color3.Teal(), value, newColor);
-      let targetMat = this._selectedIk.handle.material as StandardMaterial;
-      targetMat.emissiveColor = newColor;
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.blend = value;
+    });
   }
 
+  /**
+   * Sets the pole angle for the current selected controller
+   * @param value
+   */
   public setIKControllerPoleAngle(value: number = 0) {
-    if (this._selectedIk) {
-      this._selectedIk.poleAngle = value;
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.poleAngle = value;
+    });
   }
 
+  /**
+   * Sets IK position to FK for the current selected controller
+   */
   public setIKtoFK() {
     // Evaluate if a IK Controller is selected
-    if (this._selectedIk) {
-      this._selectedIk.handle.setAbsolutePosition(this._selectedIk.fkTarget!.absolutePosition);
-      this._selectedIk.poleAngle = this._selectedIk.fkController!.poleAngle;
-      this._selectedIk.controller.update();
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.handle.setAbsolutePosition(selectedIK.fkTarget!.absolutePosition);
+      selectedIK.poleAngle = selectedIK.fkController!.poleAngle;
+      selectedIK.controller.update();
+    });
   }
 
+  /**
+   * Sets FK position to IK for the current selected controller
+   */
   public setFKtoIK() {
-    // Evaluate if a IK Controller is selected
-    if (this._selectedIk) {
-      this._selectedIk.fkTarget!.setAbsolutePosition(this._selectedIk.target.absolutePosition);
-      this._selectedIk.fkController!.poleAngle = this._selectedIk.poleAngle;
-      this._selectedIk.fkController!.update();
-    }
+    this._selectedIkControllers.forEach((selectedIK) => {
+      selectedIK.fkTarget!.setAbsolutePosition(selectedIK.target.absolutePosition);
+      selectedIK.fkController!.poleAngle = selectedIK.poleAngle;
+      selectedIK.fkController!.update();
+    });
   }
 
-  public getIKKeyframeData() {
+  /**
+   * Computes all the FK frames from the IK animation tracks
+   * @returns the edited animationIngredients for each selected IK controller
+   */
+  public bakeAllIKintoFK() {
     // Evaluate if a IK Controller is selected
-    if (this._selectedIk) {
-      const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
-        (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
-      );
+    const animationIngredients: AnimationIngredient[] = [];
+    const impactedFK: PlaskTransformNode[] = [];
+
+    // Stop render loop for the calculation time
+    this.plaskEngine.stopRenderLoop();
+
+    this._selectedIkControllers.forEach((selectedIK) => {
+      // Store current values of ik
+      const currentIKPosition = selectedIK.target.absolutePosition;
+      const currentBlend = selectedIK.blend;
+      const currentPoleAngle = selectedIK.poleAngle;
+
+      let targetAnimation: Nullable<AnimationIngredient> =
+        this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
+        null;
+      if (!targetAnimation) {
+        throw new Error('Could not bake, error while fetching animation ingredients.');
+      }
       const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-      const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
+      const layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
+      if (!layers[0]) {
+        throw new Error('Could not bake, no layer is selected.');
+      }
+      if (!selectedIK.fkInfluenceChain) {
+        throw new Error('No FK found for this IK.');
+      }
+
+      const fkPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.fkInfluenceChain![0].id && track.property === 'position');
+      const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
+      const blendTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'blend');
+      const poleAngleTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'poleAngle');
+
+      const startTimeIndex = this.plaskEngine.state.animatingControls.startTimeIndex;
+      const endTimeIndex = this.plaskEngine.state.animatingControls.endTimeIndex;
+
+      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack) {
+        throw new Error('Could not bake, no keyframes added.');
+      }
+
+      // Copy FK transformKeys because we don't want new values
+      const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
+
+      for (let i = startTimeIndex; i < endTimeIndex; i++) {
+        if (!targetAnimation) {
+          throw new Error('Bake error : animation ingredients could not be produced.');
+        }
+        const positionValue = getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3;
+        const blendValue = getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number;
+        const poleAngleValue = getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number;
+        const fkPositionValue = getInterpolatedValue(fkPositionTransformKeys, 'position', i) as Vector3;
+        selectedIK.updateForValues(fkPositionValue, positionValue, blendValue, poleAngleValue);
+
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
+      }
 
       if (targetAnimation) {
-        const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(
-          targetAnimation.id,
-          targetLayerId,
-          targetCurrentTimeindex,
-          this.pushDataList(this._selectedIk),
-        );
-        return animationIngredients;
+        animationIngredients.push(targetAnimation);
+        impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
       }
-    }
-    return null;
+
+      // Restore current values
+      selectedIK.updateForValues(selectedIK.fkInfluenceChain[0].absolutePosition, currentIKPosition, currentBlend, currentPoleAngle);
+    });
+
+    // Resumes render loop
+    this.plaskEngine.startRenderLoop();
+
+    return { animationIngredients, impactedFK };
   }
 
   /**
@@ -816,20 +929,31 @@ export class IKModule extends Module {
     container.transformNodes = asset.transformNodes;
 
     const clone = container.instantiateModelsToScene((name: string) => `ghost_${name}`);
-    clone.rootNodes.forEach((node: TransformNode) => {
-      const descendants = node.getDescendants();
-      for (const descendant of descendants) {
-        if (descendant.getClassName() === 'Mesh') {
-          this._ghostMeshes.push(descendant as Mesh);
-        }
-      }
-      if (node.getClassName() === 'Mesh') {
-        this._ghostMeshes.push(node as Mesh);
-      }
+    const _traverse = (node: TransformNode) => {
+      // Find the root node
       if (node.name === 'ghost___root__') {
         this._ghost.rootMesh = node as Mesh;
       }
-    });
+
+      // Remove any skeletonViewer
+      if (node.name.startsWith('ghost_skeletonViewer')) {
+        node.dispose();
+        return;
+      }
+
+      // List all meshes
+      if (node.getClassName() === 'Mesh') {
+        this._ghostMeshes.push(node as Mesh);
+      }
+
+      for (const child of node.getChildren()) {
+        _traverse(child as TransformNode);
+      }
+    };
+    for (const rootNode of clone.rootNodes) {
+      _traverse(rootNode);
+    }
+
     this._ghost.skeleton = clone.skeletons[0];
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {

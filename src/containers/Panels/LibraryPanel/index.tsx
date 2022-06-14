@@ -6,10 +6,8 @@ import '@babylonjs/loaders/glTF';
 
 import { partition } from 'lodash';
 
-import { getFileExtension } from 'utils/common';
-import * as TEXT from 'constants/Text';
+import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as modeSelectActions from 'actions/modeSelection';
 import * as globalUIActions from 'actions/Common/globalUI';
 import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
@@ -30,69 +28,35 @@ const LibraryPanel: FunctionComponent = () => {
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
 
-  const onNodeChange = useCallback(
-    (files: File[] | string[], showLoading: boolean = true) => {
-      // TODO: clean up
-      for (const file of files) {
-        if (typeof file !== 'string' && file.type.includes('json')) {
-          dispatch(lpNodeActions.importMocapJson(file));
-        } else {
-          dispatch(
-            lpNodeActions.fileUpload({
-              file,
-              showLoading,
-            }),
-          );
-        }
-      }
-    },
-    [dispatch],
-  );
-
   const handleDrop = useCallback(
     async (files: File[]) => {
       const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
-      // const videos = files.filter((file) => file.type.includes('video'));
-      // const filesExceptVideo = files.filter((file) => !file.type.includes('video'));
 
-      const isError = videos.length > 1;
+      const hasMoreThanOneViedo = videos.length > 1;
+      const isInvalidFileFormat = !filesExceptVideo.every((file) => {
+        return file.name.toLocaleLowerCase().includes('glb') || file.name.toLocaleLowerCase().includes('fbx') || file.type.includes('json');
+      });
 
-      if (isError) {
+      if (hasMoreThanOneViedo) {
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
-            message: TEXT.WARNING_02,
+            message: WARNING_02,
             confirmText: 'Close',
           }),
         );
-
-        return;
-      }
-
-      onNodeChange(filesExceptVideo);
-
-      if (videos.length > 0) {
-        const videoBlobURL = URL.createObjectURL(videos[0]);
-
+      } else if (isInvalidFileFormat) {
         dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Extract',
-            message: TEXT.CONFIRM_01,
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
-            onConfirm: () => {
-              dispatch(
-                modeSelectActions.changeMode({
-                  mode: 'videoMode',
-                  videoURL: videoBlobURL,
-                }),
-              );
-            },
+          globalUIActions.openModal('_AlertModal', {
+            message: IMPORT_ERROR_INVALID_FORMAT,
+            title: 'Import failed',
           }),
         );
+      } else {
+        dispatch(lpNodeActions.fileUpload(files));
       }
     },
-    [dispatch, onNodeChange],
+    [dispatch],
   );
 
   const { getRootProps } = useDropzone({ onDrop: handleDrop });
@@ -112,25 +76,12 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
 
-  useEffect(() => {
-    if (isSceneReady) {
-      const defaultModels = ['Mannequin.glb', 'Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
-
-      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
-
-      if (!isAlreadyExist && !isDefaultModelLoaded) {
-        onNodeChange(defaultModels, false);
-        setIsDefaultModelLoaded(true);
-      }
-    }
-  }, [_lpNode, isDefaultModelLoaded, isSceneReady, onNodeChange]);
-
   const handleSearch = useCallback(
     (text: string) => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }
@@ -151,7 +102,7 @@ const LibraryPanel: FunctionComponent = () => {
           <LPControlbar onSearch={handleSearch} />
         </Box>
         <Box id="LP-Body" className={cx('lp-body')} noResize>
-          <LPBody lpNode={nodes} isPreventContextmenu={isPreventContextmenu} />
+          <LPBody lpNodes={nodes} isPreventContextmenu={isPreventContextmenu} />
         </Box>
       </div>
     </div>

@@ -16,7 +16,6 @@ export class EntityStore {
 
   constructor(public scene: Scene) {
     // TODO : remove debug
-    (window as any).debugSerialize = () => console.log(this.serializeAll());
   }
 
   /**

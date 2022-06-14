@@ -2,15 +2,24 @@ import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
-export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknwown';
+export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknown';
 export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   position: number[];
   rotation: number[];
   scaling: number[];
   type: PlaskTransformNodeType;
-  className: 'PlaskTransformNode';
   id: string;
   jointIds: string[];
+  transformable: Transformable;
+}
+
+export interface Transformable {
+  position: boolean;
+  rotation: {
+    quaternion: boolean;
+    euler: boolean;
+  };
+  scale: boolean;
 }
 
 /**
@@ -26,6 +35,14 @@ export class PlaskTransformNode extends PlaskEntity {
       const className = transformNode.getClassName();
       if (className === 'Mesh') {
         this.type = 'controller';
+        this._transformable = {
+          position: true,
+          rotation: {
+            euler: false,
+            quaternion: false,
+          },
+          scale: false,
+        };
       } else if (className === 'TransformNode') {
         this.type = 'joint';
       }
@@ -36,12 +53,26 @@ export class PlaskTransformNode extends PlaskEntity {
   public position: number[] = [];
   public rotation: number[] = [];
   public scaling: number[] = [];
-  public type: PlaskTransformNodeType = 'unknwown';
+  public type: PlaskTransformNodeType = 'unknown';
   public className = 'PlaskTransformNode';
 
   public id: string = '';
   private _jointIds: string[] = [];
+  private _transformable: Transformable = {
+    position: true,
+    rotation: {
+      euler: true,
+      quaternion: true,
+    },
+    scale: true,
+  };
 
+  public get transformable() {
+    return this._transformable;
+  }
+  public set transformable(transformable: Transformable) {
+    this._transformable = transformable;
+  }
   /**
    * The joint ids impacted by this entity.
    * If not set, returns and array containing the transformNode id
@@ -116,7 +147,7 @@ export class PlaskTransformNode extends PlaskEntity {
     this.type = other.type;
     this.id = other.id;
     this.jointIds = other.jointIds;
-
+    this.transformable = other.transformable;
     // More efficient than instanceof
     if ((other as PlaskTransformNode).className === 'PlaskTransformNode') {
       const otherPtn = other as PlaskTransformNode;
@@ -134,11 +165,6 @@ export class PlaskTransformNode extends PlaskEntity {
     this.toTransformNode();
   }
 
-  public async onInitialize(): Promise<void> {
-    // We must sync with babylon
-    // this.toTransformNode();
-  }
-
   /**
    * Helper that updates the current position and updates the referenced `TransformNode`
    * @param position
@@ -154,6 +180,7 @@ export class PlaskTransformNode extends PlaskEntity {
    */
   public setRotation(rotation: Vector3 | Quaternion) {
     rotation.toArray(this.rotation);
+    this.toTransformNode();
   }
 
   /**
@@ -162,11 +189,11 @@ export class PlaskTransformNode extends PlaskEntity {
    */
   public setScaling(scaling: Vector3) {
     scaling.toArray(this.scaling);
+    this.toTransformNode();
   }
 
-  public serialize() {
+  public serialize(): PlaskTransformNodeSpec {
     const obj = super.serialize();
-
     return {
       position: this.position,
       rotation: this.rotation,
@@ -174,6 +201,7 @@ export class PlaskTransformNode extends PlaskEntity {
       type: this.type,
       id: this.id,
       jointIds: this.jointIds,
+      transformable: this.transformable,
       ...obj,
     };
   }
