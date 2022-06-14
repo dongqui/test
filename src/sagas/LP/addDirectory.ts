@@ -2,7 +2,8 @@ import { find } from 'lodash';
 import { select, call, put } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
-import { checkCreateDuplicates, createFolderNode } from 'utils/LP/FileSystem';
+import { checkCreateDuplicates } from 'utils/LP/FileSystem';
+import { convertServerResponseToNode } from 'utils/LP/converters';
 import { RequestNodeResponse, CreateFolderOrMocapBodyData } from 'types/LP';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as api from 'api';
@@ -39,7 +40,7 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
     };
 
     const res: RequestNodeResponse = yield call(api.createFolderOrMocap, lpNode.sceneId, data, parentNode?.id);
-    yield put(lpNodeActions.addDirectoryAsync.success(createFolderNode(res.uid, res.name, res.parentUid)));
+    yield put(lpNodeActions.addDirectoryAsync.success(convertServerResponseToNode(res)));
   } catch (e) {
     // yield put(lpNodeActions.addDirectoryAsync.failure(e));
   }
