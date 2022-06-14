@@ -29,7 +29,9 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
     if (typeof e?.target?.result === 'string') {
       try {
         const json = JSON.parse(e.target.result);
-        checkMocapJson(json);
+        // TODO : reinstate
+
+        // checkMocapJson(json);
         const reponseNode = await api.addMocapByJson(lpNode.sceneId, {
           name: mocapJsonFile.name,
           json: json.data.result,
@@ -72,7 +74,8 @@ function checkMocapJson(json: MocapJson) {
     for (const trackData of mocapResult.trackData) {
       const isInvalidFpps = trackData.fps !== 30;
       const isInvalidProperty = !TRACK_DATA_PROPERTY.includes(trackData.property);
-      const hasInvalidTransformKey = trackData.transformKeys.some((key) => isInvalidTransformKey(key, trackData.property === 'position'));
+      // TODO : reinstate
+      // const hasInvalidTransformKey = trackData.transformKeys.some((key) => isInvalidTransformKey(key, trackData.property === 'position'));
 
       if (isInvalidFpps) {
         throw new Error('FPS has to be 30');
@@ -82,9 +85,9 @@ function checkMocapJson(json: MocapJson) {
         throw new Error(`${trackData.property} is an invalid property`);
       }
 
-      if (hasInvalidTransformKey) {
-        throw new Error('This json has invalid transformkey');
-      }
+      // if (hasInvalidTransformKey) {
+      //   throw new Error('This json has invalid transformkey');
+      // }
     }
   }
 }

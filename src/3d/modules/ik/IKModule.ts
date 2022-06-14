@@ -887,27 +887,27 @@ export class IKModule extends Module {
     return Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward.normalize(), dir, plane.normal);
   }
 
-  public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
-    const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
-      (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
-    );
-    const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-    //const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
-    const targetCurrentTimeindex = timeIndex;
+  // public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
+  //   const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
+  //     (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
+  //   );
+  //   const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+  //   //const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
+  //   const targetCurrentTimeindex = timeIndex;
 
-    if (targetAnimation && iKController) {
-      //console.log("INI", IKController.handle.id);
-      const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, [
-        {
-          targetId: iKController.handle.id,
-          property: 'position' as PlaskProperty,
-          value: position.asArray() as ArrayOfThreeNumbers,
-        },
-      ]);
-      return animationIngredients;
-    }
-    return null;
-  }
+  //   if (targetAnimation && iKController) {
+  //     //console.log("INI", IKController.handle.id);
+  //     const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, [
+  //       {
+  //         targetId: iKController.handle.id,
+  //         property: 'position' as PlaskProperty,
+  //         value: position.asArray() as ArrayOfThreeNumbers,
+  //       },
+  //     ]);
+  //     return animationIngredients;
+  //   }
+  //   return null;
+  // }
   //////////////////////////////////////////////////////////////
 
   private _initializeControllers(assetId: string) {
@@ -1063,7 +1063,14 @@ export class IKModule extends Module {
       console.warn('Foot locking not supported for ' + boneName);
       return;
     }
+    let targetAnimation: Nullable<AnimationIngredient> =
+      this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
+      null;
+    const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
 
+    if (!targetAnimation) {
+      throw new Error('Could not bake, error while fetching animation ingredients.');
+    }
     // Add an animation track for position
     animationGroup.start();
     for (const key of transformKeys) {
@@ -1071,6 +1078,14 @@ export class IKModule extends Module {
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
       const position = ikController.fkInfluenceChain![0].absolutePosition;
+      const targetDataList = [
+        {
+          targetId: ikController.fkInfluenceChain![0].id,
+          property: 'position' as PlaskProperty,
+          value: position.asArray() as ArrayOfThreeNumbers,
+        },
+      ];
+      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
     }
     animationGroup.goToFrame(0);
     animationGroup.stop();

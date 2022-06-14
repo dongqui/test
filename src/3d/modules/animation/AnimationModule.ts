@@ -30,6 +30,7 @@ import { DEFAULT_BETA, DEFAULT_MIN_CUTOFF, MOCAP_POSITION_BETA, MOCAP_POSITION_M
 import OneEuroFilterForQuaternion from 'utils/RP/OneEuroFilterForQuaternion';
 import OneEuroFilterForVector from 'utils/RP/OneEuroFilterForVector';
 import { Module } from '../Module';
+import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 
 /**
  * Module that handles all animation related stuff in the 3D engine
@@ -208,7 +209,7 @@ export class AnimationModule extends Module {
     targetAnimationIngredient: AnimationIngredient,
     targetLayerId: string,
     targetFrameIndex: number,
-    keyframeDataList: Array<{ targetId: string; property: PlaskProperty; value: ArrayOfThreeNumbers | ArrayOfFourNumbers }>,
+    keyframeDataList: Array<{ targetId: string; property: PlaskProperty; value: ArrayOfThreeNumbers | ArrayOfFourNumbers | number }>,
   ) {
     if (targetAnimationIngredient) {
       const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
@@ -222,7 +223,7 @@ export class AnimationModule extends Module {
             if (targetTrack) {
               switch (keyframeData.property) {
                 case 'position': {
-                  let newPosition = Vector3.FromArray(keyframeData.value);
+                  let newPosition = Vector3.FromArray(keyframeData.value as ArrayOfThreeNumbers);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'position');
                     if (otherLayerTrack) {
@@ -235,7 +236,7 @@ export class AnimationModule extends Module {
                   break;
                 }
                 case 'rotationQuaternion': {
-                  let newRotationQuaternion = Quaternion.FromArray(keyframeData.value);
+                  let newRotationQuaternion = Quaternion.FromArray(keyframeData.value as ArrayOfFourNumbers);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
                     if (otherLayerTrack) {
@@ -255,7 +256,7 @@ export class AnimationModule extends Module {
 
                   const peerTrack = targetLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotation');
                   if (peerTrack) {
-                    let newRotation = Quaternion.FromArray(keyframeData.value).toEulerAngles();
+                    let newRotation = Quaternion.FromArray(keyframeData.value as ArrayOfFourNumbers).toEulerAngles();
                     otherLayers.forEach((otherLayer) => {
                       const otherLayerPeerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotation');
                       if (otherLayerPeerTrack) {
@@ -272,7 +273,7 @@ export class AnimationModule extends Module {
                   break;
                 }
                 case 'rotation': {
-                  let newRotation = Vector3.FromArray(keyframeData.value);
+                  let newRotation = Vector3.FromArray(keyframeData.value as ArrayOfThreeNumbers);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotation');
                     if (otherLayerTrack) {
@@ -285,7 +286,7 @@ export class AnimationModule extends Module {
 
                   const peerTrack = targetLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
                   if (peerTrack) {
-                    let newRotationQuaternion = Vector3.FromArray(keyframeData.value).toQuaternion();
+                    let newRotationQuaternion = Vector3.FromArray(keyframeData.value as ArrayOfThreeNumbers).toQuaternion();
                     otherLayers.forEach((otherLayer) => {
                       const otherLayerPeerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'rotationQuaternion');
                       if (otherLayerPeerTrack) {
@@ -306,7 +307,7 @@ export class AnimationModule extends Module {
                   break;
                 }
                 case 'scaling': {
-                  let newScaling = Vector3.FromArray(keyframeData.value);
+                  let newScaling = Vector3.FromArray(keyframeData.value as ArrayOfThreeNumbers);
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === keyframeData.targetId && track.property === 'scaling');
                     if (otherLayerTrack) {
@@ -328,6 +329,22 @@ export class AnimationModule extends Module {
                   break;
                 }
                 default: {
+                  // If not a rotation/rotationQuaternion
+                  let value = (targetTrack.target as any)[targetTrack.property as any];
+                  otherLayers.forEach((otherLayer) => {
+                    const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === targetTrack.targetId && track.property === targetTrack.property);
+                    if (otherLayerTrack) {
+                      const targetTransformKey = otherLayerTrack.transformKeys.find((key) => key.frame === targetFrameIndex);
+                      let otherValue;
+                      if (targetTransformKey) {
+                        otherValue = targetTransformKey.value;
+                      } else {
+                        otherValue = getInterpolatedValue(otherLayerTrack.transformKeys, otherLayerTrack.property, targetFrameIndex);
+                      }
+                      value = this.plaskEngine.animationModule.getInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue);
+                    }
+                  });
+                  targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, value);
                   break;
                 }
               }
@@ -421,7 +438,7 @@ export class AnimationModule extends Module {
     targets: TransformNode[],
     isMocapAnimation: boolean,
     current: boolean,
-    trackProperties: PlaskProperty[] = ['position', 'rotation', 'rotationQuaternion', 'scaling'],
+    trackProperties: PlaskProperty[] = ['position', 'rotation', 'rotationQuaternion', 'scaling', 'isContact'],
     existingLayerId?: string,
   ): AnimationIngredient {
     // add 'baseLayer//' in front of the baseLayer's id
