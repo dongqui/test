@@ -359,6 +359,30 @@ const VideoMode = () => {
     [duration, timeline],
   );
 
+  const [startValue, setStartValue] = useState(0);
+  const [endValue, setEndValue] = useState(0);
+
+  const [sliderStyles, setSliderStyles] = useState<{
+    left: number | string;
+    width: number | string;
+  }>({
+    left: 0,
+    width: 100,
+  });
+
+  const handleChangeEndValue = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
+      console.log(value);
+      setEndValue(Number(event.target.value));
+      // setSliderStyles({
+      //   ...sliderStyles,
+      //   width: `calc(${value}% - 172px)`,
+      // });
+    },
+    [duration],
+  );
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -430,6 +454,13 @@ const VideoMode = () => {
                   <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
                 </div>
                 <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
+                <input className={cx('crop-slider')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
+                <div
+                  className={cx('slider-time')}
+                  style={{
+                    width: sliderStyles.width,
+                  }}
+                />
               </div>
             </Fragment>
           ) : (
