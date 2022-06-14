@@ -1055,22 +1055,17 @@ export class IKModule extends Module {
     this._addPickBehavior();
   }
 
-  public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup) {
+  public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
     // Create/find an IK controller for this bone
     const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
 
     if (!ikController) {
       console.warn('Foot locking not supported for ' + boneName);
-      return;
+      return null;
     }
-    let targetAnimation: Nullable<AnimationIngredient> =
-      this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
-      null;
+    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
     const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
 
-    if (!targetAnimation) {
-      throw new Error('Could not bake, error while fetching animation ingredients.');
-    }
     // Add an animation track for position
     animationGroup.start();
     for (const key of transformKeys) {
@@ -1086,8 +1081,14 @@ export class IKModule extends Module {
         },
       ];
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+
+      if (!targetAnimation) {
+        throw new Error('Could not bake, error while fetching animation ingredients.');
+      }
     }
     animationGroup.goToFrame(0);
     animationGroup.stop();
+
+    return targetAnimation;
   }
 }

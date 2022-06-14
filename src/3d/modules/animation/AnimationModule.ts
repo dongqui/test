@@ -189,11 +189,14 @@ export class AnimationModule extends Module {
       (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
     if (visualizedAnimationIngredients.length === 1) {
-      const newAnimationGroup = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
-      newAnimationGroup.normalize(startTimeIndex, endTimeIndex);
+      const contactData = this.extractContactData(visualizedAnimationIngredients[0]);
+      const animationGroupTemp = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
+      const animationIngredientWithFootLocking = this.processContactData(visualizedAnimationIngredients[0], animationGroupTemp, contactData);
+      const animationGroup = this.createAnimationGroupFromIngredient(animationIngredientWithFootLocking, this.fps);
+      animationGroup.normalize(startTimeIndex, endTimeIndex);
 
-      this._currentAnimationGroup = newAnimationGroup;
-      return newAnimationGroup;
+      this._currentAnimationGroup = animationGroup;
+      return animationGroup;
     }
     return null;
   }
@@ -596,11 +599,51 @@ export class AnimationModule extends Module {
   }
 
   /**
+   * Extracts contact info from an animation ingredient
+   * @param animationIngredient
+   * @returns
+   */
+  public extractContactData(animationIngredient: AnimationIngredient) {
+    const { name, layers } = animationIngredient;
+
+    const contactData: { boneName: string; transformKeys: IAnimationKey[] }[] = [];
+    layers.forEach((layer) => {
+      if (layer.isIncluded) {
+        layer.tracks.forEach((track) => {
+          if (track.property === 'isContact') {
+            contactData.push({ boneName: track.targetId, transformKeys: track.transformKeys });
+          }
+        });
+      }
+    });
+
+    return contactData;
+  }
+
+  /**
+   * Generates a new animation ingredient with foot locking (baked in IK tracks)
+   * @param animationIngredient
+   * @param animationGroup
+   * @param contactData
+   * @returns
+   */
+  public processContactData(animationIngredient: AnimationIngredient, animationGroup: AnimationGroup, contactData: { boneName: string; transformKeys: IAnimationKey[] }[]) {
+    // Compute contact data
+    let animationIngredientWithFootLocking = animationIngredient;
+    for (const data of contactData) {
+      animationIngredientWithFootLocking =
+        this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, animationGroup, animationIngredientWithFootLocking) || animationIngredientWithFootLocking;
+    }
+
+    return animationIngredientWithFootLocking;
+  }
+
+  /**
    * create BABYLON.AnimationGroup with our custom animation data(animationIngredient)
    * @param animationIngredient - ingredient for animationGroup
    * @param fps - fps of the animationGroup
    */
-  public createAnimationGroupFromIngredient(animationIngredient: AnimationIngredient, fps: number): AnimationGroup {
+  public createAnimationGroupFromIngredient(animationIngredient: AnimationIngredient, fps: number) {
     const { name, layers } = animationIngredient;
 
     const newAnimationGroup = new AnimationGroup(name);
@@ -613,7 +656,6 @@ export class AnimationModule extends Module {
     } = {};
 
     // should accumulate all the layers
-    const contactData: { boneName: string; transformKeys: IAnimationKey[] }[] = [];
     layers.forEach((layer) => {
       if (layer.isIncluded) {
         const useFilter = layer.useFilter;
@@ -631,7 +673,7 @@ export class AnimationModule extends Module {
           }
 
           if (track.property === 'isContact') {
-            contactData.push({ boneName: track.targetId, transformKeys: track.transformKeys });
+            // We exploit it in extractContactData
             return;
           }
 
@@ -674,11 +716,8 @@ export class AnimationModule extends Module {
       }
     });
 
-    // Compute contact data
-    for (const data of contactData) {
-      this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, newAnimationGroup);
-    }
-
+    // dispatch(editAnimationIngredient({ animationIngredient }));
+    // dispatch(changeSelectedTargets());
     return newAnimationGroup;
   }
 
