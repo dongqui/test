@@ -380,6 +380,7 @@ export class AnimationModule extends Module {
       // prettier-ignore
       const rotationQuaternionTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|rotationQuaternion`, layerId, target, 'rotationQuaternion', [], isMocapAnimation)
       const scalingTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|scaling`, layerId, target, 'scaling', [], isMocapAnimation);
+      const isContactTrack = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|isContact`, layerId, target, 'isContact', [], isMocapAnimation);
 
       targetedAnimations
         .filter((targetAnimation) => targetAnimation.target.id === target.id)
@@ -405,6 +406,7 @@ export class AnimationModule extends Module {
       tracks.push(rotationTrack);
       tracks.push(rotationQuaternionTrack);
       tracks.push(scalingTrack);
+      tracks.push(isContactTrack);
     });
 
     const baseLayer: PlaskLayer = { id: layerId, name: 'Base Layer', isIncluded: true, useFilter: false, tracks };
@@ -447,6 +449,8 @@ export class AnimationModule extends Module {
     const { tracks } = baseLayer;
     const { hipSpace } = retargetMap;
 
+    const contactData = [];
+
     // iterate mocapData not tracks for efficiency
     mocapData.forEach((mocapDatum) => {
       const { boneName, property, transformKeys } = mocapDatum;
@@ -463,7 +467,7 @@ export class AnimationModule extends Module {
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
 
-              const targetQ = Quaternion.FromArray(value);
+              const targetQ = Quaternion.FromArray(value as ArrayOfFourNumbers);
               const initialLocalQ = targetInitialPose.rotationQuaternion.clone();
               const recurrentQ = targetInitialPose.recurrentRotationQuaternion!.clone();
               const inversedRecurrentQ = Quaternion.Inverse(recurrentQ.clone());
@@ -481,7 +485,7 @@ export class AnimationModule extends Module {
           if (targetTrack) {
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
-              const newValue = value.map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
+              const newValue = (value as ArrayOfThreeNumbers).map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
               targetTrack.transformKeys.push({ frame, value: Vector3.FromArray(newValue) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
             });
           }
@@ -491,7 +495,16 @@ export class AnimationModule extends Module {
           if (targetTrack) {
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
-              targetTrack.transformKeys.push({ frame, value: Vector3.FromArray(value) });
+              targetTrack.transformKeys.push({ frame, value: Vector3.FromArray(value as ArrayOfThreeNumbers) });
+            });
+          }
+        } else if (property === 'isContact') {
+          const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
+
+          if (targetTrack) {
+            transformKeys.forEach((transformKey) => {
+              const { frame, value } = transformKey;
+              targetTrack.transformKeys.push({ frame, value });
             });
           }
         }
@@ -567,6 +580,7 @@ export class AnimationModule extends Module {
     } = {};
 
     // should accumulate all the layers
+    const contactData: { boneName: string; transformKeys: IAnimationKey[] }[] = [];
     layers.forEach((layer) => {
       if (layer.isIncluded) {
         const useFilter = layer.useFilter;
@@ -617,6 +631,9 @@ export class AnimationModule extends Module {
                     scalingTransformKeysList: [useFilter ? this.filterVector(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys],
                   };
                 }
+              } else if (track.property === 'isContact') {
+                // const fkPositionTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === 'position');
+                contactData.push({ boneName: track.targetId, transformKeys: track.transformKeys });
               }
             }
           }
@@ -665,6 +682,11 @@ export class AnimationModule extends Module {
         newAnimationGroup.addTargetedAnimation(newScalingAnimation, target);
       }
     });
+
+    // Compute contact data
+    for (const data of contactData) {
+      this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, newAnimationGroup);
+    }
 
     return newAnimationGroup;
   }

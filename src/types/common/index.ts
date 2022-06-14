@@ -125,7 +125,7 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
-export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'isContact';
 export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface PlaskTrack {
@@ -199,7 +199,7 @@ export type PlaskMocapData = Array<{
   transformKeys: Array<{
     frame: number;
     time: number;
-    value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
+    value: ArrayOfThreeNumbers | ArrayOfFourNumbers | number;
   }>;
 }>;
 
