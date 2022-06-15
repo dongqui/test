@@ -142,7 +142,7 @@
     justify-content: space-between;
     width: calc(100% - 140px);
     // padding: 0px 70px;
-    z-index: 1;
+    z-index: 3;
   }
 
   .indicator {
@@ -198,6 +198,7 @@
 .timeline-wrapper {
   position: relative;
   padding: 18px 86px;
+  height: calc(100% - 16px);
 }
 
 .timeline {
@@ -206,6 +207,12 @@
 }
 
 .timeline-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 172px);
+  height: calc(148px - 18px * 2);
   border-radius: 16px;
 }
 
@@ -228,6 +235,7 @@
   appearance: none;
   background: transparent;
   margin: 0;
+  z-index: 2;
 
   &:focus {
     outline: none;
@@ -239,17 +247,8 @@
   }
 }
 
-.crop-slider {
-  // position: absolute;
-  // top: 0;
-  // right: 0;
-  // width: calc(100% - 86px * 2);
-  // height: 1px;
+.crop-slider-start {
   appearance: none;
-  // background: transparent;
-  // margin: 0;
-  // z-index: 4;
-
   position: absolute;
   top: 50%;
   left: 50%;
@@ -258,7 +257,7 @@
   height: 0;
   outline: none;
   // pointer-events: none;
-  top: 55px;
+  top: 18px;
   right: 0;
   cursor: col-resize;
   z-index: 2;
@@ -269,20 +268,58 @@
   }
 
   &::-webkit-slider-thumb {
-    // appearance: none;
-    // -webkit-tap-highlight-color: transparent;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
     position: relative;
-    width: 32px;
-    // height: 100%;
-    border: none;
-    // margin-top: 100px;
-    padding-top: 50px;
-    background-color: #fff;
+    width: 11px;
+    height: 94px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    background: $secondary;
     pointer-events: all;
   }
 
   &::-webkit-slider-runnable-track {
-    cursor: not-allowed;
+    cursor: col-resize;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.crop-slider-end {
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 86px * 2);
+  height: 0;
+  outline: none;
+  // pointer-events: none;
+  top: 18px;
+  right: 0;
+  cursor: col-resize;
+  z-index: 2;
+  appearance: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    width: 11px;
+    height: 94px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background: $secondary;
+    pointer-events: all;
+  }
+
+  &::-webkit-slider-runnable-track {
+    cursor: col-resize;
     width: 100%;
     height: 100%;
   }

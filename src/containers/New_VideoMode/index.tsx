@@ -370,6 +370,19 @@ const VideoMode = () => {
     width: 100,
   });
 
+  const handleChangeStartValue = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
+      console.log(value);
+      setStartValue(Number(event.target.value));
+      // setSliderStyles({
+      //   ...sliderStyles,
+      //   width: `calc(${value}% - 172px)`,
+      // });
+    },
+    [duration],
+  );
+
   const handleChangeEndValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
@@ -450,17 +463,18 @@ const VideoMode = () => {
                 </div>
               </div>
               <div className={cx('timeline-wrapper')}>
-                <div className={cx('timeline')}>
-                  <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
-                </div>
+                <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
+                {/* <div className={cx('timeline')}>
+                </div> */}
                 <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
-                <input className={cx('crop-slider')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
-                <div
+                <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
+                <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
+                {/* <div
                   className={cx('slider-time')}
                   style={{
                     width: sliderStyles.width,
                   }}
-                />
+                /> */}
               </div>
             </Fragment>
           ) : (
