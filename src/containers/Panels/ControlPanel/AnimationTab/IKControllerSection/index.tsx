@@ -164,7 +164,22 @@ const IKControllerSection: FunctionComponent<Props> = ({
     },
     {
       text: 'Bake all FK into IK',
-      onClick: () => {},
+      onClick: () => {
+        const { animationIngredients, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+        for (const animationIngredient of animationIngredients) {
+          dispatch(editAnimationIngredient({ animationIngredient }));
+        }
+
+        // Set FK position to newly updated values
+        plaskEngine.ikModule.setIKtoFK();
+
+        // Select baked FK so the user notices the change
+        dispatch(defaultMultiSelect({ targets: impactedIK }));
+
+        // Refresh tracks by forcing the selection update.
+        // Could be better using ADD_KEYFRAME
+        dispatch(changeSelectedTargets());
+      },
       disabled: false,
     },
     {
@@ -177,7 +192,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
         }
 
         // Set FK position to newly updated values
-        // TODO : not working
         plaskEngine.ikModule.setFKtoIK();
 
         // Select baked FK so the user notices the change
