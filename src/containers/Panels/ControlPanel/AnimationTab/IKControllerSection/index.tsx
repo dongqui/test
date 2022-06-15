@@ -153,19 +153,23 @@ const IKControllerSection: FunctionComponent<Props> = ({
         plaskEngine.ikModule.setIKControllerBlend(1);
         setBlendValue(1);
       },
+      disabled: false,
     },
     {
       text: 'Set FK Pose to IK',
       onClick: () => {
         plaskEngine.ikModule.setFKtoIK();
       },
+      disabled: false,
     },
     {
       text: 'Bake all FK into IK',
       onClick: () => {},
+      disabled: false,
     },
     {
       text: 'Bake all IK into FK',
+
       onClick: () => {
         const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
         for (const animationIngredient of animationIngredients) {
@@ -183,6 +187,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
         // Could be better using ADD_KEYFRAME
         dispatch(changeSelectedTargets());
       },
+      disabled: false,
     },
     {
       text: 'Reset to initial pose',
@@ -259,7 +264,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               key={`${info.text}${idx}`}
               text={info.text}
               type="default"
-              disabled={!isAllActive || !isIKOn}
+              disabled={!isAllActive || !isIKOn || info.disabled}
               fullSize={true}
             />
           ))}

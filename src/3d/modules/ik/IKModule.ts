@@ -360,7 +360,7 @@ export class IKModule extends Module {
         const blendValue = getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number;
         const poleAngleValue = getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number;
         const fkPositionValue = getInterpolatedValue(fkPositionTransformKeys, 'position', i) as Vector3;
-        selectedIK.updateForValues(fkPositionValue, positionValue, blendValue, poleAngleValue);
+        selectedIK.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, blendValue, poleAngleValue);
 
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
       }
@@ -369,7 +369,6 @@ export class IKModule extends Module {
         animationIngredients.push(targetAnimation);
         impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
       }
-
       // Restore current values
       selectedIK.updateForValues(selectedIK.fkInfluenceChain[0].absolutePosition, currentIKPosition, currentBlend, currentPoleAngle);
     });
