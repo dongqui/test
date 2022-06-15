@@ -1089,15 +1089,20 @@ export class IKModule extends Module {
     // Add an animation track for position
     animationGroup.start();
     let lastUnlockedPosition = null;
+    let lastUnlockedPoleAngle = null;
 
     for (const key of transformKeys) {
       const frameIndex = key.frame;
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
       let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
-      let rotation = ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
+      let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
       if (key.value === 0 || !lastUnlockedPosition) {
         lastUnlockedPosition = position;
+      }
+
+      if (key.value === 0 || lastUnlockedPoleAngle === null) {
+        lastUnlockedPoleAngle = rotation;
       }
 
       const targetDataList = [
@@ -1109,7 +1114,12 @@ export class IKModule extends Module {
         {
           targetId: ikController.handle.id,
           property: 'poleAngle' as PlaskProperty,
-          value: -rotation,
+          value: lastUnlockedPoleAngle,
+        },
+        {
+          targetId: ikController.handle.id,
+          property: 'blend' as PlaskProperty,
+          value: key.value,
         },
       ];
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
