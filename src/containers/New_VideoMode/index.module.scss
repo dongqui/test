@@ -235,7 +235,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100% - 86px * 2);
+  // width: calc(100% - 86px * 2);
+  width: 100%;
   height: 100%;
   appearance: none;
   background: transparent;
@@ -260,10 +261,10 @@
   transform: translate(-50%, -50%);
   // width: calc(100% - 86px * 2);
   width: 100%;
-  height: 15px;
+  height: 0;
   outline: none;
   // pointer-events: none;
-  top: 18px;
+  top: 0;
   right: 0;
   cursor: col-resize;
   margin: 0;
@@ -279,8 +280,8 @@
     position: relative;
     width: 11px;
     height: 94px;
-    // border-top-left-radius: 16px;
-    // border-bottom-left-radius: 16px;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
     background: $secondary;
     pointer-events: all;
   }
@@ -304,7 +305,7 @@
   outline: none;
   margin: 0;
   // pointer-events: none;
-  top: 18px;
+  top: 0;
   right: 0;
   cursor: col-resize;
   z-index: 2;
@@ -320,8 +321,8 @@
     position: relative;
     width: 11px;
     height: 94px;
-    // border-top-right-radius: 16px;
-    // border-bottom-right-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
     background: $secondary;
     pointer-events: all;
   }
@@ -335,12 +336,14 @@
 
 .slider-time {
   position: absolute;
-  margin: 18px 86px;
-  top: 0%;
-  left: 0%;
-  border: 1px solid $secondary;
-  width: calc(100% - 86px * 2);
-  height: calc(100% - 18px * 2);
+  // margin: 18px 86px;
+  top: 0;
+  left: 0;
+  border: 2px solid $secondary;
+  // width: calc(100% - 86px * 2);
+  // height: calc(100% - 18px * 2);
+  width: 100%;
+  height: 100%;
   border-radius: 16px;
   z-index: 0;
 }

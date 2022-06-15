@@ -399,12 +399,7 @@ const VideoMode = () => {
                   <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
                   <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
                   <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
-                  {/* <div
-                  className={cx('slider-time')}
-                  style={{
-                    width: sliderStyles.width,
-                  }}
-                /> */}
+                  <div className={cx('slider-time')} />
                 </div>
               </div>
             </Fragment>
