@@ -1095,6 +1095,7 @@ export class IKModule extends Module {
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
       let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
+      let rotation = ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
       if (key.value === 0 || !lastUnlockedPosition) {
         lastUnlockedPosition = position;
       }
@@ -1104,6 +1105,11 @@ export class IKModule extends Module {
           targetId: ikController.handle.id,
           property: 'position' as PlaskProperty,
           value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: ikController.handle.id,
+          property: 'poleAngle' as PlaskProperty,
+          value: -rotation,
         },
       ];
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);

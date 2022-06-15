@@ -349,7 +349,7 @@ export class AnimationModule extends Module {
                 }
                 default: {
                   // If not a rotation/rotationQuaternion
-                  let value = (targetTrack.target as any)[targetTrack.property as any];
+                  let value = keyframeData.value as number;
                   otherLayers.forEach((otherLayer) => {
                     const otherLayerTrack = otherLayer.tracks.find((track) => track.targetId === targetTrack.targetId && track.property === targetTrack.property);
                     if (otherLayerTrack) {
@@ -360,7 +360,7 @@ export class AnimationModule extends Module {
                       } else {
                         otherValue = getInterpolatedValue(otherLayerTrack.transformKeys, otherLayerTrack.property, targetFrameIndex);
                       }
-                      value = this.plaskEngine.animationModule.getInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue);
+                      value = this.plaskEngine.animationModule.getInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue) as number;
                     }
                   });
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, value);
