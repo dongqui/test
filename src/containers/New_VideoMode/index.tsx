@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
@@ -13,6 +13,11 @@ const cx = classNames.bind(styles);
 
 const VideoMode = () => {
   const [windowWidth, windowHeight] = useWindowSize();
+  const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
+  const [currentVideoDevice, setCurrentVideoDevice] = useState<MediaDeviceInfo>();
+  const [videoDeviceLoaded, setVideoDeviceLoaded] = useState(false);
+  const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream>();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const boxProps = useMemo(
     () => ({
@@ -44,7 +49,69 @@ const VideoMode = () => {
     [windowHeight],
   );
 
+  const getVideoDeviceList = useCallback(async () => {
+    const devices = await navigator.mediaDevices
+      .enumerateDevices()
+      .then((totalDevice) => {
+        return totalDevice.filter((device) => device.kind === 'videoinput');
+      })
+      .catch((error) => {
+        return [];
+      });
+
+    setVideoDeviceLoaded(true);
+    setVideoDeviceList(devices);
+  }, []);
+
+  const videoDeviceInitialize = useCallback(async (deviceId: string) => {
+    const constraint = {
+      video: {
+        width: { ideal: 3840 },
+        height: { ideal: 2160 },
+        aspectRatio: { ideal: 4 / 3 },
+        frameRate: { ideal: 30 },
+        deviceId: { exact: deviceId },
+      },
+      audio: false,
+    };
+    await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      setCurrentVideoStream(stream);
+    });
+  }, []);
+
+  useEffect(() => {
+    getVideoDeviceList();
+  }, [getVideoDeviceList]);
+
+  useEffect(() => {
+    if (videoDeviceList.length > 0 && currentVideoDevice === undefined) {
+      setCurrentVideoDevice(videoDeviceList[0]);
+    }
+  }, [currentVideoDevice, videoDeviceList]);
+
+  useEffect(() => {
+    if (currentVideoDevice !== undefined) {
+      videoDeviceInitialize(currentVideoDevice.deviceId);
+    }
+  }, [currentVideoDevice, videoDeviceInitialize]);
+
+  const unmountStream = useCallback(() => {
+    if (currentVideoStream) {
+      const tracks = currentVideoStream.getTracks();
+      tracks.forEach((track) => track.stop());
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    }
+  }, [currentVideoStream]);
+
   const handleDrop = (files: File[]) => {
+    unmountStream();
     console.log(files);
   };
 
@@ -58,7 +125,15 @@ const VideoMode = () => {
           LP
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
-          RP
+          <video
+            ref={videoRef}
+            className={cx('video')}
+            {...{
+              autoPlay: true,
+              playsInline: true,
+              muted: true,
+            }}
+          />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           <ControlPanel />

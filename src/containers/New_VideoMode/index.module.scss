@@ -68,3 +68,9 @@
   color: $content-medium;
   margin-bottom: 8px;
 }
+
+.video {
+  width: calc(100% - 490px);
+  height: 100%;
+  margin-left: 240px;
+}
