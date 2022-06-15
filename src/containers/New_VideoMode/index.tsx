@@ -1,9 +1,8 @@
 import { Fragment, useMemo, useEffect, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { Timeline } from '@babylonjs/controls';
-import Image from 'next/image';
 import * as globalUIActions from 'actions/Common/globalUI';
-import { IMPORT_ERROR_INVALID_FORMAT, WARNING_02 } from 'constants/Text';
+import { WARNING_02 } from 'constants/Text';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
@@ -186,11 +185,9 @@ const VideoMode = () => {
     }
   }, []);
 
-  const [thumbnailList, setThumbnailList] = useState<string[]>([]);
   const [duration, setDuration] = useState(0);
   const [rulerValues, setRulerValues] = useState<number[]>([]);
 
-  // const timelineRef = useRef<HTMLCanvasElement>(null);
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
   const [timeline, setTimeline] = useState<Timeline>();
@@ -218,8 +215,6 @@ const VideoMode = () => {
             thumbnailHeight: 120,
             loadingTextureURI: '/images/Loading.png',
             getThumbnailCallback: (time: number, done: (input: any) => void) => {
-              // This is strictly for demo purpose and should not be used in prod as it creates as many videos
-              // as there are thumbnails all over the timeline.
               const hiddenVideo = document.createElement('video');
               document.body.append(hiddenVideo);
               hiddenVideo.style.display = 'none';
@@ -240,49 +235,12 @@ const VideoMode = () => {
                 }
               };
 
-              // hiddenVideo.src = '/video/exo.mp4?' + time;
               hiddenVideo.src = currentVideoURL;
               hiddenVideo.load();
             },
           }),
         );
-
-        // timeline.runRenderLoop(() => {
-        //   if (videoRef.current && !videoRef.current.paused) {
-        //     timeline.setCurrentTime(videoRef.current.currentTime);
-        //   }
-        // });
       }
-
-      // const checkDuration = setInterval(() => {
-      //   if (videoRef.current) {
-      //     if (videoRef.current.duration !== Infinity) {
-      //       videoRef.current.pause();
-      //       videoRef.current.currentTime = 0;
-      //       clearInterval(checkDuration);
-      //       // setDuration(videoRef.current.duration);
-
-      //       const setScreenshot = setInterval(() => {
-      //         if (videoRef.current) {
-      //           if (count < 20) {
-      //             count++;
-      //             const thumbnail = handleCaptureThumbnail();
-      //             if (thumbnail) {
-      //               thumbnailList.push(thumbnail);
-      //             }
-      //             videoRef.current.currentTime += datumPoint;
-      //           } else {
-      //             videoRef.current.currentTime = 0;
-      //             setThumbnailList(thumbnailList);
-      //             clearInterval(setScreenshot);
-      //           }
-      //         }
-      //       }, 150);
-      //     } else {
-      //       videoRef.current.currentTime += 1e101;
-      //     }
-      //   }
-      // }, 500);
 
       setIsVideoLoaded(true);
     }
@@ -348,10 +306,7 @@ const VideoMode = () => {
   const handleChangeCurrentTime = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       if (timeline && videoRef.current) {
-        // timeline.setCurrentTime(number + 1);
-
         videoRef.current.currentTime = Number(event.target.value);
-        // const value = Number(((Number(event.target.value) / duration) * 100).toFixed(3));
         const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
         setNumber(value);
       }
@@ -362,23 +317,11 @@ const VideoMode = () => {
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
 
-  const [sliderStyles, setSliderStyles] = useState<{
-    left: number | string;
-    width: number | string;
-  }>({
-    left: 0,
-    width: 100,
-  });
-
   const handleChangeStartValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
       console.log(value);
       setStartValue(Number(event.target.value));
-      // setSliderStyles({
-      //   ...sliderStyles,
-      //   width: `calc(${value}% - 172px)`,
-      // });
     },
     [duration],
   );
@@ -388,10 +331,6 @@ const VideoMode = () => {
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
       console.log(value);
       setEndValue(Number(event.target.value));
-      // setSliderStyles({
-      //   ...sliderStyles,
-      //   width: `calc(${value}% - 172px)`,
-      // });
     },
     [duration],
   );
@@ -406,7 +345,6 @@ const VideoMode = () => {
           LP
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
-          {/* RP */}
           <canvas className={cx('thumbnail-generator')} ref={canvasRef} />
           <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} onLoadedMetadata={handleLoadMetadata} {...videoOptions} />
           {cameraDeviceList.length === 0 && !isVideoLoaded && (
@@ -426,13 +364,6 @@ const VideoMode = () => {
         </Box>
         <Box id="TP" {...boxProps.TP}>
           {isVideoLoaded ? (
-            // <div className={cx('thumbnail-list')}>
-            //   {thumbnailList.map((thumbnail, index) => (
-            //     <div className={cx('thumbnail')} key={index}>
-            //       <Image src={thumbnail} alt="timeline thumbanil" className={cx('thumbnail-image', 'no-select')} width={100} height={80} />
-            //     </div>
-            //   ))}
-            // </div>
             <Fragment>
               <div className={cx('ruler')}>
                 <div className={cx('indicator-wrapper')}>
@@ -464,8 +395,6 @@ const VideoMode = () => {
               </div>
               <div className={cx('timeline-wrapper')}>
                 <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
-                {/* <div className={cx('timeline')}>
-                </div> */}
                 <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
                 <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
                 <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
