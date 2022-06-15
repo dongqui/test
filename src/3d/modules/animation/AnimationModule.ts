@@ -57,13 +57,25 @@ export class AnimationModule extends Module {
       const serverAnimationTracks: ServerAnimationTrackRequest[] = [];
       layer.tracks.forEach((track) => {
         const transformKeysMap = track.transformKeys.map((transformKey) => {
+          let value;
+          switch (PlaskPropertyFormat[track.property]) {
+            case Animation.ANIMATIONTYPE_FLOAT:
+              value = transformKey.value;
+              break;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+              value = { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
+              break;
+            case Animation.ANIMATIONTYPE_VECTOR3:
+              value = { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
+              break;
+            default:
+              value = transformKey.value;
+              break;
+          }
           const serverTransformKey: ServerTransformKeyRequest = {
             frameIndex: transformKey.frame,
             property: track.property,
-            transformKey:
-              track.property === 'rotationQuaternion'
-                ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
-                : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+            transformKey: value,
           };
           return serverTransformKey;
         });
@@ -117,18 +129,22 @@ export class AnimationModule extends Module {
 
       serverTracks.forEach((serverTrack) => {
         const transformKeys: IAnimationKey[] = [];
-        // TODO : test PlaskPropertyFormat[serverTrack.property]
 
-        if (serverTrack.property === 'rotationQuaternion') {
-          for (const transformKey of serverTrack.transformKeysMap) {
-            const quaternionKey = transformKey.transformKey as QuaternionTransformKey;
-            transformKeys.push({ frame: transformKey.frameIndex, value: new Quaternion(quaternionKey.x, quaternionKey.y, quaternionKey.z, quaternionKey.w) });
+        const fromServerValue = (value: any, property: string) => {
+          switch (PlaskPropertyFormat[serverTrack.property]) {
+            case Animation.ANIMATIONTYPE_FLOAT:
+              return value;
+            case Animation.ANIMATIONTYPE_QUATERNION:
+              return new Quaternion(value.x, value.y, value.z, value.w);
+            case Animation.ANIMATIONTYPE_VECTOR3:
+              return new Vector3(value.x, value.y, value.z);
+            default:
+              return value;
           }
-        } else {
-          for (const transformKey of serverTrack.transformKeysMap) {
-            const vectorKey = transformKey.transformKey as VectorTransformKey;
-            transformKeys.push({ frame: transformKey.frameIndex, value: new Vector3(vectorKey.x, vectorKey.y, vectorKey.z) });
-          }
+        };
+
+        for (const transformKey of serverTrack.transformKeysMap) {
+          transformKeys.push({ frame: transformKey.frameIndex, value: fromServerValue(transformKey.transformKey, serverTrack.property) });
         }
 
         const track: PlaskTrack = {
@@ -538,7 +554,6 @@ export class AnimationModule extends Module {
           }
         } else if (property === 'isContact') {
           const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
-
           if (targetTrack) {
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
@@ -631,8 +646,10 @@ export class AnimationModule extends Module {
     // Compute contact data
     let animationIngredientWithFootLocking = animationIngredient;
     for (const data of contactData) {
-      animationIngredientWithFootLocking =
-        this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, animationGroup, animationIngredientWithFootLocking) || animationIngredientWithFootLocking;
+      if (data.transformKeys.length) {
+        animationIngredientWithFootLocking =
+          this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, animationGroup, animationIngredientWithFootLocking) || animationIngredientWithFootLocking;
+      }
     }
 
     return animationIngredientWithFootLocking;

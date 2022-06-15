@@ -707,14 +707,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
         },
-        {
-          value: 'IK Controllers',
-          onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('IK Controllers');
-          },
-          checked: targetVisibilityOption ? targetVisibilityOption.isIKControllerVisible : true,
-          active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
-        },
+        // {
+        //   value: 'IK Controllers',
+        //   onSelect: () => {
+        //     plaskEngine.visibilityLayers.toggleVisibility('IK Controllers');
+        //   },
+        //   checked: targetVisibilityOption ? targetVisibilityOption.isIKControllerVisible : true,
+        //   active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
+        // },
       ];
     } else {
       return [];

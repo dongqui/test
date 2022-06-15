@@ -209,7 +209,7 @@ export class IKModule extends Module {
    */
   public addIK(assetId: string) {
     this._initializeControllers(assetId);
-    this._generateIkAnimationData(assetId);
+    this.addIKTracks(assetId);
     return this._generateIkPlaskTransformNodes(assetId);
   }
 
@@ -235,19 +235,28 @@ export class IKModule extends Module {
     this._ghostMeshes.length = 0;
   }
 
-  private _generateIkAnimationData(assetId: string) {
+  /**
+   * Add IK tracks to an animation ingredient
+   * @param assetId
+   * @param animationIngredient
+   */
+  public addIKTracks(assetId: string, animationIngredient?: AnimationIngredient) {
     // Find animation ingredient for an assetId
-    const animationIngredient = this.plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
-    if (!animationIngredient || !animationIngredient.layers.length) {
+    const targetAnimationIngredient = animationIngredient || this.plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+    if (!targetAnimationIngredient || !targetAnimationIngredient.layers.length) {
       throw new Error('Invalid or inexistent animation ingredient created for this asset, cannot add IK tracks.');
     }
 
-    const layer = animationIngredient.layers.find((layer) => layer.name.startsWith('baseLayer')) || animationIngredient.layers[0];
+    const layer = targetAnimationIngredient.layers.find((layer) => layer.name.startsWith('baseLayer')) || targetAnimationIngredient.layers[0];
     for (const controller of this.ikControllers) {
-      const tracks = this.plaskEngine.animationModule.createTracksForProperties(animationIngredient.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
+      const tracks = this.plaskEngine.animationModule.createTracksForProperties(targetAnimationIngredient.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
       for (const track of tracks) {
-        layer.tracks.push(track);
-        console.log(`track ${track.name} created`);
+        if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
+          console.log(`track ${track.name} already exists.`);
+        } else {
+          layer.tracks.push(track);
+          console.log(`track ${track.name} created`);
+        }
       }
     }
   }
@@ -1064,20 +1073,37 @@ export class IKModule extends Module {
       return null;
     }
     let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
-    const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+    const targetLayerId = animationIngredient.layers[0].id;
+
+    const targetLayer = animationIngredient.layers[0];
+    let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+
+    if (!targetTrack) {
+      this.addIKTracks(animationIngredient.assetId, animationIngredient);
+      targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+      if (!targetTrack) {
+        throw new Error('Error : IK tracks could not be created for foot locking');
+      }
+    }
 
     // Add an animation track for position
     animationGroup.start();
+    let lastUnlockedPosition = null;
+
     for (const key of transformKeys) {
       const frameIndex = key.frame;
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
-      const position = ikController.fkInfluenceChain![0].absolutePosition;
+      let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
+      if (key.value === 0 || !lastUnlockedPosition) {
+        lastUnlockedPosition = position;
+      }
+
       const targetDataList = [
         {
-          targetId: ikController.fkInfluenceChain![0].id,
+          targetId: ikController.handle.id,
           property: 'position' as PlaskProperty,
-          value: position.asArray() as ArrayOfThreeNumbers,
+          value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
         },
       ];
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);

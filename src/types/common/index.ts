@@ -110,7 +110,7 @@ export interface VectorTransformKey {
 export type QuaternionTransformKey = { w: number } & VectorTransformKey;
 export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
-  transformKey: VectorTransformKey | QuaternionTransformKey;
+  transformKey: number | VectorTransformKey | QuaternionTransformKey;
   // isLocked: boolean;
 }
 export interface ServerTransformKeyRequest extends ServerTransformKey {
