@@ -13,10 +13,6 @@ const MotionNode = ({ node }: Props) => {
   const dispatch = useDispatch();
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!assetId) {
-      return;
-    }
-
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('MotionContextMenu', e, {
