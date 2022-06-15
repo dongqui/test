@@ -212,7 +212,7 @@ const VideoMode = () => {
           new Timeline(timelineRef, {
             totalDuration: videoRef.current.duration + 20,
             thumbnailWidth: 128,
-            thumbnailHeight: 120,
+            thumbnailHeight: 96,
             loadingTextureURI: '/images/Loading.png',
             getThumbnailCallback: (time: number, done: (input: any) => void) => {
               const hiddenVideo = document.createElement('video');
@@ -394,16 +394,18 @@ const VideoMode = () => {
                 </div>
               </div>
               <div className={cx('timeline-wrapper')}>
-                <canvas id="timelineCanvas" className={cx('timeline-canvas')} width={windowWidth - 86 * 2} height={148 - 18 * 2 - 16} />
-                <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
-                <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
-                <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
-                {/* <div
+                <div className={cx('timeline')}>
+                  <canvas id="timelineCanvas" className={cx('timeline-canvas')} />
+                  <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
+                  <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
+                  <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
+                  {/* <div
                   className={cx('slider-time')}
                   style={{
                     width: sliderStyles.width,
                   }}
                 /> */}
+                </div>
               </div>
             </Fragment>
           ) : (
