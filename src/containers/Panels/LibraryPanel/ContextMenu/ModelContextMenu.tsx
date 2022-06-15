@@ -63,7 +63,7 @@ const ModelContextMenu = ({ node }: Props) => {
   const handleExport = () => {
     if (!assetId) return;
 
-    const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+    const currentMotions = lpNode.nodes.filter((node) => assetId === node.assetId && node.type === 'MOTION');
     dispatch(
       globalUIActions.openModal('ExportModal', {
         onConfirm: (data: { motion: string; format: ExportFormat }) => {
