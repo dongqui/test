@@ -190,6 +190,18 @@ const VideoMode = () => {
 
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
+  const [startValue, setStartValue] = useState(0);
+  const [endValue, setEndValue] = useState(0);
+  const [sliderStyles, setSliderStyles] = useState<{
+    left: number;
+    right: number;
+    width: number;
+  }>({
+    left: 0,
+    right: 100,
+    width: 100,
+  });
+
   const [timeline, setTimeline] = useState<Timeline>();
   const rulerRef = useRef<HTMLInputElement>(null);
 
@@ -205,6 +217,7 @@ const VideoMode = () => {
 
       const videoDuration = videoRef.current.duration;
       setDuration(videoDuration);
+      setEndValue(videoDuration);
       setRulerValues(Array.from([0, 1, 2, 3, 4, 5], (x) => Math.round((x * videoDuration) / 5)));
 
       if (timelineRef && currentVideoURL) {
@@ -314,25 +327,36 @@ const VideoMode = () => {
     [duration, timeline],
   );
 
-  const [startValue, setStartValue] = useState(0);
-  const [endValue, setEndValue] = useState(0);
-
   const handleChangeStartValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
-      console.log(value);
-      setStartValue(Number(event.target.value));
+
+      if (Number(event.target.value) < endValue - 1) {
+        setStartValue(Number(event.target.value));
+        setSliderStyles({
+          left: value,
+          right: sliderStyles.right,
+          width: sliderStyles.width - (value - sliderStyles.left),
+        });
+      }
     },
-    [duration],
+    [duration, endValue, sliderStyles.left, sliderStyles.right, sliderStyles.width],
   );
 
   const handleChangeEndValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
-      console.log(value);
-      setEndValue(Number(event.target.value));
+
+      if (Number(event.target.value) > startValue + 1) {
+        setEndValue(Number(event.target.value));
+        setSliderStyles({
+          left: sliderStyles.left,
+          right: value,
+          width: sliderStyles.width - (sliderStyles.right - value),
+        });
+      }
     },
-    [duration],
+    [duration, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue],
   );
 
   return (
@@ -383,7 +407,7 @@ const VideoMode = () => {
                     id="currentTime"
                     style={{ left: `${number}%`, transform: `translate(calc(-50% + 16px * (100 - ${number * 2}) / 100), -50%)` }}
                   >
-                    {number.toFixed(1)}
+                    {((duration * Number(number.toFixed(1))) / 100).toFixed(1)}
                     <div className={cx('indicator-line')} />
                   </label>
                 </div>
@@ -399,7 +423,7 @@ const VideoMode = () => {
                   <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
                   <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
                   <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
-                  <div className={cx('slider-time')} />
+                  <div className={cx('slider-time')} style={{ left: `calc(${sliderStyles.left}%)`, width: `calc(${sliderStyles.width}%)` }} />
                 </div>
               </div>
             </Fragment>

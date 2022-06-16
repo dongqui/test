@@ -211,14 +211,11 @@
 
 .timeline-canvas {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 2px;
   width: 100%;
-  height: 100%;
-  // width: calc(100% - 172px);
-  // height: 96px;
-  // border-radius: 16px;
+  height: calc(100% + 2px);
+  border-radius: 12px;
 }
 
 .scrubber-wrapper {
@@ -278,11 +275,11 @@
     appearance: none;
     -webkit-tap-highlight-color: transparent;
     position: relative;
-    width: 11px;
-    height: 94px;
-    border-top-left-radius: 16px;
-    border-bottom-left-radius: 16px;
-    background: $secondary;
+    width: 14px;
+    height: 96px;
+    // border-top-left-radius: 14px;
+    // border-bottom-left-radius: 14px;
+    // background: $secondary;
     pointer-events: all;
   }
 
@@ -319,11 +316,11 @@
     appearance: none;
     -webkit-tap-highlight-color: transparent;
     position: relative;
-    width: 11px;
-    height: 94px;
-    border-top-right-radius: 16px;
-    border-bottom-right-radius: 16px;
-    background: $secondary;
+    width: 14px;
+    height: 96px;
+    // border-top-right-radius: 14px;
+    // border-bottom-right-radius: 14px;
+    // background: $secondary;
     pointer-events: all;
   }
 
@@ -336,14 +333,33 @@
 
 .slider-time {
   position: absolute;
-  // margin: 18px 86px;
   top: 0;
   left: 0;
+  // border: 2px solid $secondary;
+  // width: 100%;
+  // height: 100%;
+  // border-radius: 14px;
+  // z-index: 0;
   border: 2px solid $secondary;
-  // width: calc(100% - 86px * 2);
-  // height: calc(100% - 18px * 2);
-  width: 100%;
+  border-radius: 14px;
+  // z-index: 5;
   height: 100%;
-  border-radius: 16px;
-  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 100vw;
+    height: calc(100% + 2px);
+    left: calc(-100vw - 2px);
+    background-color: rgb(18 19 19 / 40%);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 100vw;
+    height: calc(100% + 2px);
+    right: calc(-100vw - 2px);
+    background-color: rgb(18 19 19 / 40%);
+  }
 }
