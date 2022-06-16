@@ -160,10 +160,9 @@
 
     &::-webkit-slider-thumb {
       appearance: none;
-      border: 1px solid #fff;
+      border: 1px solid $primary;
       border-radius: 2px;
-      background-color: #fff;
-      color: var(--gray100);
+      background-color: $primary;
       width: 32px;
       height: 16px;
     }
@@ -180,14 +179,14 @@
     text-align: center;
     background-color: transparent;
     transform: translate(-50%, -50%);
-    color: #000;
+    color: #fff;
     font-size: 9px;
     font-weight: 500;
     pointer-events: none;
   }
 
   .indicator-line {
-    border-left: 1px solid #fff;
+    border-left: 1px solid $primary;
     height: 134px;
     position: absolute;
     top: 0;
