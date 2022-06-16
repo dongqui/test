@@ -115,7 +115,7 @@ export class AnimationModule extends Module {
    * @param current
    * @returns
    */
-  static serverDataToIngredient(
+  serverDataToIngredient(
     serverAnimation: ServerAnimation,
     serverAnimationLayers: ServerAnimationLayer[],
     transformNodes: TransformNode[],
@@ -183,7 +183,12 @@ export class AnimationModule extends Module {
       layers,
     };
 
-    return animationIngredient;
+    // Foot locking
+    const contactData = this.extractContactData(animationIngredient);
+    const animationGroupTemp = this.createAnimationGroupFromIngredient(animationIngredient, this.fps);
+    const animationIngredientWithFootLocking = this.processContactData(animationIngredient, animationGroupTemp, contactData);
+
+    return animationIngredientWithFootLocking;
   }
 
   /**
@@ -205,10 +210,7 @@ export class AnimationModule extends Module {
       (animationIngredient) => visualizedAssetIds.includes(animationIngredient.assetId) && animationIngredient.current,
     );
     if (visualizedAnimationIngredients.length === 1) {
-      const contactData = this.extractContactData(visualizedAnimationIngredients[0]);
-      const animationGroupTemp = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
-      const animationIngredientWithFootLocking = this.processContactData(visualizedAnimationIngredients[0], animationGroupTemp, contactData);
-      const animationGroup = this.createAnimationGroupFromIngredient(animationIngredientWithFootLocking, this.fps);
+      const animationGroup = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
       animationGroup.normalize(startTimeIndex, endTimeIndex);
 
       this._currentAnimationGroup = animationGroup;
