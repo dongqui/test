@@ -58,7 +58,6 @@ const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObj
       setControlTarget(null);
     } else if (_selectedTargets.length === 1) {
       // case single target is selected
-      console.log(_selectedTargets[0].reference.getPlaskEntity());
       setControlTarget(_selectedTargets[0].reference);
     } else {
       // case multi targets are selected

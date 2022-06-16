@@ -127,6 +127,9 @@ BoneIKController.prototype.update = function () {
   var yaxis = BoneIKController['_tmpVecs'][3];
   var upAxis = BoneIKController['_tmpVecs'][4];
   var _tmpQuat = BoneIKController['_tmpQuat'];
+  this.mesh.computeWorldMatrix(true);
+  (this['_bone1'] as Bone).computeWorldMatrix(true);
+  (this['_bone2'] as Bone).computeWorldMatrix(true);
   bone1.getAbsolutePositionToRef(this.mesh, bonePos);
   this['_bone2'].getAbsolutePositionToRef(this.mesh, bone2Pos);
   if (this['upVector']) {

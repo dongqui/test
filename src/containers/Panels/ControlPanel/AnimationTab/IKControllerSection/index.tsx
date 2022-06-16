@@ -153,19 +153,38 @@ const IKControllerSection: FunctionComponent<Props> = ({
         plaskEngine.ikModule.setIKControllerBlend(1);
         setBlendValue(1);
       },
+      disabled: false,
     },
     {
       text: 'Set FK Pose to IK',
       onClick: () => {
         plaskEngine.ikModule.setFKtoIK();
       },
+      disabled: false,
     },
     {
       text: 'Bake all FK into IK',
-      onClick: () => {},
+      onClick: () => {
+        const { animationIngredients, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+        for (const animationIngredient of animationIngredients) {
+          dispatch(editAnimationIngredient({ animationIngredient }));
+        }
+
+        // Set FK position to newly updated values
+        plaskEngine.ikModule.setIKtoFK();
+
+        // Select baked FK so the user notices the change
+        dispatch(defaultMultiSelect({ targets: impactedIK }));
+
+        // Refresh tracks by forcing the selection update.
+        // Could be better using ADD_KEYFRAME
+        dispatch(changeSelectedTargets());
+      },
+      disabled: false,
     },
     {
       text: 'Bake all IK into FK',
+
       onClick: () => {
         const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
         for (const animationIngredient of animationIngredients) {
@@ -173,7 +192,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
         }
 
         // Set FK position to newly updated values
-        // TODO : not working
         plaskEngine.ikModule.setFKtoIK();
 
         // Select baked FK so the user notices the change
@@ -183,6 +201,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
         // Could be better using ADD_KEYFRAME
         dispatch(changeSelectedTargets());
       },
+      disabled: false,
     },
     {
       text: 'Reset to initial pose',
@@ -259,7 +278,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               key={`${info.text}${idx}`}
               text={info.text}
               type="default"
-              disabled={!isAllActive || !isIKOn}
+              disabled={!isAllActive || !isIKOn || info.disabled}
               fullSize={true}
             />
           ))}

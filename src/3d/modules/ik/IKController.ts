@@ -158,6 +158,9 @@ export class IKController {
    */
   public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, blend: number, poleAngle: number) {
     Vector3.LerpToRef(fkOriginalAbsolutePosition, ikAbsolutePosition, blend, TmpVectors.Vector3[0]);
+    // console.log(
+    //   `blend: ${blend}\nfkOriginalAbsolutePosition: ${fkOriginalAbsolutePosition}\nikAbsolutePosition: ${ikAbsolutePosition}\nTmpVectors.Vector3:${TmpVectors.Vector3[0]}`,
+    // );
     this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     this.poleAngle = poleAngle;
     this.controller.update();

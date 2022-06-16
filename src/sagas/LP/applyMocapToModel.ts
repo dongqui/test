@@ -97,7 +97,7 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
   const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
   const animationLayers = _animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
   const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-  const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
+  const animationIngredient = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
 
   const nextNodes = produce(nodes, (draft) => {
     const targetModel = find(draft, { id: nodeId });

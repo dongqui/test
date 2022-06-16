@@ -59,7 +59,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-      const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+      const animationIngredient = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
 
       yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
