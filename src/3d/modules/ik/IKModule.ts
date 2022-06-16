@@ -1091,6 +1091,8 @@ export class IKModule extends Module {
     let lastUnlockedPosition = null;
     let lastUnlockedPoleAngle = null;
 
+    const origPoints: {contact: number; position: Vector3}[] = [];
+
     for (const key of transformKeys) {
       const frameIndex = key.frame;
       animationGroup.goToFrame(frameIndex);
@@ -1103,6 +1105,10 @@ export class IKModule extends Module {
 
       if (key.value === 0 || lastUnlockedPoleAngle === null) {
         lastUnlockedPoleAngle = rotation;
+      }
+
+      if (boneName.includes("leftFoot")) {
+        origPoints.push({contact: key.value, position: position});
       }
 
       const targetDataList = [
@@ -1128,8 +1134,100 @@ export class IKModule extends Module {
         throw new Error('Could not bake, error while fetching animation ingredients.');
       }
     }
+
     animationGroup.goToFrame(0);
     animationGroup.stop();
+
+    if (boneName.includes("leftFoot")) {
+
+      console.log(origPoints);
+
+      // Path Adjust_____________________________________________
+      const origCurve:Vector3[] = [];
+      const contactPoints:Vector3[] = [];
+      const betweenContactsPoints:Vector3[] = [];
+      const adjustedCurve:Vector3[] = [];
+      const adjustedCurveGroup:Vector3[][] = [];
+
+      origPoints.forEach((value, index, array) => {
+        // original points
+        origCurve.push(value.position);
+
+        // Evaluate CONTACT
+        if (value.contact === 1) {
+          // Store CONTACTS points
+          contactPoints.push(value.position);
+
+          // Evaluate END OF CONTACTS or END OF POINTS
+          if ((array[index+1] && array[index+1].contact === 0) || index === array.length-1) {
+
+            // Calculate CENTER POINT of CONTACTS
+            const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+            const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+            contactPoints.forEach((vec) => {
+                min.x = Math.min(min.x, vec.x);
+                min.y = Math.min(min.y, vec.y);
+                min.z = Math.min(min.z, vec.z);
+                max.x = Math.max(max.x, vec.x);
+                max.y = Math.max(max.y, vec.y);
+                max.z = Math.max(max.z, vec.z);
+            });
+            const result = max.add(min).scale(0.5);
+            adjustedCurve.push(result);
+            contactPoints.length = 0;
+
+            if (betweenContactsPoints.length > 0) {
+              //console.log(adjustedCurve);
+              adjustedCurveGroup.push(adjustedCurve);
+
+              const finalCurve = Curve3.CreateCatmullRomSpline(adjustedCurve, 10);
+              const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, this.plaskEngine.scene);
+              finalCurveLine.color = new Color3(0, 0.6, 1);
+
+              adjustedCurve.length = 0;
+              adjustedCurve.push(result);
+              betweenContactsPoints.length = 0;
+            }
+          }
+        } else {
+          betweenContactsPoints.push(value.position);
+
+          // Evaluate END OF BETWEEN CONTACTS or END OF POINTS
+          if ((array[index+1] && array[index+1].contact === 1) || index === array.length-1) {
+
+            const reduceValue = 3;
+            let reducedPoints:Vector3[] = [];
+            if (index === array.length-1) {
+              reducedPoints = betweenContactsPoints.slice(reduceValue);
+            } else {
+              reducedPoints = betweenContactsPoints.slice(reduceValue, betweenContactsPoints.length-reduceValue);
+            }
+
+            // Evaluate amount of points to generate the adjusted curve
+            for (let i = 0; i < reducedPoints.length; i+=reduceValue) {
+              adjustedCurve.push(reducedPoints[i]);
+            }
+
+            if (index === array.length-1) {
+              adjustedCurveGroup.push(adjustedCurve);
+            }
+          }
+        }
+      })
+
+      const origCurveLine = MeshBuilder.CreateLines("original", {points: origCurve}, this.plaskEngine.scene);
+      origCurveLine.color = new Color3(1, 0.6, 0);
+
+      //console.log(adjustedCurveGroup);
+
+      // for (const curve of adjustedCurveGroup) {
+      //   const finalCurve = Curve3.CreateCatmullRomSpline(curve, 10);
+      //   const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, this.plaskEngine.scene);
+      //   finalCurveLine.color = new Color3(0, 0.6, 1);
+      // }
+
+    }
+
 
     return targetAnimation;
   }
