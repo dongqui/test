@@ -18,10 +18,11 @@ interface Props {
 const VideoMode = ({ browserType }: Props) => {
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
-  const [currentVideoDevice, setCurrentVideoDevice] = useState<MediaDeviceInfo | null>(null);
   const [videoDeviceListLoaded, setVideoDeviceListLoaded] = useState(false);
+  const [cameraPermission, setCameraPermission] = useState<boolean | undefined>(undefined);
+  const [currentVideoDevice, setCurrentVideoDevice] = useState<MediaDeviceInfo | null>(null);
   const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
-  const [videoRecorder, setVideoRecorder] = useState<MediaRecorder>();
+  const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const boxProps = useMemo(
@@ -61,36 +62,20 @@ const VideoMode = ({ browserType }: Props) => {
         stream.getTracks().forEach((track) => track.stop());
         return true;
       })
-      .catch((e) => false);
+      .catch(() => false);
   }, []);
 
-  const getVideoDeviceList = useCallback(async () => {
-    const devices = await navigator.mediaDevices
+  // return videoinput device list
+  // return single device which has empty deviceId when requires permission
+  const getVideoInputDeviceList: () => Promise<MediaDeviceInfo[]> = useCallback(async () => {
+    return await navigator.mediaDevices
       .enumerateDevices()
-      .then((totalDevice) => {
-        return totalDevice.filter((device) => device.kind === 'videoinput');
-      })
-      .catch((error) => {
-        return [];
-      });
+      .then((totalDevice) => totalDevice.filter((device) => device.kind === 'videoinput'))
+      .catch(() => []);
+  }, []);
 
-    // cannot find any deviceId but found videoinput group id
-    if (devices.length === 1 && devices[0].deviceId === '') {
-      if (!(await requestCameraPermission())) {
-        console.log('request denied');
-      } else {
-        await getVideoDeviceList();
-        return;
-      }
-    } else {
-      setVideoDeviceList(devices);
-    }
-
-    setVideoDeviceListLoaded(true);
-  }, [requestCameraPermission]);
-
-  const videoDeviceInitialize = useCallback(async (deviceId: string) => {
-    const constraint = {
+  const deviceInitialize = useCallback(async (deviceId: string) => {
+    const constraints = {
       video: {
         width: { ideal: 3840 },
         height: { ideal: 2160 },
@@ -100,7 +85,7 @@ const VideoMode = ({ browserType }: Props) => {
       },
       audio: false,
     };
-    await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
+    await navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -109,7 +94,7 @@ const VideoMode = ({ browserType }: Props) => {
     });
   }, []);
 
-  const unmountStream = useCallback(() => {
+  const unmountCurrentStream = useCallback(() => {
     if (currentVideoStream) {
       const tracks = currentVideoStream.getTracks();
       tracks.forEach((track) => track.stop());
@@ -150,19 +135,21 @@ const VideoMode = ({ browserType }: Props) => {
 
       recorder.onstop = () => {
         const videoURL = URL.createObjectURL(new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
-        unmountStream();
+        unmountCurrentStream();
         if (videoRef.current) {
           videoRef.current.src = videoURL;
         }
 
-        save(`test.${browserType === 'safari' ? 'mp4' : 'webm'}`, new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
+        // testing feature
+        save(`test${Date.now()}.${browserType === 'safari' ? 'mp4' : 'webm'}`, new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
       };
 
-      recorder.start();
+      console.log(currentVideoStream.getTracks()[0].getSettings()?.frameRate ?? 1000);
+      recorder.start(currentVideoStream.getTracks()[0].getSettings()?.frameRate ?? 1000);
 
       setVideoRecorder(recorder);
     }
-  }, [browserType, currentVideoStream, unmountStream]);
+  }, [browserType, currentVideoStream, unmountCurrentStream]);
 
   const stopRecording = useCallback(() => {
     if (videoRecorder && videoRecorder.onstop && videoRecorder.state === 'recording') {
@@ -174,31 +161,52 @@ const VideoMode = ({ browserType }: Props) => {
     (device: MediaDeviceInfo) => {
       // when change camera
       if (device !== currentVideoDevice) {
-        unmountStream();
+        unmountCurrentStream();
         setCurrentVideoDevice(device);
       }
     },
-    [currentVideoDevice, unmountStream],
+    [currentVideoDevice, unmountCurrentStream],
   );
 
   useEffect(() => {
-    getVideoDeviceList();
-  }, [getVideoDeviceList]);
+    async function initialVideoDevice() {
+      let devices = await getVideoInputDeviceList();
+
+      // cannot find any deviceId but found videoinput group id
+      if (devices.length === 1 && !devices[0].deviceId) {
+        const permissionGranted = await requestCameraPermission();
+        setCameraPermission(permissionGranted);
+
+        if (!permissionGranted) {
+          console.log('camera permission request denied');
+          return;
+        }
+
+        // after permission granted, get device list again
+        devices = await getVideoInputDeviceList();
+      }
+
+      setVideoDeviceList(devices);
+      setVideoDeviceListLoaded(true);
+    }
+
+    initialVideoDevice();
+  }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
-    if (videoDeviceList.length > 0 && videoDeviceListLoaded) {
+    if (videoDeviceListLoaded && videoDeviceList.length > 0) {
       setCurrentVideoDevice(videoDeviceList[0]);
     }
   }, [videoDeviceListLoaded, videoDeviceList]);
 
   useEffect(() => {
     if (currentVideoDevice !== null) {
-      videoDeviceInitialize(currentVideoDevice.deviceId);
+      deviceInitialize(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, videoDeviceInitialize]);
+  }, [currentVideoDevice, deviceInitialize]);
 
   const handleDrop = (files: File[]) => {
-    unmountStream();
+    unmountCurrentStream();
     console.log(files);
   };
 
