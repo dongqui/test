@@ -17,6 +17,7 @@ import {
   Path3D,
   IAnimationKey,
   Space,
+  Scene,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
@@ -1247,54 +1248,65 @@ export class IKModule extends Module {
         lastUnlockedPoleAngle = rotation;
       }
 
-      if (boneName.includes('leftFoot')) {
+      if (boneName.includes('leftFoot') || boneName.includes('rightFoot')) {
         origPoints.push({ contact: key.value, position: position });
-      }
-
-      const targetDataList = [
-        {
-          targetId: ikController.handle.id,
-          property: 'position' as PlaskProperty,
-          value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
-        },
-        {
-          targetId: ikController.handle.id,
-          property: 'poleAngle' as PlaskProperty,
-          value: lastUnlockedPoleAngle,
-        },
-        {
-          targetId: ikController.handle.id,
-          property: 'blend' as PlaskProperty,
-          value: key.value,
-        },
-      ];
-      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
-
-      if (!targetAnimation) {
-        throw new Error('Could not bake, error while fetching animation ingredients.');
       }
     }
 
-    animationGroup.goToFrame(0);
-    animationGroup.stop();
+    const adjustedCurve:Vector3[] = [];
+    if (boneName.includes('leftFoot') || boneName.includes('rightFoot')) {
+      //console.log(origPoints);
+      const origCurve:Vector3[] = []; // just to visualize the ORIGINAL path
 
-    if (boneName.includes('leftFoot')) {
-      console.log(origPoints);
+      const contactPoints:Vector3[] = [];
+      const centerPoints:{qty: number, point: Vector3, used: boolean}[] = [];
+      const noContactPoints:Vector3[] = [];
+      const adjustedPoints:Vector3[] = [];
 
-      // Path Adjust_____________________________________________
-      const origCurve: Vector3[] = [];
-      const contactPoints: Vector3[] = [];
-      const betweenContactsPoints: Vector3[] = [];
-      const adjustedCurve: Vector3[] = [];
-      const adjustedCurveGroup: Vector3[][] = [];
+      let pointsQty: number = 0;
+      const reduceValue = 3; // less than 3 => closer to original (maintain the "slide" effect)
+
+      // Generate the NEW ADJUSTED PATH
+      function setAdjustedCurve(scene: Scene, value?: Vector3) {
+        //console.log(adjustedPoints.length, pointsQty);
+        if (value) {
+          adjustedPoints.push(value);
+        }
+
+        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.ceil(pointsQty/adjustedPoints.length));
+        const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, scene);
+        finalCurveLine.color = new Color3(0, 0.6, 1);
+
+        if (!centerPoints[centerPoints.length-2].used) {
+          for (let i=0; i < centerPoints[centerPoints.length-2].qty; i++) {
+            adjustedCurve.push(centerPoints[centerPoints.length-2].point)
+          }
+          centerPoints[centerPoints.length-2].used = true;
+        }
+        finalCurve.getPoints().forEach(point => {
+          adjustedCurve.push(point);
+        })
+        if (!centerPoints[centerPoints.length-1].used) {
+          for (let i=0; i < centerPoints[centerPoints.length-1].qty; i++) {
+            adjustedCurve.push(centerPoints[centerPoints.length-1].point)
+          }
+          centerPoints[centerPoints.length-1].used = true;
+        }
+        //console.log(adjustedCurve);
+
+        adjustedPoints.length = 0;
+        noContactPoints.length = 0;
+        pointsQty = 0;
+
+        adjustedPoints.push(centerPoints[centerPoints.length-1].point);
+      }
 
       origPoints.forEach((value, index, array) => {
-        // original points
-        origCurve.push(value.position);
+        origCurve.push(value.position); // To visualize the ORIGINAL path
 
         // Evaluate CONTACT
         if (value.contact === 1) {
-          // Store CONTACTS points
+          // Store CONTACT points
           contactPoints.push(value.position);
 
           // Evaluate END OF CONTACTS or END OF POINTS
@@ -1311,60 +1323,81 @@ export class IKModule extends Module {
               max.z = Math.max(max.z, vec.z);
             });
             const result = max.add(min).scale(0.5);
-            // Store CENTER POINT and contact points QUANTITY
-            centerPoints.push({qty: contactPoints.length, point: result});
+            pointsQty++;
+            // Store CENTER POINT, contact points QUANTITY and a BOOLEAN to prevent reuse
+            centerPoints.push({qty: contactPoints.length, point: result, used: false});
             contactPoints.length = 0;
-
-            if (betweenContactsPoints.length > 0) {
-              //console.log(adjustedCurve);
-              adjustedCurveGroup.push(adjustedCurve);
-
-              const finalCurve = Curve3.CreateCatmullRomSpline(adjustedCurve, 10);
-              const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, this.plaskEngine.scene);
-              finalCurveLine.color = new Color3(0, 0.6, 1);
-
-              adjustedCurve.length = 0;
-              adjustedCurve.push(result);
-              betweenContactsPoints.length = 0;
+            // Evaluate if there are NO CONTACT points stored
+            if (noContactPoints.length > 0) {
+              setAdjustedCurve(this.plaskEngine.scene, result);
+            } else {
+              adjustedPoints.push(result);  
             }
           }
         } else {
+          // Store NO CONTACT Points
           noContactPoints.push(value.position);
           pointsQty++;
 
-          // Evaluate END OF BETWEEN CONTACTS or END OF POINTS
-          if ((array[index + 1] && array[index + 1].contact === 1) || index === array.length - 1) {
-            const reduceValue = 3;
-            let reducedPoints: Vector3[] = [];
-            if (index === array.length - 1) {
-              reducedPoints = betweenContactsPoints.slice(reduceValue);
+          // Evaluate END OF NO CONTACTS or END OF POINTS
+          if ((array[index+1] && array[index+1].contact === 1) || index === array.length-1) {
+
+            // Trying to optimize the PATH to reduce the "slide" effect
+            let reducedPoints:Vector3[] = [];
+            if (index === array.length-1) { // Evaluate if last point
+              reducedPoints = noContactPoints.slice(reduceValue);
             } else {
-              reducedPoints = betweenContactsPoints.slice(reduceValue, betweenContactsPoints.length - reduceValue);
+              reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length-reduceValue);
             }
 
-            // Evaluate amount of points to generate the adjusted curve
-            for (let i = 0; i < reducedPoints.length; i += reduceValue) {
-              adjustedCurve.push(reducedPoints[i]);
+            // Reducing the PATH to adjust/curve it with CatmullRomSpline
+            for (let i = 0; i < reducedPoints.length; i+=(reduceValue)) {
+              adjustedPoints.push(reducedPoints[i]);
             }
 
-            if (index === array.length - 1) {
-              adjustedCurveGroup.push(adjustedCurve);
+            // Evaluate if last point
+            if (index === array.length-1) {
+              setAdjustedCurve(this.plaskEngine.scene);
             }
           }
         }
       });
-
+      // To visualize the ORIGINAL PATH
       const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
       origCurveLine.color = new Color3(1, 0.6, 0);
 
-      //console.log(adjustedCurveGroup);
-
-      // for (const curve of adjustedCurveGroup) {
-      //   const finalCurve = Curve3.CreateCatmullRomSpline(curve, 10);
-      //   const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, this.plaskEngine.scene);
-      //   finalCurveLine.color = new Color3(0, 0.6, 1);
-      // }
     }
+
+    let frameIndex = 0;
+    for (const point of adjustedCurve) {
+      const targetDataList = [
+        {
+          targetId: ikController.handle.id,
+          property: 'position' as PlaskProperty,
+          //value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
+          value: point.asArray() as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: ikController.handle.id,
+          property: 'poleAngle' as PlaskProperty,
+          value: lastUnlockedPoleAngle,
+        },
+        {
+          targetId: ikController.handle.id,
+          property: 'blend' as PlaskProperty,
+          //value: key.value,
+          value: 1,
+        },
+      ];
+      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+      frameIndex ++;
+      if (!targetAnimation) {
+        throw new Error('Could not bake, error while fetching animation ingredients.');
+      }
+    }
+
+    animationGroup.goToFrame(0);
+    animationGroup.stop();
 
     return targetAnimation;
   }
