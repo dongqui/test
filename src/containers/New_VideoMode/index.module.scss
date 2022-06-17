@@ -131,6 +131,7 @@
     position: absolute;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
     height: 16px;
     padding: 0px 86px;
@@ -160,11 +161,13 @@
 
     &::-webkit-slider-thumb {
       appearance: none;
-      border: 1px solid $primary;
-      border-radius: 2px;
-      background-color: $primary;
-      width: 32px;
-      height: 16px;
+      background-image: url("/images/Handler.svg");
+      background-repeat: no-repeat;
+      // border: 1px solid $primary;
+      // border-radius: 2px;
+      // background-color: $primary;
+      width: 34px;
+      height: 14px;
     }
   }
 
