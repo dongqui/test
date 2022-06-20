@@ -12,9 +12,6 @@ import {
   ActionEvent,
   AnimationGroup,
   Curve3,
-  Scalar,
-  Plane,
-  Path3D,
   IAnimationKey,
   Space,
   Scene,
@@ -91,100 +88,6 @@ export class IKModule extends Module {
     for (const ikController of this.ikControllers) {
       ikController.update();
     }
-
-    // Foot Locking Component
-    //////////////////////////////////////////////////////////
-    // Creating FL Adjusted Paths
-    if (!this.isFinishedFootLockingGeneration) {
-      // Evaluate if ANIMATION IS PLAYING (used now to generate FL data)
-      if (this.plaskEngine.scene.animationGroups[0] && this.plaskEngine.scene.animationGroups[0].isPlaying) {
-        this.footLockingData(Math.floor(this.plaskEngine.scene.animationGroups[0].animatables[0].masterFrame));
-      }
-    } else {
-      // Positioning IK Controller to FL Adjusted Paths
-      if (this.plaskEngine.scene.animationGroups[0] && this.plaskEngine.scene.animationGroups[0].isPlaying) {
-        // Approach 2 - Using Bezier Curves (totally replacing the FK data with IK)
-        if (this.leftFootIK) {
-          this.leftFootIK.handle.position = this.leftFootLockingApproach2[
-            Math.floor(
-              Scalar.Lerp(
-                0,
-                this.leftFootLockingApproach2.length,
-                this.plaskEngine.scene.animationGroups[0].animatables[0].masterFrame / this.plaskEngine.scene.animationGroups[0].animatables[0].toFrame,
-                //(this.plaskEngine.state.animatingControls.currentTimeIndex/this.plaskEngine.state.animatingControls.endTimeIndex)
-              ),
-            )
-          ];
-        }
-        /*__________________________________________
-        // Approach 1 - Using Hermite Spline Curves (just replacing the FK data in contact regions)
-        this.leftFootLockingApproach1.forEach((point) => {
-          if (this.plaskEngine.state.animatingControls.currentTimeIndex >= point.startPoint && this.plaskEngine.state.animatingControls.currentTimeIndex <= point.endPoint) {
-            if (this.leftFootIK) {
-              // Is not working
-              //this.leftFootIK.poleAngle = this.poleAngleAdjust(this.leftFootIK);
-
-              this.leftFootIK.handle.position = point.middlePosition;
-              
-              if (this.plaskEngine.state.animatingControls.currentTimeIndex < point.middlePoint) {
-                this.leftFootIK.blend = Scalar.SmoothStep(
-                  0, 
-                  1, 
-                  (this.plaskEngine.state.animatingControls.currentTimeIndex - point.startPoint) / (point.middlePoint - point.startPoint));
-              } else {
-                this.leftFootIK.blend = Scalar.SmoothStep(
-                  1, 
-                  0, 
-                  (this.plaskEngine.state.animatingControls.currentTimeIndex - point.middlePoint) / (point.endPoint - point.middlePoint));
-              }
-            }
-          }
-        });
-        //__________________________________________
-        */
-        // Approach 2 - Using Bezier Curves (totally replacing the FK data with IK)
-        if (this.rightFootIK) {
-          this.rightFootIK.handle.position = this.rightFootLockingApproach2[
-            Math.floor(
-              Scalar.Lerp(
-                0,
-                this.rightFootLockingApproach2.length,
-                this.plaskEngine.scene.animationGroups[0].animatables[0].masterFrame / this.plaskEngine.scene.animationGroups[0].animatables[0].toFrame,
-                //(this.plaskEngine.state.animatingControls.currentTimeIndex/this.plaskEngine.state.animatingControls.endTimeIndex)
-              ),
-            )
-          ];
-        }
-        /*__________________________________________
-        // Approach 1 - Using Hermite Spline Curves (just replacing the FK data in contact regions)
-        this.rightFootLockingApproach1.forEach((point) => {
-          if (this.plaskEngine.state.animatingControls.currentTimeIndex >= point.startPoint && this.plaskEngine.state.animatingControls.currentTimeIndex <= point.endPoint) {
-            if (this.rightFootIK) {
-              // Is not working
-              //this.rightFootIK.poleAngle = this.poleAngleAdjust(this.rightFootIK);
-
-              this.rightFootIK.handle.position = point.middlePosition;
-
-              if (this.plaskEngine.state.animatingControls.currentTimeIndex < point.middlePoint) {
-                this.rightFootIK.blend = Scalar.SmoothStep(
-                  0, 
-                  1, 
-                  (this.plaskEngine.state.animatingControls.currentTimeIndex - point.startPoint) / (point.middlePoint - point.startPoint));
-              } else {
-                this.rightFootIK.blend = Scalar.SmoothStep(
-                  1, 
-                  0, 
-                  (this.plaskEngine.state.animatingControls.currentTimeIndex - point.middlePoint) / (point.endPoint - point.middlePoint));
-              }
-            }
-          }
-        });
-        //__________________________________________
-      */
-      }
-    }
-    //////////////////////////////////////////////////////////
-
     // Copy FK position for IK ghost, only for joints
     // that are not forced by IK
     this._updateIKGhost();
@@ -689,351 +592,6 @@ export class IKModule extends Module {
     }
   }
 
-  // Foot Locking Component
-  //////////////////////////////////////////////////////////////
-  //  Trick to get the Foot's joints positions along the animation flow
-  // and generate lines to visualize its motions
-  // There are a sequence of actions that need be manually done, which are:
-  //  - import Json file 0525_new_contact_1.json
-  //  - change the "End" of animation to 261 instead of 100 in bottom left panel
-  //  - play the animation and stop it when reach it finish
-  // Lines wil appears with the flows of the Foot's motions
-
-  public contactData: any;
-  public leftFootContactsPositions: { contact: number; position: ArrayOfThreeNumbers }[] = [];
-  public rightFootContactsPositions: { contact: number; position: ArrayOfThreeNumbers }[] = [];
-  public leftFootLockingApproach1: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition: Vector3 }[] = [];
-  public rightFootLockingApproach1: { startPoint: number; startPosition: Vector3; middlePoint: number; middlePosition: Vector3; endPoint: number; endPosition: Vector3 }[] = [];
-  public leftFootLockingApproach2: Vector3[] = [];
-  public rightFootLockingApproach2: Vector3[] = [];
-  public isFinishedFootContactsPositionsCapture: boolean = false; // just used in FL generation
-  public leftContactToggle: number = -1; //just used for visualization
-  public rightContactToggle: number = -1; //just used for visualization
-  public leftLastIndex: number = 0; //just used for visualization
-  public rightLastIndex: number = 0; //just used for visualization
-  public leftFootIK: IKController | undefined = undefined;
-  public rightFootIK: IKController | undefined = undefined;
-  public isFinishedFootLockingGeneration: boolean = false; // just used in FL generation
-
-  // Generate FOOT LOCKING ADJUSTED PATHS
-  public footLockingData(index: number) {
-    // Evaluate if JSON data, with contacts infos, is loaded (now with direct load from JSON file - on line 827)
-    if (this.contactData) {
-      // Storing the ORIGINAL FOOT PATH of Left foot
-      // needs to be done now with the running of animation
-      if (!this.leftFootContactsPositions[index]) {
-        // Grabbing leftFoot data (contact and position)
-        this.leftFootContactsPositions.push({
-          contact: this.contactData.data.result[0].trackData[9].transformKeys[index].value,
-          position: this.plaskEngine.scene.getMeshByName('leftFoot_joint')?.position.asArray() as ArrayOfThreeNumbers,
-        });
-        //console.log(index, this.leftFootContactsPositions[index]);
-
-        //_______________________________________________
-        // Just to Visualize the ORIGINAL FOOT PATH
-        // (Green Lines - without contact/red lines - with contact)
-
-        // Evaluate if Contact change it value to draw line with different color
-        if (this.leftContactToggle != -1 && this.leftContactToggle != this.contactData.data.result[0].trackData[9].transformKeys[index].value) {
-          const leftFootPositions: Vector3[] = [];
-
-          for (let i: number = this.leftLastIndex; i < index; i++) {
-            leftFootPositions.push(Vector3.FromArray(this.leftFootContactsPositions[i].position) as Vector3);
-          }
-
-          this.leftLastIndex = index - 1;
-
-          const leftFootCurve = new Curve3(leftFootPositions);
-          const leftFootCurveLine = MeshBuilder.CreateLines('', { points: leftFootCurve.getPoints() }, this.plaskEngine.scene);
-          leftFootCurveLine.color = this.leftContactToggle == 0 ? Color3.Green() : Color3.Red();
-        }
-        this.leftContactToggle = this.contactData.data.result[0].trackData[9].transformKeys[index].value;
-        //_______________________________________________
-      }
-
-      // Storing the ORIGINAL FOOT PATH of Right foot
-      // (now needs to be done now with the running of animation
-      if (!this.rightFootContactsPositions[index]) {
-        // Grabbing rightFoot data (contact and position)
-        this.rightFootContactsPositions.push({
-          contact: this.contactData.data.result[0].trackData[11].transformKeys[index].value,
-          position: this.plaskEngine.scene.getMeshByName('rightFoot_joint')?.position.asArray() as ArrayOfThreeNumbers,
-        });
-        //console.log(index, this.rightFootContactsPositions[index]);
-
-        //_______________________________________________
-        // Just to Visualize the ORIGINAL FOOT PATH
-        // (Green Lines - without contact/red lines - with contact)
-
-        // Evaluate if Contact change it value to draw line with different color
-        if (this.rightContactToggle != -1 && this.rightContactToggle != this.contactData.data.result[0].trackData[11].transformKeys[index].value) {
-          const rightFootPositions: Vector3[] = [];
-
-          for (let i: number = this.rightLastIndex; i < index; i++) {
-            rightFootPositions.push(Vector3.FromArray(this.rightFootContactsPositions[i].position) as Vector3);
-          }
-
-          this.rightLastIndex = index - 1;
-
-          const rightFootCurve = new Curve3(rightFootPositions);
-          const rightFootCurveLine = MeshBuilder.CreateLines('', { points: rightFootCurve.getPoints() }, this.plaskEngine.scene);
-          rightFootCurveLine.color = this.rightContactToggle == 0 ? Color3.Green() : Color3.Red();
-        }
-        this.rightContactToggle = this.contactData.data.result[0].trackData[11].transformKeys[index].value;
-        //_______________________________________________
-      }
-
-      // Stop ORIGINALS FOOTS PATHS capture
-      if (
-        this.leftFootContactsPositions.length >= this.contactData.data.result[0].trackData[0].transformKeys.length &&
-        this.rightFootContactsPositions.length >= this.contactData.data.result[0].trackData[0].transformKeys.length &&
-        !this.isFinishedFootContactsPositionsCapture
-      ) {
-        this.isFinishedFootContactsPositionsCapture = true;
-        this.plaskEngine.state.animatingControls.currentAnimationGroup?.stop();
-        this.plaskEngine.scene.animationGroups[0].stop();
-
-        // Generate the FOOT LOCKING ADJUSTED PATHS
-        this.leftFootIK = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_leftFoot'));
-        this.leftFootLockingApproach1 = this.generateFootLockingPath(this.leftFootContactsPositions, this.leftFootIK, this.plaskEngine.scene);
-        this.leftFootIK.poleAngle = this.poleAngleAdjust(this.leftFootIK);
-
-        this.rightFootIK = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_rightFoot'));
-        this.rightFootLockingApproach1 = this.generateFootLockingPath(this.rightFootContactsPositions, this.rightFootIK, this.plaskEngine.scene);
-        this.rightFootIK.poleAngle = this.poleAngleAdjust(this.rightFootIK);
-
-        // Set finished the FOOT LOCKING ADJUSTED PATHS generation
-        if (this.leftFootLockingApproach1 && this.rightFootLockingApproach1) this.isFinishedFootLockingGeneration = true;
-      }
-    }
-  }
-
-  // Generate FOOT LOCKING ADJUSTED PATH
-  // to perform Foot Locking with IK Controllers
-  public generateFootLockingPath(
-    footPositionsContacts: {
-      contact: number;
-      position: ArrayOfThreeNumbers;
-    }[],
-    IKController: IKController | undefined,
-    scene: any,
-  ) {
-    const footLockingData: {
-      startPoint: number;
-      startPosition: Vector3;
-      middlePoint: number;
-      middlePosition: Vector3;
-      endPoint: number;
-      endPosition: Vector3;
-      highestPoint: number;
-      highestPosition: Vector3;
-    }[] = [];
-    const pointsToEvaluateCenter: Vector3[] = [];
-    let startPoint: number = 0;
-    let startPosition: Vector3 = new Vector3();
-    let middlePoint: number = 0;
-    let middlePosition: Vector3 = new Vector3();
-    let endPoint: number = 0;
-    let endPosition: Vector3 = new Vector3();
-    let lastSize: number = 1;
-    let highestPosition: Vector3 = new Vector3(0, 0, 0);
-
-    //console.log(footPositionsContacts);
-    footPositionsContacts.forEach((value, index) => {
-      // Evaluate foot contact until the before last (length-2) value
-      if (value.contact == 1 && index < footPositionsContacts.length - 2) {
-        // Store initial point of this contacts region
-        if (index == 0 || footPositionsContacts[index - 1].contact == 0) {
-          startPoint = index;
-          startPosition = new Vector3(value.position[0], value.position[1], value.position[2]);
-        }
-        // Store point to evaluate the center of this contacts region
-        pointsToEvaluateCenter.push(new Vector3(value.position[0], value.position[1], value.position[2]));
-
-        //_______________________________________________
-        // Create Bezier Curves (Foot Locking Approach 2)
-        if (footLockingData.length > lastSize) {
-          console.log('footLockingData_lastSize ', lastSize);
-          const startPath = footLockingData[footLockingData.length - 2];
-          const endPath = footLockingData[footLockingData.length - 1];
-          let origin = startPath.middlePosition;
-          let control1 = new Vector3();
-          let control2 = new Vector3();
-          let destination = endPath.middlePosition;
-          if (startPath.highestPoint < (endPath.middlePoint - startPath.middlePoint) / 2 + startPath.middlePoint) {
-            control1 = footLockingData[footLockingData.length - 2].highestPosition.divideInPlace(new Vector3(1, 0.8, 1));
-            //console.log(((endPath.middlePoint - startPath.middlePoint)*3/4) + startPath.middlePoint);
-            control2 = new Vector3(
-              footPositionsContacts[Math.round(((endPath.middlePoint - startPath.middlePoint) * 7) / 8) + startPath.middlePoint].position[0],
-              footPositionsContacts[Math.round(((endPath.middlePoint - startPath.middlePoint) * 7) / 8) + startPath.middlePoint].position[1],
-              footPositionsContacts[Math.round(((endPath.middlePoint - startPath.middlePoint) * 7) / 8) + startPath.middlePoint].position[2],
-            );
-            control2.divideInPlace(new Vector3(1, 0.8, 1));
-          } else {
-            //console.log(((endPath.middlePoint - startPath.middlePoint)/4) + startPath.middlePoint);
-            control1 = new Vector3(
-              footPositionsContacts[Math.round(((endPath.middlePoint - startPath.middlePoint) * 5) / 8) + startPath.middlePoint].position[0],
-              footPositionsContacts[Math.round(((endPath.middlePoint - startPath.middlePoint) * 5) / 8) + startPath.middlePoint].position[1],
-              footPositionsContacts[Math.round(((endPath.middlePoint - startPath.middlePoint) * 5) / 8) + startPath.middlePoint].position[2],
-            );
-            control1.divideInPlace(new Vector3(1, 0.8, 1));
-            control2 = footLockingData[footLockingData.length - 2].highestPosition.divideInPlace(new Vector3(1, 0.8, 1));
-          }
-
-          // const bezierCurve = Curve3.CreateQuadraticBezier(
-          //   footLockingData[footLockingData.length-2].middlePosition,
-          //   footLockingData[footLockingData.length-2].highestPosition.divideInPlace(new Vector3(1, 0.6, 1)),
-          //   footLockingData[footLockingData.length-1].middlePosition,
-          //   footLockingData[footLockingData.length-1].middlePoint - footLockingData[footLockingData.length-2].middlePoint
-          // );
-
-          const bezierCurve = Curve3.CreateCubicBezier(origin, control1, control2, destination, endPath.middlePoint - startPath.middlePoint);
-
-          lastSize = footLockingData.length;
-
-          // Storing Bezier Curves Points (Foot Locking Approach 2)
-          for (const point of bezierCurve.getPoints()) {
-            if (IKController) {
-              if (IKController.handle.name.includes('leftFoot')) {
-                this.leftFootLockingApproach2.push(point);
-                //console.log(this.leftFootLockingApproach2);
-              } else {
-                this.rightFootLockingApproach2.push(point);
-                //console.log(this.rightFootLockingApproach2);
-              }
-            }
-          }
-          // Visualize the Bezier Curve
-          const bezierCurveLine = MeshBuilder.CreateLines('bezier_' + footLockingData.length, { points: bezierCurve.getPoints() }, scene);
-          bezierCurveLine.color = Color3.Blue();
-        }
-        highestPosition = new Vector3(0, 0, 0);
-        //_______________________________________________
-      } else {
-        // Evaluate if there is a region of contacts points to evaluate its center point
-        // And it needs to be bigger than 1 to discart false/positive indications
-        if (pointsToEvaluateCenter.length > 1) {
-          const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-          const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-          pointsToEvaluateCenter.forEach((vec) => {
-            min.x = Math.min(min.x, vec.x);
-            min.y = Math.min(min.y, vec.y);
-            min.z = Math.min(min.z, vec.z);
-            max.x = Math.max(max.x, vec.x);
-            max.y = Math.max(max.y, vec.y);
-            max.z = Math.max(max.z, vec.z);
-          });
-          const result = max.add(min).scale(0.5);
-          // Store middle point (centered) of this contacts region
-          middlePoint = Math.ceil((index - 1 - startPoint) / 2) + startPoint;
-          middlePosition = result;
-
-          // Generate Keyframe
-          // NOT WORKING yet
-          //this.addPositionKF(middlePosition, middlePoint, IKController);
-
-          // Store end point of this contacts region
-          endPoint = index;
-          endPosition = new Vector3(footPositionsContacts[index].position[0], footPositionsContacts[index].position[1], footPositionsContacts[index].position[2]);
-          footLockingData.push({
-            startPoint: startPoint,
-            startPosition: startPosition,
-            middlePoint: middlePoint,
-            middlePosition: middlePosition,
-            endPoint: endPoint,
-            endPosition: endPosition,
-            highestPoint: 0,
-            highestPosition: new Vector3(0, 0, 0),
-          });
-          //___________________________________________________________________
-          // Foot Locking Approach 1
-          if (footLockingData.length > 1) {
-            let hermite: Curve3;
-            // Evaluate if THIS IS the last foot path position and IS NOT stored
-            if (index == footPositionsContacts.length - 1 && index != footLockingData[footLockingData.length - 1].endPoint) {
-              footLockingData.push({
-                startPoint: footLockingData[footLockingData.length - 1].middlePoint,
-                startPosition: footLockingData[footLockingData.length - 1].middlePosition,
-                middlePoint: footLockingData[footLockingData.length - 1].endPoint,
-                middlePosition: footLockingData[footLockingData.length - 1].endPosition,
-                endPoint: footPositionsContacts.length - 1,
-                endPosition: new Vector3(footPositionsContacts[index].position[0], footPositionsContacts[index].position[1], footPositionsContacts[index].position[2]),
-                highestPoint: 0,
-                highestPosition: new Vector3(0, 0, 0),
-              });
-              // Creating Hermite Spline (with values just for this last position)
-              hermite = Curve3.CreateHermiteSpline(
-                footLockingData[footLockingData.length - 1].startPosition,
-                footLockingData[footLockingData.length - 1].middlePosition,
-                footLockingData[footLockingData.length - 1].endPosition,
-                new Vector3(0, 0, 0),
-                footLockingData[footLockingData.length - 1].endPoint - footLockingData[footLockingData.length - 1].startPoint,
-              );
-              // Defining the origin/destination Tangents with a Path3D getClosestPointTo() method
-              const path3D = new Path3D(hermite.getPoints());
-              const newLastEndPosition = path3D.getPointAt(path3D.getClosestPositionTo(footLockingData[footLockingData.length - 1].middlePosition));
-              footLockingData[footLockingData.length - 2].endPosition = newLastEndPosition;
-              const newStartPosition = path3D.getPointAt(path3D.getClosestPositionTo(footLockingData[footLockingData.length - 1].endPosition));
-              footLockingData[footLockingData.length - 1].startPosition = newStartPosition;
-            } else {
-              // In case of THIS IS NOT the last foot path position and IT IS ALREADY stored
-              // Creating Hermite Spline
-              hermite = Curve3.CreateHermiteSpline(
-                footLockingData[footLockingData.length - 2].middlePosition,
-                footLockingData[footLockingData.length - 2].endPosition,
-                footLockingData[footLockingData.length - 1].middlePosition,
-                footLockingData[footLockingData.length - 1].startPosition,
-                footLockingData[footLockingData.length - 1].middlePoint - footLockingData[footLockingData.length - 2].middlePoint,
-              );
-              // Defining the origin/destination Tangents with a Path3D getClosestPointTo() method
-              const path3D = new Path3D(hermite.getPoints());
-              const newLastEndPosition = path3D.getPointAt(path3D.getClosestPositionTo(footLockingData[footLockingData.length - 2].endPosition));
-              footLockingData[footLockingData.length - 2].endPosition = newLastEndPosition;
-              const newStartPosition = path3D.getPointAt(path3D.getClosestPositionTo(footLockingData[footLockingData.length - 1].startPosition));
-              footLockingData[footLockingData.length - 1].startPosition = newStartPosition;
-            }
-            // Visualizing the Hermite Spline Curves (FL Approach 1)
-            console.log(footLockingData, footLockingData.length, IKController?.targetInfluenceChain[0].name);
-            const hermiteLine = MeshBuilder.CreateLines('', { points: hermite.getPoints() }, scene);
-            hermiteLine.color = Color3.White();
-            //___________________________________________________________________
-          }
-          // Restart the array
-          pointsToEvaluateCenter.length = 0;
-        }
-        //_______________________________________________
-        // Evaluate of Highest Position (y axis) in region WITHOUT contact
-        // Used to create Bezier Curves (Foot Locking Approach 2)
-        if (value.position[1] > highestPosition.y) {
-          footLockingData[footLockingData.length - 1].highestPoint = index;
-          footLockingData[footLockingData.length - 1].highestPosition = new Vector3(value.position[0], value.position[1], value.position[2]);
-          highestPosition = footLockingData[footLockingData.length - 1].highestPosition;
-          //console.log(index, highestPosition);
-          //_______________________________________________
-        }
-      }
-    });
-
-    return footLockingData;
-  }
-
-  public poleAngleAdjust(footFL: IKController) {
-    if (!footFL.fkInfluenceChain) {
-      return;
-    }
-
-    let vec1 = footFL.fkInfluenceChain[0].position;
-    let vec2 = footFL.fkInfluenceChain[1].position;
-    let vec3 = footFL.fkInfluenceChain[2].position;
-
-    let plane: Plane = Plane.FromPoints(vec1, vec2, vec3);
-    let dir: Vector3 = Vector3.Cross(vec3.subtract(vec2).normalize(), plane.normal);
-
-    //console.log(footFL?.poleAngle, footFL?.targetInfluenceChain[2].forward, footFL?.fkInfluenceChain[2].forward);
-    //console.log(Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward, dir, plane.normal));
-    return Vector3.GetAngleBetweenVectors(footFL?.targetInfluenceChain[2].forward.normalize(), dir, plane.normal);
-  }
-
   // public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
   //   const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
   //     (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
@@ -1055,7 +613,6 @@ export class IKModule extends Module {
   //   }
   //   return null;
   // }
-  //////////////////////////////////////////////////////////////
 
   private _initializeControllers(assetId: string) {
     const scene = this.plaskEngine.scene;
@@ -1109,18 +666,6 @@ export class IKModule extends Module {
 
     this.plaskEngine.assetModule.setVisibility(1);
     this.setVisibility(0.25);
-
-    // Foot Locking component (Loading Json and setting variables)
-    //////////////////////////////////////////////////////////////
-    // const assetManager = new AssetsManager(scene);
-    // assetManager.useDefaultLoadingScreen = false;
-    // const jsonLoadTask = assetManager.addTextFileTask('FLJson', './0525_new_contact_1.json');
-    // jsonLoadTask.onSuccess = (task) => {
-    //   this.contactData = JSON.parse(task.text);
-    //   //console.log(this.contactData);
-    // };
-    // assetManager.load();
-    //////////////////////////////////////////////////////////////
 
     // TODO : retrieve skeleton and body more cleanly
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
@@ -1229,37 +774,37 @@ export class IKModule extends Module {
     let lastUnlockedPosition = null;
     let lastUnlockedPoleAngle = null;
 
-    const origPoints: { contact: number; position: Vector3 }[] = [];
+    const origPoints: { contact: number; position: Vector3; rotation: number }[] = [];
 
     for (const key of transformKeys) {
       const frameIndex = key.frame;
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
       let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
-      // let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
+      //let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
       // Lots of assumptions here, but basically we are taking the hip left/right to hip center as a normal for the pole angle
       let direction = (ikController.fkInfluenceChain![2].parent as Mesh).absolutePosition.subtract(ikController.fkInfluenceChain![2].absolutePosition).normalize();
       const rotation = Math.atan2(direction.z, direction.x) * (ikController.limb === 'leftFoot' ? -1 : 1);
-      if (key.value === 0 || !lastUnlockedPosition) {
-        lastUnlockedPosition = position;
-      }
+      // if (key.value === 0 || !lastUnlockedPosition) {
+      //   lastUnlockedPosition = position;
+      // }
 
-      if (key.value === 0 || lastUnlockedPoleAngle === null) {
-        lastUnlockedPoleAngle = rotation;
-      }
+      // if (key.value === 0 || lastUnlockedPoleAngle === null) {
+      //   lastUnlockedPoleAngle = rotation;
+      // }
 
       if (boneName.includes('leftFoot') || boneName.includes('rightFoot')) {
-        origPoints.push({ contact: key.value, position: position });
+        origPoints.push({ contact: key.value, position: position, rotation: rotation });
       }
     }
 
     const adjustedCurve:Vector3[] = [];
     if (boneName.includes('leftFoot') || boneName.includes('rightFoot')) {
-      //console.log(origPoints);
+      console.log(origPoints);
       const origCurve:Vector3[] = []; // just to visualize the ORIGINAL path
 
       const contactPoints:Vector3[] = [];
-      const centerPoints:{qty: number, point: Vector3, used: boolean}[] = [];
+      const centerPoints:{qty: number, point: Vector3, index: number, used: boolean}[] = [];
       const noContactPoints:Vector3[] = [];
       const adjustedPoints:Vector3[] = [];
 
@@ -1268,14 +813,15 @@ export class IKModule extends Module {
 
       // Generate the NEW ADJUSTED PATH
       function setAdjustedCurve(scene: Scene, value?: Vector3) {
-        //console.log(adjustedPoints.length, pointsQty);
         if (value) {
           adjustedPoints.push(value);
         }
 
-        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.ceil(pointsQty/adjustedPoints.length));
-        const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, scene);
-        finalCurveLine.color = new Color3(0, 0.6, 1);
+        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty/adjustedPoints.length));
+        
+        // To visualize the ADJUSTED PATH
+        // const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, scene);
+        // finalCurveLine.color = new Color3(0, 0.6, 1);
 
         if (!centerPoints[centerPoints.length-2].used) {
           for (let i=0; i < centerPoints[centerPoints.length-2].qty; i++) {
@@ -1287,12 +833,13 @@ export class IKModule extends Module {
           adjustedCurve.push(point);
         })
         if (!centerPoints[centerPoints.length-1].used) {
-          for (let i=0; i < centerPoints[centerPoints.length-1].qty; i++) {
+          let diff = (Math.floor(centerPoints[centerPoints.length-1].qty/2)+adjustedCurve.length)-centerPoints[centerPoints.length-1].index;
+          for (let i=0; i < centerPoints[centerPoints.length-1].qty-diff; i++) {
             adjustedCurve.push(centerPoints[centerPoints.length-1].point)
           }
           centerPoints[centerPoints.length-1].used = true;
         }
-        //console.log(adjustedCurve);
+        //console.log(adjustedCurve, adjustedCurve.length);
 
         adjustedPoints.length = 0;
         noContactPoints.length = 0;
@@ -1324,8 +871,13 @@ export class IKModule extends Module {
             });
             const result = max.add(min).scale(0.5);
             pointsQty++;
-            // Store CENTER POINT, contact points QUANTITY and a BOOLEAN to prevent reuse
-            centerPoints.push({qty: contactPoints.length, point: result, used: false});
+            // Store contact points QUANTITY, CENTER POINT, CENTER POINT INDEX and a BOOLEAN to prevent reuse
+            centerPoints.push(
+              {
+                qty: contactPoints.length, 
+                point: result, 
+                index: (index - contactPoints.length) + Math.floor(contactPoints.length/2), 
+                used: false});
             contactPoints.length = 0;
             // Evaluate if there are NO CONTACT points stored
             if (noContactPoints.length > 0) {
@@ -1363,13 +915,18 @@ export class IKModule extends Module {
         }
       });
       // To visualize the ORIGINAL PATH
-      const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
-      origCurveLine.color = new Color3(1, 0.6, 0);
+      // const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
+      // origCurveLine.color = new Color3(1, 0.6, 0);
 
     }
 
     let frameIndex = 0;
+    let poleAngleRotation = 0;
     for (const point of adjustedCurve) {
+      if (origPoints[frameIndex].rotation) {
+        poleAngleRotation = origPoints[frameIndex].rotation;
+      }
+
       const targetDataList = [
         {
           targetId: ikController.handle.id,
@@ -1380,7 +937,7 @@ export class IKModule extends Module {
         {
           targetId: ikController.handle.id,
           property: 'poleAngle' as PlaskProperty,
-          value: lastUnlockedPoleAngle,
+          value: poleAngleRotation,
         },
         {
           targetId: ikController.handle.id,
