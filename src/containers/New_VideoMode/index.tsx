@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useEffect, useState, useCallback, useRef, ChangeEvent } from 'react';
+import { useMemo, useEffect, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
@@ -9,6 +9,7 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import { useWindowSize } from 'hooks/common';
 import ControlPanel from './ControlPanel';
 import RenderingPanel from './RenderingPanel';
+import MiddleBar from './MiddleBar';
 import TimelinePanel from './TimelinePanel';
 
 import classNames from 'classnames/bind';
@@ -254,7 +255,7 @@ const VideoMode = () => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          MB
+          <MiddleBar />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
