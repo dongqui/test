@@ -531,7 +531,7 @@ export class IKModule extends Module {
         this.forceUpdateGhostSkeleton();
         // TODO : turn blend into LERP of position/ SLERP of quaternion on the 3 transform nodes, every frame after IK calculation
         selectedIK.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, blendValue, poleAngleValue);
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
+        // targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
       }
 
       if (targetAnimation) {
@@ -1421,7 +1421,7 @@ export class IKModule extends Module {
         },
       ];
       // TODO uncomment for Nelson's code
-      // targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
       frameIndex++;
       if (!targetAnimation) {
         throw new Error('Could not bake, error while fetching animation ingredients.');
