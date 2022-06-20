@@ -1,6 +1,8 @@
 import { Middleware } from 'redux';
 import requestApi from 'api/requestApi';
 
+import plaskCommandManager from 'command/PlaskCommandManager';
+
 // import axios from 'axios';
 // axios.defaults.withCredentials = true;
 
@@ -12,6 +14,8 @@ import requestApi from 'api/requestApi';
 const middleware: Middleware = () => {
   return (next) => (action) => {
     const { promise, type, api, ...rest } = action;
+
+    plaskCommandManager.add(action);
 
     if (promise) {
       const { api, ...restPromise } = promise;

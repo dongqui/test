@@ -8,6 +8,7 @@ import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import HistorySection from './HistorySection';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -25,6 +26,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   return (
     <Fragment>
+      <HistorySection isAllActive={isAllActive} />
       <SelectionTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
 
       {_selectedTargets.length > 0 && <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />}
