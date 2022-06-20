@@ -118,13 +118,11 @@
 }
 
 .ruler {
-  // position: relative;
   display: flex;
   background-color: var(--grey010);
   width: 100%;
   height: 16px;
   justify-content: center;
-  // padding: 0 86px;
 
   .ruler-inner {
     user-select: none;
@@ -134,7 +132,7 @@
     align-items: center;
     width: 100%;
     height: 16px;
-    padding: 0px 86px;
+    padding: 0 86px;
   }
 
   .indicator-wrapper {
@@ -142,15 +140,11 @@
     display: flex;
     justify-content: space-between;
     width: calc(100% - 140px);
-    // padding: 0px 70px;
     z-index: 3;
   }
 
   .indicator {
-    // position: absolute;
-    // left: 70px;
     width: 100%;
-    // width: calc(100% - 70px * 2);
     appearance: none;
     background: transparent;
     margin: 0;
@@ -163,9 +157,6 @@
       appearance: none;
       background-image: url("/images/Handler.svg");
       background-repeat: no-repeat;
-      // border: 1px solid $primary;
-      // border-radius: 2px;
-      // background-color: $primary;
       width: 34px;
       height: 14px;
     }
@@ -175,7 +166,6 @@
     position: absolute;
     user-select: none;
     top: 50%;
-    // left: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -234,7 +224,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  // width: calc(100% - 86px * 2);
   width: 100%;
   height: 100%;
   appearance: none;
@@ -248,23 +237,19 @@
 
   &::-webkit-slider-thumb {
     appearance: none;
-    width: 0px;
+    width: 0;
   }
 }
 
 .crop-slider-start {
   appearance: none;
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 50%;
   transform: translate(-50%, -50%);
-  // width: calc(100% - 86px * 2);
   width: 100%;
   height: 0;
   outline: none;
-  // pointer-events: none;
-  top: 0;
-  right: 0;
   cursor: col-resize;
   margin: 0;
   z-index: 2;
@@ -279,9 +264,6 @@
     position: relative;
     width: 14px;
     height: 96px;
-    // border-top-left-radius: 14px;
-    // border-bottom-left-radius: 14px;
-    // background: $secondary;
     pointer-events: all;
   }
 
@@ -295,17 +277,13 @@
 .crop-slider-end {
   appearance: none;
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 50%;
   transform: translate(-50%, -50%);
-  // width: calc(100% - 86px * 2);
   width: 100%;
   height: 0;
   outline: none;
   margin: 0;
-  // pointer-events: none;
-  top: 0;
-  right: 0;
   cursor: col-resize;
   z-index: 2;
   appearance: none;
@@ -320,9 +298,6 @@
     position: relative;
     width: 14px;
     height: 96px;
-    // border-top-right-radius: 14px;
-    // border-bottom-right-radius: 14px;
-    // background: $secondary;
     pointer-events: all;
   }
 
@@ -337,14 +312,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  // border: 2px solid $secondary;
-  // width: 100%;
-  // height: 100%;
-  // border-radius: 14px;
-  // z-index: 0;
   border: 2px solid $secondary;
   border-radius: 14px;
-  // z-index: 5;
   height: 100%;
 
   &::before {

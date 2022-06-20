@@ -101,7 +101,7 @@ const VideoMode = () => {
 
             reject('Not supported extension');
           }
-        }; // onloadend
+        };
 
         fileReader.readAsArrayBuffer(file);
       });
@@ -123,8 +123,6 @@ const VideoMode = () => {
 
   const handleDrop = async (files: File[]) => {
     if (files.length > 1) {
-      // Upload one video file at a time.
-      // Warning close
       dispatch(
         globalUIActions.openModal('AlertModal', {
           title: 'Warning',
@@ -132,12 +130,12 @@ const VideoMode = () => {
           confirmText: 'Close',
         }),
       );
+
       return;
     }
 
     const file = files[0];
 
-    // mp4, mov, webm
     const acceptableFormats = ['mp4', 'mov', 'webm'];
 
     const extension = await headerInspector(file)
@@ -170,21 +168,6 @@ const VideoMode = () => {
     }
   };
 
-  const handleCaptureThumbnail = useCallback(() => {
-    if (canvasRef.current && videoRef.current) {
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-
-      const canvasContext = canvasRef.current.getContext('2d');
-
-      if (canvasContext) {
-        canvasContext.drawImage(videoRef.current as CanvasImageSource, 0, 0);
-      }
-
-      return canvasRef.current.toDataURL('image/webp');
-    }
-  }, []);
-
   const [duration, setDuration] = useState(0);
   const [rulerValues, setRulerValues] = useState<number[]>([]);
 
@@ -209,11 +192,6 @@ const VideoMode = () => {
     if (videoRef && videoRef.current && rulerRef && rulerRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
-      let count = 0;
-
-      const datumPoint = videoRef.current.duration / 20;
-
-      const thumbnailList: string[] = [];
 
       const videoDuration = videoRef.current.duration;
       setDuration(videoDuration);
@@ -269,48 +247,8 @@ const VideoMode = () => {
     }
   }, [timeline]);
 
-  const [isCameraLoaded, setIsCameraLoaded] = useState({ loaded: false, error: false });
   const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
-  const [currentStream, setCurrentStream] = useState<MediaStream>();
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const getCameraDeviceList = useCallback(async () => {
-    const devices = await navigator.mediaDevices
-      .enumerateDevices()
-      .then((totalDevice) => {
-        setIsCameraLoaded({ loaded: true, error: false });
-        return totalDevice.filter((device) => device.kind === 'videoinput');
-      })
-      .catch((error) => {
-        setIsCameraLoaded({ loaded: false, error: true });
-        return [];
-      });
-
-    setCameraDeviceList(devices);
-  }, []);
-
-  const mediaStreamInitialize = useCallback(async () => {
-    const constraint = { video: true };
-    // await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
-    //   if (videoRef.current) {
-    //     videoRef.current.srcObject = stream;
-    //   }
-
-    //   setCurrentStream(stream);
-    // });
-
-    await getCameraDeviceList();
-  }, [getCameraDeviceList]);
-
-  useEffect(() => {
-    mediaStreamInitialize();
-  }, [mediaStreamInitialize]);
-
-  const videoOptions = {
-    autoPlay: true,
-    playsInline: true,
-    muted: true,
-  };
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -370,7 +308,7 @@ const VideoMode = () => {
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           <canvas className={cx('thumbnail-generator')} ref={canvasRef} />
-          <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} onLoadedMetadata={handleLoadMetadata} {...videoOptions} />
+          <video ref={videoRef} className={cx('video', { mirror: videoRef.current && !videoRef.current.src })} onLoadedMetadata={handleLoadMetadata} autoPlay playsInline muted />
           {cameraDeviceList.length === 0 && !isVideoLoaded && (
             <div className={cx('notification')}>
               <IconWrapper className={cx('icon-no-camera')} icon={SvgPath.NoCamera} />
