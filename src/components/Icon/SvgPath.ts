@@ -62,6 +62,9 @@ import Support from './New_svg/Support.svg';
 import CloudUpload from './svg/CloudUpload.svg';
 import ErrorWarning from './svg/ErrorWarning.svg';
 import ModalClose from './svg/ModalClose.svg';
+import CameraPlay from '../../../public/images/CameraPlay.svg';
+import CameraRecord from '../../../public/images/CameraRecord.svg';
+import CameraPause from '../../../public/images/CameraPause.svg';
 
 type Icon =
   | 'ModalClose'
@@ -123,7 +126,10 @@ type Icon =
   | 'Logo'
   | 'Support'
   | 'CloudUpload'
-  | 'ErrorWarning';
+  | 'ErrorWarning'
+  | 'CameraPlay'
+  | 'CameraRecord'
+  | 'CameraPause';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -190,6 +196,9 @@ const images: Images = {
   CloudUpload,
   ErrorWarning,
   ModalClose,
+  CameraPlay,
+  CameraRecord,
+  CameraPause,
 };
 
 export default images;
