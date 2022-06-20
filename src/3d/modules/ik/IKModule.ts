@@ -437,8 +437,7 @@ export class IKModule extends Module {
   public setIKtoFK(controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
-      selectedIK.handle.setAbsolutePosition(selectedIK.fkTarget!.absolutePosition);
-      selectedIK.poleAngle = selectedIK.fkController!.poleAngle;
+      selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
       selectedIK.controller.update();
     });
   }
@@ -448,9 +447,9 @@ export class IKModule extends Module {
    */
   public setFKtoIK(controllers?: IKController[]): void {
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
-      selectedIK.fkTarget!.setAbsolutePosition(selectedIK.target.absolutePosition);
-      selectedIK.fkController!.poleAngle = selectedIK.poleAngle;
-      selectedIK.fkController!.update();
+      for (let i = 0; i < 3; i++) {
+        selectedIK.fkInfluenceChain![i].rotationQuaternion!.copyFrom(selectedIK.targetInfluenceChain[i].rotationQuaternion!);
+      }
     });
   }
 
@@ -793,11 +792,11 @@ export class IKModule extends Module {
         this.plaskEngine.scene.animationGroups[0].stop();
 
         // Generate the FOOT LOCKING ADJUSTED PATHS
-        this.leftFootIK = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_leftFoot'));
+        this.leftFootIK = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_leftFoot')) as IKController;
         this.leftFootLockingApproach1 = this.generateFootLockingPath(this.leftFootContactsPositions, this.leftFootIK, this.plaskEngine.scene);
         this.leftFootIK.poleAngle = this.poleAngleAdjust(this.leftFootIK);
 
-        this.rightFootIK = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_rightFoot'));
+        this.rightFootIK = this.ikControllers.find((controller) => controller.handle.name.includes('ik_ctrl_handle_rightFoot')) as IKController;
         this.rightFootLockingApproach1 = this.generateFootLockingPath(this.rightFootContactsPositions, this.rightFootIK, this.plaskEngine.scene);
         this.rightFootIK.poleAngle = this.poleAngleAdjust(this.rightFootIK);
 
@@ -1018,7 +1017,7 @@ export class IKModule extends Module {
 
   public poleAngleAdjust(footFL: IKController) {
     if (!footFL.fkInfluenceChain) {
-      return;
+      return 0;
     }
 
     let vec1 = footFL.fkInfluenceChain[0].position;
@@ -1227,6 +1226,7 @@ export class IKModule extends Module {
     animationGroup.start();
     let lastUnlockedPosition = null;
     let lastUnlockedPoleAngle = null;
+    let lastUnlockedFootQuaternion = null;
 
     const origPoints: { contact: number; position: Vector3 }[] = [];
 
@@ -1245,6 +1245,9 @@ export class IKModule extends Module {
 
       if (key.value === 0 || lastUnlockedPoleAngle === null) {
         lastUnlockedPoleAngle = rotation;
+      }
+      if (key.value === 0 || lastUnlockedFootQuaternion === null) {
+        lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
       }
 
       if (boneName.includes('leftFoot')) {
@@ -1266,6 +1269,12 @@ export class IKModule extends Module {
           targetId: ikController.handle.id,
           property: 'blend' as PlaskProperty,
           value: key.value,
+        },
+        // Toe locking - for now always locked
+        {
+          targetId: boneName,
+          property: 'rotationQuaternion' as PlaskProperty,
+          value: lastUnlockedFootQuaternion,
         },
       ];
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
