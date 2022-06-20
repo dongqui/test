@@ -1,5 +1,5 @@
 import { find, cloneDeep, omitBy } from 'lodash';
-import { select, put, SagaReturnType, call, take } from 'redux-saga/effects';
+import { select, put, SagaReturnType, call, take, all, putResolve } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 import produce from 'immer';
 
@@ -17,6 +17,8 @@ import { RequestNodeResponse } from 'types/LP';
 import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
 import { ServerAnimationLayer, ServerAnimation, MocapDataResponse, ServerAnimationResponse } from 'types/common';
+import { addIKAction } from 'actions/addIKAction';
+import { addIK } from 'sagas/RP/ik/addIK';
 
 const handleConfirmOnError = channel();
 
@@ -97,8 +99,19 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
   const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
   const animationLayers = _animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
   const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-  const animationIngredient = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
+  let { animationIngredient, includesFootLocking, contactData } = plaskEngine.animationModule.serverDataToIngredient(
+    animation,
+    animationLayers,
+    targetAsset.transformNodes,
+    false,
+    targetAsset.id,
+  );
 
+  if (includesFootLocking && contactData) {
+    console.log('Auto add IK because foot locking is required.');
+    yield call(addIK, addIKAction(modelNode.assetId!, animationIngredient));
+    animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+  }
   const nextNodes = produce(nodes, (draft) => {
     const targetModel = find(draft, { id: nodeId });
     targetModel?.childNodeIds.push(motionNode.id);

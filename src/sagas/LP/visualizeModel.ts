@@ -1,5 +1,5 @@
 import { channel } from 'redux-saga';
-import { select, put, SagaReturnType, take, call } from 'redux-saga/effects';
+import { select, put, SagaReturnType, take, call, all, putResolve } from 'redux-saga/effects';
 import { find, omitBy } from 'lodash';
 
 import { RootState } from 'reducers';
@@ -14,7 +14,8 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskProject, ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskAsset } from 'types/common/index';
 import plaskEngine from '3d/PlaskEngine';
 import * as api from 'api';
-import { AnimationModule } from '3d/modules/animation/AnimationModule';
+import { addIKAction } from 'actions/addIKAction';
+import { addIK } from 'sagas/RP/ik/addIK';
 
 const clickJointChannel = channel();
 
@@ -64,8 +65,19 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-      const animationIngredient = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+      let { animationIngredient, includesFootLocking, contactData } = plaskEngine.animationModule.serverDataToIngredient(
+        animation,
+        animationLayers,
+        asset.transformNodes,
+        false,
+        asset.id,
+      );
 
+      if (includesFootLocking && contactData) {
+        console.log('Auto add IK because foot locking is required.');
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
+        animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+      }
       yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
@@ -93,6 +105,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         plaskEngine.assetModule.visualizeModel(modelNode.assetId);
         let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(modelNode.assetId);
         // Auto add ik code
+
         // plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(modelNode.assetId));
         yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
         // This appends PlaskTransformNodes to state.selectableObjects

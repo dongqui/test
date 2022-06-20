@@ -1,6 +1,6 @@
 import { ServerAnimation } from './../../types/common/index';
 import { RootState } from 'reducers';
-import { select, put, call } from 'redux-saga/effects';
+import { select, put, call, all, putResolve } from 'redux-saga/effects';
 import { omitBy, find } from 'lodash';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -11,10 +11,11 @@ import * as BABYLON from '@babylonjs/core';
 import { getFileExtension, filterAnimatableTransformNodes } from 'utils/common';
 import { getInitialPoses } from 'utils/RP';
 import { PlaskAsset, ServerAnimationLayer } from 'types/common';
-import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
 import * as api from 'api';
 import { ServerAnimationResponse } from 'types/common';
+import { addIKAction } from 'actions/addIKAction';
+import { addIK } from 'sagas/RP/ik/addIK';
 
 // After put this action, have to call yield take('ADDED_NEW_ASSET'); .
 export default function* addAssetsAndAnimationIngredients(action: ReturnType<typeof lpNodeActions.addAssetsAndAnimationIngredients>) {
@@ -56,7 +57,19 @@ export default function* addAssetsAndAnimationIngredients(action: ReturnType<typ
     const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
     const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
 
-    const animationIngredients = [plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, newAsset.transformNodes, false, motion?.assetId!)];
+    let { animationIngredient, includesFootLocking, contactData } = plaskEngine.animationModule.serverDataToIngredient(
+      animation,
+      animationLayers,
+      newAsset.transformNodes,
+      false,
+      motion?.assetId!,
+    );
+    if (includesFootLocking && contactData) {
+      console.log('Auto add IK because foot locking is required.');
+      yield call(addIK, addIKAction(modelNode.assetId!, animationIngredient));
+      animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+    }
+    const animationIngredients = [animationIngredient];
 
     yield put(
       animationDataActions.addAsset({

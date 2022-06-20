@@ -223,9 +223,9 @@ export class IKModule extends Module {
    * @param assetId
    * @returns PlaskTransformNodes to represent IK controller state
    */
-  public addIK(assetId: string) {
+  public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
     this._initializeControllers(assetId);
-    this.addIKTracks(assetId);
+    this.addIKTracks(assetId, animationIngredient);
     return this._generateIkPlaskTransformNodes(assetId);
   }
 

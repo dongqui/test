@@ -22,6 +22,7 @@ import { readMetadata } from 'utils/RP/metadata';
 import { addEntity, addSelectableObjects, defaultMultiSelect, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
 import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
+import { addIKAction } from 'actions/addIKAction';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -217,9 +218,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
         confirmText: 'Confirm',
         onConfirm: () => {
           const assetId = _visualizedAssetIds[0];
-          const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId);
-          dispatch(addEntity({ targets: plaskTransformNodes }));
-          dispatch(addSelectableObjects({ objects: plaskTransformNodes }));
+          dispatch(addIKAction(assetId));
         },
         cancelText: 'Cancel',
         confirmButtonColor: 'primary',
