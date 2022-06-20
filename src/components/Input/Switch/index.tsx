@@ -18,14 +18,14 @@ interface Props {
   type?: 'default' | 'primary';
   disabled?: boolean;
   fullSize?: boolean;
-  defaultKey: string;
+  defaultValue: string;
   onChange: (key: string) => void;
   className?: string;
 }
 
-const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type = 'default', onChange, className }: Props) => {
+const Switch = ({ defaultValue, disabled = false, fullSize = false, options, type = 'default', onChange, className }: Props) => {
   // set to default index only if that index exists on options
-  const [selectedKey, setSelectedKey] = useState(defaultKey);
+  const [selectedKey, setSelectedKey] = useState(defaultValue);
 
   const classes = cx('btn-group', className, { fullsize: fullSize, disabled });
   const handleChange = useCallback(
@@ -49,7 +49,7 @@ const Switch = ({ defaultKey, disabled = false, fullSize = false, options, type 
 
   return (
     <div className={classes}>
-      <div className={cx('btn-select', type)} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selectedIndex}%` }} />
+      <div className={cx('btn-select', type, { disabled })} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selectedIndex}%` }} />
       {options.map((option, index) => (
         <SwitchItem option={option} key={`${option.key}.${index}`} disabled={disabled} onClick={handleChange} selected={option.key === selectedKey} />
       ))}

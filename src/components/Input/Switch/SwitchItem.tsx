@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react';
+import { Typography as Tg } from 'components/Typography';
 
 import classNames from 'classnames/bind';
 import styles from './SwitchItem.module.scss';
@@ -25,9 +26,13 @@ const SwitchItem = ({ option, selected, onClick, disabled }: Props) => {
   return (
     <div className={cx('btn', { disabled, selected })} onClick={handleClick}>
       {/*for hover text above select-effect*/}
-      <span className={cx('btn-text')}>{label}</span>
+      <span className={cx('btn-text')}>
+        <Tg>{label}</Tg>
+      </span>
       {/*for keep div size behind the select-effect due to overlayed text*/}
-      <span className={cx('padding')}>{label}</span>
+      <span className={cx('padding')}>
+        <Tg>{label}</Tg>
+      </span>
       <input type="radio" value={value} defaultChecked={selected} />
     </div>
   );
