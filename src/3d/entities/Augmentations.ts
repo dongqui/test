@@ -191,12 +191,12 @@ BoneIKController.prototype.update = function () {
     if (this._bendMatrixDirty) {
       mat1.invertToRef(this._bendMatrixBone1);
       const tmpMat = BoneIKController['_tmpMats'][2];
-      bone1.getRotationMatrix(Space.WORLD, this.mesh).invertToRef(tmpMat);
-      this._bendMatrixBone1.multiplyToRef(tmpMat, this._bendMatrixBone1);
+      tmpMat.copyFrom(bone1.getRotationMatrix(Space.WORLD, this.mesh));
+      tmpMat.multiplyToRef(this._bendMatrixBone1, this._bendMatrixBone1);
 
       mat3.invertToRef(this._bendMatrixBone2);
-      this['_bone2'].getRotationMatrix(Space.WORLD, this.mesh).invertToRef(tmpMat);
-      this._bendMatrixBone2.multiplyToRef(tmpMat, this._bendMatrixBone2);
+      tmpMat.copyFrom(this['_bone2'].getRotationMatrix(Space.WORLD, this.mesh));
+      tmpMat.multiplyToRef(this._bendMatrixBone2, this._bendMatrixBone2);
     }
   } else {
     var _tmpVec = BoneIKController['_tmpVecs'][5];

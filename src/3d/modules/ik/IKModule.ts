@@ -576,15 +576,15 @@ export class IKModule extends Module {
       const node2 = endTransformNode;
       const node1 = endTransformNode.parent as TransformNode;
       const node0 = node1.parent as TransformNode;
-      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition());
-      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition());
+      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition()).normalize();
+      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition()).normalize();
       const right = Vector3.Cross(b, a);
       if (right.length() < 1e-5) {
         // both sections are aligned, cannot guess an up vector
         return result;
       }
       // Bones are slightly bent, we can cross again to find the upvector and bend axis
-      result.upVector.copyFrom(right.cross(a).normalize());
+      result.upVector.copyFrom(right.normalize().cross(a));
       return result;
     } catch {
       return result;
@@ -644,6 +644,17 @@ export class IKModule extends Module {
         return;
       }
 
+      // Copy the current transform of cloned skeleton nodes
+      // ! Hard coded length of prefix
+      // TODO : we need a better way to retrieve the origin transform node
+      const originNodeName = node.name.substring(6);
+      const originTransform = scene.getTransformNodeByName(originNodeName);
+      if (originTransform) {
+        copyTransformFrom(originTransform, node);
+      } else {
+        console.warn('Could not find origin transform, ghost may have wrong posture ' + originNodeName);
+      }
+
       // List all meshes
       if (node.getClassName() === 'Mesh') {
         this._ghostMeshes.push(node as Mesh);
@@ -658,6 +669,7 @@ export class IKModule extends Module {
     }
 
     this._ghost.skeleton = clone.skeletons[0];
+    this.forceUpdateGhostSkeleton();
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {
       throw new Error('Cloning error while creating IK controllers');

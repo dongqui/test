@@ -202,6 +202,7 @@ export class IKController {
     this.controller.upVector = params.upVector;
     (this.controller as any)._adjustRoll = 0;
     this.controller.setIKtoRest();
+    this.controller.update();
 
     // IK controllers for FK (for blending)
     if (params.fkBone && params.fkTransformNode && params.fkBody) {
