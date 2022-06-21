@@ -38,3 +38,34 @@
   display: flex;
   height: 100%;
 }
+
+.video {
+  width: calc(100% - 490px);
+  height: 100%;
+  margin-left: 240px;
+}
+
+.section {
+  padding: 0 16px;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+
+    height: 40px;
+  }
+
+  .section-item {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    justify-content: space-between;
+  }
+}
+
+.dropdown {
+  margin-left: 34px;
+  background-color: $contentbg-base;
+  border-radius: 6px;
+  max-width: 138px;
+}

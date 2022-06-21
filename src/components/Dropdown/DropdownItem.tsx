@@ -36,7 +36,7 @@ const DropdownItem: FunctionComponent<Props> = ({ item, selectedValue, onSelect 
   );
 
   return (
-    <li key={item.key} tabIndex={0} className={cx('menu-item')} onClick={handleClick} onKeyDown={handleSelect} role="menuitem">
+    <li key={item.key} tabIndex={0} className={cx('menu-item', { selected: selectedValue === item.value })} onClick={handleClick} onKeyDown={handleSelect} role="menuitem">
       {item.value}
     </li>
   );
