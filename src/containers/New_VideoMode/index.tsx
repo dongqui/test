@@ -340,7 +340,7 @@ const VideoMode = ({ browserType }: Props) => {
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
   const handleLoadMetadata = useCallback(() => {
-    if (videoRef && videoRef.current) {
+    if (videoRef && videoRef.current && videoRef.current.src) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
 
