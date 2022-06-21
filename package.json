@@ -2,6 +2,7 @@
   "name": "shoot",
   "version": "0.1.3",
   "main": "main/index.js",
+  "license": "MIT",
   "productName": "Plask",
   "scripts": {
     "dev": "next dev",
