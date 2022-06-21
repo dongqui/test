@@ -255,7 +255,7 @@ const VideoMode = () => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar />
+          <MiddleBar videoRef={videoRef} />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
