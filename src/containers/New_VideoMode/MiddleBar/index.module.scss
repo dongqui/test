@@ -1,0 +1,20 @@
+@import "styles/libraries/_colors";
+@import "styles/libraries/_mixins";
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  background-color: $contentbg-base;
+  border-radius: 6px;
+}
