@@ -796,7 +796,8 @@ export class IKModule extends Module {
       //let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
       // Lots of assumptions here, but basically we are taking the hip left/right to hip center as a normal for the pole angle
       let direction = (ikController.fkInfluenceChain![2].parent as Mesh).absolutePosition.subtract(ikController.fkInfluenceChain![2].absolutePosition).normalize();
-      const rotation = Math.atan2(direction.z, direction.x) * (ikController.limb === 'leftFoot' ? -1 : 1);
+      const factor = ikController.limb === 'leftFoot' ? -1 : 1;
+      const rotation = Math.atan2(factor * direction.z, factor * direction.x);
       if (key.value === 0 || !lastUnlockedPosition) {
         lastUnlockedPosition = position;
       }
@@ -835,7 +836,7 @@ export class IKModule extends Module {
           value: lastUnlockedFootQuaternion,
         },
       ];
-      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+      // targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
 
       if (!targetAnimation) {
         throw new Error('Could not bake, error while fetching animation ingredients.');
@@ -965,6 +966,7 @@ export class IKModule extends Module {
 
     let frameIndex = 0;
     let poleAngleRotation = 0;
+
     for (const point of adjustedCurve) {
       if (origPoints[frameIndex].rotation) {
         poleAngleRotation = origPoints[frameIndex].rotation;
@@ -988,9 +990,15 @@ export class IKModule extends Module {
           //value: key.value,
           value: 1,
         },
+        // Toe locking - for now always locked
+        {
+          targetId: boneName,
+          property: 'rotationQuaternion' as PlaskProperty,
+          value: lastUnlockedFootQuaternion,
+        },
       ];
       // TODO uncomment for Nelson's code
-      // targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
       frameIndex++;
       if (!targetAnimation) {
         throw new Error('Could not bake, error while fetching animation ingredients.');
