@@ -1,7 +1,8 @@
-import { FunctionComponent, memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { find, map, isEqual } from 'lodash';
 import DropdownItem from './DropdownItem';
 import { IconWrapper, SvgPath } from 'components/Icon';
+
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
 
@@ -29,13 +30,15 @@ export interface Props {
     isSelected: boolean;
   }[];
   fixed?: boolean;
+  className?: string;
+  alignContext?: 'left' | 'right';
 }
 
 /**
  *
  * @todo 추후, Sub Menu를 위한 Cascading 기능 추가 예정
  */
-const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
+const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left' }: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -148,12 +151,12 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
     open: isOpen,
   });
 
-  const dropdownClasses = cx('menu', {
+  const dropdownClasses = cx('menu', alignContext, {
     fixed: fixed,
   });
 
   return (
-    <div ref={wrapperRef} className={cx('wrapper')}>
+    <div ref={wrapperRef} className={cx('wrapper', className)}>
       <div className={cx('header')}>
         <button type="button" ref={buttonRef} className={buttonClasses} onClick={handleToggle}>
           <div className={cx('text')}>{selectedValue}</div>

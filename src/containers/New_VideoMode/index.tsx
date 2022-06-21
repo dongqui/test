@@ -8,6 +8,8 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { Typography } from 'components/Typography';
+import { Dropdown } from 'components/Dropdown';
 
 const cx = classNames.bind(styles);
 
@@ -19,6 +21,7 @@ const VideoMode = ({ browserType }: Props) => {
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [videoDeviceListLoaded, setVideoDeviceListLoaded] = useState(false);
+  // permission이 없을 때에 handle 할 수 있게 만든 변수
   const [cameraPermission, setCameraPermission] = useState<boolean | undefined>(undefined);
   const [currentVideoDevice, setCurrentVideoDevice] = useState<MediaDeviceInfo | null>(null);
   const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
@@ -144,7 +147,6 @@ const VideoMode = ({ browserType }: Props) => {
         save(`test${Date.now()}.${browserType === 'safari' ? 'mp4' : 'webm'}`, new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
       };
 
-      console.log(currentVideoStream.getTracks()[0].getSettings()?.frameRate ?? 1000);
       recorder.start(currentVideoStream.getTracks()[0].getSettings()?.frameRate ?? 1000);
 
       setVideoRecorder(recorder);
@@ -210,6 +212,24 @@ const VideoMode = ({ browserType }: Props) => {
     console.log(files);
   };
 
+  const dropdownList = useMemo(() => {
+    return videoDeviceList.map((device) => ({
+      key: device.deviceId,
+      value: device.label,
+      isSelected: currentVideoDevice?.deviceId === device.deviceId,
+    }));
+  }, [currentVideoDevice, videoDeviceList]);
+
+  const selectHandler = useCallback(
+    (key: string) => {
+      const selected = videoDeviceList.findIndex((device) => device.deviceId === key);
+      if (selected !== -1) {
+        changeVideoDevice(videoDeviceList[selected]);
+      }
+    },
+    [changeVideoDevice, videoDeviceList],
+  );
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -217,12 +237,7 @@ const VideoMode = ({ browserType }: Props) => {
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
-          {videoDeviceListLoaded &&
-            videoDeviceList.map((device) => (
-              <FilledButton style={{ marginBottom: '10px' }} key={device.deviceId} onClick={() => changeVideoDevice(device)}>
-                {device.label}
-              </FilledButton>
-            ))}
+          LP
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           <video
@@ -237,13 +252,22 @@ const VideoMode = ({ browserType }: Props) => {
           />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
-          <ControlPanel />
+          <div className={cx('wrapper')}>
+            <div className={cx('section')}>
+              <div className={cx('section-title')}>
+                <Typography type="title">Video set</Typography>
+              </div>
+              <div className={cx('section-item')}>
+                <Typography type="body">Camera</Typography>
+                <Dropdown alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+              </div>
+            </div>
+          </div>
         </Box>
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <FilledButton onClick={startRecording}>start</FilledButton>
-          <FilledButton onClick={stopRecording}>end</FilledButton>
+          MB
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <div className={cx('dropzone')}>
