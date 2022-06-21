@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
@@ -138,6 +138,8 @@ const VideoMode = ({ browserType }: Props) => {
       });
 
     return extension;
+  };
+
   const requestCameraPermission = useCallback(async () => {
     return await navigator.mediaDevices
       .getUserMedia({ video: true })
@@ -287,11 +289,6 @@ const VideoMode = ({ browserType }: Props) => {
     }
   }, [currentVideoDevice, deviceInitialize]);
 
-  const handleDrop = (files: File[]) => {
-    unmountCurrentStream();
-    console.log(files);
-  };
-
   const handleDrop = async (files: File[]) => {
     unmountCurrentStream();
     if (files.length > 1) {
@@ -402,8 +399,6 @@ const VideoMode = ({ browserType }: Props) => {
       });
     }
   }, [timeline]);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
 
