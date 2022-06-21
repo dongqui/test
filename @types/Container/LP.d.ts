@@ -24,6 +24,7 @@ declare namespace LP {
     retargetMap?: Omit<PlaskRetargetMap, 'id' | 'assetId'>;
     animationId?: string;
     mocapId?: string;
+    createdAt: string;
   }
 
   interface DirectoryNode extends BaseNode {

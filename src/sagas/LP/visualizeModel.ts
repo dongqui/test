@@ -34,17 +34,19 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
-    const { modelNode, animationIngredientId } = action.payload;
+    let { modelNode, animationIngredientId } = action.payload;
 
     if (!modelNode.childNodeIds.length) {
       yield put(lpNodeActions.addEmptyMotionAsync.request({ assetId: modelNode.assetId!, nodeId: modelNode.id }));
       yield take('ADDED_EMPTY_MOTION');
+
+      const { lpNode }: RootState = yield select();
+      modelNode = find(lpNode.nodes, { id: modelNode.id }) || modelNode;
     }
 
     const { plaskProject, lpNode }: RootState = yield select();
     const { visualizedAssetIds, assetList } = plaskProject;
     const motionNode = find(lpNode.nodes, { id: modelNode.childNodeIds[0] });
-
     let asset = find(assetList, { id: modelNode.assetId });
 
     if (!asset) {
