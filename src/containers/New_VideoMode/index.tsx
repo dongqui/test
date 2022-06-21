@@ -237,6 +237,12 @@ const VideoMode = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
+
+  const handleChangeVideoStatus = useCallback((status: 'stop' | 'play' | 'pause') => {
+    setVideoStatus(status);
+  }, []);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
@@ -255,10 +261,10 @@ const VideoMode = () => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar videoRef={videoRef} />
+          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} />
         </Box>
         <Box id="TP" {...boxProps.TP}>
-          <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
+          <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
         </Box>
       </Box>
     </div>

@@ -12,13 +12,15 @@ interface Props {
   videoRef: RefObject<HTMLVideoElement>;
   timeline?: Timeline;
   isVideoLoaded: boolean;
+  videoStatus: 'stop' | 'play' | 'pause';
   duration: number;
   onDrop: (files: File[]) => Promise<void>;
 }
 
-const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, duration, onDrop }: Props) => {
+const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duration, onDrop }: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
+  const [originNumber, setOriginNumber] = useState(0);
   const [rulerValues, setRulerValues] = useState<number[]>([]);
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(duration);
@@ -45,6 +47,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, duration, onDrop }: 
         videoRef.current.currentTime = Number(event.target.value);
         const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
         setNumber(value);
+        setOriginNumber(Number(event.target.value));
       }
     },
     [duration, timeline, videoRef],
@@ -82,12 +85,55 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, duration, onDrop }: 
     [duration, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue],
   );
 
+  const requestRef = useRef(0);
+  const originRulerRef = useRef<HTMLInputElement>(null);
+
+  const handleChange = useCallback(() => {
+    if (videoRef.current) {
+      const value = Number(((Number(videoRef.current.currentTime) - 0) * 100) / (duration - 0));
+      setNumber(value);
+
+      requestRef.current = requestAnimationFrame(handleChange);
+    }
+  }, [duration, videoRef]);
+
+  // const changeIndicatorPosition = useCallback(() => {
+  //   if (rulerRef.current) {
+  //     const value = Number(((Number(rulerRef.current.value) - 0) * 100) / (duration - 0));
+  //
+  //     setNumber(value);
+  //     requestRef.current = requestAnimationFrame(changeIndicatorPosition);
+  //   }
+  // }, [duration]);
+
+  useEffect(() => {
+    requestRef.current = requestAnimationFrame(handleChange);
+    // if (isPlaying) {
+    //   requestRef.current = requestAnimationFrame(changeIndicatorPosition);
+    // }
+
+    if (videoStatus !== 'play') {
+      cancelAnimationFrame(requestRef.current);
+    }
+
+    if (videoRef.current) {
+      if (videoRef.current.currentTime === 0 && videoStatus !== 'play') {
+        setNumber(0);
+      }
+    }
+
+    return () => {
+      cancelAnimationFrame(requestRef.current);
+    };
+  }, [handleChange, videoRef, videoStatus]);
+
   return (
     <Fragment>
       {isVideoLoaded ? (
         <Fragment>
           <div className={cx('ruler')}>
             <div className={cx('indicator-wrapper')}>
+              <input ref={originRulerRef} style={{ display: 'none' }} value={originNumber} onChange={handleChange} />
               <input
                 ref={rulerRef}
                 className={cx('indicator')}
