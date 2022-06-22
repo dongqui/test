@@ -424,11 +424,11 @@ const VideoMode = ({ browserType }: Props) => {
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
-        UP
+        {/* UP */}
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
-          LP
+          {/* LP */}
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           <RenderingPanel videoRef={videoRef} isVideoLoaded={isVideoLoaded} onLoadMetadata={handleLoadMetadata} />
