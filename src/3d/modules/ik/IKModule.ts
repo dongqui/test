@@ -141,7 +141,6 @@ export class IKModule extends Module {
     this._ghost.skeleton = null;
     this._ghost.rootMesh = null;
 
-    this._removeIkAnimationData();
     for (const controller of this.ikControllers) {
       controller.dispose();
     }
@@ -180,15 +179,17 @@ export class IKModule extends Module {
     }
   }
 
-  private _removeIkAnimationData() {
+  /**
+   * Removes the IK tracks from an animationIngredient
+   * @param animationIngredient
+   */
+  public removeIkAnimationData(animationIngredient: AnimationIngredient) {
     // Find ikTracks in all animation ingredient and remove them
-    for (const animationIngredient of this.plaskEngine.animationModule.animationIngredients) {
-      for (const controller of this.ikControllers) {
-        for (const layer of animationIngredient.layers) {
-          for (let i = layer.tracks.length - 1; i >= 0; i--) {
-            if (layer.tracks[i].name.includes(controller.handle.name)) {
-              layer.tracks.splice(i, 1);
-            }
+    for (const controller of this.ikControllers) {
+      for (const layer of animationIngredient.layers) {
+        for (let i = layer.tracks.length - 1; i >= 0; i--) {
+          if (layer.tracks[i].name.includes(controller.handle.name)) {
+            layer.tracks.splice(i, 1);
           }
         }
       }
