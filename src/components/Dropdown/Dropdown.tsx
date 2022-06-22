@@ -32,13 +32,14 @@ export interface Props {
   fixed?: boolean;
   className?: string;
   alignContext?: 'left' | 'right';
+  disabled?: boolean;
 }
 
 /**
  *
  * @todo 추후, Sub Menu를 위한 Cascading 기능 추가 예정
  */
-const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left' }: Props) => {
+const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', disabled = false }: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -49,8 +50,10 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left' }: P
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const handleToggle = useCallback(() => {
-    setIsOpen((prevState) => !prevState);
-  }, []);
+    if (!disabled) {
+      setIsOpen((prevState) => !prevState);
+    }
+  }, [disabled]);
 
   const handleClose = useCallback(() => {
     isOpen && setIsOpen(false);
@@ -159,7 +162,7 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left' }: P
     <div ref={wrapperRef} className={cx('wrapper', className)}>
       <div className={cx('header')}>
         <button type="button" ref={buttonRef} className={buttonClasses} onClick={handleToggle}>
-          <div className={cx('text')}>{selectedValue}</div>
+          <div className={cx('text')}>{selectedValue ? selectedValue : 'None'}</div>
           <IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />
         </button>
       </div>
