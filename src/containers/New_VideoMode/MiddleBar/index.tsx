@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useState } from 'react';
+import { Fragment, RefObject, useCallback, useState } from 'react';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
 import classNames from 'classnames/bind';
@@ -11,9 +11,10 @@ interface Props {
   videoStatus: 'stop' | 'play' | 'pause';
   onChange: (status: 'stop' | 'play' | 'pause') => void;
   onRecord: () => void;
+  hasVideo: boolean;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, onChange, onRecord }: Props) => {
+const MiddleBar = ({ videoRef, videoStatus, onChange, onRecord, hasVideo }: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -47,12 +48,16 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, onRecord }: Props) => {
       <div className={cx('inner')}>
         <div className={cx('button-group')}>
           <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
-          {videoStatus === 'play' ? (
-            <IconButton icon={SvgPath.CameraPause} type="ghost" onClick={handlePause} />
-          ) : (
-            <IconButton icon={SvgPath.CameraPlay} type="ghost" onClick={handlePlay} />
+          {hasVideo && (
+            <Fragment>
+              {videoStatus === 'play' ? (
+                <IconButton icon={SvgPath.CameraPause} type="ghost" onClick={handlePause} />
+              ) : (
+                <IconButton icon={SvgPath.CameraPlay} type="ghost" onClick={handlePlay} />
+              )}
+              <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} />
+            </Fragment>
           )}
-          <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} />
         </div>
       </div>
     </div>

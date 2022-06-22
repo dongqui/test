@@ -269,6 +269,8 @@ const VideoMode = ({ browserType }: Props) => {
 
         // after permission granted, get device list again
         devices = await getVideoInputDeviceList();
+      } else {
+        setCameraPermission(true);
       }
 
       setVideoDeviceList(devices);
@@ -445,7 +447,7 @@ const VideoMode = ({ browserType }: Props) => {
               </div>
               <div className={cx('section-item')}>
                 <Typography type="body">Camera</Typography>
-                <Dropdown disabled={cameraPermission === false} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+                <Dropdown disabled={!cameraPermission} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
               </div>
             </div>
           </div>
@@ -454,7 +456,7 @@ const VideoMode = ({ browserType }: Props) => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} onRecord={startRecording} />
+          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} onRecord={startRecording} hasVideo={!!currentVideoURL} />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
