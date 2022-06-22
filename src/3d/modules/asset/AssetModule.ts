@@ -26,23 +26,6 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Load the given file(.glb or .fbx) and return AssetContainer in Promise.
-   * @param file - target file
-   * @param extension - file format
-   * @param baseScene - base scene to use
-   */
-  public async getAssetContainer(file: File | string, extension: string, baseScene: Scene): Promise<AssetContainer | undefined> {
-    if (extension === 'fbx' && file instanceof File) {
-      const fileUrl: string = await convertModel(file, 'glb');
-      return await SceneLoader.LoadAssetContainerAsync(fileUrl, '', baseScene);
-    } else if (extension === 'glb') {
-      return file instanceof File
-        ? await SceneLoader.LoadAssetContainerAsync('file:', file, baseScene)
-        : await SceneLoader.LoadAssetContainerAsync(`/models/${file}`, '', baseScene);
-    }
-  }
-
-  /**
    * Preprocess objects in assetContaienr including updating objects' ids.
    * @param assetId - asset's id
    * @param assetContainer - babylon custom object including asset's sub objects
