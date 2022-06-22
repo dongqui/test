@@ -1,8 +1,5 @@
 import { Middleware } from 'redux';
 import requestApi from 'api/requestApi';
-
-import plaskCommandManager from 'command/PlaskCommandManager';
-
 // import axios from 'axios';
 // axios.defaults.withCredentials = true;
 
@@ -11,11 +8,9 @@ import plaskCommandManager from 'command/PlaskCommandManager';
  * 로그, 액션 취소, 다른 액션 트리거 등
  * 또한 비동기적인 요청을 받기 위해 사용한다.
  */
-const middleware: Middleware = () => {
+const middleware: Middleware = (store) => {
   return (next) => (action) => {
     const { promise, type, api, ...rest } = action;
-
-    plaskCommandManager.add(action);
 
     if (promise) {
       const { api, ...restPromise } = promise;
@@ -26,6 +21,7 @@ const middleware: Middleware = () => {
           next({ ...rest, payload: result, type: `${type}_SUCCESS` });
         })
         .catch((error: unknown) => {
+          console.log(error);
           next({ ...rest, payload: error, type: `${type}_FAILURE` });
         });
     } else {

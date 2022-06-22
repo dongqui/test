@@ -1,3 +1,4 @@
+import { KeyframesState } from 'reducers/keyframes';
 import { PlaskTrack, VectorTransformKey, QuaternionTransformKey, ServerAnimationTrackRequest } from 'types/common';
 import { TrackIdentifier } from 'types/TP';
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
@@ -12,7 +13,8 @@ export type KeyframesAction =
   | ReturnType<typeof createKeyframes>
   | ReturnType<typeof deleteKeyframes>
   | ReturnType<typeof dragDropKeyframes>
-  | ReturnType<typeof paste>;
+  | ReturnType<typeof paste>
+  | ReturnType<typeof override>;
 
 // 키프레임 생성
 export interface InitializeKeyframes {
@@ -200,3 +202,11 @@ export const pasteKeyframesSocket = createSocketActions(
   'keyframes/PASTE_KEYFRAMES_UPDATE',
   'keyframes/PASTE_KEYFRAMES_FAILURE',
 )<undefined, PasteKeyframesSendParams, PasteKeyframesReceiveParams, undefined, Error>();
+
+// 키프레임 추가
+export const override = (params: KeyframesState) => ({
+  type: 'keyframes/OVERRIDE' as const,
+  payload: {
+    ...params,
+  },
+});

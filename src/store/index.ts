@@ -7,6 +7,8 @@ import rootReducer from 'reducers';
 import middleware from 'store/middleware';
 import { plaskStateSync } from './plaskEngineMiddleware';
 
+import { plaskHistory } from './plaskHistoryMiddleware';
+
 const bindMiddleware = (middleware: Middleware[]) => {
   // if (process.env.NODE_ENV !== 'production') {
   //   const { composeWithDevTools } = require('redux-devtools-extension');
@@ -19,7 +21,7 @@ const bindMiddleware = (middleware: Middleware[]) => {
 export const makeStore = () => {
   const loggerMiddleware = createLogger();
   const sagaMiddleware = createSagaMiddleware();
-  const middlewares = [plaskStateSync, middleware, sagaMiddleware];
+  const middlewares = [plaskStateSync, plaskHistory, middleware, sagaMiddleware];
 
   if (process.env.NODE_ENV !== 'production') {
     // redux-logger 사용하실분은 주석해제 후 사용하시면 됩니다.

@@ -15,7 +15,6 @@
 
   & > .inner-container {
     position: relative;
-    height: 16px;
 
     & > .text {
       font-size: 12px;
@@ -25,10 +24,14 @@
         color: #fff;
       }
     }
+
+    & > .button {
+      margin-right: 8px;
+    }
   }
 }
 
-.bone-tracker-section {
+.history-section {
   @include common-section;
   flex-direction: column;
 }
