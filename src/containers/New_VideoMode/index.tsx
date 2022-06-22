@@ -205,6 +205,10 @@ const VideoMode = ({ browserType }: Props) => {
   }
 
   const startRecording = useCallback(() => {
+    if (!cameraPermission) {
+      console.log('no permission');
+    }
+
     if (currentVideoStream !== null) {
       const recorder = new MediaRecorder(currentVideoStream, {
         mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
@@ -230,7 +234,7 @@ const VideoMode = ({ browserType }: Props) => {
 
       setVideoRecorder(recorder);
     }
-  }, [browserType, currentVideoStream, unmountCurrentStream]);
+  }, [browserType, cameraPermission, currentVideoStream, unmountCurrentStream]);
 
   const stopRecording = useCallback(() => {
     if (videoRecorder && videoRecorder.onstop && videoRecorder.state === 'recording') {
@@ -431,7 +435,7 @@ const VideoMode = ({ browserType }: Props) => {
           LP
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
-          <RenderingPanel videoRef={videoRef} isVideoLoaded={isVideoLoaded} onLoadMetadata={handleLoadMetadata} />
+          <RenderingPanel isWithoutCamera={videoDeviceList.length === 0 && !isVideoLoaded} videoRef={videoRef} isVideoLoaded={isVideoLoaded} onLoadMetadata={handleLoadMetadata} />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           <div className={cx('wrapper')}>
@@ -441,7 +445,7 @@ const VideoMode = ({ browserType }: Props) => {
               </div>
               <div className={cx('section-item')}>
                 <Typography type="body">Camera</Typography>
-                <Dropdown alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+                <Dropdown disabled={cameraPermission === false} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
               </div>
             </div>
           </div>
@@ -450,7 +454,7 @@ const VideoMode = ({ browserType }: Props) => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} />
+          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} onRecord={startRecording} />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
