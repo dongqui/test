@@ -13,8 +13,10 @@
 }
 
 .video {
-  width: 100%;
+  width: calc(100% - 490px);
   height: 100%;
+  margin-left: 240px;
+
 
   &.mirror {
     transform: rotateY(180deg);

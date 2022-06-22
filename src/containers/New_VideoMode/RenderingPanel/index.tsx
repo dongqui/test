@@ -9,19 +9,16 @@ interface Props {
   videoRef: RefObject<HTMLVideoElement>;
   isVideoLoaded: boolean;
   onLoadMetadata: () => void;
+  isWithoutCamera?: boolean;
 }
 
-const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata }: Props) => {
+const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
 
   // mirror: videoRef.current && !videoRef.current.src,
   const classes = cx('video', {
     mirror: isVideoLoaded,
   });
-
-  const isWithoutCamera = cameraDeviceList.length === 0 && !isVideoLoaded;
 
   return (
     <Fragment>
