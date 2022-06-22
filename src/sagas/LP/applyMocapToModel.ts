@@ -116,16 +116,5 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     forceClickAnimationPlayAndStop();
   }
 
-  if (animationIngredient) {
-    const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-    if (contactData.length) {
-      console.log('Auto add IK because foot locking is required.');
-      yield call(addIK, addIKAction(targetAsset.id, animationIngredient));
-      animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
-      debugger;
-    }
-    yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
-  }
-
   yield put(globalUIActions.closeModal('LoadingModal'));
 }

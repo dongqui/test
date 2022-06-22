@@ -30,7 +30,6 @@ export function* addIK(action: ReturnType<typeof addIKAction>) {
   const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId, animationIngredient);
   yield put(addEntity({ targets: plaskTransformNodes }));
   yield put(addSelectableObjects({ objects: plaskTransformNodes }));
-  yield put({ type: 'ADDED_IK' });
 }
 
 function* watchAddIK() {
