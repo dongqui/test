@@ -57,18 +57,8 @@ export default function* addAssetsAndAnimationIngredients(action: ReturnType<typ
     const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
     const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
 
-    let { animationIngredient, includesFootLocking, contactData } = plaskEngine.animationModule.serverDataToIngredient(
-      animation,
-      animationLayers,
-      newAsset.transformNodes,
-      false,
-      motion?.assetId!,
-    );
-    if (includesFootLocking && contactData) {
-      console.log('Auto add IK because foot locking is required.');
-      yield call(addIK, addIKAction(modelNode.assetId!, animationIngredient));
-      animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
-    }
+    let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, newAsset.transformNodes, false, motion?.assetId!);
+
     const animationIngredients = [animationIngredient];
 
     yield put(

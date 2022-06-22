@@ -123,11 +123,6 @@ export class AnimationModule extends Module {
     assetId: string,
   ): {
     animationIngredient: AnimationIngredient;
-    includesFootLocking: boolean;
-    contactData?: {
-      boneName: string;
-      transformKeys: IAnimationKey[];
-    }[];
   } {
     const layers: PlaskLayer[] = [];
     serverAnimationLayers.forEach((serverAnimationLayer) => {
@@ -190,9 +185,7 @@ export class AnimationModule extends Module {
       layers,
     };
 
-    // Foot locking
-    const contactData = this.extractContactData(animationIngredient);
-    return { animationIngredient, includesFootLocking: !!contactData.length, contactData };
+    return { animationIngredient };
   }
 
   /**

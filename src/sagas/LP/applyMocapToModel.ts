@@ -99,19 +99,8 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
   const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
   const animationLayers = _animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
   const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-  let { animationIngredient, includesFootLocking, contactData } = plaskEngine.animationModule.serverDataToIngredient(
-    animation,
-    animationLayers,
-    targetAsset.transformNodes,
-    false,
-    targetAsset.id,
-  );
+  let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
 
-  if (includesFootLocking && contactData) {
-    console.log('Auto add IK because foot locking is required.');
-    yield call(addIK, addIKAction(modelNode.assetId!, animationIngredient));
-    animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
-  }
   const nextNodes = produce(nodes, (draft) => {
     const targetModel = find(draft, { id: nodeId });
     targetModel?.childNodeIds.push(motionNode.id);
@@ -125,6 +114,17 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: motionNode.assetId, animationIngredientId: animationIngredient.id }));
     yield put(lpNodeActions.visualizeModel(modelNode, animationIngredient.id));
     forceClickAnimationPlayAndStop();
+  }
+
+  debugger;
+  if (animationIngredient) {
+    const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+    if (contactData.length) {
+      console.log('Auto add IK because foot locking is required.');
+      yield call(addIK, addIKAction(targetAsset.id, animationIngredient));
+      animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+    }
+    yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
   }
 
   yield put(globalUIActions.closeModal('LoadingModal'));

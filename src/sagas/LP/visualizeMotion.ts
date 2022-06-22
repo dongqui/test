@@ -61,19 +61,8 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-      let { animationIngredient, includesFootLocking, contactData } = plaskEngine.animationModule.serverDataToIngredient(
-        animation,
-        animationLayers,
-        asset.transformNodes,
-        false,
-        asset.id,
-      );
+      let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
 
-      if (includesFootLocking && contactData) {
-        console.log('Auto add IK because foot locking is required.');
-        yield call(addIK, addIKAction(asset.id, animationIngredient));
-        animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
-      }
       yield put(animationDataActions.addAnimationIngredient({ animationIngredient }));
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
@@ -124,6 +113,19 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         // This only sets state.visualizedAssetIds
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
+    }
+
+    // Foot locking
+    let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+
+    if (animationIngredient) {
+      const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+      if (contactData.length) {
+        console.log('Auto add IK because foot locking is required.');
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
+        animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+      }
+      yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 
     forceClickAnimationPlayAndStop(50);

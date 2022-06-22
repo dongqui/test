@@ -23,12 +23,14 @@ export function* addIK(action: ReturnType<typeof addIKAction>) {
   const { assetId, animationIngredient } = action.payload;
   // Check if IK is already added
   if (isIKAlreadyAdded(state.selectingData.present.allEntitiesMap)) {
+    console.log('Ik already added');
     return;
   }
 
   const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId, animationIngredient);
   yield put(addEntity({ targets: plaskTransformNodes }));
   yield put(addSelectableObjects({ objects: plaskTransformNodes }));
+  yield put({ type: 'ADDED_IK' });
 }
 
 function* watchAddIK() {
