@@ -28,6 +28,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
   useEffect(() => {
     if (duration) {
       setRulerValues(Array.from([0, 1, 2, 3, 4, 5], (x) => Math.round((x * duration) / 5)));
+      setEndValue(duration);
     }
   }, [duration]);
 
