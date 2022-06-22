@@ -44,7 +44,6 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', dis
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [transform, setTransform] = useState<string>();
 
   const defaultValue = useMemo(() => find(list, { isSelected: true })?.value || list[0]?.value, [list]);
   const [selectedValue, setSelectedValue] = useState(defaultValue);
@@ -67,12 +66,6 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', dis
     },
     [onSelect],
   );
-
-  useEffect(() => {
-    if (buttonRef && buttonRef.current) {
-      setTransform(`translate3d(0px, ${buttonRef.current.offsetHeight - 21}px, 0px)`);
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     const currentRef = wrapperRef?.current;
@@ -167,7 +160,7 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', dis
         </button>
       </div>
       {isOpen && (
-        <ul className={dropdownClasses} style={{ transform }} role="menu">
+        <ul className={dropdownClasses} role="menu">
           {map(list, (item, i) => {
             const key = `${item.key}_${i}`;
             return <DropdownItem key={key} item={item} selectedValue={selectedValue} onSelect={handleSelect} />;
