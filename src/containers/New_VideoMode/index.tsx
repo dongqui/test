@@ -35,6 +35,7 @@ const VideoMode = ({ browserType }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [currentVideoURL, setVideoURL] = useState<string>();
+  const [standbyCounter, setStandbyCounter] = useState(5);
 
   const boxProps = useMemo(
     () => ({
@@ -67,6 +68,15 @@ const VideoMode = ({ browserType }: Props) => {
     }),
     [windowHeight],
   );
+
+  const PERMISSION_WAITING = !videoDeviceListLoaded && cameraPermission === undefined;
+  const PERMISSION_DENIED = cameraPermission === false;
+  const NO_DEVICE_FOUND = cameraPermission === true && videoDeviceListLoaded && videoDeviceList.length === 0;
+  const VIDEO_STREAM_READY = !!currentVideoDevice && !!currentVideoStream;
+  const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && VIDEO_STREAM_READY;
+
+  // TODO: remove this
+  console.log({ PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, VIDEO_STREAM_READY, RECORD_AVAILABLE });
 
   const headerInspector = async (file: File) => {
     const load = async () => {
@@ -204,6 +214,11 @@ const VideoMode = ({ browserType }: Props) => {
     }
   }
 
+  const startCountdown = useCallback(() => {
+    if (RECORD_AVAILABLE) {
+    }
+  }, [RECORD_AVAILABLE]);
+
   const startRecording = useCallback(() => {
     if (!cameraPermission) {
       console.log('no permission');
@@ -254,6 +269,12 @@ const VideoMode = ({ browserType }: Props) => {
   );
 
   useEffect(() => {
+    function handleDeviceChange() {
+      getVideoInputDeviceList().then((devices) => {
+        setVideoDeviceList(devices);
+      });
+    }
+
     async function initialVideoDevice() {
       let devices = await getVideoInputDeviceList();
 
@@ -263,7 +284,6 @@ const VideoMode = ({ browserType }: Props) => {
         setCameraPermission(permissionGranted);
 
         if (!permissionGranted) {
-          console.log('camera permission request denied');
           return;
         }
 
@@ -275,16 +295,27 @@ const VideoMode = ({ browserType }: Props) => {
 
       setVideoDeviceList(devices);
       setVideoDeviceListLoaded(true);
+
+      navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+
+      return handleDeviceChange;
     }
 
     initialVideoDevice();
+
+    return () => navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
   }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
     if (videoDeviceListLoaded && videoDeviceList.length > 0) {
-      setCurrentVideoDevice(videoDeviceList[0]);
+      if (!currentVideoDevice) {
+        setCurrentVideoDevice(videoDeviceList[0]);
+      } else if (videoDeviceList.findIndex((v) => v.deviceId === currentVideoDevice?.deviceId) === -1) {
+        unmountCurrentStream();
+        setCurrentVideoDevice(videoDeviceList[0]);
+      }
     }
-  }, [videoDeviceListLoaded, videoDeviceList]);
+  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream]);
 
   useEffect(() => {
     if (currentVideoDevice !== null) {
@@ -456,7 +487,16 @@ const VideoMode = ({ browserType }: Props) => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} onRecord={startRecording} hasVideo={!!currentVideoURL} />
+          <MiddleBar
+            recordAvailable={RECORD_AVAILABLE}
+            videoRef={videoRef}
+            videoStatus={videoStatus}
+            onChange={handleChangeVideoStatus}
+            onRecord={startCountdown}
+            hasVideo={!!currentVideoURL}
+            isRecording={false}
+            onRecordStop={stopRecording}
+          />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />

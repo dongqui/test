@@ -11,10 +11,13 @@ interface Props {
   videoStatus: 'stop' | 'play' | 'pause';
   onChange: (status: 'stop' | 'play' | 'pause') => void;
   onRecord: () => void;
+  onRecordStop: () => void;
   hasVideo: boolean;
+  recordAvailable: boolean;
+  isRecording: boolean;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, onChange, onRecord, hasVideo }: Props) => {
+const MiddleBar = ({ videoRef, videoStatus, onChange, onRecord, hasVideo, recordAvailable, isRecording, onRecordStop }: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -47,7 +50,11 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, onRecord, hasVideo }: Prop
     <div className={cx('wrapper')}>
       <div className={cx('inner')}>
         <div className={cx('button-group')}>
-          <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+          {isRecording ? (
+            <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} />
+          ) : (
+            <IconButton disabled={!recordAvailable} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+          )}
           {hasVideo && (
             <Fragment>
               {videoStatus === 'play' ? (
