@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { WARNING_02 } from 'constants/Text';
 import Box, { BoxProps } from 'components/Layout/Box';
+import { SvgPath } from 'components/Icon';
+import { IconButton } from 'components/Button';
 import { useWindowSize } from 'hooks/common';
 import ControlPanel from './ControlPanel';
 import RenderingPanel from './RenderingPanel';
@@ -424,7 +427,13 @@ const VideoMode = ({ browserType }: Props) => {
   return (
     <div className={cx('wrapper')}>
       <Box id="UP" {...boxProps.UP}>
-        {/* UP */}
+        <div className={cx('upper-bar')}>
+          <Link href="https://plask.ai">
+            <a target="_blank" className={cx('logo')}>
+              <IconButton icon={SvgPath.Logo} type="ghost" />
+            </a>
+          </Link>
+        </div>
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
