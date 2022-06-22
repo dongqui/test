@@ -104,21 +104,19 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
         // This only sets state.visualizedAssetIds
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
-      }
-    }
 
-    if (modelNode?.assetId) {
-      // Foot locking
-      let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId);
+        // Foot locking
+        let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId);
 
-      if (animationIngredient) {
-        const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-        if (contactData.length) {
-          console.log('Auto add IK because foot locking is required.');
-          yield call(addIK, addIKAction(asset.id, animationIngredient));
-          animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+        if (animationIngredient) {
+          const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+          if (contactData.length) {
+            console.log('Auto add IK because foot locking is required.');
+            yield call(addIK, addIKAction(asset.id, animationIngredient));
+            animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+          }
+          yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
         }
-        yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
       }
     }
   } catch (e) {
