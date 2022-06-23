@@ -9,13 +9,14 @@ export function* addIK(action: ReturnType<typeof addIKAction>) {
   const state: RootState = yield select();
   const { assetId, animationIngredient } = action.payload;
 
-  const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId, animationIngredient);
+  debugger;
+  const { ptns: plaskTransformNodes, animationIngredient: ikAnimationIngredient } = plaskEngine.ikModule.addIK(assetId, animationIngredient);
   // If no plaskTransformNodes are returned, it means the controllers were already added
   if (plaskTransformNodes) {
     yield put(addEntity({ targets: plaskTransformNodes }));
     yield put(addSelectableObjects({ objects: plaskTransformNodes }));
   }
-  yield put(editAnimationIngredient({ animationIngredient: animationIngredient || plaskEngine.animationModule.getCurrentAnimationIngredient(assetId)! }));
+  yield put(editAnimationIngredient({ animationIngredient: ikAnimationIngredient }));
 }
 
 function* watchAddIK() {

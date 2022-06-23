@@ -23,8 +23,10 @@ import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { copyTransformFrom } from 'utils/RP/copyPose';
 import { IKController } from './IKController';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient } from 'types/common';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient, PlaskTrack } from 'types/common';
 import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
+import produce, { castDraft } from 'immer';
+import { WritableDraft } from 'immer/dist/internal';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -133,12 +135,12 @@ export class IKModule extends Module {
       this._initializeControllers(assetId);
       result = this._generateIkPlaskTransformNodes(assetId);
     }
-    this.addIKTracks(assetId, animationIngredient);
+    const newAnimationIngredient = this.addIKTracks(assetId, animationIngredient);
 
     // Set initial IK position to FK
     this.setIKtoFK(this.ikControllers);
 
-    return result;
+    return { ptns: result, animationIngredient: newAnimationIngredient };
   }
 
   private _areIKControllersAlreadyAdded() {
@@ -191,18 +193,23 @@ export class IKModule extends Module {
       throw new Error('Invalid or inexistent animation ingredient created for this asset, cannot add IK tracks.');
     }
 
-    const layer = targetAnimationIngredient.layers.find((layer) => layer.name.startsWith('baseLayer')) || targetAnimationIngredient.layers[0];
-    for (const controller of this.ikControllers) {
-      const tracks = this.plaskEngine.animationModule.createTracksForProperties(targetAnimationIngredient.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
-      for (const track of tracks) {
-        if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
-          console.log(`track ${track.name} already exists.`);
-        } else {
-          layer.tracks.push(track);
-          console.log(`track ${track.name} created`);
+    const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+      const layer = draft.layers.find((layer) => layer.name.startsWith('baseLayer')) || draft.layers[0];
+      for (const controller of this.ikControllers) {
+        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(draft.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
+
+        for (const track of newTracks) {
+          if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
+            console.log(`track ${track.name} already exists.`);
+          } else {
+            layer.tracks.push(castDraft(track));
+            console.log(`track ${track.name} created`);
+          }
         }
       }
-    }
+    });
+
+    return newAnimationIngredient;
   }
 
   /**
@@ -211,17 +218,20 @@ export class IKModule extends Module {
    */
   public removeIkAnimationData(animationIngredient: AnimationIngredient) {
     // Find ikTracks in all animation ingredient and remove them
-    for (const controller of this.ikControllers) {
-      for (const layer of animationIngredient.layers) {
-        for (let i = layer.tracks.length - 1; i >= 0; i--) {
-          if (layer.tracks[i].name.includes(controller.handle.name)) {
-            layer.tracks.splice(i, 1);
+    const newAnimationIngredient = produce(animationIngredient, (draft) => {
+      for (const controller of this.ikControllers) {
+        for (const layer of draft.layers) {
+          for (let i = layer.tracks.length - 1; i >= 0; i--) {
+            if (layer.tracks[i].name.includes(controller.handle.name)) {
+              layer.tracks.splice(i, 1);
+            }
           }
         }
       }
-    }
 
-    return animationIngredient;
+      return draft;
+    });
+    return newAnimationIngredient;
   }
 
   private _getKeyframeDataForController(pickedIkCtrl: IKController) {
@@ -802,7 +812,7 @@ export class IKModule extends Module {
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
 
     if (!targetTrack) {
-      this.addIKTracks(animationIngredient.assetId, animationIngredient);
+      targetAnimation = this.addIKTracks(animationIngredient.assetId, animationIngredient);
       targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
       if (!targetTrack) {
         throw new Error('Error : IK tracks could not be created for foot locking');
@@ -1007,7 +1017,6 @@ export class IKModule extends Module {
           value: toeQuaternion.asArray() as ArrayOfFourNumbers,
         },
       ];
-      // TODO uncomment for Nelson's code
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
       frameIndex++;
       if (!targetAnimation) {
