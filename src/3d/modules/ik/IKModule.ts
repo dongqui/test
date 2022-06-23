@@ -125,12 +125,33 @@ export class IKModule extends Module {
   /**
    * Adds IK controllers for a specific assetId
    * @param assetId
-   * @returns PlaskTransformNodes to represent IK controller state
+   * @returns PlaskTransformNodes to represent IK controller state or null if they already exist in the state
    */
   public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
-    this._initializeControllers(assetId);
+    let result = null;
+    if (!this._areIKControllersAlreadyAdded()) {
+      this._initializeControllers(assetId);
+      result = this._generateIkPlaskTransformNodes(assetId);
+    }
     this.addIKTracks(assetId, animationIngredient);
-    return this._generateIkPlaskTransformNodes(assetId);
+
+    // Set initial IK position to FK
+    this.setIKtoFK(this.ikControllers);
+
+    return result;
+  }
+
+  private _areIKControllersAlreadyAdded() {
+    // We assume that we always add 4 IK at the same time, so testing for left foot is just as good as testing for 4 IKs
+    const entities = this.plaskEngine.state.selectingData.present.allEntitiesMap;
+    for (const key in entities) {
+      const entity = entities[key];
+      if (entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).type === 'ik_controller') {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -409,7 +430,7 @@ export class IKModule extends Module {
       const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
       animationGroupTemp.start();
 
-      for (let i = startTimeIndex; i < endTimeIndex; i++) {
+      for (let i = startTimeIndex; i <= endTimeIndex; i++) {
         if (!targetAnimation) {
           throw new Error('Bake error : animation ingredients could not be produced.');
         }
@@ -426,15 +447,15 @@ export class IKModule extends Module {
         }
         fkPositionTrack.target.computeWorldMatrix(true);
 
-        const positionValue = getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3;
-        const blendValue = getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number;
-        const poleAngleValue = getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number;
+        // We need to test if there are no keyframe, because getInterpolatedValue won't know what to return
+        const positionValue = ikPositionTrack.transformKeys.length ? (getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3) : currentIKPosition;
+        const blendValue = blendTrack.transformKeys.length ? (getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number) : currentBlend;
+        const poleAngleValue = poleAngleTrack.transformKeys.length ? (getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number) : currentPoleAngle;
         this.setFKtoIK([selectedIK]);
 
         // Bones are not synced with transform nodes - its the other way around
         // Our method require bones to get transforms from transform nodes, so the right positions are used for the ik calculations down the line
         this.forceUpdateGhostSkeleton();
-        // TODO : turn blend into LERP of position/ SLERP of quaternion on the 3 transform nodes, every frame after IK calculation
         selectedIK.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, blendValue, poleAngleValue);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
       }
@@ -506,7 +527,7 @@ export class IKModule extends Module {
       // Copy FK transformKeys because we don't want new values
       const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
 
-      for (let i = startTimeIndex; i < endTimeIndex; i++) {
+      for (let i = startTimeIndex; i <= endTimeIndex; i++) {
         if (!targetAnimation) {
           throw new Error('Bake error : animation ingredients could not be produced.');
         }
@@ -811,14 +832,14 @@ export class IKModule extends Module {
         lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
       }
 
-      if (boneName.includes('leftFoot') || boneName.includes('rightFoot')) {
+      if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
         if (position.y < groundLevelY) groundLevelY = position.y;
         origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion });
       }
     }
 
-    const adjustedCurve:Vector3[] = [];
-    if (boneName.includes('leftFoot') || boneName.includes('rightFoot')) {
+    const adjustedCurve: Vector3[] = [];
+    if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
       const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
 
       const contactPoints: Vector3[] = [];
@@ -835,34 +856,34 @@ export class IKModule extends Module {
           adjustedPoints.push(value);
         }
 
-        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty/adjustedPoints.length));
-        
+        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty / adjustedPoints.length));
+
         // To visualize the ADJUSTED PATH
-        const finalCurveLine = MeshBuilder.CreateLines("adjusted", {points: finalCurve.getPoints()}, scene);
+        const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
         finalCurveLine.color = new Color3(0, 0.6, 1);
 
-        if (!centerPoints[centerPoints.length-2].used) {
-          for (let i=0; i < centerPoints[centerPoints.length-2].qty; i++) {
-            adjustedCurve.push(centerPoints[centerPoints.length-2].point)
+        if (!centerPoints[centerPoints.length - 2].used) {
+          for (let i = 0; i < centerPoints[centerPoints.length - 2].qty; i++) {
+            adjustedCurve.push(centerPoints[centerPoints.length - 2].point);
           }
-          centerPoints[centerPoints.length-2].used = true;
+          centerPoints[centerPoints.length - 2].used = true;
         }
-        finalCurve.getPoints().forEach(point => {
+        finalCurve.getPoints().forEach((point) => {
           adjustedCurve.push(point);
-        })
-        if (!centerPoints[centerPoints.length-1].used) {
-          let diff = (Math.floor(centerPoints[centerPoints.length-1].qty/2)+adjustedCurve.length)-centerPoints[centerPoints.length-1].index;
-          for (let i=0; i < centerPoints[centerPoints.length-1].qty-diff; i++) {
-            adjustedCurve.push(centerPoints[centerPoints.length-1].point)
+        });
+        if (!centerPoints[centerPoints.length - 1].used) {
+          let diff = Math.floor(centerPoints[centerPoints.length - 1].qty / 2) + adjustedCurve.length - centerPoints[centerPoints.length - 1].index;
+          for (let i = 0; i < centerPoints[centerPoints.length - 1].qty - diff; i++) {
+            adjustedCurve.push(centerPoints[centerPoints.length - 1].point);
           }
-          centerPoints[centerPoints.length-1].used = true;
+          centerPoints[centerPoints.length - 1].used = true;
         }
 
         adjustedPoints.length = 0;
         noContactPoints.length = 0;
         pointsQty = 0;
 
-        adjustedPoints.push(centerPoints[centerPoints.length-1].point);
+        adjustedPoints.push(centerPoints[centerPoints.length - 1].point);
       }
 
       origPoints.forEach((value, index, array) => {
@@ -892,18 +913,17 @@ export class IKModule extends Module {
               result.y = groundLevelY;
               pointsQty++;
               // Store contact points QUANTITY, CENTER POINT, CENTER POINT INDEX and a BOOLEAN to prevent reuse
-              centerPoints.push(
-                {
-                  qty: contactPoints.length, 
-                  point: result, 
-                  index: (index - contactPoints.length) + Math.floor(contactPoints.length/2), 
-                  used: false
-                });
+              centerPoints.push({
+                qty: contactPoints.length,
+                point: result,
+                index: index - contactPoints.length + Math.floor(contactPoints.length / 2),
+                used: false,
+              });
               // Evaluate if there are NO CONTACT points stored
               if (noContactPoints.length > 0) {
                 setAdjustedCurve(this.plaskEngine.scene, result);
               } else {
-                adjustedPoints.push(result);  
+                adjustedPoints.push(result);
               }
             } else {
               noContactPoints.push(value.position);
@@ -917,25 +937,25 @@ export class IKModule extends Module {
           pointsQty++;
 
           // Evaluate END OF NO CONTACTS or END OF POINTS
-          if ((array[index+1] && array[index+1].contact === 1 && array[index+2] && array[index+2].contact !== 0) || index === array.length-1) {
-
+          if ((array[index + 1] && array[index + 1].contact === 1 && array[index + 2] && array[index + 2].contact !== 0) || index === array.length - 1) {
             // Evaluate FALSE CONTACTS
             // Trying to optimize the PATH to reduce the "slide" effect
-            let reducedPoints:Vector3[] = [];
-            if (index === array.length-1) { // Evaluate if last point
+            let reducedPoints: Vector3[] = [];
+            if (index === array.length - 1) {
+              // Evaluate if last point
               reducedPoints = noContactPoints.slice(reduceValue);
               reduceValue = 1;
             } else {
-              reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length-reduceValue);
+              reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);
             }
 
             // Reducing the PATH to adjust/curve it with CatmullRomSpline
-            for (let i = 0; i < reducedPoints.length; i+=(reduceValue)) {
+            for (let i = 0; i < reducedPoints.length; i += reduceValue) {
               adjustedPoints.push(reducedPoints[i]);
             }
 
             // Evaluate if last point
-            if (index === array.length-1) {
+            if (index === array.length - 1) {
               setAdjustedCurve(this.plaskEngine.scene);
             }
           }
@@ -960,8 +980,8 @@ export class IKModule extends Module {
           targetId: ikController.handle.id,
           property: 'position' as PlaskProperty,
           //value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
-          //value: point.asArray() as ArrayOfThreeNumbers,
-          value: point,
+          value: point.asArray() as ArrayOfThreeNumbers,
+          // value: point,
         },
         {
           targetId: ikController.handle.id,
@@ -978,7 +998,7 @@ export class IKModule extends Module {
         {
           targetId: boneName,
           property: 'rotationQuaternion' as PlaskProperty,
-          value: toeQuaternion,
+          value: toeQuaternion.asArray() as ArrayOfFourNumbers,
         },
       ];
       // TODO uncomment for Nelson's code

@@ -14,8 +14,6 @@ import { PlaskAsset, ServerAnimationLayer } from 'types/common';
 import plaskEngine from '3d/PlaskEngine';
 import * as api from 'api';
 import { ServerAnimationResponse } from 'types/common';
-import { addIKAction } from 'actions/addIKAction';
-import { addIK } from 'sagas/RP/ik/addIK';
 
 // After put this action, have to call yield take('ADDED_NEW_ASSET'); .
 export default function* addAssetsAndAnimationIngredients(action: ReturnType<typeof lpNodeActions.addAssetsAndAnimationIngredients>) {

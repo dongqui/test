@@ -17,8 +17,6 @@ import { RequestNodeResponse } from 'types/LP';
 import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
 import { ServerAnimationLayer, ServerAnimation, MocapDataResponse, ServerAnimationResponse } from 'types/common';
-import { addIKAction } from 'actions/addIKAction';
-import { addIK } from 'sagas/RP/ik/addIK';
 
 const handleConfirmOnError = channel();
 
