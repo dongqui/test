@@ -242,7 +242,13 @@ const VideoMode = ({ browserType }: Props) => {
         recorder.onstop = () => {
           const videoURL = URL.createObjectURL(new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
           unmountCurrentStream();
-          setVideoURL(videoURL);
+
+          if (videoRef && videoRef.current) {
+            setIsVideoLoaded(true);
+            setVideoURL(videoURL);
+
+            videoRef.current.src = videoURL;
+          }
 
           // TODO: remove this (testing feature)
           // save(`test${Date.now()}.${browserType === 'safari' ? 'mp4' : 'webm'}`, new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
