@@ -163,7 +163,9 @@ export class IKModule extends Module {
     this._ghost.skeleton = null;
     this._ghost.rootMesh = null;
 
+    const ptns = [];
     for (const controller of this.ikControllers) {
+      ptns.push(controller.handle.getPlaskEntity());
       controller.dispose();
     }
     this.ikControllers.length = 0;
@@ -173,6 +175,8 @@ export class IKModule extends Module {
       mesh.dispose();
     }
     this._ghostMeshes.length = 0;
+
+    return ptns;
   }
 
   /**
@@ -216,6 +220,8 @@ export class IKModule extends Module {
         }
       }
     }
+
+    return animationIngredient;
   }
 
   private _getKeyframeDataForController(pickedIkCtrl: IKController) {

@@ -22,7 +22,8 @@ import { readMetadata } from 'utils/RP/metadata';
 import { addEntity, addSelectableObjects, defaultMultiSelect, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
 import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
-import { addIKAction } from 'actions/addIKAction';
+import { addIKAction, removeIKAction } from 'actions/iKAction';
+import { removeIK } from 'sagas/RP/ik/removeIK';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -229,24 +230,20 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const dropdownOptions = [
     {
       text: 'Delete all IK controllers',
-      handleSelect: () => {
+      handleSelect: useCallback(() => {
         dispatch(
           commonActions.openModal('ConfirmModal', {
             title: 'Delete all ik controllers?',
             message: 'This action will delete all IK controllers',
             confirmText: 'Delete',
             onConfirm: () => {
-              // TODO : also remove PlaskTransformNode from the state (including selectedTarget if it is associated with a IKController)
-              const plaskEntities = plaskEngine.ikModule.ikControllers.map((controller) => controller.handle.getPlaskEntity());
-              dispatch(removeSelectableObjects({ objects: plaskEntities }));
-              dispatch(removeEntity({ targets: plaskEntities }));
-              plaskEngine.ikModule.removeIK();
+              dispatch(removeIKAction(_visualizedAssetIds[0]));
             },
             cancelText: 'Cancel',
             confirmButtonColor: 'negative',
           }),
         );
-      },
+      }, [dispatch, _visualizedAssetIds]),
     },
   ];
 

@@ -14,7 +14,7 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { PlaskProject, ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskAsset } from 'types/common/index';
 import plaskEngine from '3d/PlaskEngine';
 import * as api from 'api';
-import { addIKAction } from 'actions/addIKAction';
+import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
 
 const clickJointChannel = channel();
@@ -82,7 +82,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
       yield put(plaskProjectActions.unrenderAsset({ assetId: prevAssetId }));
-      plaskEngine.ikModule.removeIK();
+      yield put(removeIKAction(prevAssetId));
       plaskEngine.assetModule.unvisualizeModel(prevAssetId);
     }
     // visualize new asset
@@ -96,8 +96,8 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         plaskEngine.assetModule.visualizeModel(modelNode.assetId);
         let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(modelNode.assetId);
         // Auto add ik code
-
         // plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(modelNode.assetId));
+        plaskEngine.ikModule.setIKtoFK(plaskEngine.ikModule.ikControllers);
         yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
         // This appends PlaskTransformNodes to state.selectableObjects
         yield put(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));

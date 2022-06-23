@@ -1,7 +1,5 @@
-import { PlaskEntity } from '3d/entities/PlaskEntity';
-import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import plaskEngine from '3d/PlaskEngine';
-import { addIKAction, ADD_IK } from 'actions/addIKAction';
+import { addIKAction, ADD_IK } from 'actions/iKAction';
 import { editAnimationIngredient } from 'actions/animationDataAction';
 import { addEntity, addSelectableObjects } from 'actions/selectingDataAction';
 import { RootState } from 'reducers';
