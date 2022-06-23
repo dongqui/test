@@ -1,7 +1,7 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Middleware } from 'redux';
 
-import { PlaskCommand } from 'command/PlaskCommand';
+import { PlaskCommand } from 'types/common';
 import * as plaskHistoryAction from 'actions/plaskHistoryAction';
 import { dispatch } from 'd3';
 
@@ -19,6 +19,21 @@ const filterType = (type: string) => {
           break;
       }
       break;
+    case 'selectingDataAction':
+      switch (secondary) {
+        case 'DEFAULT_MULTI_SELECT':
+          return 'Select';
+        case 'CTRL_KEY_MULTI_SELECT':
+          return 'Add Select';
+        case 'SELECT_ALL_SELECTABLE_OBJECTS':
+          return 'Select all';
+        case 'RESET_SELECTED_TARGETS':
+          return 'Select reset';
+        case 'ADD_ENTITIES':
+          return 'Object edit';
+      }
+
+      break;
   }
   return false;
 };
@@ -28,7 +43,9 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
   const plaskHistory = store.getState().plaskHistory;
 
   let currentPointer: number = plaskHistory.pointer;
+
   const { promise, type, api, ...rest } = action;
+
   switch (type) {
     case 'plaskHistory/UNDO':
       next(action);
@@ -55,7 +72,7 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
       next(action);
       const updatedCommand = plaskHistory.history[plaskHistory.pointer];
       const updatedAction = updatedCommand.action;
-      const updatedState = previousState[updatedAction.type.split('/')[0]];
+      const updatedState = previousState[updatedAction.type.split('/')[0].split('Action')[0]];
       updatedCommand.setPresent(updatedState);
       return;
 
@@ -63,7 +80,8 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
       next(action);
       const commandName = filterType(type);
       if (commandName) {
-        store.dispatch(plaskHistoryAction.addHistory({ command: new PlaskCommand(action, previousState[type.split('/')[0]], commandName) }));
+        console.log(previousState);
+        store.dispatch(plaskHistoryAction.addHistory({ command: new PlaskCommand(action, previousState[type.split('/')[0].split('Action')[0]], commandName) }));
         store.dispatch(plaskHistoryAction.updated());
       }
   }

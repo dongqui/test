@@ -1,5 +1,5 @@
 import { PlaskAsset, PlaskScreen } from 'types/common';
-import { PlaskCommand } from 'command/PlaskCommand';
+import { PlaskCommand } from 'types/common';
 export type PlaskHistoryAction = ReturnType<typeof addHistory> | ReturnType<typeof clearHistory> | ReturnType<typeof redo> | ReturnType<typeof undo> | ReturnType<typeof updated>;
 
 const REDO = 'plaskHistory/REDO' as const;
@@ -40,6 +40,9 @@ export const addHistory = (params: AddHistory) => ({
   },
 });
 
+/**
+ * 히스토리 추가 완료
+ */
 export const updated = () => ({
   type: UPDATED,
 });

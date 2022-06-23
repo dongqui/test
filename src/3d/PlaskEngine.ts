@@ -42,8 +42,6 @@ type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = false;
-
 export class PlaskEngine {
   private _modules: Module[] = [];
   private _engine!: Engine;
@@ -292,27 +290,6 @@ export class PlaskEngine {
     return this.state.plaskProject.screenList[0].id;
   }
 
-  // TODO : MOVE TO REACT PART
-  /**
-   * Undoes the last action
-   * @todo move to react world
-   */
-  public undo() {
-    if (FEATURE_HISTORY) {
-      this.dispatch(ActionCreators.undo());
-    }
-  }
-
-  /**
-   * Redoes the last action
-   * @todo move to react world
-   */
-  public redo() {
-    if (FEATURE_HISTORY) {
-      this.dispatch(ActionCreators.redo());
-    }
-  }
-
   /**
    *
    * @todo
@@ -329,13 +306,6 @@ export class PlaskEngine {
     this._entityStore.unserializeAll(JSON.parse(json) as PlaskSpec);
     // TODO : update entity action
     // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
-  }
-
-  /**
-   * Clears the undo/redo history
-   */
-  public clearHistory() {
-    this.dispatch(ActionCreators.clearHistory());
   }
 
   /**

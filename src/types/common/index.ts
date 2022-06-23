@@ -1,7 +1,7 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { AbstractMesh, Animation, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
-import { PlaskCommand } from 'command/PlaskCommand';
+export * from './plaskHistory';
 
 export enum GizmoMode {
   POSITION,
@@ -33,11 +33,6 @@ export interface PlaskProject {
   assetList: PlaskAsset[];
   visualizedAssetIds: string[];
   fps: number;
-}
-export interface PlaskHistory {
-  id: string;
-  history: PlaskCommand[];
-  pointer: number;
 }
 
 export interface PlaskScreen {
