@@ -57,6 +57,9 @@ declare module '@babylonjs/core' {
     _bendMatrixDirty: boolean;
     upVector: Nullable<Vector3>;
     setIKtoRest: () => void;
+    bone1Quat: Nullable<Quaternion>;
+    bone2Quat: Nullable<Quaternion>;
+    blend: number;
   }
 
   // export interface Bone {
@@ -91,6 +94,9 @@ Bone.prototype['_getNegativeRotationToRef'] = function (rotMatInv: Matrix, tNode
 
 BoneIKController.prototype._bendMatrixBone1 = Matrix.Identity();
 BoneIKController.prototype._bendMatrixDirty = true;
+BoneIKController.prototype.bone1Quat = null;
+BoneIKController.prototype.bone2Quat = null;
+BoneIKController.prototype.blend = 1;
 BoneIKController.prototype.upVector = null;
 
 BoneIKController.prototype.setIKtoRest = function () {
@@ -185,12 +191,12 @@ BoneIKController.prototype.update = function () {
     if (this._bendMatrixDirty) {
       mat1.invertToRef(this._bendMatrixBone1);
       const tmpMat = BoneIKController['_tmpMats'][2];
-      bone1.getRotationMatrix(Space.WORLD, this.mesh).invertToRef(tmpMat);
-      this._bendMatrixBone1.multiplyToRef(tmpMat, this._bendMatrixBone1);
+      tmpMat.copyFrom(bone1.getRotationMatrix(Space.WORLD, this.mesh));
+      tmpMat.multiplyToRef(this._bendMatrixBone1, this._bendMatrixBone1);
 
       mat3.invertToRef(this._bendMatrixBone2);
-      this['_bone2'].getRotationMatrix(Space.WORLD, this.mesh).invertToRef(tmpMat);
-      this._bendMatrixBone2.multiplyToRef(tmpMat, this._bendMatrixBone2);
+      tmpMat.copyFrom(this['_bone2'].getRotationMatrix(Space.WORLD, this.mesh));
+      tmpMat.multiplyToRef(this._bendMatrixBone2, this._bendMatrixBone2);
     }
   } else {
     var _tmpVec = BoneIKController['_tmpVecs'][5];
@@ -223,13 +229,27 @@ BoneIKController.prototype.update = function () {
       this['_bone1Mat'].copyFrom(mat1);
       this['_slerping'] = false;
     }
-    this['_updateLinkedTransformRotation'](this['_bone1']);
+    this['_updateLinkedTransformRotation'](this['_bone1'], this.bone1Quat);
   }
 
-  this['_updateLinkedTransformRotation'](this['_bone2']);
+  this['_updateLinkedTransformRotation'](this['_bone2'], this.bone2Quat);
   this['_bone2Ang'] = angC;
   if (this._bendMatrixDirty) {
     this._bendMatrixDirty = false;
+  }
+};
+
+BoneIKController.prototype['_updateLinkedTransformRotation'] = function (bone: Bone, currentQuaternion: Nullable<Quaternion>): void {
+  if (bone._linkedTransformNode) {
+    if (!bone._linkedTransformNode.rotationQuaternion) {
+      bone._linkedTransformNode.rotationQuaternion = new Quaternion();
+    }
+    bone.getRotationQuaternionToRef(Space.LOCAL, null, BoneIKController['_tmpQuat']);
+    if (currentQuaternion) {
+      Quaternion.SlerpToRef(currentQuaternion, BoneIKController['_tmpQuat'], this.blend, bone._linkedTransformNode.rotationQuaternion);
+    } else {
+      bone._linkedTransformNode.rotationQuaternion.copyFrom(BoneIKController['_tmpQuat']);
+    }
   }
 };
 

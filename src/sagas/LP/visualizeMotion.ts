@@ -1,5 +1,5 @@
 import { find, omitBy } from 'lodash';
-import { select, put, take, call, SagaReturnType } from 'redux-saga/effects';
+import { select, put, take, call, SagaReturnType, all, putResolve } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 
 import * as api from 'api';
@@ -15,6 +15,8 @@ import { goToSpecificPoses } from 'utils/RP';
 import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { addIKAction } from 'actions/addIKAction';
+import { addIK } from 'sagas/RP/ik/addIK';
 
 const clickJointChannel = channel();
 
@@ -59,9 +61,9 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-      const animationIngredient = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+      let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
 
-      yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
+      yield put(animationDataActions.addAnimationIngredient({ animationIngredient }));
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
 
@@ -111,6 +113,19 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         // This only sets state.visualizedAssetIds
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
+    }
+
+    // Foot locking
+    let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+
+    if (animationIngredient) {
+      const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+      if (contactData.length) {
+        console.log('Auto add IK because foot locking is required.');
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
+        animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+      }
+      yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 
     forceClickAnimationPlayAndStop(50);

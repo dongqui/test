@@ -121,7 +121,9 @@ export class AnimationModule extends Module {
     transformNodes: TransformNode[],
     current: boolean,
     assetId: string,
-  ): AnimationIngredient {
+  ): {
+    animationIngredient: AnimationIngredient;
+  } {
     const layers: PlaskLayer[] = [];
     serverAnimationLayers.forEach((serverAnimationLayer) => {
       const { uid: layerId, name: layerName, isIncluded, useFilter, tracks: serverTracks } = serverAnimationLayer;
@@ -183,8 +185,21 @@ export class AnimationModule extends Module {
       layers,
     };
 
-    // Foot locking
-    const contactData = this.extractContactData(animationIngredient);
+    return { animationIngredient };
+  }
+
+  /**
+   * Inserts contact data into an animation ingredient, so feet are locked
+   * @param animationIngredient
+   * @param contactData
+   */
+  public updateIngredientWithFootLocking(
+    animationIngredient: AnimationIngredient,
+    contactData: {
+      boneName: string;
+      transformKeys: IAnimationKey[];
+    }[],
+  ) {
     const animationGroupTemp = this.createAnimationGroupFromIngredient(animationIngredient, this.fps);
     const animationIngredientWithFootLocking = this.processContactData(animationIngredient, animationGroupTemp, contactData);
 

@@ -1,8 +1,9 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
+import { readMetadata } from 'utils/RP/metadata';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
-export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknown';
+export type PlaskTransformNodeType = 'controller' | 'joint' | 'ik_controller' | 'unknown';
 export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   position: number[];
   rotation: number[];
@@ -34,7 +35,11 @@ export class PlaskTransformNode extends PlaskEntity {
 
       const className = transformNode.getClassName();
       if (className === 'Mesh') {
-        this.type = 'controller';
+        if (readMetadata('ikController', transformNode)) {
+          this.type = 'ik_controller';
+        } else {
+          this.type = 'controller';
+        }
         this._transformable = {
           position: true,
           rotation: {
@@ -98,9 +103,9 @@ export class PlaskTransformNode extends PlaskEntity {
         throw new Error('Trying to access a reference before engine initialization.');
       }
 
-      if (this.type === 'joint') {
+      if (this.type.includes('joint')) {
         this._reference = engine.scene.getTransformNodeById(this.id);
-      } else if (this.type === 'controller') {
+      } else if (this.type.includes('controller')) {
         this._reference = engine.scene.getMeshById(this.id);
       }
 

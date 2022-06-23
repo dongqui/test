@@ -25,7 +25,7 @@ const BaseNode = ({ node, onContextMenu, onDrop, onEditName, onDragEnd, dataCy }
   const { visualizedAssetIds } = useSelector((state) => state.plaskProject);
   const { animationIngredients } = useSelector((state) => state.animationData);
 
-  const isEditing = editingNodeId === id;
+  const isEditing = !!id && editingNodeId === id;
   const depth = getFilePathDepth(nodes, node);
   const isParentSelected = selectedNodeDescendants.some((node) => id === node.id);
 
