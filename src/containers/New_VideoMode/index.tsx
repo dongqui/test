@@ -449,7 +449,7 @@ const VideoMode = ({ browserType }: Props) => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} onChange={handleChangeVideoStatus} />
+          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} isVideoLoaded={isVideoLoaded} onChange={handleChangeVideoStatus} />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
