@@ -177,7 +177,18 @@ const VideoMode = ({ browserType }: Props) => {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
 
-      setDuration(videoRef.current.duration);
+      if (videoRef.current.duration !== Infinity) {
+        setDuration(videoRef.current.duration);
+      } else {
+        videoRef.current.currentTime = Number.MAX_SAFE_INTEGER;
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            setDuration(videoRef.current.duration);
+          }
+        }, 500);
+      }
+
       setIsVideoLoaded(true);
 
       setTimeline(
