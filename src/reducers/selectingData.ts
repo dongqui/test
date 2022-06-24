@@ -91,6 +91,7 @@ export const selectingData = (state: State = defaultState, action: SelectingData
         selectedTargets: [],
       });
     }
+
     // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
     case 'selectingDataAction/ADD_ENTITIES': {
       const obj = {} as { [key: string]: PlaskEntity };
@@ -99,6 +100,15 @@ export const selectingData = (state: State = defaultState, action: SelectingData
       }
       return Object.assign({}, state, { allEntitiesMap: { ...state.allEntitiesMap, ...obj } });
     }
+
+    case 'selectingDataAction/EDIT_ENTITIES': {
+      const obj = {} as { [key: string]: PlaskEntity };
+      for (const entity of action.payload.targets) {
+        obj[entity.entityId] = entity;
+      }
+      return Object.assign({}, state, { allEntitiesMap: { ...state.allEntitiesMap, ...obj } });
+    }
+
     // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
     case 'selectingDataAction/REMOVE_ENTITIES': {
       const obj = {} as { [key: string]: PlaskEntity };

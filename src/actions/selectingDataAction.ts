@@ -16,6 +16,7 @@ export type SelectingDataAction =
   | ReturnType<typeof selectAllSelectableObjects>
   | ReturnType<typeof resetSelectedTargets>
   | ReturnType<typeof addEntity>
+  | ReturnType<typeof editEntity>
   | ReturnType<typeof removeEntity>
   | ReturnType<typeof override>;
 
@@ -35,6 +36,7 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
 const ADD_ENTITIES = 'selectingDataAction/ADD_ENTITIES' as const;
+const EDIT_ENTITIES = 'selectingDataAction/EDIT_ENTITIES' as const;
 const REMOVE_ENTITIES = 'selectingDataAction/REMOVE_ENTITIES' as const;
 
 const OVERRIDE = 'selectingDataAction/OVERRIDE' as const;
@@ -208,10 +210,20 @@ export const selectAllSelectableObjects = () => ({
 });
 
 /**
- * Updates entities. TODO : should not be undoable
+ * Add entities.
  */
 export const addEntity = (params: UpdateSelectedTargets) => ({
   type: ADD_ENTITIES,
+  payload: {
+    ...params,
+  },
+});
+
+/**
+ * Updates entities. TODO : should not be undoable
+ */
+export const editEntity = (params: UpdateSelectedTargets) => ({
+  type: EDIT_ENTITIES,
   payload: {
     ...params,
   },

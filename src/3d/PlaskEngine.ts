@@ -32,7 +32,7 @@ import { Module } from './modules/Module';
 import SelectorModuleSingleton, { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
 import { EntityMap, EntityStore, PlaskSpec } from './entities/EntityStore';
-import { addEntity } from 'actions/selectingDataAction';
+import { editEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
 import { AnimationModule } from './modules/animation/AnimationModule';
@@ -279,7 +279,7 @@ export class PlaskEngine {
       'Entities updated ',
       entities.map((entity) => entity.clone()),
     );
-    this.dispatch(addEntity({ targets: entities.map((entity) => entity.clone()) }));
+    this.dispatch(editEntity({ targets: entities.map((entity) => entity.clone()) }));
   }
 
   /**

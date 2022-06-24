@@ -4,6 +4,7 @@ import { Middleware } from 'redux';
 import { PlaskCommand } from 'types/common';
 import * as plaskHistoryAction from 'actions/plaskHistoryAction';
 import { dispatch } from 'd3';
+import * as animationDataActions from 'actions/animationDataAction';
 
 const filterType = (type: string) => {
   const primary = type.split('/')[0];
@@ -13,10 +14,14 @@ const filterType = (type: string) => {
       switch (secondary) {
         case 'ADD_KEYFRAMES':
           return 'Add Keyframe';
-          break;
         case 'DELETE_KEYFRAMES':
           return 'Delete Keyframe';
-          break;
+        case 'SELECT_KEYFRAMES':
+          return 'Keyframe Select';
+        case 'SELECT_KEYFRAMES_BY_DRAG_BOX':
+          return 'Multi keyframes select';
+        case 'DRAG_DROP_KEYFRAMES':
+          return 'Move keyframe';
       }
       break;
     case 'selectingDataAction':
@@ -29,7 +34,7 @@ const filterType = (type: string) => {
           return 'Select all';
         case 'RESET_SELECTED_TARGETS':
           return 'Select reset';
-        case 'ADD_ENTITIES':
+        case 'EDIT_ENTITIES':
           return 'Object edit';
       }
 
@@ -45,7 +50,8 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
   let currentPointer: number = plaskHistory.pointer;
 
   const { promise, type, api, ...rest } = action;
-
+  console.log(action);
+  console.log('=====');
   switch (type) {
     case 'plaskHistory/UNDO':
       next(action);
@@ -55,6 +61,7 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
 
       if (plaskHistory.history.length > 0) {
         store.dispatch({ type: `${plaskHistory.history[currentPointer + 1].action.type.split('/')[0]}/OVERRIDE`, payload: plaskHistory.history[currentPointer + 1].state.past });
+        store.dispatch(plaskHistoryAction.updated());
       }
       return;
     case 'plaskHistory/REDO':
@@ -63,24 +70,29 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
         currentPointer = plaskHistory.pointer + 1;
       }
 
-      if (currentPointer < plaskHistory.history.length) {
+      if (plaskHistory.history.length > 0 && currentPointer < plaskHistory.history.length) {
         store.dispatch({ type: `${plaskHistory.history[currentPointer].action.type.split('/')[0]}/OVERRIDE`, payload: plaskHistory.history[currentPointer].state.present });
+        store.dispatch(plaskHistoryAction.updated());
       }
       return;
 
     case 'plaskHistory/UPDATED':
       next(action);
-      const updatedCommand = plaskHistory.history[plaskHistory.pointer];
-      const updatedAction = updatedCommand.action;
-      const updatedState = previousState[updatedAction.type.split('/')[0].split('Action')[0]];
-      updatedCommand.setPresent(updatedState);
+
+      console.log('=== HISTORY UPDATED ===');
+      if (plaskHistory.pointer > -1) {
+        const updatedCommand = plaskHistory.history[plaskHistory.pointer];
+        const updatedAction = updatedCommand.action;
+        const updatedState = previousState[updatedAction.type.split('/')[0].split('Action')[0]];
+        updatedCommand.setPresent(updatedState);
+        store.dispatch(animationDataActions.editAnimationIngredient({ animationIngredient: previousState['animationData'].animationIngredients[0] }));
+      }
       return;
 
     default:
       next(action);
       const commandName = filterType(type);
       if (commandName) {
-        console.log(previousState);
         store.dispatch(plaskHistoryAction.addHistory({ command: new PlaskCommand(action, previousState[type.split('/')[0].split('Action')[0]], commandName) }));
         store.dispatch(plaskHistoryAction.updated());
       }
