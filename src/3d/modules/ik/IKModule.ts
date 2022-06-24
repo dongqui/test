@@ -801,6 +801,8 @@ export class IKModule extends Module {
     // Create/find an IK controller for this bone
     const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
 
+    if (boneName.includes("Toe")) this.adjustToeBase(animationIngredient);
+
     if (!ikController) {
       console.warn('Foot locking not supported for ' + boneName);
       return null;
@@ -1026,6 +1028,31 @@ export class IKModule extends Module {
 
     animationGroup.goToFrame(0);
     animationGroup.stop();
+
+    return targetAnimation;
+  }
+
+  public adjustToeBase(animationIngredient: AnimationIngredient) {
+    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+    const targetLayerId = animationIngredient.layers[0].id;
+    const targetLayer = animationIngredient.layers[0];
+    let targetTrack = targetLayer!.tracks.find((track) => track.layerId === targetLayerId && track.property === 'isContact');
+    
+    if (targetTrack) {
+      for (const key of targetTrack.transformKeys) {
+        if (key.value === 0) {
+          const targetDataList = [
+            // Toe locking - for now just one angle
+            {
+              targetId: targetLayerId,
+              property: 'rotation' as PlaskProperty,
+              value: [-20, 0, 0] as ArrayOfThreeNumbers,
+            },
+          ];
+          targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
+        }
+      }
+    }
 
     return targetAnimation;
   }
