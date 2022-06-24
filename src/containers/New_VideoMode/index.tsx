@@ -36,8 +36,14 @@ const VideoMode = ({ browserType }: Props) => {
   const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+
   const [currentVideoURL, setVideoURL] = useState<string>();
+  const [duration, setDuration] = useState<number>(0);
+  const [timeline, setTimeline] = useState<Timeline>();
+  const [isVideoLoaded, setIsVideoLoaded] = useState<boolean>(false);
+  const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
+
+  const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
 
   const boxProps = useMemo(
     () => ({
@@ -147,7 +153,7 @@ const VideoMode = ({ browserType }: Props) => {
 
     await headerInspector(file)
       .then(() => {
-        if (videoRef && videoRef.current) {
+        if (videoRef.current) {
           const videoURL = URL.createObjectURL(files[0]);
 
           setIsVideoLoaded(true);
@@ -166,56 +172,48 @@ const VideoMode = ({ browserType }: Props) => {
       });
   };
 
-  const [duration, setDuration] = useState(0);
-
-  const [timeline, setTimeline] = useState<Timeline>();
-  const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
-
   const handleLoadMetadata = useCallback(() => {
-    if (videoRef && videoRef.current && videoRef.current.src) {
+    if (videoRef.current && videoRef.current.src && currentVideoURL) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
 
-      const videoDuration = videoRef.current.duration;
-      setDuration(videoDuration);
+      setDuration(videoRef.current.duration);
       setIsVideoLoaded(true);
 
-      if (currentVideoURL) {
-        setTimeline(
-          new Timeline(timelineRef, {
-            totalDuration: duration + 20,
-            thumbnailWidth: 128,
-            thumbnailHeight: 96,
-            loadingTextureURI: '/images/Loading.png',
-            getThumbnailCallback: (time: number, done: (input: ThinTexture | HTMLCanvasElement | HTMLVideoElement | string) => void) => {
-              const hiddenVideo = document.createElement('video');
-              document.body.append(hiddenVideo);
+      setTimeline(
+        new Timeline(timelineRef, {
+          totalDuration: duration + 20,
+          thumbnailWidth: 128,
+          thumbnailHeight: 96,
+          loadingTextureURI: '/images/Loading.png',
+          getThumbnailCallback: (time: number, done: (input: ThinTexture | HTMLCanvasElement | HTMLVideoElement | string) => void) => {
+            const hiddenVideo = document.createElement('video');
+            document.body.append(hiddenVideo);
 
-              hiddenVideo.setAttribute('playsinline', '');
-              hiddenVideo.style.display = 'none';
-              hiddenVideo.style.width = '1px';
-              hiddenVideo.style.height = '1px';
-              hiddenVideo.muted = true;
-              hiddenVideo.loop = false;
-              hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
-              hiddenVideo.src = currentVideoURL;
+            hiddenVideo.setAttribute('playsinline', '');
+            hiddenVideo.style.display = 'none';
+            hiddenVideo.style.width = '1px';
+            hiddenVideo.style.height = '1px';
+            hiddenVideo.muted = true;
+            hiddenVideo.loop = false;
+            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
+            hiddenVideo.src = currentVideoURL;
 
-              hiddenVideo.onloadeddata = () => {
-                if (time === 0) {
+            hiddenVideo.onloadeddata = () => {
+              if (time === 0) {
+                done(hiddenVideo);
+              } else {
+                hiddenVideo.onseeked = () => {
                   done(hiddenVideo);
-                } else {
-                  hiddenVideo.onseeked = () => {
-                    done(hiddenVideo);
-                  };
-                  hiddenVideo.currentTime = time;
-                }
-              };
+                };
+                hiddenVideo.currentTime = time;
+              }
+            };
 
-              hiddenVideo.load();
-            },
-          }),
-        );
-      }
+            hiddenVideo.load();
+          },
+        }),
+      );
     }
   }, [currentVideoURL, duration, timelineRef]);
 
@@ -228,8 +226,6 @@ const VideoMode = ({ browserType }: Props) => {
       });
     }
   }, [timeline]);
-
-  const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
 
   const handleChangeVideoStatus = useCallback((status: 'stop' | 'play' | 'pause') => {
     setVideoStatus(status);
