@@ -119,15 +119,13 @@ const VideoMode = ({ browserType }: Props) => {
       });
     };
 
-    const extension = load()
+    return load()
       .then((res) => {
         return res;
       })
       .catch((err) => {
-        return err;
+        throw err;
       });
-
-    return extension;
   };
 
   const handleDrop = async (files: File[]) => {
@@ -146,36 +144,26 @@ const VideoMode = ({ browserType }: Props) => {
     }
 
     const file = files[0];
-    const acceptableFormats = ['mp4', 'mov', 'webm'];
 
-    const extension = await headerInspector(file)
-      .then((res) => {
-        return res;
+    await headerInspector(file)
+      .then(() => {
+        if (videoRef && videoRef.current) {
+          const videoURL = URL.createObjectURL(files[0]);
+
+          setIsVideoLoaded(true);
+          setVideoURL(videoURL);
+
+          videoRef.current.src = videoURL;
+        }
       })
-      .catch((err) => {
-        return err;
+      .catch(() => {
+        dispatch(
+          globalUIActions.openModal('_AlertModal', {
+            message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
+            title: 'Import failed',
+          }),
+        );
       });
-
-    const isAcceptableVideo = acceptableFormats.includes(extension);
-
-    if (!isAcceptableVideo) {
-      dispatch(
-        globalUIActions.openModal('_AlertModal', {
-          message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
-          title: 'Import failed',
-        }),
-      );
-      return;
-    }
-
-    if (videoRef && videoRef.current) {
-      const videoURL = URL.createObjectURL(files[0]);
-
-      setIsVideoLoaded(true);
-      setVideoURL(videoURL);
-
-      videoRef.current.src = videoURL;
-    }
   };
 
   const [duration, setDuration] = useState(0);
