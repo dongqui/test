@@ -14,10 +14,11 @@ interface Props {
   onRecord: () => void;
   onRecordStop: () => void;
   isRecording: boolean;
+  isCountdown: boolean;
   switchStandbyMode: () => void;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, isRecording, onRecordStop, switchStandbyMode }: Props) => {
+const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, isCountdown, isRecording, onRecordStop, switchStandbyMode }: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -72,7 +73,7 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, i
     return isRecording ? (
       <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} />
     ) : (
-      <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+      <IconButton disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
     );
   }, [handlePause, handlePlay, handleRecord, handleStop, isRecording, isVideoLoaded, onRecordStop, switchStandbyMode, videoStatus]);
 

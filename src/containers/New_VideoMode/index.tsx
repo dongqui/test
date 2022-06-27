@@ -363,7 +363,6 @@ const VideoMode = ({ browserType }: Props) => {
             unmountCurrentStream();
 
             if (videoRef && videoRef.current) {
-              setIsVideoLoaded(true);
               setVideoURL(videoURL);
 
               videoRef.current.src = videoURL;
@@ -374,7 +373,16 @@ const VideoMode = ({ browserType }: Props) => {
         setVideoRecorder(recorder);
       }
     }
-  }, [cameraPermission, RECORD_STANDBY, currentVideoStream, browserType, unmountCurrentStream]);
+  }, [PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, RECORD_STANDBY, dispatch, currentVideoStream, browserType, unmountCurrentStream]);
+
+  const cancelCountdown = useCallback(() => {
+    setVideoRecorder(null);
+    setStandbyCounter(5);
+    if (countTimer.current) {
+      clearInterval(countTimer.current);
+      countTimer.current = null;
+    }
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (videoRecorder && videoRecorder.state === 'recording') {
@@ -513,6 +521,7 @@ const VideoMode = ({ browserType }: Props) => {
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           <RenderingPanel
+            cancelCountdown={cancelCountdown}
             standByCount={RECORD_COUNTDOWN ? standbyCounter : undefined}
             isWithoutCamera={videoDeviceList.length === 0 && !isVideoLoaded}
             videoRef={videoRef}
@@ -547,6 +556,7 @@ const VideoMode = ({ browserType }: Props) => {
             isVideoLoaded={isVideoLoaded}
             onChange={handleChangeVideoStatus}
             onRecord={startCountdown}
+            isCountdown={RECORD_COUNTDOWN}
             isRecording={ON_RECORDING}
             onRecordStop={stopRecording}
           />
