@@ -46,6 +46,7 @@ const VideoMode = ({ browserType }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
 
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
+  const dataRef = useRef<Blob[]>([]);
 
   const boxProps = useMemo(
     () => ({
@@ -306,16 +307,16 @@ const VideoMode = ({ browserType }: Props) => {
   }, [currentVideoStream]);
 
   const startRecording = useCallback(() => {
+    if (videoRecorder !== null) {
+      videoRecorder.start();
+    }
+  }, [videoRecorder]);
+
+  const startCountdown = useCallback(() => {
     if (!cameraPermission) {
       console.log('no permission');
     }
 
-    if (videoRecorder !== null) {
-      videoRecorder.start();
-    }
-  }, [cameraPermission, videoRecorder]);
-
-  const startCountdown = useCallback(() => {
     if (RECORD_STANDBY) {
       setStandbyCounter((prev) => --prev);
       countTimer.current = setInterval(() => setStandbyCounter((time) => --time), 1000);
@@ -324,28 +325,32 @@ const VideoMode = ({ browserType }: Props) => {
         const recorder = new MediaRecorder(currentVideoStream, {
           mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
         });
-        const data: Blob[] = [];
+        // const data: Blob[] = [];
 
         recorder.ondataavailable = (e) => {
-          data.push(e.data);
+          // data.push(e.data);
+          if (dataRef.current) dataRef.current.push(e.data);
         };
 
         recorder.onstop = () => {
-          const videoURL = URL.createObjectURL(new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
-          unmountCurrentStream();
+          if (dataRef.current) {
+            const videoURL = URL.createObjectURL(new Blob(dataRef.current, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
+            dataRef.current = [];
+            unmountCurrentStream();
 
-          if (videoRef && videoRef.current) {
-            setIsVideoLoaded(true);
-            setVideoURL(videoURL);
+            if (videoRef && videoRef.current) {
+              setIsVideoLoaded(true);
+              setVideoURL(videoURL);
 
-            videoRef.current.src = videoURL;
+              videoRef.current.src = videoURL;
+            }
           }
         };
 
         setVideoRecorder(recorder);
       }
     }
-  }, [RECORD_STANDBY, browserType, currentVideoStream, unmountCurrentStream]);
+  }, [cameraPermission, RECORD_STANDBY, currentVideoStream, browserType, unmountCurrentStream]);
 
   const stopRecording = useCallback(() => {
     if (videoRecorder && videoRecorder.state === 'recording') {
