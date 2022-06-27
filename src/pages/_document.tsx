@@ -32,7 +32,8 @@ class MyDocument extends Document {
           <link rel="manifest" href="/manifest.json" />
           <link rel="preconnect" href="https://fonts.gstatic.com" />
           <link href="https://fonts.googleapis.com/earlyaccess/notosanskr.css" rel="stylesheet" />
-          <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+          {/*<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />*/}
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
           <script src="https://apis.google.com/js/platform.js" async defer />
           <meta name="theme-color" content="#6963f7" />
           <meta name="facebook-domain-verification" content="ek6odzyq50wlz0fwjwxxfgre47tjvh" />

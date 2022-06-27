@@ -9,7 +9,6 @@ import Box, { BoxProps } from 'components/Layout/Box';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
 import { useWindowSize } from 'hooks/common';
-import ControlPanel from './ControlPanel';
 import RenderingPanel from './RenderingPanel';
 import MiddleBar from './MiddleBar';
 import TimelinePanel from './TimelinePanel';
@@ -38,6 +37,8 @@ const VideoMode = ({ browserType }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [currentVideoURL, setVideoURL] = useState<string>();
+  const [standbyCounter, setStandbyCounter] = useState(5);
+  const countTimer = useRef<NodeJS.Timeout | null>(null);
   const [duration, setDuration] = useState<number>(0);
   const [timeline, setTimeline] = useState<Timeline>();
   const [isVideoLoaded, setIsVideoLoaded] = useState<boolean>(false);
@@ -76,6 +77,15 @@ const VideoMode = ({ browserType }: Props) => {
     }),
     [windowHeight],
   );
+
+  const PERMISSION_WAITING = !videoDeviceListLoaded && cameraPermission === undefined;
+  const PERMISSION_DENIED = cameraPermission === false;
+  const NO_DEVICE_FOUND = cameraPermission === true && videoDeviceListLoaded && videoDeviceList.length === 0;
+  const VIDEO_STREAM_READY = !!currentVideoDevice && !!currentVideoStream;
+  const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && VIDEO_STREAM_READY;
+  const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5 && countTimer.current === null;
+  const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && countTimer.current !== null;
+  const ON_RECORDING = standbyCounter === -1 && countTimer.current === null;
 
   const headerInspector = async (file: File) => {
     const load = async () => {
@@ -310,35 +320,52 @@ const VideoMode = ({ browserType }: Props) => {
   }
 
   const startRecording = useCallback(() => {
-    if (currentVideoStream !== null) {
-      const recorder = new MediaRecorder(currentVideoStream, {
-        mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
-      });
-      const data: Blob[] = [];
-
-      recorder.ondataavailable = (e) => {
-        data.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        const videoURL = URL.createObjectURL(new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
-        unmountCurrentStream();
-        if (videoRef.current) {
-          videoRef.current.src = videoURL;
-        }
-
-        // testing feature
-        save(`test${Date.now()}.${browserType === 'safari' ? 'mp4' : 'webm'}`, new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
-      };
-
-      recorder.start(currentVideoStream.getTracks()[0].getSettings()?.frameRate ?? 1000);
-
-      setVideoRecorder(recorder);
+    if (!cameraPermission) {
+      console.log('no permission');
     }
-  }, [browserType, currentVideoStream, unmountCurrentStream]);
+
+    if (videoRecorder !== null) {
+      videoRecorder.start();
+    }
+  }, [cameraPermission, videoRecorder]);
+
+  const startCountdown = useCallback(() => {
+    if (RECORD_STANDBY) {
+      setStandbyCounter((prev) => --prev);
+      countTimer.current = setInterval(() => setStandbyCounter((time) => --time), 1000);
+
+      if (currentVideoStream !== null) {
+        const recorder = new MediaRecorder(currentVideoStream, {
+          mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
+        });
+        const data: Blob[] = [];
+
+        recorder.ondataavailable = (e) => {
+          data.push(e.data);
+        };
+
+        recorder.onstop = () => {
+          const videoURL = URL.createObjectURL(new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
+          unmountCurrentStream();
+
+          if (videoRef && videoRef.current) {
+            setIsVideoLoaded(true);
+            setVideoURL(videoURL);
+
+            videoRef.current.src = videoURL;
+          }
+
+          // TODO: remove this (testing feature)
+          // save(`test${Date.now()}.${browserType === 'safari' ? 'mp4' : 'webm'}`, new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
+        };
+
+        setVideoRecorder(recorder);
+      }
+    }
+  }, [RECORD_STANDBY, browserType, currentVideoStream, unmountCurrentStream]);
 
   const stopRecording = useCallback(() => {
-    if (videoRecorder && videoRecorder.onstop && videoRecorder.state === 'recording') {
+    if (videoRecorder && videoRecorder.state === 'recording') {
       videoRecorder.stop();
     }
   }, [videoRecorder]);
@@ -355,6 +382,21 @@ const VideoMode = ({ browserType }: Props) => {
   );
 
   useEffect(() => {
+    if (standbyCounter === 0 && countTimer.current) {
+      clearInterval(countTimer.current);
+      countTimer.current = null;
+      setStandbyCounter(-1);
+      startRecording();
+    }
+  }, [standbyCounter, startRecording]);
+
+  useEffect(() => {
+    function handleDeviceChange() {
+      getVideoInputDeviceList().then((devices) => {
+        setVideoDeviceList(devices);
+      });
+    }
+
     async function initialVideoDevice() {
       let devices = await getVideoInputDeviceList();
 
@@ -364,26 +406,42 @@ const VideoMode = ({ browserType }: Props) => {
         setCameraPermission(permissionGranted);
 
         if (!permissionGranted) {
-          console.log('camera permission request denied');
           return;
         }
 
         // after permission granted, get device list again
         devices = await getVideoInputDeviceList();
+      } else {
+        setCameraPermission(true);
       }
 
       setVideoDeviceList(devices);
       setVideoDeviceListLoaded(true);
+
+      navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
+
+      return handleDeviceChange;
     }
 
     initialVideoDevice();
+
+    return () => navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
   }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
-    if (videoDeviceListLoaded && videoDeviceList.length > 0) {
-      setCurrentVideoDevice(videoDeviceList[0]);
+    if (!ON_RECORDING && !RECORD_COUNTDOWN) {
+      if (videoDeviceListLoaded && videoDeviceList.length > 0) {
+        if (!currentVideoDevice) {
+          setCurrentVideoDevice(videoDeviceList[0]);
+        } else if (videoDeviceList.findIndex((v) => v.deviceId === currentVideoDevice?.deviceId) === -1) {
+          unmountCurrentStream();
+          setCurrentVideoDevice(videoDeviceList[0]);
+        }
+      } else if (videoDeviceListLoaded && videoDeviceList.length === 0) {
+        unmountCurrentStream();
+      }
     }
-  }, [videoDeviceListLoaded, videoDeviceList]);
+  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN]);
 
   useEffect(() => {
     if (currentVideoDevice !== null) {
@@ -425,7 +483,13 @@ const VideoMode = ({ browserType }: Props) => {
           {/* LP */}
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
-          <RenderingPanel videoRef={videoRef} isVideoLoaded={isVideoLoaded} onLoadMetadata={handleLoadMetadata} />
+          <RenderingPanel
+            standByCount={RECORD_COUNTDOWN ? standbyCounter : undefined}
+            isWithoutCamera={videoDeviceList.length === 0 && !isVideoLoaded}
+            videoRef={videoRef}
+            isVideoLoaded={isVideoLoaded}
+            onLoadMetadata={handleLoadMetadata}
+          />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
           <div className={cx('wrapper')}>
@@ -435,7 +499,7 @@ const VideoMode = ({ browserType }: Props) => {
               </div>
               <div className={cx('section-item')}>
                 <Typography type="body">Camera</Typography>
-                <Dropdown alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+                <Dropdown disabled={!cameraPermission} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
               </div>
             </div>
           </div>
@@ -444,7 +508,17 @@ const VideoMode = ({ browserType }: Props) => {
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
-          <MiddleBar videoRef={videoRef} videoStatus={videoStatus} isVideoLoaded={isVideoLoaded} onChange={handleChangeVideoStatus} />
+          <MiddleBar
+            recordAvailable={RECORD_AVAILABLE && !RECORD_COUNTDOWN && !ON_RECORDING}
+            videoRef={videoRef}
+            videoStatus={videoStatus}
+            isVideoLoaded={isVideoLoaded}
+            onChange={handleChangeVideoStatus}
+            onRecord={startCountdown}
+            hasVideo={!!currentVideoURL}
+            isRecording={ON_RECORDING}
+            onRecordStop={stopRecording}
+          />
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />

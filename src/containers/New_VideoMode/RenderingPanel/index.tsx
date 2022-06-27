@@ -9,19 +9,17 @@ interface Props {
   videoRef: RefObject<HTMLVideoElement>;
   isVideoLoaded: boolean;
   onLoadMetadata: () => void;
+  isWithoutCamera?: boolean;
+  standByCount?: number;
 }
 
-const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata }: Props) => {
+const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true, standByCount }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const [cameraDeviceList, setCameraDeviceList] = useState<MediaDeviceInfo[]>([]);
 
   // mirror: videoRef.current && !videoRef.current.src,
   const classes = cx('video', {
     mirror: isVideoLoaded,
   });
-
-  const isWithoutCamera = cameraDeviceList.length === 0 && !isVideoLoaded;
 
   return (
     <Fragment>
@@ -33,6 +31,7 @@ const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata }: Props) => {
           <div className={cx('text')}>There is no connected camera.</div>
         </div>
       )}
+      {standByCount !== undefined && <div className={cx('counter')}>{standByCount}</div>}
     </Fragment>
   );
 };

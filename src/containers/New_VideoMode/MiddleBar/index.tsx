@@ -11,9 +11,14 @@ interface Props {
   videoStatus: 'stop' | 'play' | 'pause';
   isVideoLoaded: boolean;
   onChange: (status: 'stop' | 'play' | 'pause') => void;
+  onRecord: () => void;
+  onRecordStop: () => void;
+  hasVideo: boolean;
+  recordAvailable: boolean;
+  isRecording: boolean;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, isVideoLoaded, onChange }: Props) => {
+const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, hasVideo, recordAvailable, isRecording, onRecordStop }: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -36,6 +41,12 @@ const MiddleBar = ({ videoRef, videoStatus, isVideoLoaded, onChange }: Props) =>
     }
   }, [onChange, videoRef]);
 
+  const handleRecord = useCallback(() => {
+    if (videoRef.current) {
+      onRecord();
+    }
+  }, [onRecord, videoRef]);
+
   const renderButtonGroup = useCallback(() => {
     if (isVideoLoaded) {
       const isVideoPlaying = videoStatus === 'play';
@@ -43,7 +54,11 @@ const MiddleBar = ({ videoRef, videoStatus, isVideoLoaded, onChange }: Props) =>
       if (isVideoPlaying) {
         return (
           <Fragment>
-            <IconButton icon={SvgPath.CameraRecord} type="negative" />
+            {isRecording ? (
+              <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} />
+            ) : (
+              <IconButton disabled={!recordAvailable} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+            )}
             <IconButton icon={SvgPath.CameraPause} type="ghost" onClick={handlePause} />
             <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} />
           </Fragment>
@@ -52,7 +67,11 @@ const MiddleBar = ({ videoRef, videoStatus, isVideoLoaded, onChange }: Props) =>
 
       return (
         <Fragment>
-          <IconButton icon={SvgPath.CameraRecord} type="negative" />
+          {isRecording ? (
+            <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} />
+          ) : (
+            <IconButton disabled={!recordAvailable} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+          )}
           <IconButton icon={SvgPath.CameraPlay} type="ghost" onClick={handlePlay} />
           <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} />
         </Fragment>
