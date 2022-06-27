@@ -101,6 +101,7 @@ function createEventChannel(socket: Socket) {
         // }
         case 'put-frames': {
           // emit(receiveFoo(payload));
+          emit(keyFrameActions.editKeyframesSocket.receive(payload));
           break;
         }
         // case 'rename': {
@@ -125,6 +126,7 @@ function createEventChannel(socket: Socket) {
 }
 
 function* sendSocketEmit(socket: Socket, event: 'animation' | 'library', action: PayloadActionCreator<string, any>) {
+  console.log(event);
   while (true) {
     const { payload } = yield take(action);
     socket.emit(event, payload);

@@ -203,9 +203,9 @@ export const pasteKeyframesSocket = createSocketActions(
   'keyframes/PASTE_KEYFRAMES_FAILURE',
 )<undefined, PasteKeyframesSendParams, PasteKeyframesReceiveParams, undefined, Error>();
 
-// 키프레임 추가
+export const OVERRIDE = 'keyframes/OVERRIDE' as const;
 export const override = (params: KeyframesState) => ({
-  type: 'keyframes/OVERRIDE' as const,
+  type: OVERRIDE,
   payload: {
     ...params,
   },

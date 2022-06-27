@@ -19,6 +19,10 @@ function getPropertyTrackList(state: RootState) {
   return state.trackList.propertyTrackList;
 }
 
+function getKeyframeTrackList(state: RootState) {
+  return state.keyframes.propertyTrackList;
+}
+
 function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
 }
@@ -190,6 +194,7 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
 
 function* handleEditKeyframesReceive(action: ReturnType<typeof keyframesActions.editKeyframesSocket.receive>) {
   // It's optimistic UI for now... but have to fix
+  console.log(action);
 }
 
 function* watchEditKeyframes() {
