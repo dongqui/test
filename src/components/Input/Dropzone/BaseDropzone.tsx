@@ -35,6 +35,7 @@ const BaseDropzone = ({ clickable = false, disabled, children, className, active
        * @beta
        */
       active: isDragActive,
+      disabled,
     });
 
     const activeStyles = `${baseStyles} ${active}`;
@@ -46,7 +47,7 @@ const BaseDropzone = ({ clickable = false, disabled, children, className, active
         className: classes,
       }),
     };
-  }, [active, className, getRootProps, isDragActive]);
+  }, [active, className, disabled, getRootProps, isDragActive]);
 
   const renderInner = useCallback(() => {
     if (children) {
