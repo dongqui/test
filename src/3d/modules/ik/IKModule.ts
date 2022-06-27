@@ -52,6 +52,11 @@ export class IKModule extends Module {
     rootMesh: null as Nullable<Mesh>,
   };
 
+  private _enabled: boolean = false;
+  public get isEnabled() {
+    return this._enabled;
+  }
+
   public forceUpdateGhostSkeleton() {
     if (this._ghost.skeleton) {
       for (const bone of this._ghost.skeleton.bones) {
@@ -139,6 +144,7 @@ export class IKModule extends Module {
 
     // Set initial IK position to FK
     this.setIKtoFK(this.ikControllers);
+    this._enabled = true;
 
     return { ptns: result, animationIngredient: newAnimationIngredient };
   }
@@ -178,6 +184,7 @@ export class IKModule extends Module {
     }
     this._ghostMeshes.length = 0;
 
+    this._enabled = false;
     return ptns;
   }
 
@@ -380,6 +387,7 @@ export class IKModule extends Module {
   public setIKtoFK(controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
+      selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
       selectedIK.controller.update();
     });
@@ -500,7 +508,7 @@ export class IKModule extends Module {
    */
   public bakeAllFKintoIK() {
     // Evaluate if a IK Controller is selected
-    const animationIngredients: AnimationIngredient[] = [];
+    let animationIngredient: Nullable<AnimationIngredient> = null;
     const impactedIK: PlaskTransformNode[] = [];
     // Stop render loop for the calculation time
     this.plaskEngine.stopRenderLoop();
@@ -512,6 +520,7 @@ export class IKModule extends Module {
       const currentPoleAngle = selectedIK.poleAngle;
 
       let targetAnimation: Nullable<AnimationIngredient> =
+        animationIngredient ||
         this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
         null;
       if (!targetAnimation) {
@@ -549,7 +558,6 @@ export class IKModule extends Module {
         }
 
         animationGroupTemp.start();
-        let lastUnlockedPosition = null;
 
         animationGroupTemp.goToFrame(i);
         selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
@@ -559,23 +567,23 @@ export class IKModule extends Module {
         selectedIK.controller.update();
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
 
-        if (targetAnimation) {
-          animationIngredients.push(targetAnimation);
-          impactedIK.push(selectedIK.handle.getPlaskEntity());
-        }
-
         selectedIK.handle.setAbsolutePosition(position);
       }
 
       animationGroupTemp.goToFrame(0);
       animationGroupTemp.stop();
       animationGroupTemp.dispose();
+
+      if (targetAnimation) {
+        animationIngredient = targetAnimation;
+        impactedIK.push(selectedIK.handle.getPlaskEntity());
+      }
     });
 
     // Resumes render loop
     this.plaskEngine.startRenderLoop();
 
-    return { animationIngredients, impactedIK };
+    return { animationIngredient, impactedIK };
   }
 
   /**
@@ -801,7 +809,7 @@ export class IKModule extends Module {
     // Create/find an IK controller for this bone
     const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
 
-    if (boneName.includes("Toe")) this.adjustToeBase(boneName, animationIngredient);
+    if (boneName.includes('Toe')) this.adjustToeBase(boneName, animationIngredient);
 
     if (!ikController) {
       console.warn('Foot locking not supported for ' + boneName);

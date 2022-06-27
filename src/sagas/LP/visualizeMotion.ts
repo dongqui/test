@@ -106,7 +106,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(modelNode.assetId);
         // Auto add ik code
         // plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(modelNode.assetId));
-        plaskEngine.ikModule.setIKtoFK(plaskEngine.ikModule.ikControllers);
         yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
         // This appends PlaskTransformNodes to state.selectableObjects
         yield put(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
@@ -123,10 +122,14 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
       if (contactData.length) {
         console.log('Auto add IK because foot locking is required.');
-        animationIngredient = yield call(addIK, addIKAction(asset.id, animationIngredient));
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
         // Update after adding IK tracks
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
         animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+      } else if (plaskEngine.ikModule.isEnabled) {
+        // IK was enabled before, so we need to add tracks for this new ingredient
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
+        animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }

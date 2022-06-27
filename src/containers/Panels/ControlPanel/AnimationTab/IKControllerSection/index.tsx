@@ -167,8 +167,8 @@ const IKControllerSection: FunctionComponent<Props> = ({
     {
       text: 'Bake all FK into IK',
       onClick: () => {
-        const { animationIngredients, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
-        for (const animationIngredient of animationIngredients) {
+        const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+        if (animationIngredient) {
           dispatch(editAnimationIngredient({ animationIngredient }));
         }
 

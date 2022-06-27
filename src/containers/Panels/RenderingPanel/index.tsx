@@ -38,6 +38,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _playState = useSelector((state) => state.animatingControls.playState);
@@ -137,6 +138,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   useObserved(SelectorModule._onUserSelectRequest, selectionChanged);
 
   // Animation data
+  // useEffect(() => {
+  //   if (_currentAnimationGroup) {
+  //     plaskEngine.ikModule.setIKtoFK(plaskEngine.ikModule.ikControllers);
+  //   }
+  // }, [_currentAnimationGroup, dispatch]);
+
   useEffect(() => {
     const animationGroup = plaskEngine.animationModule.regenerateAnimations(_animationIngredients, _visualizedAssetIds, _startTimeIndex, _endTimeIndex);
     if (animationGroup) {

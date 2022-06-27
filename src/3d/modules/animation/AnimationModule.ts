@@ -228,6 +228,11 @@ export class AnimationModule extends Module {
       const animationGroup = this.createAnimationGroupFromIngredient(visualizedAnimationIngredients[0], this.fps);
       animationGroup.normalize(startTimeIndex, endTimeIndex);
 
+      // Update with current time
+      animationGroup.start();
+      animationGroup.goToFrame(this.currentTimeIndex);
+      animationGroup.stop();
+
       this._currentAnimationGroup = animationGroup;
       return animationGroup;
     }

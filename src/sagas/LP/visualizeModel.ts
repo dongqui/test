@@ -116,6 +116,10 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             // Update after adding IK tracks
             animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId)!;
             animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+          } else if (plaskEngine.ikModule.isEnabled) {
+            // IK was enabled before, so we need to add tracks for this new ingredient
+            yield call(addIK, addIKAction(asset.id, animationIngredient));
+            animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId)!;
           }
           yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
         }
