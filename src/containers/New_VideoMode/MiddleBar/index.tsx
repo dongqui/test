@@ -13,12 +13,11 @@ interface Props {
   onChange: (status: 'stop' | 'play' | 'pause') => void;
   onRecord: () => void;
   onRecordStop: () => void;
-  recordAvailable: boolean;
   isRecording: boolean;
   switchStandbyMode: () => void;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, recordAvailable, isRecording, onRecordStop, switchStandbyMode }: Props) => {
+const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, isRecording, onRecordStop, switchStandbyMode }: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -73,9 +72,9 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, r
     return isRecording ? (
       <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} />
     ) : (
-      <IconButton disabled={!recordAvailable} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+      <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
     );
-  }, [handlePause, handlePlay, handleRecord, handleStop, isRecording, isVideoLoaded, onRecordStop, recordAvailable, switchStandbyMode, videoStatus]);
+  }, [handlePause, handlePlay, handleRecord, handleStop, isRecording, isVideoLoaded, onRecordStop, switchStandbyMode, videoStatus]);
 
   return (
     <div className={cx('wrapper')}>

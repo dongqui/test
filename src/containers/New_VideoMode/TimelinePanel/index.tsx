@@ -15,9 +15,10 @@ interface Props {
   videoStatus: 'stop' | 'play' | 'pause';
   duration: number;
   onDrop: (files: File[]) => Promise<void>;
+  dropzoneDisabled?: boolean;
 }
 
-const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duration, onDrop }: Props) => {
+const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duration, onDrop, dropzoneDisabled = false }: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
   const [originNumber, setOriginNumber] = useState(0);
@@ -173,7 +174,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
         </Fragment>
       ) : (
         <div className={cx('dropzone')}>
-          <BaseDropzone onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+          <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
             {({ open }) => (
               <div className={cx('dropzone-guide')}>
                 <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
@@ -181,7 +182,9 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
                   Drag and drop <br />
                   or
                 </div>
-                <OutlineButton onClick={open}>Browse File</OutlineButton>
+                <OutlineButton disabled={dropzoneDisabled} onClick={open}>
+                  Browse File
+                </OutlineButton>
               </div>
             )}
           </BaseDropzone>

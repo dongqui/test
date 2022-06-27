@@ -313,8 +313,34 @@ const VideoMode = ({ browserType }: Props) => {
   }, [videoRecorder]);
 
   const startCountdown = useCallback(() => {
-    if (!cameraPermission) {
-      console.log('no permission');
+    if (PERMISSION_WAITING) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'You need access to the camera to take video. Please allow camera access in the top left modal.',
+          title: 'Camera is blocked',
+        }),
+      );
+      return;
+    }
+
+    if (PERMISSION_DENIED) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'You need access to the camera to take video. Unblock the camera with the camera block icon on the right side of the address bar.',
+          title: 'Camera is blocked',
+        }),
+      );
+      return;
+    }
+
+    if (NO_DEVICE_FOUND) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'You need connect to the camera to take video. Check the camera connection.',
+          title: 'Camera not connected',
+        }),
+      );
+      return;
     }
 
     if (RECORD_STANDBY) {
@@ -325,10 +351,8 @@ const VideoMode = ({ browserType }: Props) => {
         const recorder = new MediaRecorder(currentVideoStream, {
           mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
         });
-        // const data: Blob[] = [];
 
         recorder.ondataavailable = (e) => {
-          // data.push(e.data);
           if (dataRef.current) dataRef.current.push(e.data);
         };
 
@@ -518,7 +542,6 @@ const VideoMode = ({ browserType }: Props) => {
         <Box id="MB" {...boxProps.MB}>
           <MiddleBar
             switchStandbyMode={switchStandbyMode}
-            recordAvailable={RECORD_AVAILABLE && !RECORD_COUNTDOWN && !ON_RECORDING}
             videoRef={videoRef}
             videoStatus={videoStatus}
             isVideoLoaded={isVideoLoaded}
@@ -529,7 +552,15 @@ const VideoMode = ({ browserType }: Props) => {
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>
-          <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
+          <TimelinePanel
+            dropzoneDisabled={RECORD_COUNTDOWN || ON_RECORDING}
+            duration={duration}
+            isVideoLoaded={isVideoLoaded}
+            videoStatus={videoStatus}
+            onDrop={handleDrop}
+            timeline={timeline}
+            videoRef={videoRef}
+          />
         </Box>
       </Box>
     </div>
