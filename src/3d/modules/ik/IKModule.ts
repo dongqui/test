@@ -801,7 +801,7 @@ export class IKModule extends Module {
     // Create/find an IK controller for this bone
     const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
 
-    if (boneName.includes("Toe")) this.adjustToeBase(animationIngredient);
+    if (boneName.includes("Toe")) this.adjustToeBase(boneName, animationIngredient);
 
     if (!ikController) {
       console.warn('Foot locking not supported for ' + boneName);
@@ -982,6 +982,8 @@ export class IKModule extends Module {
       // To visualize the ORIGINAL PATH
       const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
       origCurveLine.color = new Color3(1, 0.6, 0);
+
+      //console.log(origPoints);
     }
 
     let frameIndex = 0;
@@ -1013,11 +1015,11 @@ export class IKModule extends Module {
           value: 1,
         },
         // Toe locking - for now always locked
-        {
-          targetId: boneName,
-          property: 'rotationQuaternion' as PlaskProperty,
-          value: toeQuaternion.asArray() as ArrayOfFourNumbers,
-        },
+        // {
+        //   targetId: boneName,
+        //   property: 'rotationQuaternion' as PlaskProperty,
+        //   value: toeQuaternion.asArray() as ArrayOfFourNumbers,
+        // },
       ];
       targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
       frameIndex++;
@@ -1032,24 +1034,30 @@ export class IKModule extends Module {
     return targetAnimation;
   }
 
-  public adjustToeBase(animationIngredient: AnimationIngredient) {
+  public adjustToeBase(boneName: string, animationIngredient: AnimationIngredient) {
     let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
     const targetLayerId = animationIngredient.layers[0].id;
     const targetLayer = animationIngredient.layers[0];
-    let targetTrack = targetLayer!.tracks.find((track) => track.layerId === targetLayerId && track.property === 'isContact');
-    
+    let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
+    const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
+    //console.log(boneName);
+    console.log(targetAnimation);
+    //console.log(targetLayerId);
+    //console.log(targetTrack);
     if (targetTrack) {
       for (const key of targetTrack.transformKeys) {
+        //console.log(key);
         if (key.value === 0) {
           const targetDataList = [
             // Toe locking - for now just one angle
             {
-              targetId: targetLayerId,
-              property: 'rotation' as PlaskProperty,
-              value: [-20, 0, 0] as ArrayOfThreeNumbers,
+              targetId: boneName,
+              property: 'rotationQuaternion' as PlaskProperty,
+              value: toeQuaternion.asArray() as ArrayOfFourNumbers,
             },
           ];
           targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
+          console.log(targetAnimation);
         }
       }
     }
