@@ -14,6 +14,7 @@ import { WARNING_02 } from 'constants/Text';
 import RenderingPanel from './RenderingPanel';
 import MiddleBar from './MiddleBar';
 import TimelinePanel from './TimelinePanel';
+import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -366,9 +367,10 @@ const VideoMode = ({ browserType }: Props) => {
 
   const unmountVideo = useCallback(() => {
     if (currentVideoURL && videoRef.current) {
-      videoRef.current.src = '';
-      URL.revokeObjectURL(currentVideoURL);
+      const tempCurrentVideoURL = currentVideoURL;
       setVideoURL('');
+      videoRef.current.src = '';
+      URL.revokeObjectURL(tempCurrentVideoURL);
     }
   }, [currentVideoURL, videoRef]);
 
@@ -490,19 +492,22 @@ const VideoMode = ({ browserType }: Props) => {
           />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
-          <div className={cx('wrapper')}>
-            <div className={cx('section')}>
-              <div className={cx('section-title')}>
-                <Typography type="title">Video set</Typography>
-              </div>
-              <div className={cx('section-item')}>
-                <Typography type="body">Camera</Typography>
-                <Dropdown disabled={!cameraPermission} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+          {!currentVideoURL ? (
+            <div className={cx('wrapper')}>
+              <div className={cx('section')}>
+                <div className={cx('section-title')}>
+                  <Typography type="title">Video set</Typography>
+                </div>
+                <div className={cx('section-item')}>
+                  <Typography type="body">Camera</Typography>
+                  <Dropdown disabled={!cameraPermission || RECORD_COUNTDOWN} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <ControlPanel />
+          )}
         </Box>
-        {/*<ControlPanel/>*/}
       </Box>
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
