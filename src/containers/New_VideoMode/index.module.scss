@@ -5,6 +5,12 @@
   color: #fff;
 }
 
+.upper-bar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
 .upper-section {
   position: relative;
 }
@@ -40,7 +46,6 @@
   .section-title {
     display: flex;
     align-items: center;
-
     height: 40px;
   }
 
