@@ -24,7 +24,7 @@ const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCame
   return (
     <Fragment>
       <canvas className={cx('timeline-generator')} ref={canvasRef} />
-      <video ref={videoRef} className={classes} onLoadedMetadata={onLoadMetadata} autoPlay playsInline muted />
+      <video ref={videoRef} className={classes} onLoadedMetadata={onLoadMetadata} autoPlay playsInline muted loop={isVideoLoaded} />
       {isWithoutCamera && (
         <div className={cx('notification')}>
           <IconWrapper className={cx('icon')} icon={SvgPath.NoCamera} />

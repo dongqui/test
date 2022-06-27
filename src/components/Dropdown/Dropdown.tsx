@@ -141,6 +141,7 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', dis
 
   const buttonClasses = cx('button-toggle', {
     open: isOpen,
+    disabled,
   });
 
   const arrowClasses = cx('arrow', {

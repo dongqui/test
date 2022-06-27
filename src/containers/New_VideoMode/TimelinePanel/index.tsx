@@ -156,8 +156,8 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
               </label>
             </div>
             <div className={cx('ruler-inner')}>
-              {rulerValues.map((value) => (
-                <div key={value}>{value}s</div>
+              {rulerValues.map((value, index) => (
+                <div key={`a${value}.${index}`}>{value}s</div>
               ))}
             </div>
           </div>
