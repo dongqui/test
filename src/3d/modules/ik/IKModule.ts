@@ -836,7 +836,7 @@ export class IKModule extends Module {
     let groundLevelY = 100;
     let lastUnlockedFootQuaternion = null;
 
-    const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion }[] = [];
+    const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion; blendIn: boolean; blendOut: boolean }[] = [];
 
     for (const key of transformKeys) {
       const frameIndex = key.frame;
@@ -860,11 +860,12 @@ export class IKModule extends Module {
 
       if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
         if (position.y < groundLevelY) groundLevelY = position.y;
-        origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion });
+        origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion, blendIn: false, blendOut: false });
       }
     }
 
     const adjustedCurve: Vector3[] = [];
+    const blendFrames = 5;
     if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
       const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
 
@@ -924,6 +925,10 @@ export class IKModule extends Module {
           if ((array[index + 1] && array[index + 1].contact === 0) || index === array.length - 1) {
             // To prevent "false positive" result
             if (contactPoints.length > 1) {
+              // Storing BlendIn index
+              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true; 
+              // Storing BlendOut index
+              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true; 
               // Calculate CENTER POINT of CONTACTS
               const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
               const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
@@ -997,11 +1002,26 @@ export class IKModule extends Module {
     let frameIndex = 0;
     let poleAngleRotation = 0;
     let toeQuaternion: Quaternion = new Quaternion();
+    let blendValue = 0;
+    let blendQty = 0;
     for (const point of adjustedCurve) {
       if (origPoints[frameIndex].rotation) {
         poleAngleRotation = origPoints[frameIndex].rotation;
         toeQuaternion = origPoints[frameIndex].quaternion;
       }
+
+      // Blend adjust
+      if (origPoints[frameIndex] && origPoints[frameIndex].contact == 1 && blendQty == 0) {
+        blendValue = 1;
+      }
+      if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
+        blendQty = 1/blendFrames;
+      } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
+        blendQty = -1/blendFrames;
+      }
+      blendValue = blendValue + blendQty;
+      if (blendValue < 0) blendValue = 0;
+      else if (blendValue > 1) blendValue = 1;
 
       const targetDataList = [
         {
@@ -1020,7 +1040,7 @@ export class IKModule extends Module {
           targetId: ikController.handle.id,
           property: 'blend' as PlaskProperty,
           //value: key.value,
-          value: 1,
+          value: blendValue,
         },
         // Toe locking - for now always locked
         // {
