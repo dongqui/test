@@ -1,0 +1,41 @@
+name: Engine docs auto-deploy
+
+on:
+  push:
+    branches:
+      - master
+      - feature/api-3d
+
+jobs:
+  cd:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup node env
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Generate doc
+        run: npm run doc:engine
+
+      - name: FTP-Deploy-Action
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        env:
+          FTP_SERVER: plask.dot-sine.com
+          FTP_USERNAME: plask-autodeploy
+          FTP_PASSWORD: ${{ secrets.ENGINE_DOC_AUTODEPLOY_PASSWD }}
+          LOCAL_DIR: doc
+          METHOD: sftp
+          PORT: 22
+          ARGS: --delete

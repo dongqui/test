@@ -12,7 +12,7 @@ class BoneTrackRepository implements Repository {
   };
 
   // bone track list 초기화
-  initializeTrackList = (plaskTracks: PlaskTrack[]): BoneTrack[] => {
+  initializeTrackList = (plaskTracks: PlaskTrack[], context: { trackUid: number }): BoneTrack[] => {
     const boneTrackList: BoneTrack[] = [];
     plaskTracks.forEach((plaskTrack) => {
       const boneName = this.setBoneName(plaskTrack.targetId);
@@ -21,10 +21,11 @@ class BoneTrackRepository implements Repository {
         boneTrackList.push({
           trackId: plaskTrack.targetId,
           trackName: boneName,
-          trackNumber: boneTrackList.length * 10,
+          trackNumber: context.trackUid++,
           trackType: 'bone',
           isPointedDownCaret: false,
           isSelected: false,
+          parentTrackNumber: -1,
         });
       }
     });

@@ -1,0 +1,13 @@
+.wrapper {
+  position: relative;
+
+  & > .text {
+    margin: 4px 0;
+    font-size: 11px;
+    color: #7a7a7b;
+  }
+
+  & > .button {
+    margin: 4px 0;
+  }
+}

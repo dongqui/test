@@ -4,7 +4,7 @@ import { isNull } from 'lodash';
 
 import { useSelector } from 'reducers';
 import { FilledButton } from 'components/Button';
-import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMapIndicator } from 'components/ControlPanel';
+import { StaticRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMapIndicator } from 'components/ControlPanel';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
@@ -288,16 +288,15 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             </FilledButton>
             {!canAssign && <div className={cx('inactive-overlay')} />}
           </div>
-          <AnimationRangeInput
+          <StaticRangeInput
             text="Hip space"
             step={0.01}
-            currentMax={10}
+            max={1000}
             currentValue={hipSpace}
             decimalDigit={1}
             activeStatus={isAllActive}
             onChangeEnd={dispatchChangedHipSpace}
             handleChange={handleChange}
-            limitMax={1000}
           />
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')} />}
         </div>

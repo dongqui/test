@@ -15,6 +15,7 @@ class LayerTrackRepository implements Repository {
       isMuted: false,
       isSelected: index === 0, // 첫번째 layer는 true로 설정
       isPointedDownCaret: false,
+      parentTrackNumber: -1,
     }));
     return layerTrackList;
   };

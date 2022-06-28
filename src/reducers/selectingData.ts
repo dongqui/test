@@ -18,9 +18,21 @@ const defaultState: State = {
 export const selectingData = undoable(
   (state: State = defaultState, action: SelectingDataAction) => {
     switch (action.type) {
+      case 'selectingDataAction/UPDATE_SELECTABLE_OBJECTS': {
+        return Object.assign({}, state, {
+          selectableObjects: action.payload.objects,
+        });
+      }
       case 'selectingDataAction/ADD_SELECTABLE_OBJECTS': {
         return Object.assign({}, state, {
-          selectableObjects: [...state.selectableObjects, ...action.payload.objects],
+          selectableObjects: state.selectableObjects.concat(action.payload.objects),
+        });
+      }
+      case 'selectingDataAction/REMOVE_SELECTABLE_OBJECTS': {
+        const entityIdsToRemove = action.payload.objects.map((entity) => entity.entityId);
+        return Object.assign({}, state, {
+          selectableObjects: state.selectableObjects.filter((object) => !entityIdsToRemove.includes(object.entityId)),
+          selectedTargets: state.selectedTargets.filter((object) => !entityIdsToRemove.includes(object.entityId)),
         });
       }
       case 'selectingDataAction/REMOVE_SELECTABLE_CONTROLLERS': {
@@ -82,12 +94,24 @@ export const selectingData = undoable(
         });
       }
       // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
-      case 'selectingDataAction/UPDATE_ENTITY': {
+      case 'selectingDataAction/ADD_ENTITIES': {
         const obj = {} as { [key: string]: PlaskEntity };
         for (const entity of action.payload.targets) {
           obj[entity.entityId] = entity;
         }
         return Object.assign({}, state, { allEntitiesMap: { ...state.allEntitiesMap, ...obj } });
+      }
+      // TODO : this should move in a special "allEntities state", that is the only source of data for babylon's scene (can be serialized to)
+      case 'selectingDataAction/REMOVE_ENTITIES': {
+        const obj = {} as { [key: string]: PlaskEntity };
+        const removedIds = action.payload.targets.map((entity) => entity.entityId);
+        for (const entityId in state.allEntitiesMap) {
+          if (!removedIds.includes(entityId)) {
+            obj[entityId] = state.allEntitiesMap[entityId];
+          }
+        }
+
+        return Object.assign({}, state, { allEntitiesMap: obj });
       }
       default: {
         return state;
@@ -102,7 +126,7 @@ export const selectingData = undoable(
       'selectingDataAction/CTRL_KEY_MULTI_SELECT',
       'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS',
       'selectingDataAction/RESET_SELECTED_TARGETS',
-      'selectingDataAction/UPDATE_ENTITY',
+      'selectingDataAction/ADD_ENTITIES', // TODO : this is not a user action
     ]),
     ignoreInitialState: true,
   },

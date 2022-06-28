@@ -1,6 +1,6 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { AbstractMesh, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, Animation, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
 
 export enum GizmoMode {
   POSITION,
@@ -110,7 +110,7 @@ export interface VectorTransformKey {
 export type QuaternionTransformKey = { w: number } & VectorTransformKey;
 export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
-  transformKey: VectorTransformKey | QuaternionTransformKey;
+  transformKey: number | VectorTransformKey | QuaternionTransformKey;
   // isLocked: boolean;
 }
 export interface ServerTransformKeyRequest extends ServerTransformKey {
@@ -133,7 +133,17 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
-export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact' | 'blend' | 'poleAngle' | 'isContact';
+export const PlaskPropertyFormat: { [key in PlaskProperty]: number } = {
+  position: Animation.ANIMATIONTYPE_VECTOR3,
+  rotation: Animation.ANIMATIONTYPE_VECTOR3,
+  rotationQuaternion: Animation.ANIMATIONTYPE_QUATERNION,
+  scaling: Animation.ANIMATIONTYPE_VECTOR3,
+  inContact: Animation.ANIMATIONTYPE_FLOAT,
+  blend: Animation.ANIMATIONTYPE_FLOAT,
+  poleAngle: Animation.ANIMATIONTYPE_FLOAT,
+  isContact: Animation.ANIMATIONTYPE_FLOAT,
+};
 export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
 export interface PlaskTrack {
@@ -207,7 +217,7 @@ export type PlaskMocapData = Array<{
   transformKeys: Array<{
     frame: number;
     time: number;
-    value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
+    value: ArrayOfThreeNumbers | ArrayOfFourNumbers | number;
   }>;
 }>;
 

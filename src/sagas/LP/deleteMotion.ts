@@ -20,7 +20,7 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
   if (asset && targetAnimationIngredient) {
     const isVisualizedAsset = plaskProject.visualizedAssetIds.includes(asset.id);
     if (isVisualizedAsset) {
-      plaskEngine.assetModule.clearAssetFromScene(asset.id);
+      plaskEngine.assetModule.unvisualizeModel(asset.id);
 
       yield put(plaskProjectActions.unrenderAsset({}));
       yield put(selectingDataActions.unrenderAsset({ assetId: asset.id }));

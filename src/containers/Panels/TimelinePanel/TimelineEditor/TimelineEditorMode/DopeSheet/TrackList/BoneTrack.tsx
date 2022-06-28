@@ -2,14 +2,15 @@ import { useMemo, Fragment, FunctionComponent } from 'react';
 
 import { TimeEditorTrack } from 'types/TP/keyframe';
 import { BoneTrack } from 'types/TP/track';
+import { PropertyTrack as PropertyTrackAlias } from 'types/TP/track';
 import { useSelector } from 'reducers';
-import { getBoneTrackIndex } from 'utils/TP';
 
 import { PropertyTrack } from './index';
 import Keyframe from './Keyframe';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 const cx = classNames.bind(styles);
 
@@ -18,36 +19,19 @@ interface Props extends TimeEditorTrack, BoneTrack {
 }
 
 const BoneTrackComponent: FunctionComponent<Props> = (props) => {
-  const { trackNumber, trackId, keyframes, isPointedDownCaret, isSelected, translateY } = props;
+  const { trackNumber, trackId, keyframes, isPointedDownCaret, isSelected, translateY, parentTrackNumber } = props;
   const propertyKeyframes = useSelector((state) => state.keyframes.propertyTrackList);
   const propertyTrackList = useSelector((state) => state.trackList.propertyTrackList);
 
   // 자식이 될 property 키프레임 필터링
   const childrenKeyframes = useMemo(() => {
     let index = 0;
-    while (index < propertyKeyframes.length) {
-      const boneIndex = getBoneTrackIndex(propertyKeyframes[index].trackNumber as number);
-      if (boneIndex === trackNumber) {
-        const start = index - 1 === -1 ? 0 : index;
-        return propertyKeyframes.slice(start, index + 3);
-      }
-      index += 3;
-    }
-    return [];
+    return findChildrenTracks(trackNumber, propertyKeyframes) as TimeEditorTrack[];
   }, [trackNumber, propertyKeyframes]);
 
   // 자식이 될 property 트랙 리스트 필터링
   const childrenTrackList = useMemo(() => {
-    let index = 0;
-    while (index < propertyTrackList.length) {
-      const boneIndex = getBoneTrackIndex(propertyTrackList[index].trackNumber);
-      if (boneIndex === trackNumber) {
-        const start = index - 1 === -1 ? 0 : index;
-        return propertyTrackList.slice(start, index + 3);
-      }
-      index += 3;
-    }
-    return [];
+    return findChildrenTracks(trackNumber, propertyTrackList) as PropertyTrackAlias[];
   }, [trackNumber, propertyTrackList]);
 
   return (
@@ -56,7 +40,16 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
         <rect className={cx({ selected: isSelected })} height="24" width="200000" transform="translate(-5000 0)" />
         {keyframes.map(
           (keyframe) =>
-            !keyframe.isDeleted && <Keyframe key={`${keyframe.time}_${keyframe.isSelected}`} trackId={trackId} trackType="bone" trackNumber={trackNumber} {...keyframe} />,
+            !keyframe.isDeleted && (
+              <Keyframe
+                key={`${keyframe.time}_${keyframe.isSelected}`}
+                parentTrackNumber={parentTrackNumber}
+                trackId={trackId}
+                trackType="bone"
+                trackNumber={trackNumber}
+                {...keyframe}
+              />
+            ),
         )}
         <line x1="-5000" y1="24" x2="150000" y2="24" strokeWidth="1" />
       </g>
