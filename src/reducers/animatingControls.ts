@@ -22,7 +22,7 @@ const defaultState: AnimatingContolsState = {
   playSpeed: 1,
   currentTimeIndex: 0,
   startTimeIndex: 0,
-  endTimeIndex: 100,
+  endTimeIndex: 500,
   isAutokeyOn: false,
 };
 
