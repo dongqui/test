@@ -222,16 +222,12 @@ export type PlaskMocapData = Array<{
 }>;
 
 export type MocapJson = {
-  data: {
-    id: string;
-    result: {
-      motionNumber: number;
-      trackData: PlaskMocapData;
-    }[];
-    workingtime: number;
-  };
-  message: string;
-  statusCode: number;
+  result: {
+    motionNumber: number;
+    trackData: PlaskMocapData;
+  }[];
+  id: string;
+  workingtime: number;
 };
 
 export type BvhBoneType =
