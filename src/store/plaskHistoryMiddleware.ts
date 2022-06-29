@@ -104,8 +104,6 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
       next(action);
       const commandName = filterType(type);
 
-      console.log(plaskHistory);
-      console.log(action);
       if (commandName) {
         store.dispatch(plaskHistoryAction.addHistory({ command: new PlaskCommand(action, previousState[type.split('/')[0].split('Action')[0]], commandName) }));
         store.dispatch(plaskHistoryAction.updated());
