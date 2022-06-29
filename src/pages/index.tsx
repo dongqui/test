@@ -33,7 +33,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       });
   }
 
-
   /**
    * Possible error cases when accessing the app from the homepage
    * 401.1 - Invalid token
