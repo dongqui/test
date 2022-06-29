@@ -308,7 +308,7 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
       <ContextMenuProvider>
         <Fragment>
           <Box id="UP" {...boxProps.up}>
-            <UpperBar sceneName="Please enter a scene name" />
+            <UpperBar />
           </Box>
           <Box id="US" className={cx('upper-section')} {...boxProps.us}>
             <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
