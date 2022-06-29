@@ -75,7 +75,7 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, i
     ) : (
       <IconButton disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
     );
-  }, [handlePause, handlePlay, handleRecord, handleStop, isRecording, isVideoLoaded, onRecordStop, switchStandbyMode, videoStatus]);
+  }, [handlePause, handlePlay, handleRecord, handleStop, isCountdown, isRecording, isVideoLoaded, onRecordStop, switchStandbyMode, videoStatus]);
 
   return (
     <div className={cx('wrapper')}>

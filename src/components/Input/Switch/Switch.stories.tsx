@@ -6,6 +6,7 @@ import _Switch from './';
 
 import classNames from 'classnames/bind';
 import styles from './Switch.stories.module.scss';
+import { SvgPath } from 'components/Icon';
 
 const cx = classNames.bind(styles);
 
@@ -51,6 +52,32 @@ const Template: ComponentStory<typeof _Switch> = (args) => {
       <div>
         <h2>sample switch</h2>
         <_Switch {...args} className={cx('switch-story')} />
+      </div>
+      <br />
+      <div>
+        <h2>icon switch</h2>
+        <_Switch
+          {...{
+            options: [
+              {
+                key: 'opt1',
+                label: SvgPath.TrackMode,
+                value: 0,
+              },
+              {
+                key: 'opt2',
+                label: SvgPath.Camera,
+                value: 1,
+              },
+            ],
+            type: 'primary',
+            disabled: false,
+            fullSize: false,
+            defaultValue: 'opt2',
+            onChange: (key) => console.log(key),
+          }}
+          className={cx('icon-switch')}
+        />
       </div>
       <br />
       <div>

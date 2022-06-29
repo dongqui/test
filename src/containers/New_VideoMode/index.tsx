@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
+import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -18,6 +19,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { Switch } from 'components/Input';
 
 const cx = classNames.bind(styles);
 
@@ -27,6 +29,8 @@ interface Props {
 
 const VideoMode = ({ browserType }: Props) => {
   const dispatch = useDispatch();
+  const { mode } = useSelector((state: RootState) => state.modeSelection);
+
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [videoDeviceListLoaded, setVideoDeviceListLoaded] = useState(false);
@@ -106,16 +110,16 @@ const VideoMode = ({ browserType }: Props) => {
             }
 
             const regexMov = [
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(6674797071742020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(7466707974712020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(6674797071742020)((([\da-fA-F]{1,2})\s?){2})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(7466707974712020)((([\da-fA-F]{1,2})\s?){2})/gi),
             ];
 
             const regexMp4 = [
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(66747970)((([0-9a-fA-F]{1,2})\s?){8})/gi),
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(74667079)((([0-9a-fA-F]{1,2})\s?){8})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(66747970)((([\da-fA-F]{1,2})\s?){8})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(74667079)((([\da-fA-F]{1,2})\s?){8})/gi),
             ];
 
-            const regexWebm = [new RegExp(/^((1a45dfa3))((([0-9a-fA-F]{1,2})\s?){12})/gi), new RegExp(/^((451aa3df))((([0-9a-fA-F]{1,2})\s?){12})/gi)];
+            const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
 
             if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
               resolve('mov');
@@ -219,7 +223,7 @@ const VideoMode = ({ browserType }: Props) => {
             hiddenVideo.style.height = '1px';
             hiddenVideo.muted = true;
             hiddenVideo.loop = false;
-            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
+            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') <= 0;
             hiddenVideo.src = currentVideoURL;
 
             hiddenVideo.onloadeddata = () => {
@@ -513,6 +517,24 @@ const VideoMode = ({ browserType }: Props) => {
               <IconButton icon={SvgPath.Logo} type="ghost" />
             </a>
           </Link>
+          <Switch
+            options={[
+              {
+                key: 'EM',
+                label: SvgPath.TrackMode,
+                value: 'EM',
+              },
+              {
+                key: 'VM',
+                label: SvgPath.Camera,
+                value: 'VM',
+              },
+            ]}
+            type="primary"
+            defaultValue="VM"
+            onChange={(key) => console.log(key)}
+            className={cx('mode-switch')}
+          />
         </div>
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
