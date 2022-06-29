@@ -7,7 +7,7 @@ const DynamicWithNoSSR = dynamic(() => import('containers/index'), { ssr: false 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { query } = context;
-  let { sceneUid } = query;
+  let { sceneUid, t } = query;
   let token = context.req?.cookies?.authToken;
   if (process.env.NODE_ENV === 'development') {
     token = process.env.DEV_LOCAL_TOKEN || '';
@@ -27,6 +27,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       .catch((e) => {
         console.log(e);
       });
+  }
+
+  if (t && typeof t === 'string') {
+    token = t;
   }
 
   /**
