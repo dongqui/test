@@ -13,6 +13,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     token = process.env.DEV_LOCAL_TOKEN || '';
     sceneUid = process.env.DEV_LOCAL_SCENE_ID;
   }
+  if (t && typeof t === 'string') {
+    token = t;
+  }
+
   if (token && !sceneUid) {
     await requestApi({
       method: 'GET',
@@ -29,9 +33,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       });
   }
 
-  if (t && typeof t === 'string') {
-    token = t;
-  }
 
   /**
    * Possible error cases when accessing the app from the homepage
