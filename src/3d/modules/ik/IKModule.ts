@@ -806,260 +806,267 @@ export class IKModule extends Module {
   }
 
   public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
-    // Create/find an IK controller for this bone
-    const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
-
+    // Evaluate if Toe Base
     if (boneName.includes('Toe')) this.adjustToeBase(boneName, animationIngredient);
+    else {
+      // Create/find an IK controller for this bone
+      const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
 
-    if (!ikController) {
-      console.warn('Foot locking not supported for ' + boneName);
-      return null;
-    }
-    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
-    const targetLayerId = animationIngredient.layers[0].id;
+      if (!ikController) {
+        console.warn('Foot locking not supported for ' + boneName);
+        return null;
+      }
+      let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+      const targetLayerId = animationIngredient.layers[0].id;
 
-    const targetLayer = animationIngredient.layers[0];
-    let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+      const targetLayer = animationIngredient.layers[0];
+      let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
 
-    if (!targetTrack) {
-      targetAnimation = this.addIKTracks(animationIngredient.assetId, animationIngredient);
-      targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
       if (!targetTrack) {
-        throw new Error('Error : IK tracks could not be created for foot locking');
-      }
-    }
-
-    // Add an animation track for position
-    animationGroup.start();
-    let lastUnlockedPosition = null;
-    let lastUnlockedPoleAngle = null;
-    let groundLevelY = 100;
-    let lastUnlockedFootQuaternion = null;
-
-    const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion; blendIn: boolean; blendOut: boolean }[] = [];
-
-    for (const key of transformKeys) {
-      const frameIndex = key.frame;
-      animationGroup.goToFrame(frameIndex);
-      ikController.fkInfluenceChain![0].computeWorldMatrix(true);
-      let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
-      //let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
-      // Lots of assumptions here, but basically we are taking the hip left/right to hip center as a normal for the pole angle
-      let direction = (ikController.fkInfluenceChain![2].parent as Mesh).absolutePosition.subtract(ikController.fkInfluenceChain![2].absolutePosition).normalize();
-      const factor = ikController.limb === 'leftFoot' ? -1 : 1;
-      const rotation = Math.atan2(factor * direction.z, factor * direction.x);
-      if (key.value === 0 || !lastUnlockedPosition) {
-        lastUnlockedPosition = position;
-      }
-      if (key.value === 0 || lastUnlockedPoleAngle === null) {
-        lastUnlockedPoleAngle = rotation;
-      }
-      if (key.value === 0 || lastUnlockedFootQuaternion === null) {
-        lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
+        targetAnimation = this.addIKTracks(animationIngredient.assetId, animationIngredient);
+        targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+        if (!targetTrack) {
+          throw new Error('Error : IK tracks could not be created for foot locking');
+        }
       }
 
+      // Add an animation track for position
+      animationGroup.start();
+      let lastUnlockedPosition = null;
+      let lastUnlockedPoleAngle = null;
+      let groundLevelY = 100;
+      let lastUnlockedFootQuaternion = null;
+
+      const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion; blendIn: boolean; blendOut: boolean }[] = [];
+
+      for (const key of transformKeys) {
+        const frameIndex = key.frame;
+        animationGroup.goToFrame(frameIndex);
+        ikController.fkInfluenceChain![0].computeWorldMatrix(true);
+        let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
+        //let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
+        // Lots of assumptions here, but basically we are taking the hip left/right to hip center as a normal for the pole angle
+        let direction = (ikController.fkInfluenceChain![2].parent as Mesh).absolutePosition.subtract(ikController.fkInfluenceChain![2].absolutePosition).normalize();
+        const factor = ikController.limb === 'leftFoot' ? -1 : 1;
+        const rotation = Math.atan2(factor * direction.z, factor * direction.x);
+        if (key.value === 0 || !lastUnlockedPosition) {
+          lastUnlockedPosition = position;
+        }
+        if (key.value === 0 || lastUnlockedPoleAngle === null) {
+          lastUnlockedPoleAngle = rotation;
+        }
+        if (key.value === 0 || lastUnlockedFootQuaternion === null) {
+          lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
+        }
+
+        if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
+          if (position.y < groundLevelY) groundLevelY = position.y;
+          origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion, blendIn: false, blendOut: false });
+        }
+      }
+
+      const adjustedCurve: Vector3[] = [];
+      let blendFrames = 5; // Defines the frames quantity before and after the Foot Locking position to blend
       if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
-        if (position.y < groundLevelY) groundLevelY = position.y;
-        origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion, blendIn: false, blendOut: false });
-      }
-    }
+        const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
 
-    const adjustedCurve: Vector3[] = [];
-    const blendFrames = 5;
-    if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
-      const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
+        const contactPoints: Vector3[] = [];
+        const centerPoints: { qty: number; point: Vector3; index: number; used: boolean }[] = [];
+        const noContactPoints: Vector3[] = [];
+        const adjustedPoints: Vector3[] = [];
 
-      const contactPoints: Vector3[] = [];
-      const centerPoints: { qty: number; point: Vector3; index: number; used: boolean }[] = [];
-      const noContactPoints: Vector3[] = [];
-      const adjustedPoints: Vector3[] = [];
+        let pointsQty: number = 0;
+        let reduceValue = 3; // less than 3 => closer to original (maintain the "slide" effect)
 
-      let pointsQty: number = 0;
-      let reduceValue = 3; // less than 3 => closer to original (maintain the "slide" effect)
-
-      // Generate the NEW ADJUSTED PATH
-      function setAdjustedCurve(scene: Scene, value?: Vector3) {
-        if (value) {
-          adjustedPoints.push(value);
-        }
-
-        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty / adjustedPoints.length));
-
-        // To visualize the ADJUSTED PATH
-        const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
-        finalCurveLine.color = new Color3(0, 0.6, 1);
-
-        if (!centerPoints[centerPoints.length - 2].used) {
-          for (let i = 0; i < centerPoints[centerPoints.length - 2].qty; i++) {
-            adjustedCurve.push(centerPoints[centerPoints.length - 2].point);
+        // Generate the NEW ADJUSTED PATH
+        function setAdjustedCurve(scene: Scene, value?: Vector3) {
+          if (value) {
+            adjustedPoints.push(value);
           }
-          centerPoints[centerPoints.length - 2].used = true;
-        }
-        finalCurve.getPoints().forEach((point) => {
-          adjustedCurve.push(point);
-        });
-        if (!centerPoints[centerPoints.length - 1].used) {
-          let diff = Math.floor(centerPoints[centerPoints.length - 1].qty / 2) + adjustedCurve.length - centerPoints[centerPoints.length - 1].index;
-          for (let i = 0; i < centerPoints[centerPoints.length - 1].qty - diff; i++) {
-            adjustedCurve.push(centerPoints[centerPoints.length - 1].point);
+
+          const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty / adjustedPoints.length));
+
+          // To visualize the ADJUSTED PATH
+          const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
+          finalCurveLine.color = new Color3(0, 0.6, 1);
+
+          if (!centerPoints[centerPoints.length - 2].used) {
+            for (let i = 0; i < centerPoints[centerPoints.length - 2].qty; i++) {
+              adjustedCurve.push(centerPoints[centerPoints.length - 2].point);
+            }
+            centerPoints[centerPoints.length - 2].used = true;
           }
-          centerPoints[centerPoints.length - 1].used = true;
+          finalCurve.getPoints().forEach((point) => {
+            adjustedCurve.push(point);
+          });
+          if (!centerPoints[centerPoints.length - 1].used) {
+            let diff = Math.floor(centerPoints[centerPoints.length - 1].qty / 2) + adjustedCurve.length - centerPoints[centerPoints.length - 1].index;
+            for (let i = 0; i < centerPoints[centerPoints.length - 1].qty - diff; i++) {
+              adjustedCurve.push(centerPoints[centerPoints.length - 1].point);
+            }
+            centerPoints[centerPoints.length - 1].used = true;
+          }
+
+          adjustedPoints.length = 0;
+          noContactPoints.length = 0;
+          pointsQty = 0;
+
+          adjustedPoints.push(centerPoints[centerPoints.length - 1].point);
         }
 
-        adjustedPoints.length = 0;
-        noContactPoints.length = 0;
-        pointsQty = 0;
+        origPoints.forEach((value, index, array) => {
+          origCurve.push(value.position); // To visualize the ORIGINAL path
 
-        adjustedPoints.push(centerPoints[centerPoints.length - 1].point);
-      }
+          // Evaluate CONTACT
+          if (value.contact === 1) {
+            // Store CONTACT points
+            contactPoints.push(value.position);
 
-      origPoints.forEach((value, index, array) => {
-        origCurve.push(value.position); // To visualize the ORIGINAL path
-
-        // Evaluate CONTACT
-        if (value.contact === 1) {
-          // Store CONTACT points
-          contactPoints.push(value.position);
-
-          // Evaluate END OF CONTACTS or END OF POINTS
-          if ((array[index + 1] && array[index + 1].contact === 0) || index === array.length - 1) {
-            // To prevent "false positive" result
-            if (contactPoints.length > 1) {
-              // Storing BlendIn index
-              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true; 
-              // Storing BlendOut index
-              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true; 
-              // Calculate CENTER POINT of CONTACTS
-              const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-              const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-              contactPoints.forEach((vec) => {
-                min.x = Math.min(min.x, vec.x);
-                min.y = Math.min(min.y, vec.y);
-                min.z = Math.min(min.z, vec.z);
-                max.x = Math.max(max.x, vec.x);
-                max.y = Math.max(max.y, vec.y);
-                max.z = Math.max(max.z, vec.z);
-              });
-              const result = max.add(min).scale(0.5);
-              result.y = groundLevelY;
-              pointsQty++;
-              // Store contact points QUANTITY, CENTER POINT, CENTER POINT INDEX and a BOOLEAN to prevent reuse
-              centerPoints.push({
-                qty: contactPoints.length,
-                point: result,
-                index: index - contactPoints.length + Math.floor(contactPoints.length / 2),
-                used: false,
-              });
-              // Evaluate if there are NO CONTACT points stored
-              if (noContactPoints.length > 0) {
-                setAdjustedCurve(this.plaskEngine.scene, result);
+            // Evaluate END OF CONTACTS or END OF POINTS
+            if ((array[index + 1] && array[index + 1].contact === 0) || index === array.length - 1) {
+              // To prevent "false positive" result
+              if (contactPoints.length > 1) {
+                // Calculate CENTER POINT of CONTACTS
+                const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+                const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+                contactPoints.forEach((vec) => {
+                  min.x = Math.min(min.x, vec.x);
+                  min.y = Math.min(min.y, vec.y);
+                  min.z = Math.min(min.z, vec.z);
+                  max.x = Math.max(max.x, vec.x);
+                  max.y = Math.max(max.y, vec.y);
+                  max.z = Math.max(max.z, vec.z);
+                });
+                const result = max.add(min).scale(0.5);
+                result.y = groundLevelY;
+                pointsQty++;
+                // Store contact points QUANTITY, CENTER POINT, CENTER POINT INDEX and a BOOLEAN to prevent reuse
+                centerPoints.push({
+                  qty: contactPoints.length,
+                  point: result,
+                  index: index - contactPoints.length + Math.floor(contactPoints.length / 2),
+                  used: false,
+                });
+                // Evaluate if there are NO CONTACT points stored
+                if (noContactPoints.length > 0) {
+                  // Adjust Blend limit
+                  while (noContactPoints.length/2 < blendFrames) {
+                    blendFrames --;
+                  }
+                  setAdjustedCurve(this.plaskEngine.scene, result);
+                } else {
+                  adjustedPoints.push(result);
+                }
+                // Storing BlendIn index
+                if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true; 
+                // Storing BlendOut index
+                if (array[index + blendFrames]) array[index + blendFrames].blendOut = true;
+                blendFrames = 5; 
               } else {
-                adjustedPoints.push(result);
+                noContactPoints.push(value.position);
+                pointsQty++;
               }
-            } else {
-              noContactPoints.push(value.position);
-              pointsQty++;
+              contactPoints.length = 0;
             }
-            contactPoints.length = 0;
-          }
-        } else {
-          // Store NO CONTACT Points
-          noContactPoints.push(value.position);
-          pointsQty++;
+          } else {
+            // Store NO CONTACT Points
+            noContactPoints.push(value.position);
+            pointsQty++;
 
-          // Evaluate END OF NO CONTACTS or END OF POINTS
-          if ((array[index + 1] && array[index + 1].contact === 1 && array[index + 2] && array[index + 2].contact !== 0) || index === array.length - 1) {
-            // Evaluate FALSE CONTACTS
-            // Trying to optimize the PATH to reduce the "slide" effect
-            let reducedPoints: Vector3[] = [];
-            if (index === array.length - 1) {
+            // Evaluate END OF NO CONTACTS or END OF POINTS
+            if ((array[index + 1] && array[index + 1].contact === 1 && array[index + 2] && array[index + 2].contact !== 0) || index === array.length - 1) {
+              // Evaluate FALSE CONTACTS
+              // Trying to optimize the PATH to reduce the "slide" effect
+              let reducedPoints: Vector3[] = [];
+              if (index === array.length - 1) {
+                // Evaluate if last point
+                reducedPoints = noContactPoints.slice(reduceValue);
+                reduceValue = 1;
+              } else {
+                reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);
+              }
+
+              // Reducing the PATH to adjust/curve it with CatmullRomSpline
+              for (let i = 0; i < reducedPoints.length; i += reduceValue) {
+                adjustedPoints.push(reducedPoints[i]);
+              }
+
               // Evaluate if last point
-              reducedPoints = noContactPoints.slice(reduceValue);
-              reduceValue = 1;
-            } else {
-              reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);
-            }
-
-            // Reducing the PATH to adjust/curve it with CatmullRomSpline
-            for (let i = 0; i < reducedPoints.length; i += reduceValue) {
-              adjustedPoints.push(reducedPoints[i]);
-            }
-
-            // Evaluate if last point
-            if (index === array.length - 1) {
-              setAdjustedCurve(this.plaskEngine.scene);
+              if (index === array.length - 1) {
+                setAdjustedCurve(this.plaskEngine.scene);
+              }
             }
           }
+        });
+        // To visualize the ORIGINAL PATH
+        const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
+        origCurveLine.color = new Color3(1, 0.6, 0);
+
+        //console.log(origPoints);
+      }
+
+      let frameIndex = 0;
+      let poleAngleRotation = 0;
+      let toeQuaternion: Quaternion = new Quaternion();
+      let blendValue = 0;
+      let blendQty = 0;
+      for (const point of adjustedCurve) {
+        if (origPoints[frameIndex].rotation) {
+          poleAngleRotation = origPoints[frameIndex].rotation;
+          toeQuaternion = origPoints[frameIndex].quaternion;
         }
-      });
-      // To visualize the ORIGINAL PATH
-      const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
-      origCurveLine.color = new Color3(1, 0.6, 0);
 
-      //console.log(origPoints);
+        // Blend adjust
+        if (origPoints[frameIndex] && origPoints[frameIndex].contact == 1 && blendQty == 0) {
+          blendValue = 1;
+        }
+        if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
+          blendQty = 1/blendFrames;
+        } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
+          blendQty = -1/blendFrames;
+        }
+        blendValue = blendValue + blendQty;
+        if (blendValue < 0) blendValue = 0;
+        else if (blendValue > 1) blendValue = 1;
+
+        const targetDataList = [
+          {
+            targetId: ikController.handle.id,
+            property: 'position' as PlaskProperty,
+            //value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
+            value: point.asArray() as ArrayOfThreeNumbers,
+            // value: point,
+          },
+          {
+            targetId: ikController.handle.id,
+            property: 'poleAngle' as PlaskProperty,
+            value: poleAngleRotation,
+          },
+          {
+            targetId: ikController.handle.id,
+            property: 'blend' as PlaskProperty,
+            //value: key.value,
+            value: blendValue,
+          },
+          // Toe locking - for now always locked
+          // {
+          //   targetId: boneName,
+          //   property: 'rotationQuaternion' as PlaskProperty,
+          //   value: toeQuaternion.asArray() as ArrayOfFourNumbers,
+          // },
+        ];
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+        frameIndex++;
+        if (!targetAnimation) {
+          throw new Error('Could not bake, error while fetching animation ingredients.');
+        }
+      }
+
+      animationGroup.goToFrame(0);
+      animationGroup.stop();
+
+      return targetAnimation;
     }
-
-    let frameIndex = 0;
-    let poleAngleRotation = 0;
-    let toeQuaternion: Quaternion = new Quaternion();
-    let blendValue = 0;
-    let blendQty = 0;
-    for (const point of adjustedCurve) {
-      if (origPoints[frameIndex].rotation) {
-        poleAngleRotation = origPoints[frameIndex].rotation;
-        toeQuaternion = origPoints[frameIndex].quaternion;
-      }
-
-      // Blend adjust
-      if (origPoints[frameIndex] && origPoints[frameIndex].contact == 1 && blendQty == 0) {
-        blendValue = 1;
-      }
-      if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
-        blendQty = 1/blendFrames;
-      } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
-        blendQty = -1/blendFrames;
-      }
-      blendValue = blendValue + blendQty;
-      if (blendValue < 0) blendValue = 0;
-      else if (blendValue > 1) blendValue = 1;
-
-      const targetDataList = [
-        {
-          targetId: ikController.handle.id,
-          property: 'position' as PlaskProperty,
-          //value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
-          value: point.asArray() as ArrayOfThreeNumbers,
-          // value: point,
-        },
-        {
-          targetId: ikController.handle.id,
-          property: 'poleAngle' as PlaskProperty,
-          value: poleAngleRotation,
-        },
-        {
-          targetId: ikController.handle.id,
-          property: 'blend' as PlaskProperty,
-          //value: key.value,
-          value: blendValue,
-        },
-        // Toe locking - for now always locked
-        // {
-        //   targetId: boneName,
-        //   property: 'rotationQuaternion' as PlaskProperty,
-        //   value: toeQuaternion.asArray() as ArrayOfFourNumbers,
-        // },
-      ];
-      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
-      frameIndex++;
-      if (!targetAnimation) {
-        throw new Error('Could not bake, error while fetching animation ingredients.');
-      }
-    }
-
-    animationGroup.goToFrame(0);
-    animationGroup.stop();
-
-    return targetAnimation;
   }
 
   public adjustToeBase(boneName: string, animationIngredient: AnimationIngredient) {
@@ -1069,7 +1076,7 @@ export class IKModule extends Module {
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
     const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
     //console.log(boneName);
-    console.log(targetAnimation);
+    //console.log(targetAnimation);
     //console.log(targetLayerId);
     //console.log(targetTrack);
     if (targetTrack) {
@@ -1085,11 +1092,10 @@ export class IKModule extends Module {
             },
           ];
           targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
-          console.log(targetAnimation);
         }
       }
     }
-
+    //console.log(targetAnimation);
     return targetAnimation;
   }
 }
