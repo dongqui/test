@@ -111,7 +111,7 @@ export class IKModule extends Module {
     this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.LOCAL);
     if (objects.length === 1) {
       switch (objects[0].type) {
-        case 'controller':
+        case 'ik_controller':
           this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.WORLD);
           this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
           break;
@@ -926,9 +926,9 @@ export class IKModule extends Module {
             // To prevent "false positive" result
             if (contactPoints.length > 1) {
               // Storing BlendIn index
-              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true; 
+              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true;
               // Storing BlendOut index
-              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true; 
+              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true;
               // Calculate CENTER POINT of CONTACTS
               const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
               const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
@@ -1015,9 +1015,9 @@ export class IKModule extends Module {
         blendValue = 1;
       }
       if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
-        blendQty = 1/blendFrames;
+        blendQty = 1 / blendFrames;
       } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
-        blendQty = -1/blendFrames;
+        blendQty = -1 / blendFrames;
       }
       blendValue = blendValue + blendQty;
       if (blendValue < 0) blendValue = 0;

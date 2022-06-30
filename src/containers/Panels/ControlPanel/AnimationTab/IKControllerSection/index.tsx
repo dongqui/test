@@ -109,9 +109,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
     }
   }, [controlTargets]);
 
-  // Updating blend and pole angle from 3D
-  useEffect(() => {});
-
   const IKControllerData = [
     {
       text: 'Blend',
@@ -165,7 +162,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: false,
     },
     {
-      text: 'Bake all FK into IK',
+      text: 'Bake IK controller in FK pose',
       onClick: () => {
         const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
         if (animationIngredient) {
@@ -185,7 +182,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: false,
     },
     {
-      text: 'Bake all IK into FK',
+      text: 'Bake the bone in IK pose',
 
       onClick: () => {
         const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
@@ -205,10 +202,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
       disabled: false,
     },
-    {
-      text: 'Reset to initial pose',
-      onClick: () => {},
-    },
   ];
 
   const handleSetupIK = useCallback(() => {
@@ -227,25 +220,28 @@ const IKControllerSection: FunctionComponent<Props> = ({
     );
   }, [dispatch, _visualizedAssetIds]);
 
-  const dropdownOptions = [
-    {
-      text: 'Delete all IK controllers',
-      handleSelect: useCallback(() => {
-        dispatch(
-          commonActions.openModal('ConfirmModal', {
-            title: 'Delete all ik controllers?',
-            message: 'This action will delete all IK controllers',
-            confirmText: 'Delete',
-            onConfirm: () => {
-              dispatch(removeIKAction(_visualizedAssetIds[0]));
-            },
-            cancelText: 'Cancel',
-            confirmButtonColor: 'negative',
-          }),
-        );
-      }, [dispatch, _visualizedAssetIds]),
-    },
-  ];
+  const dropdownOptions = {
+    active: plaskEngine.ikModule.ikControllers.length > 0,
+    items: [
+      {
+        text: 'Delete all IK controllers',
+        handleSelect: useCallback(() => {
+          dispatch(
+            commonActions.openModal('ConfirmModal', {
+              title: 'Delete all ik controllers?',
+              message: 'This action will delete all IK controllers',
+              confirmText: 'Delete',
+              onConfirm: () => {
+                dispatch(removeIKAction(_visualizedAssetIds[0]));
+              },
+              cancelText: 'Cancel',
+              confirmButtonColor: 'negative',
+            }),
+          );
+        }, [dispatch, _visualizedAssetIds]),
+      },
+    ],
+  };
 
   return (
     <PlaskCard title="IK Controller" type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive}>

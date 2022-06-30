@@ -433,7 +433,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         return;
       }
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget?.type === 'controller') {
+      if (selectedTarget?.type === 'ik_controller') {
         plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
       }
 
@@ -447,14 +447,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         case 'e':
         case 'E':
         case 'ㄷ': {
-          if (selectedTarget?.type === 'controller') break;
+          if (selectedTarget?.type === 'ik_controller') break;
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
           break;
         }
         case 'r':
         case 'R':
         case 'ㄱ': {
-          if (selectedTarget?.type === 'controller') break;
+          if (selectedTarget?.type === 'ik_controller') break;
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
           break;
         }

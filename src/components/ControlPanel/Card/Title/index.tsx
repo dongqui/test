@@ -19,8 +19,10 @@ interface Props {
     handleToggle?: any;
     canToggle?: boolean;
   };
-
-  dropdownOptions?: Array<{ text: string; handleSelect: () => void }>;
+  dropdownOptions?: {
+    active: boolean;
+    items: Array<{ text: string; handleSelect: () => void }>;
+  };
   activeStatus: boolean;
   handleSpread: () => void;
 }
@@ -59,14 +61,14 @@ const PlaskCardTitle: FunctionComponent<Props> = ({
         {
           normal: null,
 
-          dropdown: dropdownOptions && (
+          dropdown: dropdownOptions?.active && (
             <Fragment>
-              <div className={cx('dropdown-button', { active: activeStatus })} onClick={() => setIsActiveDropdown(!isActiveDropdown)}>
+              <div className={cx('dropdown-button', { active: activeStatus && dropdownOptions.active })} onClick={() => setIsActiveDropdown(!isActiveDropdown)}>
                 <IconWrapper className={cx('')} icon={SvgPath.More} />
               </div>
               {isActiveDropdown && (
                 <ul className={cx('dropdown-menu')}>
-                  {dropdownOptions.map((item, idx) => (
+                  {dropdownOptions.items.map((item, idx) => (
                     <li
                       key={idx}
                       className={cx('dropdown-item')}
