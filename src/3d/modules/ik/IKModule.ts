@@ -391,8 +391,8 @@ export class IKModule extends Module {
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
 
       if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
-        selectedIK.handle.rotationQuaternion = Quaternion.RotationAxis(selectedIK.fkInfluenceChain![0].forward, Math.PI / 2);
+        selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
+        selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
       } else {
         selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
       }
