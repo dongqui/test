@@ -368,7 +368,7 @@ const VideoMode = ({ browserType }: Props) => {
 
             if (videoRef && videoRef.current) {
               setVideoURL(videoURL);
-
+              setIsVideoLoaded(true);
               videoRef.current.src = videoURL;
             }
           }
