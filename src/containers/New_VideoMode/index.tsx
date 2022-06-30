@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
+import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -18,6 +19,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { Switch } from 'components/Input';
 
 const cx = classNames.bind(styles);
 
@@ -27,6 +29,8 @@ interface Props {
 
 const VideoMode = ({ browserType }: Props) => {
   const dispatch = useDispatch();
+  const { mode } = useSelector((state: RootState) => state.modeSelection);
+
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [videoDeviceListLoaded, setVideoDeviceListLoaded] = useState(false);
@@ -47,6 +51,7 @@ const VideoMode = ({ browserType }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
 
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
+  const dataRef = useRef<Blob[]>([]);
 
   const boxProps = useMemo(
     () => ({
@@ -106,16 +111,16 @@ const VideoMode = ({ browserType }: Props) => {
             }
 
             const regexMov = [
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(6674797071742020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(7466707974712020)((([0-9a-fA-F]{1,2})\s?){2})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(6674797071742020)((([\da-fA-F]{1,2})\s?){2})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(7466707974712020)((([\da-fA-F]{1,2})\s?){2})/gi),
             ];
 
             const regexMp4 = [
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(66747970)((([0-9a-fA-F]{1,2})\s?){8})/gi),
-              new RegExp(/^((([0-9a-fA-F]{1,2})\s?){4})(74667079)((([0-9a-fA-F]{1,2})\s?){8})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(66747970)((([\da-fA-F]{1,2})\s?){8})/gi),
+              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(74667079)((([\da-fA-F]{1,2})\s?){8})/gi),
             ];
 
-            const regexWebm = [new RegExp(/^((1a45dfa3))((([0-9a-fA-F]{1,2})\s?){12})/gi), new RegExp(/^((451aa3df))((([0-9a-fA-F]{1,2})\s?){12})/gi)];
+            const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
 
             if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
               resolve('mov');
@@ -217,7 +222,7 @@ const VideoMode = ({ browserType }: Props) => {
             hiddenVideo.style.height = '1px';
             hiddenVideo.muted = true;
             hiddenVideo.loop = false;
-            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') > 0 ? false : true;
+            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') <= 0;
             hiddenVideo.src = currentVideoURL;
 
             hiddenVideo.onloadeddata = () => {
@@ -306,15 +311,42 @@ const VideoMode = ({ browserType }: Props) => {
   }, [currentVideoStream]);
 
   const startRecording = useCallback(() => {
-    if (!cameraPermission) {
-    }
-
     if (videoRecorder !== null) {
       videoRecorder.start();
     }
-  }, [cameraPermission, videoRecorder]);
+  }, [videoRecorder]);
 
   const startCountdown = useCallback(() => {
+    if (PERMISSION_WAITING) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'You need access to the camera to take video. Please allow camera access in the top left modal.',
+          title: 'Camera is blocked',
+        }),
+      );
+      return;
+    }
+
+    if (PERMISSION_DENIED) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'You need access to the camera to take video. Unblock the camera with the camera block icon on the right side of the address bar.',
+          title: 'Camera is blocked',
+        }),
+      );
+      return;
+    }
+
+    if (NO_DEVICE_FOUND) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message: 'You need connect to the camera to take video. Check the camera connection.',
+          title: 'Camera not connected',
+        }),
+      );
+      return;
+    }
+
     if (RECORD_STANDBY) {
       setStandbyCounter((prev) => --prev);
       countTimer.current = setInterval(() => setStandbyCounter((time) => --time), 1000);
@@ -323,28 +355,38 @@ const VideoMode = ({ browserType }: Props) => {
         const recorder = new MediaRecorder(currentVideoStream, {
           mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
         });
-        const data: Blob[] = [];
 
         recorder.ondataavailable = (e) => {
-          data.push(e.data);
+          if (dataRef.current) dataRef.current.push(e.data);
         };
 
         recorder.onstop = () => {
-          const videoURL = URL.createObjectURL(new Blob(data, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
-          unmountCurrentStream();
+          if (dataRef.current) {
+            const videoURL = URL.createObjectURL(new Blob(dataRef.current, { type: browserType === 'safari' ? 'video/mp4' : 'video/webm' }));
+            dataRef.current = [];
+            unmountCurrentStream();
 
-          if (videoRef && videoRef.current) {
-            setIsVideoLoaded(true);
-            setVideoURL(videoURL);
+            if (videoRef && videoRef.current) {
+              setVideoURL(videoURL);
 
-            videoRef.current.src = videoURL;
+              videoRef.current.src = videoURL;
+            }
           }
         };
 
         setVideoRecorder(recorder);
       }
     }
-  }, [RECORD_STANDBY, browserType, currentVideoStream, unmountCurrentStream]);
+  }, [PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, RECORD_STANDBY, dispatch, currentVideoStream, browserType, unmountCurrentStream]);
+
+  const cancelCountdown = useCallback(() => {
+    setVideoRecorder(null);
+    setStandbyCounter(5);
+    if (countTimer.current) {
+      clearInterval(countTimer.current);
+      countTimer.current = null;
+    }
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (videoRecorder && videoRecorder.state === 'recording') {
@@ -476,6 +518,24 @@ const VideoMode = ({ browserType }: Props) => {
               <IconButton icon={SvgPath.Logo} type="ghost" />
             </a>
           </Link>
+          <Switch
+            options={[
+              {
+                key: 'EM',
+                label: SvgPath.TrackMode,
+                value: 'EM',
+              },
+              {
+                key: 'VM',
+                label: SvgPath.Camera,
+                value: 'VM',
+              },
+            ]}
+            type="primary"
+            defaultValue="VM"
+            onChange={(key) => console.log(key)}
+            className={cx('mode-switch')}
+          />
         </div>
       </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
@@ -484,6 +544,7 @@ const VideoMode = ({ browserType }: Props) => {
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           <RenderingPanel
+            cancelCountdown={cancelCountdown}
             standByCount={RECORD_COUNTDOWN ? standbyCounter : undefined}
             isWithoutCamera={videoDeviceList.length === 0 && !isVideoLoaded}
             videoRef={videoRef}
@@ -513,18 +574,26 @@ const VideoMode = ({ browserType }: Props) => {
         <Box id="MB" {...boxProps.MB}>
           <MiddleBar
             switchStandbyMode={switchStandbyMode}
-            recordAvailable={RECORD_AVAILABLE && !RECORD_COUNTDOWN && !ON_RECORDING}
             videoRef={videoRef}
             videoStatus={videoStatus}
             isVideoLoaded={isVideoLoaded}
             onChange={handleChangeVideoStatus}
             onRecord={startCountdown}
+            isCountdown={RECORD_COUNTDOWN}
             isRecording={ON_RECORDING}
             onRecordStop={stopRecording}
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>
-          <TimelinePanel duration={duration} isVideoLoaded={isVideoLoaded} videoStatus={videoStatus} onDrop={handleDrop} timeline={timeline} videoRef={videoRef} />
+          <TimelinePanel
+            dropzoneDisabled={RECORD_COUNTDOWN || ON_RECORDING}
+            duration={duration}
+            isVideoLoaded={isVideoLoaded}
+            videoStatus={videoStatus}
+            onDrop={handleDrop}
+            timeline={timeline}
+            videoRef={videoRef}
+          />
         </Box>
       </Box>
     </div>

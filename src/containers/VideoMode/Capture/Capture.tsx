@@ -34,10 +34,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   const lpNode = useSelector((state) => state.lpNode.nodes);
   const { mode, videoURL } = useSelector((state) => state.modeSelection);
-  const cameraListRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const testRef = useRef<HTMLDivElement>(null);
   const thumbnailWrapRef = useRef<HTMLDivElement>(null);
   let cancelTokenSource = useRef<Canceler>();
 
@@ -434,23 +432,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   return (
     <div className={className}>
       <Box id="UP" {...boxProps.up}>
-        <UpperBar
-          sceneName="Please enter a scene name"
-          cameraListRef={cameraListRef}
-          deviceList={deviceList}
-          currentDevice={currentDevice}
-          recordState={recordState}
-          cameraDropdownState={cameraDropdownState}
-          standbyState={standbyState}
-          srcAddress={srcAddress}
-          videoRef={videoRef}
-          recording={recording}
-          recordOverTwice={recordOverTwice}
-          setSrcAddress={setSrcAddress}
-          handleChangeCamera={handleChangeCamera}
-          setCameraDropdownState={setCameraDropdownState}
-          stopStream={stopStream}
-        />
+        <UpperBar srcAddress={srcAddress} stopStream={stopStream} />
       </Box>
       <div className={cx('video-wrap')}>
         <canvas className={cx('thumbnail-canvas')} ref={canvasRef} />

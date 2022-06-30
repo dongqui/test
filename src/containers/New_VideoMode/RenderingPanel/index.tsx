@@ -11,9 +11,10 @@ interface Props {
   onLoadMetadata: () => void;
   isWithoutCamera?: boolean;
   standByCount?: number;
+  cancelCountdown: () => void;
 }
 
-const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true, standByCount }: Props) => {
+const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true, standByCount, cancelCountdown }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // mirror: videoRef.current && !videoRef.current.src,
@@ -31,7 +32,11 @@ const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCame
           <div className={cx('text')}>There is no connected camera.</div>
         </div>
       )}
-      {standByCount !== undefined && <div className={cx('counter')}>{standByCount}</div>}
+      {standByCount !== undefined && (
+        <div onClick={cancelCountdown} className={cx('counter')}>
+          <span>{standByCount}</span>
+        </div>
+      )}
     </Fragment>
   );
 };

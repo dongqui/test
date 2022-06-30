@@ -13,4 +13,9 @@
   &.active {
     border: 1px dotted $primary;
   }
+
+  &.disabled {
+    cursor: no-drop;
+    border: 1px dotted $contentbg-base;
+  }
 }

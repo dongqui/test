@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useMemo, useState } from 'react';
 import SwitchItem from './SwitchItem';
 
 import classNames from 'classnames/bind';
@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface Option {
   key: string;
   value: string | number;
-  label: string;
+  label: string | FunctionComponent;
 }
 
 interface Props {
