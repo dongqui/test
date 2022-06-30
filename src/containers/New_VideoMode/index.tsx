@@ -42,6 +42,7 @@ const VideoMode = ({ browserType }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [currentVideoURL, setVideoURL] = useState<string>('');
+  const [isDeviceInitialized, setIsDeviceInitialized] = useState(false);
   const [standbyCounter, setStandbyCounter] = useState(5);
   const countTimer = useRef<NodeJS.Timeout | null>(null);
   const [duration, setDuration] = useState<number>(0);
@@ -189,7 +190,7 @@ const VideoMode = ({ browserType }: Props) => {
   };
 
   const handleLoadMetadata = useCallback(() => {
-    if (videoRef.current && videoRef.current.src && currentVideoURL) {
+    if (videoRef.current && videoRef.current.src && currentVideoURL && isVideoLoaded) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
 
@@ -204,8 +205,6 @@ const VideoMode = ({ browserType }: Props) => {
           }
         }, 500);
       }
-
-      setIsVideoLoaded(true);
 
       setTimeline(
         new Timeline(timelineRef, {
@@ -242,7 +241,7 @@ const VideoMode = ({ browserType }: Props) => {
         }),
       );
     }
-  }, [currentVideoURL, duration, timelineRef]);
+  }, [currentVideoURL, duration, isVideoLoaded, timelineRef]);
 
   useEffect(() => {
     if (timeline) {
@@ -294,6 +293,7 @@ const VideoMode = ({ browserType }: Props) => {
       }
 
       setCurrentVideoStream(stream);
+      setIsDeviceInitialized(true);
     });
   }, []);
 
@@ -420,7 +420,8 @@ const VideoMode = ({ browserType }: Props) => {
     setStandbyCounter(5);
     setIsVideoLoaded(false);
     setVideoStatus('stop');
-  }, [unmountVideo]);
+    setIsDeviceInitialized(!isDeviceInitialized);
+  }, [isDeviceInitialized, unmountVideo]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -485,10 +486,10 @@ const VideoMode = ({ browserType }: Props) => {
   }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN]);
 
   useEffect(() => {
-    if (currentVideoDevice !== null) {
+    if (currentVideoDevice !== null && !isDeviceInitialized) {
       deviceInitialize(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, deviceInitialize]);
+  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized]);
 
   const dropdownList = useMemo(() => {
     return videoDeviceList.map((device) => ({
