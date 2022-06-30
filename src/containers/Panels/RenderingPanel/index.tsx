@@ -441,21 +441,25 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         case 'w':
         case 'W':
         case 'ㅈ': {
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+          if (selectedTarget.transformable.position) {
+            plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+          }
           break;
         }
         case 'e':
         case 'E':
         case 'ㄷ': {
-          if (selectedTarget?.type === 'ik_controller') break;
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+          if (selectedTarget.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
+            plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+          }
           break;
         }
         case 'r':
         case 'R':
         case 'ㄱ': {
-          if (selectedTarget?.type === 'ik_controller') break;
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+          if (selectedTarget.transformable.scale) {
+            plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+          }
           break;
         }
         case 'Escape': {

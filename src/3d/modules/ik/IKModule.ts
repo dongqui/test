@@ -203,7 +203,12 @@ export class IKModule extends Module {
     const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
       const layer = draft.layers.find((layer) => layer.name.startsWith('baseLayer')) || draft.layers[0];
       for (const controller of this.ikControllers) {
-        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(draft.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
+        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
+          draft.name,
+          [controller.handle],
+          ['blend', 'poleAngle', 'position', 'rotationQuaternion'],
+          layer.id,
+        );
 
         for (const track of newTracks) {
           if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
@@ -304,11 +309,11 @@ export class IKModule extends Module {
         property: 'position' as PlaskProperty,
         value: pickedIkCtrl.handle.position.asArray() as ArrayOfThreeNumbers,
       },
-      // {
-      //   targetId: pickedIkCtrl.handle.id,
-      //   property: 'rotationQuaternion' as PlaskProperty,
-      //   value: pickedIkCtrl.targetInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
-      // },
+      {
+        targetId: pickedIkCtrl.handle.id,
+        property: 'rotationQuaternion' as PlaskProperty,
+        value: pickedIkCtrl.targetInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+      },
     );
     return targetDataList;
   }
@@ -573,14 +578,12 @@ export class IKModule extends Module {
         let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
         selectedIK.handle.setAbsolutePosition(position);
 
-        // TODO Maybe we need rotation track?
-        // if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        //   selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
-        //   selectedIK.handle.rotationQuaternion = Quaternion.RotationAxis(selectedIK.fkInfluenceChain![0].forward, Math.PI / 2);
-        // } else {
-        //   selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
-        // }
-
+        if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+          selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
+          selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+        } else {
+          selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+        }
         selectedIK.controller.update();
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
 
