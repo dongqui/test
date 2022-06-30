@@ -389,7 +389,13 @@ export class IKModule extends Module {
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
-      selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+
+      if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+        selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+        selectedIK.handle.rotationQuaternion = Quaternion.RotationAxis(selectedIK.fkInfluenceChain![0].forward, Math.PI / 2);
+      } else {
+        selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+      }
 
       selectedIK.controller.update();
     });
@@ -566,6 +572,15 @@ export class IKModule extends Module {
 
         let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
         selectedIK.handle.setAbsolutePosition(position);
+
+        // TODO Maybe we need rotation track?
+        // if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+        //   selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+        //   selectedIK.handle.rotationQuaternion = Quaternion.RotationAxis(selectedIK.fkInfluenceChain![0].forward, Math.PI / 2);
+        // } else {
+        //   selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+        // }
+
         selectedIK.controller.update();
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
 

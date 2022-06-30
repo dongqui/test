@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { isNull } from 'lodash';
+import { put } from 'redux-saga/effects';
 
 import { StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
@@ -10,8 +11,7 @@ import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import plaskEngine from '3d/PlaskEngine';
-
-import * as commonActions from 'actions/Common/globalUI';
+import * as globalUIActions from 'actions/Common/globalUI';
 import { PlaskCard } from 'components/ControlPanel/Card';
 
 import classNames from 'classnames/bind';
@@ -164,20 +164,28 @@ const IKControllerSection: FunctionComponent<Props> = ({
     {
       text: 'Bake IK controller in FK pose',
       onClick: () => {
-        const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
-        if (animationIngredient) {
-          dispatch(editAnimationIngredient({ animationIngredient }));
+        try {
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+
+          const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+          if (animationIngredient) {
+            dispatch(editAnimationIngredient({ animationIngredient }));
+          }
+
+          // Set FK position to newly updated values
+          plaskEngine.ikModule.setIKtoFK();
+
+          // Select baked FK so the user notices the change
+          dispatch(defaultMultiSelect({ targets: impactedIK }));
+
+          // Refresh tracks by forcing the selection update.
+          // Could be better using ADD_KEYFRAME
+          dispatch(changeSelectedTargets());
+        } catch (e) {
+          console.log(e);
+        } finally {
+          dispatch(globalUIActions.closeModal('LoadingModal'));
         }
-
-        // Set FK position to newly updated values
-        plaskEngine.ikModule.setIKtoFK();
-
-        // Select baked FK so the user notices the change
-        dispatch(defaultMultiSelect({ targets: impactedIK }));
-
-        // Refresh tracks by forcing the selection update.
-        // Could be better using ADD_KEYFRAME
-        dispatch(changeSelectedTargets());
       },
       disabled: false,
     },
@@ -185,20 +193,28 @@ const IKControllerSection: FunctionComponent<Props> = ({
       text: 'Bake the bone in IK pose',
 
       onClick: () => {
-        const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
-        for (const animationIngredient of animationIngredients) {
-          dispatch(editAnimationIngredient({ animationIngredient }));
+        try {
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+
+          const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+          for (const animationIngredient of animationIngredients) {
+            dispatch(editAnimationIngredient({ animationIngredient }));
+          }
+
+          // Set FK position to newly updated values
+          plaskEngine.ikModule.setFKtoIK();
+
+          // Select baked FK so the user notices the change
+          dispatch(defaultMultiSelect({ targets: impactedFK }));
+
+          // Refresh tracks by forcing the selection update.
+          // Could be better using ADD_KEYFRAME
+          dispatch(changeSelectedTargets());
+        } catch (e) {
+          console.log(e);
+        } finally {
+          dispatch(globalUIActions.closeModal('LoadingModal'));
         }
-
-        // Set FK position to newly updated values
-        plaskEngine.ikModule.setFKtoIK();
-
-        // Select baked FK so the user notices the change
-        dispatch(defaultMultiSelect({ targets: impactedFK }));
-
-        // Refresh tracks by forcing the selection update.
-        // Could be better using ADD_KEYFRAME
-        dispatch(changeSelectedTargets());
       },
       disabled: false,
     },
@@ -206,7 +222,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   const handleSetupIK = useCallback(() => {
     dispatch(
-      commonActions.openModal('ConfirmModal', {
+      globalUIActions.openModal('ConfirmModal', {
         title: 'Setup IK',
         message: 'This action will create IK controllers',
         confirmText: 'Confirm',
@@ -227,7 +243,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
         text: 'Delete all IK controllers',
         handleSelect: useCallback(() => {
           dispatch(
-            commonActions.openModal('ConfirmModal', {
+            globalUIActions.openModal('ConfirmModal', {
               title: 'Delete all ik controllers?',
               message: 'This action will delete all IK controllers',
               confirmText: 'Delete',
