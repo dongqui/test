@@ -389,6 +389,8 @@ export class IKModule extends Module {
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
+      selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
+
       selectedIK.controller.update();
     });
   }
