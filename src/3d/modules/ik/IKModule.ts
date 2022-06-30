@@ -806,8 +806,11 @@ export class IKModule extends Module {
   }
 
   public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
+    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
     // Evaluate if Toe Base
-    if (boneName.includes('Toe')) this.adjustToeBase(boneName, animationIngredient);
+    if (boneName.includes('Toe')) {
+      targetAnimation = this.adjustToeBase(boneName, animationIngredient);
+    }
     else {
       // Create/find an IK controller for this bone
       const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
@@ -816,7 +819,6 @@ export class IKModule extends Module {
         console.warn('Foot locking not supported for ' + boneName);
         return null;
       }
-      let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
       const targetLayerId = animationIngredient.layers[0].id;
 
       const targetLayer = animationIngredient.layers[0];
@@ -1064,9 +1066,8 @@ export class IKModule extends Module {
 
       animationGroup.goToFrame(0);
       animationGroup.stop();
-
-      return targetAnimation;
     }
+    return targetAnimation;
   }
 
   public adjustToeBase(boneName: string, animationIngredient: AnimationIngredient) {
@@ -1074,28 +1075,29 @@ export class IKModule extends Module {
     const targetLayerId = animationIngredient.layers[0].id;
     const targetLayer = animationIngredient.layers[0];
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
-    const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
-    //console.log(boneName);
-    //console.log(targetAnimation);
-    //console.log(targetLayerId);
-    //console.log(targetTrack);
+    // Values for the animation in Toebase
+    let angles = [0, -0.05, -0.10, -0.15, -0.20, -0.25, -0.20, -0.15, -0.10, -0.05, 0];
+    let anglesEvolution = 0;
     if (targetTrack) {
-      for (const key of targetTrack.transformKeys) {
-        //console.log(key);
-        if (key.value === 0) {
+      targetTrack.transformKeys.forEach((key, index, array) => {
+        // Evaluate the end of a contact period 
+        if (key.value === 0 && array[index-1].value === 1 && array[index-2].value === 1) {
+          anglesEvolution = angles.length;
+        }
+        // Insert the flow of animation in ToeBase
+        if (anglesEvolution > 0) {
+          anglesEvolution--;
           const targetDataList = [
-            // Toe locking - for now just one angle
             {
               targetId: boneName,
               property: 'rotationQuaternion' as PlaskProperty,
-              value: toeQuaternion.asArray() as ArrayOfFourNumbers,
+              value: [angles[anglesEvolution], 0, 0, 1] as ArrayOfFourNumbers,
             },
           ];
-          targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
+          targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, index, targetDataList);
         }
-      }
+      })
     }
-    //console.log(targetAnimation);
     return targetAnimation;
   }
 }
