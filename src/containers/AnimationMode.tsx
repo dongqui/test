@@ -1,8 +1,9 @@
 import { debounce } from 'lodash';
 import { FunctionComponent, Fragment, useEffect, useState, useRef, useCallback, useMemo, SyntheticEvent } from 'react';
+import { useDispatch } from 'react-redux';
 import { ResizeCallbackData } from 'react-resizable';
 
-import { UpperBar } from 'containers/UpperBar';
+import { useSelector } from 'reducers';
 import LibraryPanel from 'containers/Panels/LibraryPanel';
 import RenderingPanel from './Panels/RenderingPanel';
 import ControlPanel from './Panels/ControlPanel';
@@ -12,17 +13,13 @@ import { useWindowSize } from 'hooks/common';
 import { useLSResizeState } from 'contexts/LS/ResizeContext';
 import Box, { BoxProps } from 'components/Layout/Box';
 import MiddleBar from './MiddleBar/Shoot';
-import HotKeyOrder from './HotKeyOrder';
 import Modal from 'containers/Common/Modal/Modal';
 import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
+import Onboarding from './Onboarding';
+import * as commonActions from 'actions/Common/globalUI';
 
 import styles from './AnimationMode.module.scss';
 import classNames from 'classnames/bind';
-
-import Onboarding from './Onboarding';
-import { useSelector } from 'reducers';
-import * as commonActions from 'actions/Common/globalUI';
-import { useDispatch } from 'react-redux';
 
 const cx = classNames.bind(styles);
 
@@ -233,10 +230,6 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
   }, []);
 
   const boxProps = {
-    up: {
-      height: constants.height.up,
-    } as BoxProps,
-
     us: {
       height: sectionHeight.upperSection,
       min: [windowWidth, (windowHeight - constants.height.up) / 2],
@@ -303,13 +296,9 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
   }, [dispatch]);
 
   return (
-    // <HotKeyOrder className={className}>
     <div className={className}>
       <ContextMenuProvider>
         <Fragment>
-          <Box id="UP" {...boxProps.up}>
-            <UpperBar />
-          </Box>
           <Box id="US" className={cx('upper-section')} {...boxProps.us}>
             <Box id="LP" className={cx('library-panel')} {...boxProps.lp}>
               <LibraryPanel />

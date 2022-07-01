@@ -1,10 +1,23 @@
 @import "styles/libraries/_colors";
 @import "styles/libraries/_mixins";
 
+.wrapper {
+  width: 100%;
+  height: 100%;
+
+  &.hidden {
+    display: none;
+  }
+}
+
 .dropzone {
   width: 100%;
   height: 100%;
   padding: 12px;
+
+  &.hidden {
+    display: none;
+  }
 }
 
 .dropzone-outer {

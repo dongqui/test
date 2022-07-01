@@ -131,65 +131,58 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
 
   return (
     <Fragment>
-      {isVideoLoaded ? (
-        <Fragment>
-          <div className={cx('ruler')}>
-            <div className={cx('indicator-wrapper')}>
-              <input ref={originRulerRef} style={{ display: 'none' }} value={originNumber} onChange={handleChange} />
-              <input
-                ref={rulerRef}
-                className={cx('indicator')}
-                type="range"
-                id="currentTime"
-                min={0}
-                max={duration}
-                step="0.001"
-                value={videoRef.current?.currentTime}
-                onChange={handleChangeCurrentTime}
-              />
-              <label
-                className={cx('indicator-value')}
-                id="currentTime"
-                style={{ left: `${number}%`, transform: `translate(calc(-50% + 16px * (100 - ${number * 2}) / 100), -50%)` }}
-              >
-                {((duration * Number(number.toFixed(1))) / 100).toFixed(1)}
-                <div className={cx('indicator-line')} />
-              </label>
-            </div>
-            <div className={cx('ruler-inner')}>
-              {rulerValues.map((value, index) => (
-                <div key={`a${value}.${index}`}>{value}s</div>
-              ))}
-            </div>
+      <div className={cx('wrapper', { hidden: !isVideoLoaded })}>
+        <div className={cx('ruler')}>
+          <div className={cx('indicator-wrapper')}>
+            <input ref={originRulerRef} style={{ display: 'none' }} value={originNumber} onChange={handleChange} />
+            <input
+              ref={rulerRef}
+              className={cx('indicator')}
+              type="range"
+              id="currentTime"
+              min={0}
+              max={duration}
+              step="0.001"
+              value={videoRef.current?.currentTime}
+              onChange={handleChangeCurrentTime}
+            />
+            <label className={cx('indicator-value')} id="currentTime" style={{ left: `${number}%`, transform: `translate(calc(-50% + 16px * (100 - ${number * 2}) / 100), -50%)` }}>
+              {((duration * Number(number.toFixed(1))) / 100).toFixed(1)}
+              <div className={cx('indicator-line')} />
+            </label>
           </div>
-          <div className={cx('timeline-wrapper')}>
-            <div className={cx('timeline')}>
-              <canvas id="timelineCanvas" className={cx('timeline-canvas')} />
-              <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
-              <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
-              <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
-              <div className={cx('slider-time')} style={{ left: `calc(${sliderStyles.left}%)`, width: `calc(${sliderStyles.width}%)` }} />
-            </div>
+          <div className={cx('ruler-inner')}>
+            {rulerValues.map((value, index) => (
+              <div key={`a${value}.${index}`}>{value}s</div>
+            ))}
           </div>
-        </Fragment>
-      ) : (
-        <div className={cx('dropzone')}>
-          <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
-            {({ open }) => (
-              <div className={cx('dropzone-guide')}>
-                <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
-                <div className={cx('dropzone-guide-text')}>
-                  Drag and drop <br />
-                  or
-                </div>
-                <OutlineButton disabled={dropzoneDisabled} onClick={open}>
-                  Browse File
-                </OutlineButton>
-              </div>
-            )}
-          </BaseDropzone>
         </div>
-      )}
+        <div className={cx('timeline-wrapper')}>
+          <div className={cx('timeline')}>
+            <canvas id="timelineCanvas" className={cx('timeline-canvas')} />
+            <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
+            <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
+            <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
+            <div className={cx('slider-time')} style={{ left: `calc(${sliderStyles.left}%)`, width: `calc(${sliderStyles.width}%)` }} />
+          </div>
+        </div>
+      </div>
+      <div className={cx('dropzone', { hidden: isVideoLoaded })}>
+        <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+          {({ open }) => (
+            <div className={cx('dropzone-guide')}>
+              <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
+              <div className={cx('dropzone-guide-text')}>
+                Drag and drop <br />
+                or
+              </div>
+              <OutlineButton disabled={dropzoneDisabled} onClick={open}>
+                Browse File
+              </OutlineButton>
+            </div>
+          )}
+        </BaseDropzone>
+      </div>
     </Fragment>
   );
 };
