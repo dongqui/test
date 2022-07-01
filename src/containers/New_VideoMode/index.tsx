@@ -503,9 +503,13 @@ const VideoMode = ({ browserType }: Props) => {
     [changeVideoDevice, videoDeviceList],
   );
 
-  const handleSwitchMode = useCallback(() => {
-    dispatch(changeMode({ mode: 'animationMode' }));
-  }, [dispatch]);
+  useEffect(() => {
+    if (mode === 'unmountVideoMode') {
+      unmountVideo();
+      unmountCurrentStream();
+      dispatch(changeMode({ mode: 'animationMode' }));
+    }
+  }, [dispatch, mode, unmountCurrentStream, unmountVideo]);
 
   return (
     <div className={cx('wrapper')}>
