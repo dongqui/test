@@ -357,6 +357,25 @@ export class IKModule extends Module {
     return result;
   }
 
+  public getControllerByInfluencedChain(target: PlaskTransformNode) {
+    const container = this.ikControllers.map((e) => {
+      if (e.fkInfluenceChain) {
+        if (e.fkInfluenceChain.filter((e) => e.id === target.id).length > 0) {
+          return e;
+        }
+      }
+    });
+
+    return container;
+  }
+
+  public isInfluencedChain(target: PlaskTransformNode) {
+    const contained = this.ikControllers.map((e) => e.fkInfluenceChain?.filter((e) => e.id === target.id));
+
+    const result = contained.find((e) => e!.length > 0);
+    return result;
+  }
+
   /**
    * Sets selectedIk
    * @param selectedIK
@@ -604,7 +623,6 @@ export class IKModule extends Module {
 
     // Resumes render loop
     this.plaskEngine.startRenderLoop();
-
     return { animationIngredient, impactedIK };
   }
 

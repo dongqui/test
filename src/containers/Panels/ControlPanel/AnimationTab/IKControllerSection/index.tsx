@@ -57,7 +57,14 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
 
-  const [controlTargets, setControlTargets] = useState<Array<PlaskTransformNode>>([]);
+  // IK Valid
+  const [ikValidation, setIkValidation] = useState<boolean>(false);
+  const [targetIKControllers, setTargetIKControllers] = useState<Array<IKController>>([]);
+  const [isInfluencedChainSelected, setIsInfluencedChainSelected] = useState<boolean>(false);
+
+  // IK Controller
+  const [poleAngleValue, setPoleAngleValue] = useState<number>(0);
+  const [blendValue, setBlendValue] = useState<number>(1);
 
   useEffect(() => {
     if (visualizedRetargetMap) {
@@ -72,42 +79,39 @@ const IKControllerSection: FunctionComponent<Props> = ({
   useEffect(() => {
     const targets = _selectedTargets.filter((target) => readMetadata('ikController', target.reference));
     plaskEngine.ikModule.setSelectedIk(targets.map((ik) => readMetadata('ikController', ik.reference)));
-    setControlTargets(targets);
+    setTargetIKControllers(targets.map((ik) => readMetadata('ikController', ik.reference)));
+
+    const isInfluencedSelected = _selectedTargets.find((target) => {
+      return plaskEngine.ikModule.isInfluencedChain(target);
+    });
+
+    setIsInfluencedChainSelected(Boolean(isInfluencedSelected) || targets.length > 0);
   }, [_selectableObjects, _selectedTargets]);
-
-  // IK Valid
-  const [isIKOn, setIsIKOn] = useState<boolean>(false);
-
-  // IK Controller
-  const [poleAngleValue, setPoleAngleValue] = useState<number>(0);
-  const [blendValue, setBlendValue] = useState<number>(1);
 
   useEffect(() => {
     setPoleAngleValue(0);
     setBlendValue(1);
-    setIsIKOn(false);
+    setIkValidation(false);
 
     // Use only first control target to display active values
-    if (controlTargets[0]) {
-      const controller = readMetadata('ikController', controlTargets[0].reference) as IKController;
-      if (controller) {
-        setIsIKOn(true);
-        setBlendValue(controller.blend);
-        setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+    if (targetIKControllers[0]) {
+      setIkValidation(true);
+      const controller = targetIKControllers[0];
+      setBlendValue(controller.blend);
+      setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
 
-        const blendObserver = controller.onBlendUpdatedObservable.add(() => {
-          setBlendValue(controller.blend);
-        });
-        const poleAngleObserver = controller.onPoleAngleUpdatedObservable.add(() => {
-          setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
-        });
-        return () => {
-          controller.onBlendUpdatedObservable.remove(blendObserver);
-          controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
-        };
-      }
+      const blendObserver = controller.onBlendUpdatedObservable.add(() => {
+        setBlendValue(controller.blend);
+      });
+      const poleAngleObserver = controller.onPoleAngleUpdatedObservable.add(() => {
+        setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+      });
+      return () => {
+        controller.onBlendUpdatedObservable.remove(blendObserver);
+        controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
+      };
     }
-  }, [controlTargets]);
+  }, [targetIKControllers]);
 
   const IKControllerData = [
     {
@@ -147,22 +151,33 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const IKControllerButtons = [
     {
       text: 'Set IK Pose to FK',
+      disabled: targetIKControllers.length === 0,
       onClick: () => {
         plaskEngine.ikModule.setIKtoFK();
         plaskEngine.ikModule.setIKControllerBlend(1);
         setBlendValue(1);
       },
-      disabled: false,
     },
     {
       text: 'Set FK Pose to IK',
       onClick: () => {
-        plaskEngine.ikModule.setFKtoIK();
+        if (targetIKControllers.length > 0) {
+          plaskEngine.ikModule.setFKtoIK();
+        } else {
+          let controllers: IKController[] = [];
+          _selectedTargets.forEach((target) => {
+            const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+            controllers = _temp.map((e, i) => e ?? controllers[i]);
+          });
+          controllers = controllers.filter((e) => e !== undefined);
+          if (controllers.length > 0) plaskEngine.ikModule.setFKtoIK(controllers);
+        }
       },
-      disabled: false,
+      disabled: !isInfluencedChainSelected,
     },
     {
       text: 'Bake IK controller in FK pose',
+      disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
           dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
@@ -187,11 +202,11 @@ const IKControllerSection: FunctionComponent<Props> = ({
           dispatch(globalUIActions.closeModal('LoadingModal'));
         }
       },
-      disabled: false,
     },
     {
       text: 'Bake the bone in IK pose',
 
+      disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
           dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
@@ -216,7 +231,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
           dispatch(globalUIActions.closeModal('LoadingModal'));
         }
       },
-      disabled: false,
     },
   ];
 
@@ -273,7 +287,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               showProgress={info.showProgress}
               currentValue={info.currentValue}
               decimalDigit={info.decimalDigit}
-              activeStatus={isAllActive && isIKOn}
+              activeStatus={isAllActive && ikValidation && targetIKControllers.length > 0}
               handleChange={info.handleChange}
               onChangeEnd={info.onChangeEnd}
             />
@@ -286,7 +300,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               key={`${info.text}${idx}`}
               text={info.text}
               type="default"
-              disabled={!isAllActive || !isIKOn || info.disabled}
+              disabled={!isAllActive || info.disabled}
               fullSize={true}
             />
           ))}
@@ -303,12 +317,12 @@ const IKControllerSection: FunctionComponent<Props> = ({
             className={cx('button')}
             text="Set Up IK"
             color="default"
-            disabled={!isAllActive || !mappingCompleted || plaskEngine.ikModule.ikControllers.length > 0}
+            disabled={!isAllActive || !mappingCompleted || targetIKControllers.length > 0}
             fullSize={true}
           />
         </div>
       )}
-      {!(isAllActive && controlTargets.length == 0) && <div className={cx('inactive-overlay')}></div>}
+      {!(isAllActive && targetIKControllers.length == 0) && <div className={cx('inactive-overlay')}></div>}
     </PlaskCard>
   );
 };
