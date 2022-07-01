@@ -206,7 +206,7 @@ export class IKModule extends Module {
         const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
           draft.name,
           [controller.handle],
-          ['blend', 'poleAngle', 'position', 'rotationQuaternion'],
+          ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
           layer.id,
         );
 
@@ -312,7 +312,7 @@ export class IKModule extends Module {
       {
         targetId: pickedIkCtrl.handle.id,
         property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        value: pickedIkCtrl.handle.rotationQuaternion!.asArray() as ArrayOfFourNumbers,
       },
     );
     return targetDataList;
@@ -395,11 +395,10 @@ export class IKModule extends Module {
       selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
 
+      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
+
       if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
         selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
-      } else {
-        selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
       }
 
       selectedIK.controller.update();
@@ -547,6 +546,8 @@ export class IKModule extends Module {
       if (!selectedIK.fkInfluenceChain) {
         throw new Error('No FK found for this IK.');
       }
+      console.log('Baking Layers');
+      console.log(layers);
 
       const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
 
@@ -554,11 +555,13 @@ export class IKModule extends Module {
       const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
       const blendTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'blend');
       const poleAngleTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'poleAngle');
+      const rotationTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'rotation');
+      const rotationQuaternionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'rotationQuaternion');
 
       const startTimeIndex = this.plaskEngine.state.animatingControls.startTimeIndex;
       const endTimeIndex = this.plaskEngine.state.animatingControls.endTimeIndex;
 
-      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack) {
+      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack || !rotationTrack || !rotationQuaternionTrack) {
         throw new Error('Could not bake, no keyframes added.');
       }
 
@@ -576,18 +579,17 @@ export class IKModule extends Module {
         selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
 
         let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
-        selectedIK.handle.setAbsolutePosition(position);
+        let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
 
+        selectedIK.handle.setAbsolutePosition(position);
+        selectedIK.handle.rotationQuaternion = rotation;
         if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-          selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
           selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
-        } else {
-          selectedIK.handle.rotationQuaternion = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion;
         }
         selectedIK.controller.update();
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
-
         selectedIK.handle.setAbsolutePosition(position);
+        selectedIK.handle.rotationQuaternion = rotation;
       }
 
       animationGroupTemp.goToFrame(0);
