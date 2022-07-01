@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
@@ -7,8 +6,6 @@ import { Timeline } from '@babylonjs/controls';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
-import { SvgPath } from 'components/Icon';
-import { IconButton } from 'components/Button';
 import { Typography } from 'components/Typography';
 import { Dropdown } from 'components/Dropdown';
 import { WARNING_02 } from 'constants/Text';
@@ -19,7 +16,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { Switch } from 'components/Input';
+import { changeMode } from 'actions/modeSelection';
 
 const cx = classNames.bind(styles);
 
@@ -60,9 +57,6 @@ const VideoMode = ({ browserType }: Props) => {
       } as BoxProps,
       LS: {
         height: 180,
-      } as BoxProps,
-      UP: {
-        height: 36,
       } as BoxProps,
       LP: {
         width: 240,
@@ -509,35 +503,12 @@ const VideoMode = ({ browserType }: Props) => {
     [changeVideoDevice, videoDeviceList],
   );
 
+  const handleSwitchMode = useCallback(() => {
+    dispatch(changeMode({ mode: 'animationMode' }));
+  }, [dispatch]);
+
   return (
     <div className={cx('wrapper')}>
-      <Box id="UP" {...boxProps.UP}>
-        <div className={cx('upper-bar')}>
-          <Link href="https://plask.ai">
-            <a target="_blank" className={cx('logo')}>
-              <IconButton icon={SvgPath.Logo} type="ghost" />
-            </a>
-          </Link>
-          <Switch
-            options={[
-              {
-                key: 'EM',
-                label: SvgPath.TrackMode,
-                value: 'EM',
-              },
-              {
-                key: 'VM',
-                label: SvgPath.Camera,
-                value: 'VM',
-              },
-            ]}
-            type="primary"
-            defaultValue="VM"
-            onChange={(key) => console.log(key)}
-            className={cx('mode-switch')}
-          />
-        </div>
-      </Box>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
           {/* LP */}

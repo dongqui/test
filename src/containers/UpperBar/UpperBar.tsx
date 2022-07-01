@@ -1,13 +1,12 @@
-import { FunctionComponent, useCallback, useState } from 'react';
+import { FunctionComponent, useCallback } from 'react';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import * as commonActions from 'actions/Common/globalUI';
-import { changeMode } from 'actions/modeSelection';
 import { IconButton } from 'components/Button';
 import { SvgPath } from 'components/Icon';
+import { Switch } from 'components/Input';
 import Dropdown from 'new_components/Dropdown';
-import ChangeModeButton from './ModeChange';
 
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
@@ -15,33 +14,16 @@ import styles from './UpperBar.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
-  srcAddress?: string;
-  stopStream?: () => void;
+  switchMode: () => void;
+  defaultMode: 'VM' | 'EM';
 }
 
 type HelpDropdownItem = 'Onboarding' | 'Tutorial' | 'Help center' | 'Contact us';
 
-const UpperBar: FunctionComponent<Props> = ({ srcAddress, stopStream }) => {
+const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
   const dispatch = useDispatch();
-  const [deleteModal, setDeleteModal] = useState<boolean>(false);
   const { mode } = useSelector((state: RootState) => state.modeSelection);
-  const { videoURL } = useSelector((state: RootState) => state.modeSelection);
   const onboardingStep = useSelector((state: RootState) => state.globalUI.onboardingStep);
-
-  // 애니메이션 모드 변경 버튼 클릭
-  const handleSwitchAnimationMode = useCallback(() => {
-    if (srcAddress || videoURL) {
-      setDeleteModal(true);
-    } else {
-      stopStream && stopStream();
-      dispatch(changeMode({ mode: 'animationMode' }));
-    }
-  }, [dispatch, srcAddress, stopStream, videoURL]);
-
-  // 비디오 모드 변경 버튼 클릭
-  const handleSwitchVideoMode = useCallback(() => {
-    dispatch(changeMode({ mode: 'videoMode' }));
-  }, [dispatch]);
 
   const handleSelectDropdown = useCallback(
     (menuItem: HelpDropdownItem) => {
@@ -56,6 +38,19 @@ const UpperBar: FunctionComponent<Props> = ({ srcAddress, stopStream }) => {
     dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
   }, [dispatch]);
 
+  const UBOption = [
+    {
+      key: 'EM',
+      label: SvgPath.TrackMode,
+      value: 'EM',
+    },
+    {
+      key: 'VM',
+      label: SvgPath.Camera,
+      value: 'VM',
+    },
+  ];
+
   return (
     <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
@@ -68,7 +63,7 @@ const UpperBar: FunctionComponent<Props> = ({ srcAddress, stopStream }) => {
         <Dropdown>
           <Dropdown.Header onClose={handleDropdownClose} />
           <Dropdown.Menu autoClose={onboardingStep !== 999}>
-            <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode === 'videoMode'}>
+            <Dropdown.Item menuItem="Onboarding" onClick={handleSelectDropdown} disabled={mode !== 'animationMode'}>
               Onboarding
             </Dropdown.Item>
             <Dropdown.Divider />
@@ -92,7 +87,7 @@ const UpperBar: FunctionComponent<Props> = ({ srcAddress, stopStream }) => {
         </Dropdown>
       </div>
       <div className={cx('right-upper')}>
-        <ChangeModeButton onSwitchAnimationMode={handleSwitchAnimationMode} onSwitchVideoMode={handleSwitchVideoMode} />
+        <Switch options={UBOption} type="primary" defaultValue={defaultMode} onChange={switchMode} className={cx('mode-switch')} />
       </div>
     </div>
   );

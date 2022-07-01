@@ -431,9 +431,9 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
 
   return (
     <div className={className}>
-      <Box id="UP" {...boxProps.up}>
-        <UpperBar srcAddress={srcAddress} stopStream={stopStream} />
-      </Box>
+      {/*<Box id="UP" {...boxProps.up}>*/}
+      {/*  <UpperBar srcAddress={srcAddress} stopStream={stopStream} />*/}
+      {/*</Box>*/}
       <div className={cx('video-wrap')}>
         <canvas className={cx('thumbnail-canvas')} ref={canvasRef} />
         <video
