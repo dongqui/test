@@ -87,7 +87,14 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
         </Dropdown>
       </div>
       <div className={cx('right-upper')}>
-        <Switch options={UBOption} type="primary" defaultValue={defaultMode} onChange={switchMode} className={cx('mode-switch')} />
+        <Switch
+          options={UBOption}
+          type="primary"
+          defaultValue={defaultMode}
+          onChange={switchMode}
+          className={cx('mode-switch')}
+          value={mode === 'videoMode' ? 'VM' : mode === 'animationMode' ? 'EM' : ''}
+        />
       </div>
     </div>
   );

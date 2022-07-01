@@ -410,12 +410,22 @@ const VideoMode = ({ browserType }: Props) => {
   }, [currentVideoURL, videoRef]);
 
   const switchStandbyMode = useCallback(() => {
-    unmountVideo();
-    setStandbyCounter(5);
-    setIsVideoLoaded(false);
-    setVideoStatus('stop');
-    setIsDeviceInitialized(!isDeviceInitialized);
-  }, [isDeviceInitialized, unmountVideo]);
+    dispatch(
+      globalUIActions.openModal('ConfirmModal', {
+        title: 'Delete previous video taken?',
+        message: 'Your video will be deleted to take a new video.',
+        confirmText: 'Delete',
+        confirmButtonColor: 'negative',
+        onConfirm: () => {
+          unmountVideo();
+          setStandbyCounter(5);
+          setIsVideoLoaded(false);
+          setVideoStatus('stop');
+          setIsDeviceInitialized(!isDeviceInitialized);
+        },
+      }),
+    );
+  }, [dispatch, isDeviceInitialized, unmountVideo]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -505,11 +515,30 @@ const VideoMode = ({ browserType }: Props) => {
 
   useEffect(() => {
     if (mode === 'unmountVideoMode') {
-      unmountVideo();
-      unmountCurrentStream();
-      dispatch(changeMode({ mode: 'animationMode' }));
+      if (currentVideoURL) {
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Delete previous video taken?',
+            message: 'Your video will be deleted to take a new video.',
+            confirmText: 'Delete',
+            confirmButtonColor: 'negative',
+            onConfirm: () => {
+              unmountVideo();
+              unmountCurrentStream();
+              dispatch(changeMode({ mode: 'animationMode' }));
+            },
+            onCancel: () => {
+              dispatch(changeMode({ mode: 'videoMode' }));
+            },
+          }),
+        );
+      } else {
+        unmountVideo();
+        unmountCurrentStream();
+        dispatch(changeMode({ mode: 'animationMode' }));
+      }
     }
-  }, [dispatch, mode, unmountCurrentStream, unmountVideo]);
+  }, [currentVideoURL, dispatch, mode, unmountCurrentStream, unmountVideo]);
 
   return (
     <div className={cx('wrapper')}>
