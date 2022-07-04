@@ -19,7 +19,7 @@ const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCame
 
   // mirror: videoRef.current && !videoRef.current.src,
   const classes = cx('video', {
-    mirror: isVideoLoaded,
+    mirror: !isVideoLoaded,
   });
 
   return (
