@@ -215,7 +215,7 @@ export class IKModule extends Module {
             console.log(`track ${track.name} already exists.`);
           } else {
             layer.tracks.push(castDraft(track));
-            console.log(`track ${track.name} created`);
+            // console.log(`track ${track.name} created`);
           }
         }
       }
@@ -419,6 +419,7 @@ export class IKModule extends Module {
       if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
         selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
       }
+      selectedIK.adjustAlignment();
 
       selectedIK.controller.update();
     });
@@ -1108,10 +1109,7 @@ export class IKModule extends Module {
     const targetLayer = animationIngredient.layers[0];
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
     const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
-    //console.log(boneName);
-    console.log(targetAnimation);
-    //console.log(targetLayerId);
-    //console.log(targetTrack);
+
     if (targetTrack) {
       for (const key of targetTrack.transformKeys) {
         //console.log(key);
@@ -1125,7 +1123,6 @@ export class IKModule extends Module {
             },
           ];
           targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
-          console.log(targetAnimation);
         }
       }
     }

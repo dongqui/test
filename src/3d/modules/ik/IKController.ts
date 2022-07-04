@@ -2,6 +2,7 @@ import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Qua
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
+import { convertToDegree } from 'utils/common';
 
 export type IKControllerParams = {
   body: TransformNode;
@@ -42,6 +43,17 @@ class IKHandle extends Mesh {
 export class IKController {
   public onBlendUpdatedObservable: Observable<void> = new Observable<void>();
   public onPoleAngleUpdatedObservable: Observable<void> = new Observable<void>();
+
+  /**
+   * For adjusting influenceChain[0] with handle rotation;
+   */
+  private _align: Vector3 = new Vector3(0, 0, 0);
+  public set align(value: Vector3) {
+    this._align = value;
+  }
+  public get align() {
+    return this._align;
+  }
 
   /**
    * The blend between FK and IK
@@ -125,12 +137,32 @@ export class IKController {
     return ikControllerHandle;
   }
 
+  public adjustAlignment() {
+    if (this.handle.rotationQuaternion) {
+      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
+      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
+    }
+  }
+  public alignTargetInfluenceChainWithHandle() {
+    if (this.handle.rotationQuaternion) {
+      const targetHandle = this.handle.rotationQuaternion.clone();
+      this.targetInfluenceChain[0].rotationQuaternion?.copyFrom(targetHandle);
+
+      this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
+    }
+  }
+
   public update() {
     // Blend only if we have a FK target
     if (this.fkInfluenceChain) {
       if (this.lockToFk) {
         this.handle.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
       }
+
+      this.alignTargetInfluenceChainWithHandle();
+
       this.controller.bone1Quat = this.fkInfluenceChain[2].rotationQuaternion;
       this.controller.bone2Quat = this.fkInfluenceChain[1].rotationQuaternion;
       this.controller.blend = this.blend;
