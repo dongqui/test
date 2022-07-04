@@ -52,4 +52,5 @@ export interface PlaskHistory {
   id: string;
   history: Array<PlaskCommand>;
   pointer: number;
+  previousPointer: number;
 }

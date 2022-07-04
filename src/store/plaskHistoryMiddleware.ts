@@ -68,7 +68,13 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
         currentPointer = plaskHistory.pointer - 1;
       }
       if (history.length > 0) {
-        store.dispatch({ type: `${history[currentPointer + 1].action.type.split('/')[0]}/OVERRIDE`, payload: plaskHistory.history[currentPointer + 1].state.past });
+        store.dispatch({
+          type: `${history[currentPointer + 1].action.type.split('/')[0]}/OVERRIDE`,
+          payload: plaskHistory.history[currentPointer + 1].state.past[history[currentPointer + 1].action.type.split('/')[0].split('Action')[0]],
+        });
+        if (history[currentPointer + 1].title === 'Add Keyframe' || history[currentPointer + 1].title === 'Delete Keyframe') {
+          store.dispatch(plaskHistoryAction.updateServer());
+        }
         store.dispatch(plaskHistoryAction.updated());
         // store.dispatch(keyframeActions.editKeyframesSocket.request());
       }
@@ -80,7 +86,13 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
       }
 
       if (history.length > 0 && currentPointer < history.length) {
-        store.dispatch({ type: `${history[currentPointer].action.type.split('/')[0]}/OVERRIDE`, payload: plaskHistory.history[currentPointer].state.present });
+        store.dispatch({
+          type: `${history[currentPointer].action.type.split('/')[0]}/OVERRIDE`,
+          payload: plaskHistory.history[currentPointer].state.present[history[currentPointer].action.type.split('/')[0].split('Action')[0]],
+        });
+        if (history[currentPointer].title === 'Add Keyframe' || history[currentPointer].title === 'Delete Keyframe') {
+          store.dispatch(plaskHistoryAction.updateServer());
+        }
         store.dispatch(plaskHistoryAction.updated());
       }
       return;
@@ -91,7 +103,7 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
       if (plaskHistory.pointer > -1) {
         const updatedCommand = history[plaskHistory.pointer];
         const updatedAction = updatedCommand.action;
-        const updatedState = previousState[updatedAction.type.split('/')[0].split('Action')[0]];
+        const updatedState = previousState;
         updatedCommand.setPresent(updatedState);
 
         // if (updatedAction.type.split('/')[1] === 'REDO' || updatedAction.type.split('/')[1] === 'UNDO') store.dispatch(keyframeActions.editKeyframesSocket.update());
@@ -105,7 +117,7 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
       const commandName = filterType(type);
 
       if (commandName) {
-        store.dispatch(plaskHistoryAction.addHistory({ command: new PlaskCommand(action, previousState[type.split('/')[0].split('Action')[0]], commandName) }));
+        store.dispatch(plaskHistoryAction.addHistory({ command: new PlaskCommand(action, previousState, commandName) }));
         store.dispatch(plaskHistoryAction.updated());
       }
   }

@@ -1,12 +1,19 @@
 import { PlaskAsset, PlaskScreen } from 'types/common';
 import { PlaskCommand } from 'types/common';
-export type PlaskHistoryAction = ReturnType<typeof addHistory> | ReturnType<typeof clearHistory> | ReturnType<typeof redo> | ReturnType<typeof undo> | ReturnType<typeof updated>;
+export type PlaskHistoryAction =
+  | ReturnType<typeof addHistory>
+  | ReturnType<typeof clearHistory>
+  | ReturnType<typeof redo>
+  | ReturnType<typeof undo>
+  | ReturnType<typeof updated>
+  | ReturnType<typeof updateServer>;
 
 const REDO = 'plaskHistory/REDO' as const;
 const UNDO = 'plaskHistory/UNDO' as const;
 const ADD_HISTORY = 'plaskHistory/ADD_HISTORY' as const;
 const CLEAR_HISTORY = 'plaskHistory/CLEAR_HISTORY' as const;
 const UPDATED = 'plaskHistory/UPDATED' as const;
+const UPDATE_SERVER = 'plaskHistory/UPDATE_SERVER' as const;
 
 interface AddHistory {
   command: PlaskCommand;
@@ -45,6 +52,12 @@ export const addHistory = (params: AddHistory) => ({
  */
 export const updated = () => ({
   type: UPDATED,
+});
+/**
+ * 히스토리 추가 완료
+ */
+export const updateServer = () => ({
+  type: UPDATE_SERVER,
 });
 
 /**

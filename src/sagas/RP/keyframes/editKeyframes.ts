@@ -151,33 +151,34 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
         return;
       }
 
+      const putData = {
+        layerId: _selectedLayer,
+        tracks: tracks?.map((track) => {
+          const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
+          return {
+            id: track.id,
+            targetId: track.targetId,
+            filterBeta: track.filterBeta,
+            filterMinCutoff: track.filterMinCutoff,
+            name: track.name,
+            property: track.property,
+            transformKeysMap: [
+              {
+                frameIndex: transformKey?.frame,
+                property: track.property,
+                transformKey:
+                  track.property === 'rotationQuaternion'
+                    ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                    : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+              },
+            ],
+          };
+        }),
+      };
       yield put(
         keyframesActions.editKeyframesSocket.send({
           type: 'put-frames',
-          data: {
-            layerId: _selectedLayer,
-            tracks: tracks?.map((track) => {
-              const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
-              return {
-                id: track.id,
-                targetId: track.targetId,
-                filterBeta: track.filterBeta,
-                filterMinCutoff: track.filterMinCutoff,
-                name: track.name,
-                property: track.property,
-                transformKeysMap: [
-                  {
-                    frameIndex: transformKey?.frame,
-                    property: track.property,
-                    transformKey:
-                      track.property === 'rotationQuaternion'
-                        ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
-                        : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
-                  },
-                ],
-              };
-            }),
-          },
+          data: putData,
         }),
       );
 
