@@ -219,7 +219,7 @@ const VideoMode = ({ browserType }: Props) => {
 
       setTimeline(
         new Timeline(timelineRef, {
-          totalDuration: duration + 20,
+          totalDuration: 20,
           thumbnailWidth: 128,
           thumbnailHeight: 96,
           loadingTextureURI: '/images/Loading.png',
@@ -237,22 +237,31 @@ const VideoMode = ({ browserType }: Props) => {
             hiddenVideo.src = currentVideoURL;
 
             hiddenVideo.onloadeddata = () => {
-              if (time === 0) {
+              hiddenVideo.onseeked = () => {
                 done(hiddenVideo);
+
+                if (hiddenVideo.parentNode) {
+                  hiddenVideo.parentNode.removeChild(hiddenVideo);
+                }
+              };
+
+              if (videoRef.current) {
+                hiddenVideo.currentTime = (videoRef.current.duration / 20) * time;
               } else {
-                hiddenVideo.onseeked = () => {
+                if (time === 0) {
                   done(hiddenVideo);
-                };
-                hiddenVideo.currentTime = time;
+                } else {
+                  hiddenVideo.currentTime = time;
+                }
               }
             };
 
-            hiddenVideo.load();
+            setTimeout(() => hiddenVideo.load(), time * 10);
           },
         }),
       );
     }
-  }, [currentVideoURL, duration, isVideoLoaded, timelineRef]);
+  }, [currentVideoURL, isVideoLoaded, timelineRef]);
 
   useEffect(() => {
     if (timeline) {
