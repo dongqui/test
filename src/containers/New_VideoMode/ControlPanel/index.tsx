@@ -7,11 +7,16 @@ import styles from './ControlPanel.module.scss';
 
 const cx = classNames.bind(styles);
 
-interface Props {}
+interface Props {
+  startValue: number;
+  endValue: number;
+}
 
-const ControlPanel = ({}: Props) => {
+const ControlPanel = ({ startValue, endValue }: Props) => {
   // TODO: handler와 api 연결
-  const handleSubmit = (data: any) => console.log(data);
+  const handleSubmit = async (data: any) => {
+    console.log(data, startValue, endValue);
+  };
 
   return (
     <div className={cx('wrapper')}>

@@ -46,6 +46,8 @@ const VideoMode = ({ browserType }: Props) => {
   const [timeline, setTimeline] = useState<Timeline>();
   const [isVideoLoaded, setIsVideoLoaded] = useState<boolean>(false);
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
+  const [startValue, setStartValue] = useState(0);
+  const [endValue, setEndValue] = useState(0);
 
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
   const dataRef = useRef<Blob[]>([]);
@@ -190,12 +192,14 @@ const VideoMode = ({ browserType }: Props) => {
 
       if (videoRef.current.duration !== Infinity) {
         setDuration(videoRef.current.duration);
+        setEndValue(videoRef.current.duration);
       } else {
         videoRef.current.currentTime = Number.MAX_SAFE_INTEGER;
         setTimeout(() => {
           if (videoRef.current) {
             videoRef.current.currentTime = 0;
             setDuration(videoRef.current.duration);
+            setEndValue(videoRef.current.duration);
           }
         }, 500);
       }
@@ -417,6 +421,8 @@ const VideoMode = ({ browserType }: Props) => {
         confirmText: 'Delete',
         confirmButtonColor: 'negative',
         onConfirm: () => {
+          setStartValue(0);
+          setEndValue(0);
           unmountVideo();
           setStandbyCounter(5);
           setIsVideoLoaded(false);
@@ -540,6 +546,14 @@ const VideoMode = ({ browserType }: Props) => {
     }
   }, [currentVideoURL, dispatch, mode, unmountCurrentStream, unmountVideo]);
 
+  const handleChangeStartValue = useCallback((value: number) => {
+    setStartValue(value);
+  }, []);
+
+  const handleChangeEndValue = useCallback((value: number) => {
+    setEndValue(value);
+  }, []);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
@@ -570,7 +584,7 @@ const VideoMode = ({ browserType }: Props) => {
               </div>
             </div>
           ) : (
-            <ControlPanel />
+            <ControlPanel startValue={startValue} endValue={endValue} />
           )}
         </Box>
       </Box>
@@ -597,6 +611,10 @@ const VideoMode = ({ browserType }: Props) => {
             onDrop={handleDrop}
             timeline={timeline}
             videoRef={videoRef}
+            startValue={startValue}
+            endValue={endValue}
+            onChangeStart={handleChangeStartValue}
+            onChangeEnd={handleChangeEndValue}
           />
         </Box>
       </Box>

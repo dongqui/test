@@ -16,20 +16,21 @@ interface Props {
   duration: number;
   onDrop: (files: File[]) => Promise<void>;
   dropzoneDisabled?: boolean;
+  startValue: number;
+  endValue: number;
+  onChangeStart: (value: number) => void;
+  onChangeEnd: (value: number) => void;
 }
 
-const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duration, onDrop, dropzoneDisabled = false }: Props) => {
+const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duration, onDrop, startValue, endValue, onChangeStart, onChangeEnd, dropzoneDisabled = false }: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
   const [originNumber, setOriginNumber] = useState(0);
   const [rulerValues, setRulerValues] = useState<number[]>([]);
-  const [startValue, setStartValue] = useState(0);
-  const [endValue, setEndValue] = useState(duration);
 
   useEffect(() => {
     if (duration) {
       setRulerValues(Array.from([0, 1, 2, 3, 4, 5], (x) => Math.round((x * duration) / 5)));
-      setEndValue(duration);
     }
   }, [duration]);
 
@@ -60,7 +61,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
 
       if (Number(event.target.value) < endValue - 1) {
-        setStartValue(Number(event.target.value));
+        onChangeStart(Number(event.target.value));
         setSliderStyles({
           left: value,
           right: sliderStyles.right,
@@ -68,7 +69,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
         });
       }
     },
-    [duration, endValue, sliderStyles.left, sliderStyles.right, sliderStyles.width],
+    [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width],
   );
 
   const handleChangeEndValue = useCallback(
@@ -76,7 +77,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
       const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
 
       if (Number(event.target.value) > startValue + 1) {
-        setEndValue(Number(event.target.value));
+        onChangeEnd(Number(event.target.value));
         setSliderStyles({
           left: sliderStyles.left,
           right: value,
@@ -84,7 +85,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
         });
       }
     },
-    [duration, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue],
+    [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue],
   );
 
   const requestRef = useRef(0);
