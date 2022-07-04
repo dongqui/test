@@ -31,6 +31,10 @@ const Plask: FunctionComponent<Props> = (props) => {
 
   const handleChangeMode = useCallback(() => {
     dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode' }));
+
+    if (mode === 'videoMode') {
+      return false;
+    }
   }, [dispatch, mode]);
 
   return (

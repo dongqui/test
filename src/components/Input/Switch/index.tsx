@@ -1,4 +1,4 @@
-import { FunctionComponent, memo, useCallback, useMemo, useState } from 'react';
+import { FunctionComponent, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import SwitchItem from './SwitchItem';
 
 import classNames from 'classnames/bind';
@@ -19,11 +19,12 @@ interface Props {
   disabled?: boolean;
   fullSize?: boolean;
   defaultValue: string;
-  onChange: (key: string) => void;
+  onChange: (key: string) => void | boolean;
   className?: string;
+  value?: string;
 }
 
-const Switch = ({ defaultValue, disabled = false, fullSize = false, options, type = 'default', onChange, className }: Props) => {
+const Switch = ({ defaultValue, disabled = false, fullSize = false, options, type = 'default', onChange, className, value }: Props) => {
   // set to default index only if that index exists on options
   const [selectedKey, setSelectedKey] = useState(defaultValue);
 
@@ -32,8 +33,10 @@ const Switch = ({ defaultValue, disabled = false, fullSize = false, options, typ
     (key: string) => {
       // active when press another button and not disabled
       if (selectedKey !== key && !disabled) {
-        onChange(key);
-        setSelectedKey(key);
+        const ret = onChange(key);
+        if (ret !== false) {
+          setSelectedKey(key);
+        }
       }
     },
     [selectedKey, disabled, onChange],
@@ -46,6 +49,12 @@ const Switch = ({ defaultValue, disabled = false, fullSize = false, options, typ
     }
     return idx;
   }, [options, selectedKey]);
+
+  useEffect(() => {
+    if (value) {
+      setSelectedKey(value);
+    }
+  }, [value]);
 
   return (
     <div className={classes}>
