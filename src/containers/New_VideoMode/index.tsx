@@ -297,6 +297,7 @@ const VideoMode = ({ browserType }: Props) => {
       tracks.forEach((track) => track.stop());
       setCurrentVideoStream(null);
       setCurrentVideoDevice(null);
+      setIsDeviceInitialized(false);
 
       if (videoRef.current) {
         videoRef.current.srcObject = null;
