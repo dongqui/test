@@ -147,9 +147,21 @@ const VideoMode = ({ browserType }: Props) => {
       });
   };
 
-  const handleDrop = async (files: File[]) => {
-    unmountCurrentStream();
+  const unmountCurrentStream = useCallback(() => {
+    if (currentVideoStream) {
+      const tracks = currentVideoStream.getTracks();
+      tracks.forEach((track) => track.stop());
+      setCurrentVideoStream(null);
+      setCurrentVideoDevice(null);
+      setIsDeviceInitialized(false);
 
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    }
+  }, [currentVideoStream]);
+
+  const handleDrop = async (files: File[]) => {
     if (files.length > 1) {
       dispatch(
         globalUIActions.openModal('AlertModal', {
@@ -171,6 +183,7 @@ const VideoMode = ({ browserType }: Props) => {
 
           setIsVideoLoaded(true);
           setVideoURL(videoURL);
+          unmountCurrentStream();
 
           videoRef.current.src = videoURL;
         }
@@ -295,19 +308,6 @@ const VideoMode = ({ browserType }: Props) => {
     });
   }, []);
 
-  const unmountCurrentStream = useCallback(() => {
-    if (currentVideoStream) {
-      const tracks = currentVideoStream.getTracks();
-      tracks.forEach((track) => track.stop());
-      setCurrentVideoStream(null);
-      setCurrentVideoDevice(null);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-    }
-  }, [currentVideoStream]);
-
   const startRecording = useCallback(() => {
     if (videoRecorder !== null) {
       videoRecorder.start();
@@ -427,11 +427,10 @@ const VideoMode = ({ browserType }: Props) => {
           setStandbyCounter(5);
           setIsVideoLoaded(false);
           setVideoStatus('stop');
-          setIsDeviceInitialized(!isDeviceInitialized);
         },
       }),
     );
-  }, [dispatch, isDeviceInitialized, unmountVideo]);
+  }, [dispatch, unmountVideo]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -481,7 +480,7 @@ const VideoMode = ({ browserType }: Props) => {
   }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
-    if (!ON_RECORDING && !RECORD_COUNTDOWN) {
+    if (!ON_RECORDING && !RECORD_COUNTDOWN && !currentVideoURL && !isVideoLoaded) {
       if (videoDeviceListLoaded && videoDeviceList.length > 0) {
         if (!currentVideoDevice) {
           setCurrentVideoDevice(videoDeviceList[0]);
@@ -493,13 +492,13 @@ const VideoMode = ({ browserType }: Props) => {
         unmountCurrentStream();
       }
     }
-  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN]);
+  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded]);
 
   useEffect(() => {
     if (currentVideoDevice !== null && !isDeviceInitialized) {
       deviceInitialize(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized]);
+  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized, isVideoLoaded, unmountCurrentStream]);
 
   const dropdownList = useMemo(() => {
     return videoDeviceList.map((device) => ({
