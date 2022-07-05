@@ -44,6 +44,20 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
     width: 100,
   });
 
+  useEffect(() => {
+    const resetSliderStyles = () => {
+      setSliderStyles({
+        left: 0,
+        right: 100,
+        width: 100,
+      });
+    };
+
+    if (isVideoLoaded) {
+      resetSliderStyles();
+    }
+  }, [isVideoLoaded]);
+
   const handleChangeCurrentTime = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       if (timeline && videoRef.current) {
