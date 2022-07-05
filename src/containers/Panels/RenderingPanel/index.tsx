@@ -433,37 +433,43 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         return;
       }
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget?.type === 'controller') {
-        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-      }
-
-      switch (event.key) {
-        case 'w':
-        case 'W':
-        case 'ㅈ': {
+      if (selectedTarget) {
+        if (selectedTarget?.type === 'ik_controller') {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-          break;
         }
-        case 'e':
-        case 'E':
-        case 'ㄷ': {
-          if (selectedTarget?.type === 'controller') break;
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
-          break;
-        }
-        case 'r':
-        case 'R':
-        case 'ㄱ': {
-          if (selectedTarget?.type === 'controller') break;
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
-          break;
-        }
-        case 'Escape': {
-          dispatch(selectingDataActions.resetSelectedTargets());
-          break;
-        }
-        default: {
-          break;
+
+        switch (event.key) {
+          case 'w':
+          case 'W':
+          case 'ㅈ': {
+            if (selectedTarget.transformable.position) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+            }
+            break;
+          }
+          case 'e':
+          case 'E':
+          case 'ㄷ': {
+            if (selectedTarget.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+            }
+            break;
+          }
+          case 'r':
+          case 'R':
+          case 'ㄱ': {
+            if (selectedTarget.transformable.scale) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+            }
+            break;
+          }
+          case 'Escape': {
+            dispatch(selectingDataActions.resetSelectedTargets());
+            break;
+          }
+          default: {
+            break;
+          }
         }
       }
     };

@@ -111,7 +111,7 @@ export class IKModule extends Module {
     this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.LOCAL);
     if (objects.length === 1) {
       switch (objects[0].type) {
-        case 'controller':
+        case 'ik_controller':
           this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.WORLD);
           this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
           break;
@@ -203,14 +203,19 @@ export class IKModule extends Module {
     const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
       const layer = draft.layers.find((layer) => layer.name.startsWith('baseLayer')) || draft.layers[0];
       for (const controller of this.ikControllers) {
-        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(draft.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
+        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
+          draft.name,
+          [controller.handle],
+          ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
+          layer.id,
+        );
 
         for (const track of newTracks) {
           if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
             console.log(`track ${track.name} already exists.`);
           } else {
             layer.tracks.push(castDraft(track));
-            console.log(`track ${track.name} created`);
+            // console.log(`track ${track.name} created`);
           }
         }
       }
@@ -304,11 +309,11 @@ export class IKModule extends Module {
         property: 'position' as PlaskProperty,
         value: pickedIkCtrl.handle.position.asArray() as ArrayOfThreeNumbers,
       },
-      // {
-      //   targetId: pickedIkCtrl.handle.id,
-      //   property: 'rotationQuaternion' as PlaskProperty,
-      //   value: pickedIkCtrl.targetInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
-      // },
+      {
+        targetId: pickedIkCtrl.handle.id,
+        property: 'rotationQuaternion' as PlaskProperty,
+        value: pickedIkCtrl.handle.rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+      },
     );
     return targetDataList;
   }
@@ -352,6 +357,25 @@ export class IKModule extends Module {
     return result;
   }
 
+  public getControllerByInfluencedChain(target: PlaskTransformNode) {
+    const container = this.ikControllers.map((e) => {
+      if (e.fkInfluenceChain) {
+        if (e.fkInfluenceChain.filter((e) => e.id === target.id).length > 0) {
+          return e;
+        }
+      }
+    });
+
+    return container;
+  }
+
+  public isInfluencedChain(target: PlaskTransformNode) {
+    const contained = this.ikControllers.map((e) => e.fkInfluenceChain?.filter((e) => e.id === target.id));
+
+    const result = contained.find((e) => e!.length > 0);
+    return result;
+  }
+
   /**
    * Sets selectedIk
    * @param selectedIK
@@ -389,6 +413,14 @@ export class IKModule extends Module {
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
+
+      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
+
+      if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+        selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+      }
+      selectedIK.adjustAlignment();
+
       selectedIK.controller.update();
     });
   }
@@ -534,6 +566,8 @@ export class IKModule extends Module {
       if (!selectedIK.fkInfluenceChain) {
         throw new Error('No FK found for this IK.');
       }
+      console.log('Baking Layers');
+      console.log(layers);
 
       const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
 
@@ -541,11 +575,13 @@ export class IKModule extends Module {
       const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
       const blendTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'blend');
       const poleAngleTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'poleAngle');
+      const rotationTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'rotation');
+      const rotationQuaternionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'rotationQuaternion');
 
       const startTimeIndex = this.plaskEngine.state.animatingControls.startTimeIndex;
       const endTimeIndex = this.plaskEngine.state.animatingControls.endTimeIndex;
 
-      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack) {
+      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack || !rotationTrack || !rotationQuaternionTrack) {
         throw new Error('Could not bake, no keyframes added.');
       }
 
@@ -563,11 +599,17 @@ export class IKModule extends Module {
         selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
 
         let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
-        selectedIK.handle.setAbsolutePosition(position);
-        selectedIK.controller.update();
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
+        let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
 
         selectedIK.handle.setAbsolutePosition(position);
+        selectedIK.handle.rotationQuaternion = rotation;
+        if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+          selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+        }
+        selectedIK.controller.update();
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
+        selectedIK.handle.setAbsolutePosition(position);
+        selectedIK.handle.rotationQuaternion = rotation;
       }
 
       animationGroupTemp.goToFrame(0);
@@ -582,7 +624,6 @@ export class IKModule extends Module {
 
     // Resumes render loop
     this.plaskEngine.startRenderLoop();
-
     return { animationIngredient, impactedIK };
   }
 
@@ -926,9 +967,9 @@ export class IKModule extends Module {
             // To prevent "false positive" result
             if (contactPoints.length > 1) {
               // Storing BlendIn index
-              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true; 
+              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true;
               // Storing BlendOut index
-              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true; 
+              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true;
               // Calculate CENTER POINT of CONTACTS
               const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
               const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
@@ -1015,9 +1056,9 @@ export class IKModule extends Module {
         blendValue = 1;
       }
       if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
-        blendQty = 1/blendFrames;
+        blendQty = 1 / blendFrames;
       } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
-        blendQty = -1/blendFrames;
+        blendQty = -1 / blendFrames;
       }
       blendValue = blendValue + blendQty;
       if (blendValue < 0) blendValue = 0;
@@ -1068,10 +1109,7 @@ export class IKModule extends Module {
     const targetLayer = animationIngredient.layers[0];
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
     const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
-    //console.log(boneName);
-    console.log(targetAnimation);
-    //console.log(targetLayerId);
-    //console.log(targetTrack);
+
     if (targetTrack) {
       for (const key of targetTrack.transformKeys) {
         //console.log(key);
@@ -1085,7 +1123,6 @@ export class IKModule extends Module {
             },
           ];
           targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
-          console.log(targetAnimation);
         }
       }
     }

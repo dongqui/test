@@ -43,12 +43,12 @@ function* filterPlaskTracks(layer: PlaskLayer) {
   selectedTargets.forEach((plaskTransformNode) => {
     const ids = plaskTransformNode.jointIds;
     for (const id of ids) {
+      // TODO IK
       // We don't display the rotationQuaternion track as we already display the rotation track
       filteredTracks = filteredTracks.concat(layer.tracks.filter((track) => id === track.targetId && track.layerId === layer.id && track.property !== 'rotationQuaternion'));
     }
   });
 
-  console.log(filteredTracks);
   return filteredTracks;
 }
 
