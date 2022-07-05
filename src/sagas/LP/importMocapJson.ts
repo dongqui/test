@@ -12,7 +12,6 @@ import { convertServerResponseToNode } from 'utils/LP/converters';
 
 const readJsonChannel = channel();
 
-// delete this comment
 export function* watchReadJsonChannel() {
   while (true) {
     const action: SagaReturnType<typeof globalUIActions.openModal> = yield take(readJsonChannel);
