@@ -145,6 +145,8 @@ export class AnimationModule extends Module {
           }
         };
 
+        serverTrack.transformKeysMap.sort((a, b) => a.frameIndex - b.frameIndex);
+
         for (const transformKey of serverTrack.transformKeysMap) {
           transformKeys.push({ frame: transformKey.frameIndex, value: fromServerValue(transformKey.transformKey, serverTrack.property) });
         }
