@@ -107,6 +107,9 @@ export class AnimationModule extends Module {
 
       serverTracks.forEach((serverTrack) => {
         const transformKeys: IAnimationKey[] = [];
+
+        serverTrack.transformKeysMap.sort((a, b) => a.frameIndex - b.frameIndex);
+
         if (serverTrack.property === 'rotationQuaternion') {
           for (const transformKey of serverTrack.transformKeysMap) {
             const quaternionKey = transformKey.transformKey as QuaternionTransformKey;
