@@ -20,7 +20,7 @@ const defaultOptions: ShortcutOption = {
   activeOnlyInOrder: true,
 };
 
-export default function useKeyboardShortcut(shortcutKeys: Array<string>, callback: Function, options?: ShortcutOption) {
+export default function usePlaskShortcut(shortcutKeys: Array<string>, callback: Function, options?: ShortcutOption) {
   const option = { ...defaultOptions, ...options };
   const shortcutKeysId = useMemo(() => shortcutKeys.join(), [shortcutKeys]);
   const shortcutArray = useMemo(() => [...new Set(shortcutKeys)].map((key) => String(key).toLowerCase()), [shortcutKeysId]);

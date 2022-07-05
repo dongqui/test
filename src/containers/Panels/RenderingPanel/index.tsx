@@ -22,8 +22,6 @@ import { PlaskTransformNode, PlaskTransformNodeType } from '3d/entities/PlaskTra
 import { selectionChanged } from './stateSync';
 import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
 import { Controller } from 'react-hook-form';
-import useKeyboardShortcut from 'hooks/common/useKeyboardShortcut';
-
 const cx = classNames.bind(styles);
 
 interface Props {}
@@ -49,10 +47,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
-
-  // Example
-  useKeyboardShortcut(['control', 'z'], (shortcutKeys: string[]) => console.log('Ctrl + Z has been pressed.'), { repeatOnHold: false });
-  useKeyboardShortcut(['control', 'shift', 'z'], (shortcutKeys: string[]) => console.log('Ctrl + Shift +  Z has been pressed.'));
 
   /**
    * object to handle multi-key

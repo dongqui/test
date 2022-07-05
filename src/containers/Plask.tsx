@@ -11,6 +11,8 @@ import { RequestNodeResponse } from 'types/LP';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
+import * as plaskHistoryAction from 'actions/plaskHistoryAction';
 
 const cx = classNames.bind(styles);
 
@@ -29,6 +31,8 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     visible: mode === 'animationMode',
     hidden: mode === 'videoMode',
   });
+  usePlaskShortcut(['control', 'z'], (shortcutKeys: string[]) => dispatch(plaskHistoryAction.undo()), { repeatOnHold: false });
+  usePlaskShortcut(['control', 'shift', 'z'], (shortcutKeys: string[]) => dispatch(plaskHistoryAction.redo()), { repeatOnHold: false });
 
   useEffect(() => {
     // is here the best place to connect socket?
