@@ -37,6 +37,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _playState = useSelector((state) => state.animatingControls.playState);
@@ -136,6 +137,12 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   useObserved(SelectorModule._onUserSelectRequest, selectionChanged);
 
   // Animation data
+  // useEffect(() => {
+  //   if (_currentAnimationGroup) {
+  //     plaskEngine.ikModule.setIKtoFK(plaskEngine.ikModule.ikControllers);
+  //   }
+  // }, [_currentAnimationGroup, dispatch]);
+
   useEffect(() => {
     const animationGroup = plaskEngine.animationModule.regenerateAnimations(_animationIngredients, _visualizedAssetIds, _startTimeIndex, _endTimeIndex);
     if (animationGroup) {
@@ -425,37 +432,43 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         return;
       }
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget?.type === 'controller') {
-        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-      }
-
-      switch (event.key) {
-        case 'w':
-        case 'W':
-        case 'ㅈ': {
+      if (selectedTarget) {
+        if (selectedTarget?.type === 'ik_controller') {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-          break;
         }
-        case 'e':
-        case 'E':
-        case 'ㄷ': {
-          if (selectedTarget?.type === 'controller') break;
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
-          break;
-        }
-        case 'r':
-        case 'R':
-        case 'ㄱ': {
-          if (selectedTarget?.type === 'controller') break;
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
-          break;
-        }
-        case 'Escape': {
-          dispatch(selectingDataActions.resetSelectedTargets());
-          break;
-        }
-        default: {
-          break;
+
+        switch (event.key) {
+          case 'w':
+          case 'W':
+          case 'ㅈ': {
+            if (selectedTarget.transformable.position) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+            }
+            break;
+          }
+          case 'e':
+          case 'E':
+          case 'ㄷ': {
+            if (selectedTarget.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+            }
+            break;
+          }
+          case 'r':
+          case 'R':
+          case 'ㄱ': {
+            if (selectedTarget.transformable.scale) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+            }
+            break;
+          }
+          case 'Escape': {
+            dispatch(selectingDataActions.resetSelectedTargets());
+            break;
+          }
+          default: {
+            break;
+          }
         }
       }
     };
@@ -706,6 +719,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
         },
+        // {
+        //   value: 'IK Controllers',
+        //   onSelect: () => {
+        //     plaskEngine.visibilityLayers.toggleVisibility('IK Controllers');
+        //   },
+        //   checked: targetVisibilityOption ? targetVisibilityOption.isIKControllerVisible : true,
+        //   active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
+        // },
       ];
     } else {
       return [];

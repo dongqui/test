@@ -14,5 +14,6 @@ export function convertServerResponseToNode(response: RequestNodeResponse): LP.N
     mocapId: response.mocap,
     animationId: response.animationUid && response.animationUid[0],
     retargetMap: response.retargetMap,
+    createdAt: response.createdAt,
   };
 }

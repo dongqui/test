@@ -5,13 +5,11 @@ import { useSelector } from 'reducers';
 import { ExportFormat } from 'types/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import { useContext } from 'react';
-import plaskEngine from '3d/PlaskEngine';
 interface Props {
   nodeId: string;
   parentId: string;
   nodeName: string;
-  assetId: string;
+  assetId?: string;
   type: string;
 }
 
@@ -67,7 +65,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
   const handleExport = () => {
     if (!assetId) return;
 
-    const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+    const currentMotions = lpNode.nodes.filter((node) => assetId === node.assetId && node.type === 'MOTION');
     dispatch(
       globalUIActions.openModal('ExportModal', {
         onConfirm: (data: { motion: string; format: ExportFormat }) => {
@@ -82,6 +80,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
           );
         },
         motions: currentMotions,
+        targetMotrionId: nodeId,
       }),
     );
   };

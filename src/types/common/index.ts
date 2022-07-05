@@ -110,7 +110,7 @@ export interface VectorTransformKey {
 export type QuaternionTransformKey = { w: number } & VectorTransformKey;
 export interface ServerTransformKey {
   property: PlaskProperty; // quaternion -> rotationQuaternion
-  transformKey: VectorTransformKey | QuaternionTransformKey;
+  transformKey: number | VectorTransformKey | QuaternionTransformKey;
   // isLocked: boolean;
 }
 export interface ServerTransformKeyRequest extends ServerTransformKey {
@@ -133,7 +133,7 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
-export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact' | 'blend' | 'poleAngle';
+export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact' | 'blend' | 'poleAngle' | 'isContact';
 export const PlaskPropertyFormat: { [key in PlaskProperty]: number } = {
   position: Animation.ANIMATIONTYPE_VECTOR3,
   rotation: Animation.ANIMATIONTYPE_VECTOR3,
@@ -142,6 +142,7 @@ export const PlaskPropertyFormat: { [key in PlaskProperty]: number } = {
   inContact: Animation.ANIMATIONTYPE_FLOAT,
   blend: Animation.ANIMATIONTYPE_FLOAT,
   poleAngle: Animation.ANIMATIONTYPE_FLOAT,
+  isContact: Animation.ANIMATIONTYPE_FLOAT,
 };
 export type PlaskAxis = 'x' | 'y' | 'z' | 'w';
 
@@ -216,21 +217,17 @@ export type PlaskMocapData = Array<{
   transformKeys: Array<{
     frame: number;
     time: number;
-    value: ArrayOfThreeNumbers | ArrayOfFourNumbers;
+    value: ArrayOfThreeNumbers | ArrayOfFourNumbers | number;
   }>;
 }>;
 
 export type MocapJson = {
-  data: {
-    id: string;
-    result: {
-      motionNumber: number;
-      trackData: PlaskMocapData;
-    }[];
-    workingtime: number;
-  };
-  message: string;
-  statusCode: number;
+  result: {
+    motionNumber: number;
+    trackData: PlaskMocapData;
+  }[];
+  id: string;
+  workingtime: number;
 };
 
 export type BvhBoneType =

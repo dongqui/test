@@ -2,6 +2,7 @@ import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Qua
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
+import { convertToDegree } from 'utils/common';
 
 export type IKControllerParams = {
   body: TransformNode;
@@ -42,6 +43,17 @@ class IKHandle extends Mesh {
 export class IKController {
   public onBlendUpdatedObservable: Observable<void> = new Observable<void>();
   public onPoleAngleUpdatedObservable: Observable<void> = new Observable<void>();
+
+  /**
+   * For adjusting influenceChain[0] with handle rotation;
+   */
+  private _align: Vector3 = new Vector3(0, 0, 0);
+  public set align(value: Vector3) {
+    this._align = value;
+  }
+  public get align() {
+    return this._align;
+  }
 
   /**
    * The blend between FK and IK
@@ -86,16 +98,6 @@ export class IKController {
    * Final target position for IK (after applying blend)
    */
   public target: TransformNode;
-  /**
-   * IK Controller for FK. The blend value will determine where the final position will be.
-   * It will be a linear interpolation between the target and the fkTarget
-   */
-  public fkController?: BoneIKController;
-  /**
-   * FK position. The blend value will determine where the final position will be.
-   * It will be a linear interpolation between the target and the fkTarget
-   */
-  public fkTarget?: TransformNode;
 
   /**
    * IK handle that can be moved by the user
@@ -135,15 +137,35 @@ export class IKController {
     return ikControllerHandle;
   }
 
+  public adjustAlignment() {
+    if (this.handle.rotationQuaternion) {
+      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
+      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
+    }
+  }
+  public alignTargetInfluenceChainWithHandle() {
+    if (this.handle.rotationQuaternion) {
+      const targetHandle = this.handle.rotationQuaternion.clone();
+      this.targetInfluenceChain[0].rotationQuaternion?.copyFrom(targetHandle);
+
+      this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
+    }
+  }
+
   public update() {
     // Blend only if we have a FK target
-    if (this.fkTarget && this.fkInfluenceChain) {
-      this.fkTarget.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
+    if (this.fkInfluenceChain) {
       if (this.lockToFk) {
-        this.handle.setAbsolutePosition(this.fkTarget.absolutePosition);
+        this.handle.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
       }
-      Vector3.LerpToRef(this.fkTarget.absolutePosition, this.handle.absolutePosition, this.blend, TmpVectors.Vector3[0]);
-      this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
+
+      this.alignTargetInfluenceChainWithHandle();
+
+      this.controller.bone1Quat = this.fkInfluenceChain[2].rotationQuaternion;
+      this.controller.bone2Quat = this.fkInfluenceChain[1].rotationQuaternion;
+      this.controller.blend = this.blend;
     }
 
     this.controller.update();
@@ -171,7 +193,6 @@ export class IKController {
    */
   public dispose() {
     this.target.dispose();
-    this.fkTarget?.dispose();
     this.handle.dispose();
     this.onBlendUpdatedObservable.clear();
     this.onPoleAngleUpdatedObservable.clear();
@@ -213,12 +234,10 @@ export class IKController {
     this.controller.upVector = params.upVector;
     (this.controller as any)._adjustRoll = 0;
     this.controller.setIKtoRest();
+    this.controller.update();
 
     // IK controllers for FK (for blending)
     if (params.fkBone && params.fkTransformNode && params.fkBody) {
-      this.fkTarget = new TransformNode('ik_ctrl_origin_' + this.limb, scene);
-      params.fkBone.getPositionToRef(Space.WORLD, params.fkTransformNode, this.fkTarget.position);
-
       const tnIk = params.fkTransformNode;
       const tn1Ik = tnIk?.parent as TransformNode;
       const tn2Ik = tn1Ik?.parent as TransformNode;
@@ -226,16 +245,6 @@ export class IKController {
       if (!tnIk || !tn1Ik || !tn2Ik || !((params.fkBone as any)._parent as Bone)) {
         throw new Error("Couldn't initialize IK : the transform node chain is broken.");
       }
-
-      this.fkController = new BoneIKController(params.fkBody, (params.fkBone as any)._parent as Bone, {
-        targetMesh: this.fkTarget,
-        poleAngle: 0,
-        bendAxis: params.bendAxis,
-      });
-      this.fkController.upVector = params.upVector;
-      (this.fkController as any)._adjustRoll = 0;
-      this.fkController.setIKtoRest();
-      this.fkController.update();
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }

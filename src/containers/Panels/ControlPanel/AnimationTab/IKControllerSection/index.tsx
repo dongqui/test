@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { isNull } from 'lodash';
+import { put } from 'redux-saga/effects';
 
 import { StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
@@ -10,8 +11,7 @@ import { forceClickAnimationPauseAndPlay } from 'utils/common';
 
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import plaskEngine from '3d/PlaskEngine';
-
-import * as commonActions from 'actions/Common/globalUI';
+import * as globalUIActions from 'actions/Common/globalUI';
 import { PlaskCard } from 'components/ControlPanel/Card';
 
 import classNames from 'classnames/bind';
@@ -22,6 +22,8 @@ import { readMetadata } from 'utils/RP/metadata';
 import { addEntity, addSelectableObjects, defaultMultiSelect, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
 import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
+import { addIKAction, removeIKAction } from 'actions/iKAction';
+import { removeIK } from 'sagas/RP/ik/removeIK';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -55,7 +57,14 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const [mappedBones, setMappedBones] = useState<string[]>([]);
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
 
-  const [controlTargets, setControlTargets] = useState<Array<PlaskTransformNode>>([]);
+  // IK Valid
+  const [ikValidation, setIkValidation] = useState<boolean>(false);
+  const [targetIKControllers, setTargetIKControllers] = useState<Array<IKController>>([]);
+  const [isInfluencedChainSelected, setIsInfluencedChainSelected] = useState<boolean>(false);
+
+  // IK Controller
+  const [poleAngleValue, setPoleAngleValue] = useState<number>(0);
+  const [blendValue, setBlendValue] = useState<number>(1);
 
   useEffect(() => {
     if (visualizedRetargetMap) {
@@ -70,45 +79,39 @@ const IKControllerSection: FunctionComponent<Props> = ({
   useEffect(() => {
     const targets = _selectedTargets.filter((target) => readMetadata('ikController', target.reference));
     plaskEngine.ikModule.setSelectedIk(targets.map((ik) => readMetadata('ikController', ik.reference)));
-    setControlTargets(targets);
+    setTargetIKControllers(targets.map((ik) => readMetadata('ikController', ik.reference)));
+
+    const isInfluencedSelected = _selectedTargets.find((target) => {
+      return plaskEngine.ikModule.isInfluencedChain(target);
+    });
+
+    setIsInfluencedChainSelected(Boolean(isInfluencedSelected) || targets.length > 0);
   }, [_selectableObjects, _selectedTargets]);
-
-  // IK Valid
-  const [isIKOn, setIsIKOn] = useState<boolean>(false);
-
-  // IK Controller
-  const [poleAngleValue, setPoleAngleValue] = useState<number>(0);
-  const [blendValue, setBlendValue] = useState<number>(1);
 
   useEffect(() => {
     setPoleAngleValue(0);
     setBlendValue(1);
-    setIsIKOn(false);
+    setIkValidation(false);
 
     // Use only first control target to display active values
-    if (controlTargets[0]) {
-      const controller = readMetadata('ikController', controlTargets[0].reference) as IKController;
-      if (controller) {
-        setIsIKOn(true);
+    if (targetIKControllers[0]) {
+      setIkValidation(true);
+      const controller = targetIKControllers[0];
+      setBlendValue(controller.blend);
+      setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
+
+      const blendObserver = controller.onBlendUpdatedObservable.add(() => {
         setBlendValue(controller.blend);
+      });
+      const poleAngleObserver = controller.onPoleAngleUpdatedObservable.add(() => {
         setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
-
-        const blendObserver = controller.onBlendUpdatedObservable.add(() => {
-          setBlendValue(controller.blend);
-        });
-        const poleAngleObserver = controller.onPoleAngleUpdatedObservable.add(() => {
-          setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
-        });
-        return () => {
-          controller.onBlendUpdatedObservable.remove(blendObserver);
-          controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
-        };
-      }
+      });
+      return () => {
+        controller.onBlendUpdatedObservable.remove(blendObserver);
+        controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
+      };
     }
-  }, [controlTargets]);
-
-  // Updating blend and pole angle from 3D
-  useEffect(() => {});
+  }, [targetIKControllers]);
 
   const IKControllerData = [
     {
@@ -148,78 +151,98 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const IKControllerButtons = [
     {
       text: 'Set IK Pose to FK',
+      disabled: targetIKControllers.length === 0,
       onClick: () => {
         plaskEngine.ikModule.setIKtoFK();
         plaskEngine.ikModule.setIKControllerBlend(1);
         setBlendValue(1);
       },
-      disabled: false,
     },
     {
       text: 'Set FK Pose to IK',
       onClick: () => {
-        plaskEngine.ikModule.setFKtoIK();
-      },
-      disabled: false,
-    },
-    {
-      text: 'Bake all FK into IK',
-      onClick: () => {
-        const { animationIngredients, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
-        for (const animationIngredient of animationIngredients) {
-          dispatch(editAnimationIngredient({ animationIngredient }));
+        if (targetIKControllers.length > 0) {
+          plaskEngine.ikModule.setFKtoIK();
+        } else {
+          let controllers: IKController[] = [];
+          _selectedTargets.forEach((target) => {
+            const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+            controllers = _temp.map((e, i) => e ?? controllers[i]);
+          });
+          controllers = controllers.filter((e) => e !== undefined);
+          if (controllers.length > 0) plaskEngine.ikModule.setFKtoIK(controllers);
         }
-
-        // Set FK position to newly updated values
-        plaskEngine.ikModule.setIKtoFK();
-
-        // Select baked FK so the user notices the change
-        dispatch(defaultMultiSelect({ targets: impactedIK }));
-
-        // Refresh tracks by forcing the selection update.
-        // Could be better using ADD_KEYFRAME
-        dispatch(changeSelectedTargets());
       },
-      disabled: false,
+      disabled: !isInfluencedChainSelected,
     },
     {
-      text: 'Bake all IK into FK',
-
+      text: 'Bake IK controller in FK pose',
+      disabled: targetIKControllers.length === 0,
       onClick: () => {
-        const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
-        for (const animationIngredient of animationIngredients) {
-          dispatch(editAnimationIngredient({ animationIngredient }));
+        try {
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+
+          const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+          if (animationIngredient) {
+            dispatch(editAnimationIngredient({ animationIngredient }));
+          }
+
+          // Set FK position to newly updated values
+          plaskEngine.ikModule.setIKtoFK();
+
+          // Select baked FK so the user notices the change
+          dispatch(defaultMultiSelect({ targets: impactedIK }));
+
+          // Refresh tracks by forcing the selection update.
+          // Could be better using ADD_KEYFRAME
+          dispatch(changeSelectedTargets());
+        } catch (e) {
+          console.log(e);
+        } finally {
+          dispatch(globalUIActions.closeModal('LoadingModal'));
         }
-
-        // Set FK position to newly updated values
-        plaskEngine.ikModule.setFKtoIK();
-
-        // Select baked FK so the user notices the change
-        dispatch(defaultMultiSelect({ targets: impactedFK }));
-
-        // Refresh tracks by forcing the selection update.
-        // Could be better using ADD_KEYFRAME
-        dispatch(changeSelectedTargets());
       },
-      disabled: false,
     },
     {
-      text: 'Reset to initial pose',
-      onClick: () => {},
+      text: 'Bake the bone in IK pose',
+
+      disabled: targetIKControllers.length === 0,
+      onClick: () => {
+        try {
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+
+          const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+          for (const animationIngredient of animationIngredients) {
+            dispatch(editAnimationIngredient({ animationIngredient }));
+          }
+
+          // Set FK position to newly updated values
+          plaskEngine.ikModule.setFKtoIK();
+
+          // Select baked FK so the user notices the change
+          dispatch(defaultMultiSelect({ targets: impactedFK }));
+
+          // Refresh tracks by forcing the selection update.
+          // Could be better using ADD_KEYFRAME
+          dispatch(changeSelectedTargets());
+        } catch (e) {
+          console.log(e);
+        } finally {
+          dispatch(globalUIActions.closeModal('LoadingModal'));
+        }
+      },
     },
   ];
 
   const handleSetupIK = useCallback(() => {
     dispatch(
-      commonActions.openModal('ConfirmModal', {
+      globalUIActions.openModal('ConfirmModal', {
         title: 'Setup IK',
         message: 'This action will create IK controllers',
         confirmText: 'Confirm',
         onConfirm: () => {
           const assetId = _visualizedAssetIds[0];
-          const plaskTransformNodes = plaskEngine.ikModule.addIK(assetId);
-          dispatch(addEntity({ targets: plaskTransformNodes }));
-          dispatch(addSelectableObjects({ objects: plaskTransformNodes }));
+          dispatch(addIKAction(assetId));
         },
         cancelText: 'Cancel',
         confirmButtonColor: 'primary',
@@ -227,29 +250,28 @@ const IKControllerSection: FunctionComponent<Props> = ({
     );
   }, [dispatch, _visualizedAssetIds]);
 
-  const dropdownOptions = [
-    {
-      text: 'Delete all IK controllers',
-      handleSelect: () => {
-        dispatch(
-          commonActions.openModal('ConfirmModal', {
-            title: 'Delete all ik controllers?',
-            message: 'This action will delete all IK controllers',
-            confirmText: 'Delete',
-            onConfirm: () => {
-              // TODO : also remove PlaskTransformNode from the state (including selectedTarget if it is associated with a IKController)
-              const plaskEntities = plaskEngine.ikModule.ikControllers.map((controller) => controller.handle.getPlaskEntity());
-              dispatch(removeSelectableObjects({ objects: plaskEntities }));
-              dispatch(removeEntity({ targets: plaskEntities }));
-              plaskEngine.ikModule.removeIK();
-            },
-            cancelText: 'Cancel',
-            confirmButtonColor: 'negative',
-          }),
-        );
+  const dropdownOptions = {
+    active: plaskEngine.ikModule.ikControllers.length > 0,
+    items: [
+      {
+        text: 'Delete all IK controllers',
+        handleSelect: useCallback(() => {
+          dispatch(
+            globalUIActions.openModal('ConfirmModal', {
+              title: 'Delete all ik controllers?',
+              message: 'This action will delete all IK controllers',
+              confirmText: 'Delete',
+              onConfirm: () => {
+                dispatch(removeIKAction(_visualizedAssetIds[0]));
+              },
+              cancelText: 'Cancel',
+              confirmButtonColor: 'negative',
+            }),
+          );
+        }, [dispatch, _visualizedAssetIds]),
       },
-    },
-  ];
+    ],
+  };
 
   return (
     <PlaskCard title="IK Controller" type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive}>
@@ -265,7 +287,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               showProgress={info.showProgress}
               currentValue={info.currentValue}
               decimalDigit={info.decimalDigit}
-              activeStatus={isAllActive && isIKOn}
+              activeStatus={isAllActive && ikValidation && targetIKControllers.length > 0}
               handleChange={info.handleChange}
               onChangeEnd={info.onChangeEnd}
             />
@@ -278,7 +300,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               key={`${info.text}${idx}`}
               text={info.text}
               type="default"
-              disabled={!isAllActive || !isIKOn || info.disabled}
+              disabled={!isAllActive || info.disabled}
               fullSize={true}
             />
           ))}
@@ -295,12 +317,12 @@ const IKControllerSection: FunctionComponent<Props> = ({
             className={cx('button')}
             text="Set Up IK"
             color="default"
-            disabled={!isAllActive || !mappingCompleted || plaskEngine.ikModule.ikControllers.length > 0}
+            disabled={!isAllActive || !mappingCompleted || targetIKControllers.length > 0}
             fullSize={true}
           />
         </div>
       )}
-      {!(isAllActive && controlTargets.length == 0) && <div className={cx('inactive-overlay')}></div>}
+      {!(isAllActive && targetIKControllers.length == 0) && <div className={cx('inactive-overlay')}></div>}
     </PlaskCard>
   );
 };

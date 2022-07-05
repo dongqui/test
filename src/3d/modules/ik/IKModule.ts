@@ -1,13 +1,32 @@
 /* eslint-disable prettier/prettier */
-import { Color3, Mesh, Nullable, StandardMaterial, Vector3, Skeleton, AssetContainer, ExecuteCodeAction, ActionManager, ActionEvent } from '@babylonjs/core';
+import {
+  Color3,
+  Mesh,
+  MeshBuilder,
+  Nullable,
+  Vector3,
+  Skeleton,
+  AssetContainer,
+  ExecuteCodeAction,
+  ActionManager,
+  ActionEvent,
+  AnimationGroup,
+  Curve3,
+  IAnimationKey,
+  Space,
+  Scene,
+  Quaternion,
+} from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient } from 'types/common';
 import { copyTransformFrom } from 'utils/RP/copyPose';
 import { IKController } from './IKController';
+import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient, PlaskTrack } from 'types/common';
 import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
+import produce, { castDraft } from 'immer';
+import { WritableDraft } from 'immer/dist/internal';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -32,6 +51,21 @@ export class IKModule extends Module {
     skeleton: null as Nullable<Skeleton>,
     rootMesh: null as Nullable<Mesh>,
   };
+
+  private _enabled: boolean = false;
+  public get isEnabled() {
+    return this._enabled;
+  }
+
+  public forceUpdateGhostSkeleton() {
+    if (this._ghost.skeleton) {
+      for (const bone of this._ghost.skeleton.bones) {
+        bone.setAbsolutePosition(bone.getTransformNode()!.absolutePosition);
+        bone.setRotationQuaternion(bone.getTransformNode()!.absoluteRotationQuaternion, Space.WORLD);
+      }
+      this._ghost.skeleton.computeAbsoluteTransforms();
+    }
+  }
 
   /**
    * Retrieves the retarget map for a specific assetID
@@ -62,9 +96,12 @@ export class IKModule extends Module {
     for (const ikController of this.ikControllers) {
       ikController.update();
     }
-
     // Copy FK position for IK ghost, only for joints
     // that are not forced by IK
+    this._updateIKGhost();
+  }
+
+  private _updateIKGhost() {
     for (const { ikNode, fkNode } of this._fkControlledJoints) {
       copyTransformFrom(ikNode, fkNode);
     }
@@ -74,7 +111,7 @@ export class IKModule extends Module {
     this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.LOCAL);
     if (objects.length === 1) {
       switch (objects[0].type) {
-        case 'controller':
+        case 'ik_controller':
           this.plaskEngine.gizmoModule.changeGizmoSpace(GizmoSpace.WORLD);
           this.plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
           break;
@@ -95,12 +132,34 @@ export class IKModule extends Module {
   /**
    * Adds IK controllers for a specific assetId
    * @param assetId
-   * @returns PlaskTransformNodes to represent IK controller state
+   * @returns PlaskTransformNodes to represent IK controller state or null if they already exist in the state
    */
-  public addIK(assetId: string) {
-    this._initializeControllers(assetId);
-    this._generateIkAnimationData(assetId);
-    return this._generateIkPlaskTransformNodes(assetId);
+  public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
+    let result = null;
+    if (!this._areIKControllersAlreadyAdded()) {
+      this._initializeControllers(assetId);
+      result = this._generateIkPlaskTransformNodes(assetId);
+    }
+    const newAnimationIngredient = this.addIKTracks(assetId, animationIngredient);
+
+    // Set initial IK position to FK
+    this.setIKtoFK(this.ikControllers);
+    this._enabled = true;
+
+    return { ptns: result, animationIngredient: newAnimationIngredient };
+  }
+
+  private _areIKControllersAlreadyAdded() {
+    // We assume that we always add 4 IK at the same time, so testing for left foot is just as good as testing for 4 IKs
+    const entities = this.plaskEngine.state.selectingData.present.allEntitiesMap;
+    for (const key in entities) {
+      const entity = entities[key];
+      if (entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).type === 'ik_controller') {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -112,8 +171,9 @@ export class IKModule extends Module {
     this._ghost.skeleton = null;
     this._ghost.rootMesh = null;
 
-    this._removeIkAnimationData();
+    const ptns = [];
     for (const controller of this.ikControllers) {
+      ptns.push(controller.handle.getPlaskEntity());
       controller.dispose();
     }
     this.ikControllers.length = 0;
@@ -123,30 +183,56 @@ export class IKModule extends Module {
       mesh.dispose();
     }
     this._ghostMeshes.length = 0;
+
+    this._enabled = false;
+    return ptns;
   }
 
-  private _generateIkAnimationData(assetId: string) {
+  /**
+   * Add IK tracks to an animation ingredient
+   * @param assetId
+   * @param animationIngredient
+   */
+  public addIKTracks(assetId: string, animationIngredient?: AnimationIngredient) {
     // Find animation ingredient for an assetId
-    const animationIngredient = this.plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
-    if (!animationIngredient || !animationIngredient.layers.length) {
+    const targetAnimationIngredient = animationIngredient || this.plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+    if (!targetAnimationIngredient || !targetAnimationIngredient.layers.length) {
       throw new Error('Invalid or inexistent animation ingredient created for this asset, cannot add IK tracks.');
     }
 
-    const layer = animationIngredient.layers.find((layer) => layer.name.startsWith('baseLayer')) || animationIngredient.layers[0];
-    for (const controller of this.ikControllers) {
-      const tracks = this.plaskEngine.animationModule.createTracksForProperties(animationIngredient.name, [controller.handle], ['blend', 'poleAngle', 'position'], layer.id);
-      for (const track of tracks) {
-        layer.tracks.push(track);
-        console.log(`track ${track.name} created`);
+    const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+      const layer = draft.layers.find((layer) => layer.name.startsWith('baseLayer')) || draft.layers[0];
+      for (const controller of this.ikControllers) {
+        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
+          draft.name,
+          [controller.handle],
+          ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
+          layer.id,
+        );
+
+        for (const track of newTracks) {
+          if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
+            console.log(`track ${track.name} already exists.`);
+          } else {
+            layer.tracks.push(castDraft(track));
+            // console.log(`track ${track.name} created`);
+          }
+        }
       }
-    }
+    });
+
+    return newAnimationIngredient;
   }
 
-  private _removeIkAnimationData() {
+  /**
+   * Removes the IK tracks from an animationIngredient
+   * @param animationIngredient
+   */
+  public removeIkAnimationData(animationIngredient: AnimationIngredient) {
     // Find ikTracks in all animation ingredient and remove them
-    for (const animationIngredient of this.plaskEngine.animationModule.animationIngredients) {
+    const newAnimationIngredient = produce(animationIngredient, (draft) => {
       for (const controller of this.ikControllers) {
-        for (const layer of animationIngredient.layers) {
+        for (const layer of draft.layers) {
           for (let i = layer.tracks.length - 1; i >= 0; i--) {
             if (layer.tracks[i].name.includes(controller.handle.name)) {
               layer.tracks.splice(i, 1);
@@ -154,7 +240,10 @@ export class IKModule extends Module {
           }
         }
       }
-    }
+
+      return draft;
+    });
+    return newAnimationIngredient;
   }
 
   private _getKeyframeDataForController(pickedIkCtrl: IKController) {
@@ -220,11 +309,11 @@ export class IKModule extends Module {
         property: 'position' as PlaskProperty,
         value: pickedIkCtrl.handle.position.asArray() as ArrayOfThreeNumbers,
       },
-      // {
-      //   targetId: pickedIkCtrl.handle.id,
-      //   property: 'rotationQuaternion' as PlaskProperty,
-      //   value: pickedIkCtrl.targetInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
-      // },
+      {
+        targetId: pickedIkCtrl.handle.id,
+        property: 'rotationQuaternion' as PlaskProperty,
+        value: pickedIkCtrl.handle.rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+      },
     );
     return targetDataList;
   }
@@ -268,6 +357,25 @@ export class IKModule extends Module {
     return result;
   }
 
+  public getControllerByInfluencedChain(target: PlaskTransformNode) {
+    const container = this.ikControllers.map((e) => {
+      if (e.fkInfluenceChain) {
+        if (e.fkInfluenceChain.filter((e) => e.id === target.id).length > 0) {
+          return e;
+        }
+      }
+    });
+
+    return container;
+  }
+
+  public isInfluencedChain(target: PlaskTransformNode) {
+    const contained = this.ikControllers.map((e) => e.fkInfluenceChain?.filter((e) => e.id === target.id));
+
+    const result = contained.find((e) => e!.length > 0);
+    return result;
+  }
+
   /**
    * Sets selectedIk
    * @param selectedIK
@@ -300,11 +408,19 @@ export class IKModule extends Module {
   /**
    * Sets IK position to FK for the current selected controller
    */
-  public setIKtoFK() {
+  public setIKtoFK(controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
-    this._selectedIkControllers.forEach((selectedIK) => {
-      selectedIK.handle.setAbsolutePosition(selectedIK.fkTarget!.absolutePosition);
-      selectedIK.poleAngle = selectedIK.fkController!.poleAngle;
+    (controllers || this._selectedIkControllers).forEach((selectedIK) => {
+      selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
+      selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
+
+      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
+
+      if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+        selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+      }
+      selectedIK.adjustAlignment();
+
       selectedIK.controller.update();
     });
   }
@@ -312,11 +428,11 @@ export class IKModule extends Module {
   /**
    * Sets FK position to IK for the current selected controller
    */
-  public setFKtoIK() {
-    this._selectedIkControllers.forEach((selectedIK) => {
-      selectedIK.fkTarget!.setAbsolutePosition(selectedIK.target.absolutePosition);
-      selectedIK.fkController!.poleAngle = selectedIK.poleAngle;
-      selectedIK.fkController!.update();
+  public setFKtoIK(controllers?: IKController[]): void {
+    (controllers || this._selectedIkControllers).forEach((selectedIK) => {
+      for (let i = 0; i < 3; i++) {
+        selectedIK.fkInfluenceChain![i].rotationQuaternion!.copyFrom(selectedIK.targetInfluenceChain[i].rotationQuaternion!);
+      }
     });
   }
 
@@ -367,16 +483,36 @@ export class IKModule extends Module {
 
       // Copy FK transformKeys because we don't want new values
       const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
+      const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
+      animationGroupTemp.start();
 
-      for (let i = startTimeIndex; i < endTimeIndex; i++) {
+      for (let i = startTimeIndex; i <= endTimeIndex; i++) {
         if (!targetAnimation) {
           throw new Error('Bake error : animation ingredients could not be produced.');
         }
-        const positionValue = getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3;
-        const blendValue = getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number;
-        const poleAngleValue = getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number;
-        selectedIK.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, blendValue, poleAngleValue);
+        animationGroupTemp.goToFrame(i);
 
+        // We need to update the ik ghost positions (used in ik controller calculations), from the FK animation
+        this._updateIKGhost();
+
+        // And not to forget the normally ik-driven bones that also need to be copied
+        for (let j = 0; j < 3; j++) {
+          selectedIK.targetInfluenceChain[j].position.copyFrom(selectedIK.fkInfluenceChain![j].position);
+          selectedIK.targetInfluenceChain[j].rotationQuaternion!.copyFrom(selectedIK.fkInfluenceChain![j].rotationQuaternion!);
+          selectedIK.targetInfluenceChain[j].computeWorldMatrix(true);
+        }
+        fkPositionTrack.target.computeWorldMatrix(true);
+
+        // We need to test if there are no keyframe, because getInterpolatedValue won't know what to return
+        const positionValue = ikPositionTrack.transformKeys.length ? (getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3) : currentIKPosition;
+        const blendValue = blendTrack.transformKeys.length ? (getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number) : currentBlend;
+        const poleAngleValue = poleAngleTrack.transformKeys.length ? (getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number) : currentPoleAngle;
+        this.setFKtoIK([selectedIK]);
+
+        // Bones are not synced with transform nodes - its the other way around
+        // Our method require bones to get transforms from transform nodes, so the right positions are used for the ik calculations down the line
+        this.forceUpdateGhostSkeleton();
+        selectedIK.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, blendValue, poleAngleValue);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
       }
 
@@ -386,6 +522,10 @@ export class IKModule extends Module {
       }
       // Restore current values
       selectedIK.updateForValues(selectedIK.fkInfluenceChain[0].absolutePosition, currentIKPosition, currentBlend, currentPoleAngle);
+
+      animationGroupTemp.goToFrame(0);
+      animationGroupTemp.stop();
+      animationGroupTemp.dispose();
     });
 
     // Resumes render loop
@@ -400,7 +540,7 @@ export class IKModule extends Module {
    */
   public bakeAllFKintoIK() {
     // Evaluate if a IK Controller is selected
-    const animationIngredients: AnimationIngredient[] = [];
+    let animationIngredient: Nullable<AnimationIngredient> = null;
     const impactedIK: PlaskTransformNode[] = [];
     // Stop render loop for the calculation time
     this.plaskEngine.stopRenderLoop();
@@ -412,6 +552,7 @@ export class IKModule extends Module {
       const currentPoleAngle = selectedIK.poleAngle;
 
       let targetAnimation: Nullable<AnimationIngredient> =
+        animationIngredient ||
         this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
         null;
       if (!targetAnimation) {
@@ -425,6 +566,8 @@ export class IKModule extends Module {
       if (!selectedIK.fkInfluenceChain) {
         throw new Error('No FK found for this IK.');
       }
+      console.log('Baking Layers');
+      console.log(layers);
 
       const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
 
@@ -432,49 +575,56 @@ export class IKModule extends Module {
       const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
       const blendTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'blend');
       const poleAngleTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'poleAngle');
+      const rotationTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'rotation');
+      const rotationQuaternionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'rotationQuaternion');
 
       const startTimeIndex = this.plaskEngine.state.animatingControls.startTimeIndex;
       const endTimeIndex = this.plaskEngine.state.animatingControls.endTimeIndex;
 
-      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack) {
+      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack || !rotationTrack || !rotationQuaternionTrack) {
         throw new Error('Could not bake, no keyframes added.');
       }
 
       // Copy FK transformKeys because we don't want new values
       const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
 
-      for (let i = startTimeIndex; i < endTimeIndex; i++) {
+      for (let i = startTimeIndex; i <= endTimeIndex; i++) {
         if (!targetAnimation) {
           throw new Error('Bake error : animation ingredients could not be produced.');
         }
 
         animationGroupTemp.start();
-        let lastUnlockedPosition = null;
 
         animationGroupTemp.goToFrame(i);
         selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
 
         let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
+        let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
+
         selectedIK.handle.setAbsolutePosition(position);
+        selectedIK.handle.rotationQuaternion = rotation;
+        if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+          selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+        }
         selectedIK.controller.update();
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
-
-        if (targetAnimation) {
-          animationIngredients.push(targetAnimation);
-          impactedIK.push(selectedIK.handle.getPlaskEntity());
-        }
-
         selectedIK.handle.setAbsolutePosition(position);
+        selectedIK.handle.rotationQuaternion = rotation;
       }
 
       animationGroupTemp.goToFrame(0);
       animationGroupTemp.stop();
+      animationGroupTemp.dispose();
+
+      if (targetAnimation) {
+        animationIngredient = targetAnimation;
+        impactedIK.push(selectedIK.handle.getPlaskEntity());
+      }
     });
 
     // Resumes render loop
     this.plaskEngine.startRenderLoop();
-
-    return { animationIngredients, impactedIK };
+    return { animationIngredient, impactedIK };
   }
 
   /**
@@ -514,20 +664,42 @@ export class IKModule extends Module {
       const node2 = endTransformNode;
       const node1 = endTransformNode.parent as TransformNode;
       const node0 = node1.parent as TransformNode;
-      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition());
-      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition());
+      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition()).normalize();
+      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition()).normalize();
       const right = Vector3.Cross(b, a);
       if (right.length() < 1e-5) {
         // both sections are aligned, cannot guess an up vector
         return result;
       }
       // Bones are slightly bent, we can cross again to find the upvector and bend axis
-      result.upVector.copyFrom(right.cross(a).normalize());
+      result.upVector.copyFrom(right.normalize().cross(a));
       return result;
     } catch {
       return result;
     }
   }
+
+  // public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
+  //   const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
+  //     (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
+  //   );
+  //   const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+  //   //const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
+  //   const targetCurrentTimeindex = timeIndex;
+
+  //   if (targetAnimation && iKController) {
+  //     //console.log("INI", IKController.handle.id);
+  //     const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, [
+  //       {
+  //         targetId: iKController.handle.id,
+  //         property: 'position' as PlaskProperty,
+  //         value: position.asArray() as ArrayOfThreeNumbers,
+  //       },
+  //     ]);
+  //     return animationIngredients;
+  //   }
+  //   return null;
+  // }
 
   private _initializeControllers(assetId: string) {
     const scene = this.plaskEngine.scene;
@@ -560,6 +732,17 @@ export class IKModule extends Module {
         return;
       }
 
+      // Copy the current transform of cloned skeleton nodes
+      // ! Hard coded length of prefix
+      // TODO : we need a better way to retrieve the origin transform node
+      const originNodeName = node.name.substring(6);
+      const originTransform = scene.getTransformNodeByName(originNodeName);
+      if (originTransform) {
+        copyTransformFrom(originTransform, node);
+      } else {
+        console.warn('Could not find origin transform, ghost may have wrong posture ' + originNodeName);
+      }
+
       // List all meshes
       if (node.getClassName() === 'Mesh') {
         this._ghostMeshes.push(node as Mesh);
@@ -574,6 +757,7 @@ export class IKModule extends Module {
     }
 
     this._ghost.skeleton = clone.skeletons[0];
+    this.forceUpdateGhostSkeleton();
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {
       throw new Error('Cloning error while creating IK controllers');
@@ -597,7 +781,6 @@ export class IKModule extends Module {
     // Creating IK controls
     let ikDrivenTransformNodes: TransformNode[] = [];
     bonesSelection.forEach((elem) => {
-      const transformNodesChain = [];
       // Finding Bone
       const retargetMap = this.getRetargetMap(assetId);
       if (!retargetMap) {
@@ -661,5 +844,289 @@ export class IKModule extends Module {
     });
 
     this._addPickBehavior();
+  }
+
+  public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
+    // Create/find an IK controller for this bone
+    const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
+
+    if (boneName.includes('Toe')) this.adjustToeBase(boneName, animationIngredient);
+
+    if (!ikController) {
+      console.warn('Foot locking not supported for ' + boneName);
+      return null;
+    }
+    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+    const targetLayerId = animationIngredient.layers[0].id;
+
+    const targetLayer = animationIngredient.layers[0];
+    let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+
+    if (!targetTrack) {
+      targetAnimation = this.addIKTracks(animationIngredient.assetId, animationIngredient);
+      targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+      if (!targetTrack) {
+        throw new Error('Error : IK tracks could not be created for foot locking');
+      }
+    }
+
+    // Add an animation track for position
+    animationGroup.start();
+    let lastUnlockedPosition = null;
+    let lastUnlockedPoleAngle = null;
+    let groundLevelY = 100;
+    let lastUnlockedFootQuaternion = null;
+
+    const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion; blendIn: boolean; blendOut: boolean }[] = [];
+
+    for (const key of transformKeys) {
+      const frameIndex = key.frame;
+      animationGroup.goToFrame(frameIndex);
+      ikController.fkInfluenceChain![0].computeWorldMatrix(true);
+      let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
+      //let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
+      // Lots of assumptions here, but basically we are taking the hip left/right to hip center as a normal for the pole angle
+      let direction = (ikController.fkInfluenceChain![2].parent as Mesh).absolutePosition.subtract(ikController.fkInfluenceChain![2].absolutePosition).normalize();
+      const factor = ikController.limb === 'leftFoot' ? -1 : 1;
+      const rotation = Math.atan2(factor * direction.z, factor * direction.x);
+      if (key.value === 0 || !lastUnlockedPosition) {
+        lastUnlockedPosition = position;
+      }
+      if (key.value === 0 || lastUnlockedPoleAngle === null) {
+        lastUnlockedPoleAngle = rotation;
+      }
+      if (key.value === 0 || lastUnlockedFootQuaternion === null) {
+        lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
+      }
+
+      if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
+        if (position.y < groundLevelY) groundLevelY = position.y;
+        origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion, blendIn: false, blendOut: false });
+      }
+    }
+
+    const adjustedCurve: Vector3[] = [];
+    const blendFrames = 5;
+    if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
+      const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
+
+      const contactPoints: Vector3[] = [];
+      const centerPoints: { qty: number; point: Vector3; index: number; used: boolean }[] = [];
+      const noContactPoints: Vector3[] = [];
+      const adjustedPoints: Vector3[] = [];
+
+      let pointsQty: number = 0;
+      let reduceValue = 3; // less than 3 => closer to original (maintain the "slide" effect)
+
+      // Generate the NEW ADJUSTED PATH
+      function setAdjustedCurve(scene: Scene, value?: Vector3) {
+        if (value) {
+          adjustedPoints.push(value);
+        }
+
+        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty / adjustedPoints.length));
+
+        // To visualize the ADJUSTED PATH
+        const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
+        finalCurveLine.color = new Color3(0, 0.6, 1);
+
+        if (!centerPoints[centerPoints.length - 2].used) {
+          for (let i = 0; i < centerPoints[centerPoints.length - 2].qty; i++) {
+            adjustedCurve.push(centerPoints[centerPoints.length - 2].point);
+          }
+          centerPoints[centerPoints.length - 2].used = true;
+        }
+        finalCurve.getPoints().forEach((point) => {
+          adjustedCurve.push(point);
+        });
+        if (!centerPoints[centerPoints.length - 1].used) {
+          let diff = Math.floor(centerPoints[centerPoints.length - 1].qty / 2) + adjustedCurve.length - centerPoints[centerPoints.length - 1].index;
+          for (let i = 0; i < centerPoints[centerPoints.length - 1].qty - diff; i++) {
+            adjustedCurve.push(centerPoints[centerPoints.length - 1].point);
+          }
+          centerPoints[centerPoints.length - 1].used = true;
+        }
+
+        adjustedPoints.length = 0;
+        noContactPoints.length = 0;
+        pointsQty = 0;
+
+        adjustedPoints.push(centerPoints[centerPoints.length - 1].point);
+      }
+
+      origPoints.forEach((value, index, array) => {
+        origCurve.push(value.position); // To visualize the ORIGINAL path
+
+        // Evaluate CONTACT
+        if (value.contact === 1) {
+          // Store CONTACT points
+          contactPoints.push(value.position);
+
+          // Evaluate END OF CONTACTS or END OF POINTS
+          if ((array[index + 1] && array[index + 1].contact === 0) || index === array.length - 1) {
+            // To prevent "false positive" result
+            if (contactPoints.length > 1) {
+              // Storing BlendIn index
+              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true;
+              // Storing BlendOut index
+              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true;
+              // Calculate CENTER POINT of CONTACTS
+              const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+              const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+              contactPoints.forEach((vec) => {
+                min.x = Math.min(min.x, vec.x);
+                min.y = Math.min(min.y, vec.y);
+                min.z = Math.min(min.z, vec.z);
+                max.x = Math.max(max.x, vec.x);
+                max.y = Math.max(max.y, vec.y);
+                max.z = Math.max(max.z, vec.z);
+              });
+              const result = max.add(min).scale(0.5);
+              result.y = groundLevelY;
+              pointsQty++;
+              // Store contact points QUANTITY, CENTER POINT, CENTER POINT INDEX and a BOOLEAN to prevent reuse
+              centerPoints.push({
+                qty: contactPoints.length,
+                point: result,
+                index: index - contactPoints.length + Math.floor(contactPoints.length / 2),
+                used: false,
+              });
+              // Evaluate if there are NO CONTACT points stored
+              if (noContactPoints.length > 0) {
+                setAdjustedCurve(this.plaskEngine.scene, result);
+              } else {
+                adjustedPoints.push(result);
+              }
+            } else {
+              noContactPoints.push(value.position);
+              pointsQty++;
+            }
+            contactPoints.length = 0;
+          }
+        } else {
+          // Store NO CONTACT Points
+          noContactPoints.push(value.position);
+          pointsQty++;
+
+          // Evaluate END OF NO CONTACTS or END OF POINTS
+          if ((array[index + 1] && array[index + 1].contact === 1 && array[index + 2] && array[index + 2].contact !== 0) || index === array.length - 1) {
+            // Evaluate FALSE CONTACTS
+            // Trying to optimize the PATH to reduce the "slide" effect
+            let reducedPoints: Vector3[] = [];
+            if (index === array.length - 1) {
+              // Evaluate if last point
+              reducedPoints = noContactPoints.slice(reduceValue);
+              reduceValue = 1;
+            } else {
+              reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);
+            }
+
+            // Reducing the PATH to adjust/curve it with CatmullRomSpline
+            for (let i = 0; i < reducedPoints.length; i += reduceValue) {
+              adjustedPoints.push(reducedPoints[i]);
+            }
+
+            // Evaluate if last point
+            if (index === array.length - 1) {
+              setAdjustedCurve(this.plaskEngine.scene);
+            }
+          }
+        }
+      });
+      // To visualize the ORIGINAL PATH
+      const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
+      origCurveLine.color = new Color3(1, 0.6, 0);
+
+      //console.log(origPoints);
+    }
+
+    let frameIndex = 0;
+    let poleAngleRotation = 0;
+    let toeQuaternion: Quaternion = new Quaternion();
+    let blendValue = 0;
+    let blendQty = 0;
+    for (const point of adjustedCurve) {
+      if (origPoints[frameIndex].rotation) {
+        poleAngleRotation = origPoints[frameIndex].rotation;
+        toeQuaternion = origPoints[frameIndex].quaternion;
+      }
+
+      // Blend adjust
+      if (origPoints[frameIndex] && origPoints[frameIndex].contact == 1 && blendQty == 0) {
+        blendValue = 1;
+      }
+      if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
+        blendQty = 1 / blendFrames;
+      } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
+        blendQty = -1 / blendFrames;
+      }
+      blendValue = blendValue + blendQty;
+      if (blendValue < 0) blendValue = 0;
+      else if (blendValue > 1) blendValue = 1;
+
+      const targetDataList = [
+        {
+          targetId: ikController.handle.id,
+          property: 'position' as PlaskProperty,
+          //value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
+          value: point.asArray() as ArrayOfThreeNumbers,
+          // value: point,
+        },
+        {
+          targetId: ikController.handle.id,
+          property: 'poleAngle' as PlaskProperty,
+          value: poleAngleRotation,
+        },
+        {
+          targetId: ikController.handle.id,
+          property: 'blend' as PlaskProperty,
+          //value: key.value,
+          value: blendValue,
+        },
+        // Toe locking - for now always locked
+        // {
+        //   targetId: boneName,
+        //   property: 'rotationQuaternion' as PlaskProperty,
+        //   value: toeQuaternion.asArray() as ArrayOfFourNumbers,
+        // },
+      ];
+      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+      frameIndex++;
+      if (!targetAnimation) {
+        throw new Error('Could not bake, error while fetching animation ingredients.');
+      }
+    }
+
+    animationGroup.goToFrame(0);
+    animationGroup.stop();
+
+    return targetAnimation;
+  }
+
+  public adjustToeBase(boneName: string, animationIngredient: AnimationIngredient) {
+    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+    const targetLayerId = animationIngredient.layers[0].id;
+    const targetLayer = animationIngredient.layers[0];
+    let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
+    const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
+
+    if (targetTrack) {
+      for (const key of targetTrack.transformKeys) {
+        //console.log(key);
+        if (key.value === 0) {
+          const targetDataList = [
+            // Toe locking - for now just one angle
+            {
+              targetId: boneName,
+              property: 'rotationQuaternion' as PlaskProperty,
+              value: toeQuaternion.asArray() as ArrayOfFourNumbers,
+            },
+          ];
+          targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
+        }
+      }
+    }
+
+    return targetAnimation;
   }
 }

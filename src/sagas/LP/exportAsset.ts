@@ -1,16 +1,35 @@
-import { find, filter } from 'lodash';
+import { find, filter, omitBy } from 'lodash';
 import { select, put, call } from 'redux-saga/effects';
 
 import { RootState } from 'reducers';
 import { createBvhMap } from 'utils/LP/Retarget';
-import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as globalUIActions from 'actions/Common/globalUI';
-import { PlaskBvhMap } from 'types/common';
-import { convertModel } from 'api';
 import { Scene } from '@babylonjs/core';
 import { GLTFData } from '@babylonjs/serializers';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
+import * as globalUIActions from 'actions/Common/globalUI';
+import { PlaskBvhMap, AnimationIngredient, ServerAnimationResponse, ServerAnimation, ServerAnimationLayer, PlaskAsset } from 'types/common';
+import { convertModel, getAnimation } from 'api';
 import plaskEngine from '3d/PlaskEngine';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
 
+async function getAllAnimationIngredients(animationIngredients: AnimationIngredient[], animationIds: string[], asset: PlaskAsset) {
+  const promiseResults = await Promise.allSettled(
+    animationIds.map(async (animationId) => {
+      const animationIngredient = find(animationIngredients, { id: animationId });
+      if (animationIngredient) {
+        return animationIngredient;
+      } else {
+        const _animation: ServerAnimationResponse = await getAnimation(animationId);
+        const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
+        const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
+
+        return plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+      }
+    }),
+  );
+  const fulFilledResults = promiseResults.filter((result) => result.status === 'fulfilled') as PromiseFulfilledResult<AnimationIngredient>[];
+  return fulFilledResults.map((result) => result.value);
+}
 export default function* handleExportAsset(action: ReturnType<typeof lpNodeActions.exportAsset>) {
   const { lpNode, plaskProject, animationData, screenData }: RootState = yield select();
   const { visibilityOptions } = screenData;
@@ -28,9 +47,10 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Exporting file', message: 'This can take up to 3 minutes' }));
 
     if (motion !== 'none') {
-      const currentModelAnimationIngredients = filter(animationIngredients, { assetId: assetId });
-
-      const ingredients = motion === 'all' ? currentModelAnimationIngredients : filter(currentModelAnimationIngredients, { id: motion });
+      const asset = find(assetList, { id: assetId });
+      const targetMotion = find(nodes, { id: motion });
+      const animationIds = targetMotion ? [targetMotion.animationId!] : nodes.filter((node) => node.assetId === assetId && node.type === 'MOTION').map((node) => node.animationId!);
+      const ingredients: AnimationIngredient[] = yield call(getAllAnimationIngredients, animationIngredients, animationIds, asset!);
 
       ingredients.forEach((animationIngredient) => {
         const animationGroup = plaskEngine.animationModule.createAnimationGroupFromIngredient(animationIngredient, fps);
@@ -53,7 +73,8 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       file.path = resultName;
 
       try {
-        const fbxUrl: string = yield call(convertModel, file, format);
+        const fbxUrl: string = yield call(convertModel, lpNode.sceneId, file, format);
+        console.log(fbxUrl);
         const link = document.createElement('a');
         link.href = fbxUrl;
         link.download = resultName;
@@ -83,7 +104,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
           file.path = resultName;
 
           try {
-            const bvhUrl: string = yield call(convertModel, file, 'bvh', bvhMap);
+            const bvhUrl: string = yield call(convertModel, lpNode.sceneId, file, 'bvh', bvhMap);
             const link = document.createElement('a');
             link.href = bvhUrl;
             link.download = resultName;
