@@ -175,6 +175,7 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
           };
         }),
       };
+
       yield put(
         keyframesActions.editKeyframesSocket.send({
           type: 'put-frames',

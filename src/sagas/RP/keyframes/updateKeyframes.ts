@@ -1,7 +1,7 @@
 import { put, select, all, takeLatest } from 'redux-saga/effects';
 import produce from 'immer';
 import { Vector3 } from '@babylonjs/core';
-import { getType } from 'typesafe-actions';
+import { action, getType } from 'typesafe-actions';
 
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframesActions from 'actions/keyframes';
@@ -79,70 +79,100 @@ function* handleKeyframesUpdate() {
 
   const _previousPointer = _history.previousPointer;
   const _pointer = _history.pointer;
+  const isUndo = _pointer < _previousPointer;
+  console.log(`===== ${isUndo ? 'UNDO' : 'REDO '} UPDATED ======`);
 
   const currentKeyframes: KeyframesState = _history.history[_pointer].state.present['keyframes'];
-
   const previousKeyframes: KeyframesState = _history.history[_previousPointer].state.present['keyframes'];
-
   const currentPropertyTrack: TimeEditorTrack[] = currentKeyframes.propertyTrackList;
   const previousPropertyTrack: TimeEditorTrack[] = previousKeyframes.propertyTrackList;
 
+  console.log('_history');
+  console.log(_history);
+  console.log('currentPropertyTrack');
+  console.log(currentPropertyTrack);
+  console.log('previousPropertyTrack');
+  console.log(previousPropertyTrack);
+  const historyActions: {
+    redo: {
+      trackId: string;
+      keyframes: Keyframe[];
+    }[];
+    undo: {
+      trackId: string;
+      keyframes: Keyframe[];
+    }[];
+  } = { redo: [], undo: [] };
   const redoActions: { trackId: string; keyframes: Keyframe[] }[] = [];
   const undoActions: { trackId: string; keyframes: Keyframe[] }[] = [];
+
   for (let i = 0; i < currentPropertyTrack.length; i++) {
-    const onlyInA = onlyInLeft(currentPropertyTrack[i].keyframes, previousPropertyTrack[i].keyframes, isSameKeyframe);
-    const onlyInB = onlyInLeft(previousPropertyTrack[i].keyframes, currentPropertyTrack[i].keyframes, isSameKeyframe);
-    redoActions.push({ trackId: currentPropertyTrack[i].trackId, keyframes: onlyInA });
-    undoActions.push({ trackId: previousPropertyTrack[i].trackId, keyframes: onlyInB });
+    if (previousPropertyTrack.length > i) {
+      const onlyInA = onlyInLeft(currentPropertyTrack[i].keyframes, previousPropertyTrack[i].keyframes, isSameKeyframe);
+      const onlyInB = onlyInLeft(previousPropertyTrack[i].keyframes, currentPropertyTrack[i].keyframes, isSameKeyframe);
+      historyActions.redo.push({ trackId: currentPropertyTrack[i].trackId, keyframes: onlyInA });
+      historyActions.undo.push({ trackId: previousPropertyTrack[i].trackId, keyframes: onlyInB });
+    }
   }
   const deletedTracks: { trackId: string; deletedIndexes: number[] }[] = [];
+  const addedTracks: { trackId: string; addedIndexes: number[] }[] = [];
 
-  const addedTracks: { layerId: string; tracks: AddedTracks }[] = [];
-
-  if (_pointer > _previousPointer) {
-    redoActions.forEach((track) => {
-      deletedTracks.push({
-        trackId: track.trackId,
-        deletedIndexes: track.keyframes.filter((e) => e.isDeleted).map((e) => e.time),
-      });
-    });
-  } else {
-    undoActions.forEach((track) => {
+  // Find Deleted
+  if (isUndo) {
+    historyActions.undo.forEach((track) => {
       deletedTracks.push({
         trackId: track.trackId,
         deletedIndexes: track.keyframes.filter((e) => !e.isDeleted).map((e) => e.time),
       });
+
+      if (track.trackId.includes('//rotation')) {
+        deletedTracks.push({
+          trackId: track.trackId.replace('//rotation', '//rotationQuaternion'),
+          deletedIndexes: track.keyframes.filter((e) => !e.isDeleted).map((e) => e.time),
+        });
+      }
+
+      addedTracks.push({
+        trackId: track.trackId,
+        addedIndexes: track.keyframes.filter((e) => e.isDeleted).map((e) => e.time),
+      });
+      if (track.trackId.includes('//rotation')) {
+        addedTracks.push({
+          trackId: track.trackId.replace('//rotation', '//rotationQuaternion'),
+          addedIndexes: track.keyframes.filter((e) => e.isDeleted).map((e) => e.time),
+        });
+      }
+    });
+  } else {
+    historyActions.redo.forEach((track) => {
+      deletedTracks.push({
+        trackId: track.trackId,
+        deletedIndexes: track.keyframes.filter((e) => e.isDeleted).map((e) => e.time),
+      });
+      if (track.trackId.includes('//rotation')) {
+        deletedTracks.push({
+          trackId: track.trackId.replace('//rotation', '//rotationQuaternion'),
+          deletedIndexes: track.keyframes.filter((e) => e.isDeleted).map((e) => e.time),
+        });
+      }
+      addedTracks.push({
+        trackId: track.trackId,
+        addedIndexes: track.keyframes.filter((e) => !e.isDeleted).map((e) => e.time),
+      });
+      if (track.trackId.includes('//rotation')) {
+        addedTracks.push({
+          trackId: track.trackId.replace('//rotation', '//rotationQuaternion'),
+          addedIndexes: track.keyframes.filter((e) => !e.isDeleted).map((e) => e.time),
+        });
+      }
     });
   }
+  console.log('CHANGED HISTORY');
+  console.log(historyActions);
 
-  // yield put(
-  //   keyframesActions.editKeyframesSocket.send({
-  //     type: 'put-frames',
-  //     data: {
-  //       layerId: _selectedLayer,
-  //       addedTrackes,
-  //     },
-  //   }),
-  // );
-  /**
-   * 현재 포인터의 값과 이전 포인터의 값을 비교하여 차이 값 서버에 호출
-   * case 1: Delete Undo
-   * previousPinter {a, b, c(deleted)} -> undo -> pointer {a, b, c(!deleted)}
-   *
-   * case 2: Delete Redo
-   * previousPinter {a, b, c(!deleted)} -> redo -> pointer {a, b, c(deleted)}
-   *
-   * case 3: Add Undo
-   * {a, b, c(!delted)} -> undo -> {a, b}
-   *
-   * case 4: Add Redo
-   * {a, b} -> redo -> {a, b, c(!deleted)}
-   *
-   * get c
-   * if(pointer c != deleted) call add api
-   * if(previousPointer c == !deleted) call deleted api
-   */
+  // Find Added
 
+  // Update Ingredient
   if (_selectedLayer && _propertyTrackList.length > 0 && _animationIngredients.length > 0) {
     const targetAnimationIngredient = _animationIngredients.find((animationIngredient) => animationIngredient.layers.find((layer) => layer.id === _selectedLayer));
     const targetTrackIds = _propertyTrackList.map((track) => track.trackId);
@@ -153,37 +183,71 @@ function* handleKeyframesUpdate() {
         if (targetLayer) {
           const targetTracks = targetLayer.tracks.filter((track) => targetTrackIds.includes(track.id));
           targetTracks.forEach((targetTrack) => {
-            _keyframeTracks.forEach((keyframeTrack) => {
-              if (targetTrack.id === keyframeTrack.trackId) {
-                if (_pointer > _previousPointer) {
-                  redoActions.forEach((action, idx) => {
-                    if (action.trackId === targetTrack.id) {
-                      targetTrack.transformKeys = redoActions[idx].keyframes
-                        .filter((e) => !e.isDeleted)
-                        .map((keyframe: Keyframe) => {
-                          return {
-                            frame: keyframe.time,
-                            value: keyframe.value,
-                          };
-                        });
-                    }
-                  });
-                } else {
-                  undoActions.forEach((action, idx) => {
-                    if (action.trackId === targetTrack.id) {
-                      targetTrack.transformKeys = undoActions[idx].keyframes
-                        .filter((e) => e.isDeleted)
-                        .map((keyframe: Keyframe) => {
-                          return {
-                            frame: keyframe.time,
-                            value: keyframe.value,
-                          };
-                        });
+            if (isUndo) {
+              historyActions.undo.forEach((action, idx) => {
+                if (action.trackId === targetTrack.id) {
+                  const modifiedTracks = action.keyframes.filter((e) => e.isDeleted);
+                  action.keyframes.map((keyframe) => {
+                    if (keyframe.isDeleted) {
+                      if (keyframe.value) {
+                        targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, keyframe.time, keyframe.value);
+                      }
+                      if (targetTrack.property === 'rotation') {
+                        const peerTrack = targetLayer.tracks.find((track) => track.id === action.trackId.replace('//rotation', '//rotationQuaternion'));
+                        if (peerTrack) {
+                          if (keyframe.value) {
+                            const rotationValue = keyframe.value as Vector3;
+
+                            peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, keyframe.time, rotationValue.toQuaternion());
+                          }
+                        }
+                      }
+                    } else {
+                      // Delete Keyframe
+                      targetTrack.transformKeys = targetTrack.transformKeys.filter((transformKey) => transformKey.frame !== keyframe.time);
+                      if (targetTrack.property === 'rotation') {
+                        const peerTrack = targetLayer.tracks.find((track) => track.id === action.trackId.replace('//rotation', '//rotationQuaternion'));
+                        if (peerTrack) {
+                          peerTrack.transformKeys = peerTrack.transformKeys.filter((transformKey) => transformKey.frame !== keyframe.time);
+                        }
+                      }
                     }
                   });
                 }
-              }
-            });
+              });
+            } else {
+              historyActions.redo.forEach((action, idx) => {
+                if (action.trackId === targetTrack.id) {
+                  const modifiedTracks = action.keyframes.filter((e) => !e.isDeleted);
+                  action.keyframes.map((keyframe) => {
+                    if (!keyframe.isDeleted) {
+                      if (keyframe.value) {
+                        targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, keyframe.time, keyframe.value);
+                      }
+                      if (targetTrack.property === 'rotation') {
+                        const peerTrack = targetLayer.tracks.find((track) => track.id === action.trackId.replace('//rotation', '//rotationQuaternion'));
+
+                        if (peerTrack) {
+                          if (keyframe.value) {
+                            const rotationValue = keyframe.value as Vector3;
+                            peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, keyframe.time, rotationValue.toQuaternion());
+                          }
+                        }
+                      }
+                    } else {
+                      // Delete Keyframe
+                      targetTrack.transformKeys = targetTrack.transformKeys.filter((transformKey) => transformKey.frame !== keyframe.time);
+                      if (targetTrack.property === 'rotation') {
+                        const peerTrack = targetLayer.tracks.find((track) => track.id === action.trackId.replace('//rotation', '//rotationQuaternion'));
+                        if (peerTrack) {
+                          peerTrack.transformKeys = peerTrack.transformKeys.filter((transformKey) => transformKey.frame !== keyframe.time);
+                        }
+                      }
+                    }
+                  });
+                }
+              });
+            }
           });
         }
       });
@@ -195,13 +259,17 @@ function* handleKeyframesUpdate() {
         }
       }
 
+      console.log('Deleted');
+      console.log(deletedTracks);
+      console.log('Added');
+      console.log(addedTracks);
       const updatedLayer = newAnimationIngredient.layers.find((layer) => layer.id === _selectedLayer);
       const tracks = updatedLayer?.tracks.filter((track) => _targetTrackIds.includes(track.id));
       if (!tracks) {
         return;
       }
-
-      const updatedTracks = tracks?.map((track) => {
+      let updatedTracks = tracks?.map((track) => {
+        const targetTrack = addedTracks.find((e) => e.trackId === track.id);
         return {
           id: track.id,
           targetId: track.targetId,
@@ -209,16 +277,30 @@ function* handleKeyframesUpdate() {
           filterMinCutoff: track.filterMinCutoff,
           name: track.name,
           property: track.property,
-          transformKeysMap: track.transformKeys.map((key) => {
-            return {
-              frameIndex: key.frame,
-              property: track.property,
-              transformKey:
-                track.property === 'rotationQuaternion' ? { w: key.value.w, x: key.value.x, y: key.value.y, z: key.value.z } : { x: key.value.x, y: key.value.y, z: key.value.z },
-            };
-          }),
+          transformKeysMap: track.transformKeys
+            .filter((key) => targetTrack?.addedIndexes.find((e) => e === key.frame))
+            .map((key) => {
+              return {
+                frameIndex: key.frame,
+                property: track.property,
+                transformKey:
+                  track.property === 'rotationQuaternion' ? { w: key.value.w, x: key.value.x, y: key.value.y, z: key.value.z } : { x: key.value.x, y: key.value.y, z: key.value.z },
+              };
+            }),
         };
       });
+
+      yield put(
+        keyframesActions.editKeyframesSocket.send({
+          type: 'put-frames',
+          data: {
+            layerId: _selectedLayer,
+            tracks: updatedTracks,
+          },
+        }),
+      );
+      console.log('Updated');
+      console.log(updatedTracks);
 
       yield put(
         keyframesActions.deleteKeyframesSocket.send({
@@ -230,22 +312,6 @@ function* handleKeyframesUpdate() {
         }),
       );
 
-      console.log('=====UPDATED ======');
-      console.log('Deleted');
-      console.log(deletedTracks);
-
-      yield put(
-        keyframesActions.editKeyframesSocket.send({
-          type: 'put-frames',
-          data: {
-            layerId: _selectedLayer,
-            tracks: updatedTracks,
-          },
-        }),
-      );
-
-      console.log('Added');
-      console.log(updatedTracks);
       yield put(
         animationDataActions.editAnimationIngredient({
           animationIngredient: newAnimationIngredient,
@@ -254,10 +320,6 @@ function* handleKeyframesUpdate() {
     }
   }
 }
-
-// function* updateKeyframes() {
-//   yield all([takeLatest(keyframesActions.OVERRIDE, handleKeyframesUpdate)]);
-// }
 
 function* updateKeyframes() {
   yield all([takeLatest('plaskHistory/UPDATE_SERVER', handleKeyframesUpdate)]);
