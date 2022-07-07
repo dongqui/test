@@ -143,6 +143,19 @@ export class IKController {
       this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
     }
   }
+
+  public adjustPoleAngleFromFK() {
+    // if (!this.fkInfluenceChain) {
+    //   return;
+    // }
+
+    // const fkBoneVector = this.fkInfluenceChain[1].absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize();
+    // const ikBoneVector = this.targetInfluenceChain[1].absolutePosition.subtract(this.targetInfluenceChain[2].absolutePosition).normalize();
+    // const angle = Math.acos(Vector3.Dot(fkBoneVector, ikBoneVector));
+
+    this.poleAngle = 0;
+  }
+
   public alignTargetInfluenceChainWithHandle() {
     if (this.handle.rotationQuaternion) {
       const targetHandle = this.handle.rotationQuaternion.clone();
@@ -166,6 +179,10 @@ export class IKController {
       this.controller.bone1Quat = this.fkInfluenceChain[2].rotationQuaternion;
       this.controller.bone2Quat = this.fkInfluenceChain[1].rotationQuaternion;
       this.controller.blend = this.blend;
+
+      // Set upvector to fk
+      this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
+      this.controller.upVector!.normalize();
     }
 
     this.controller.update();
@@ -248,5 +265,17 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
+
+    // DEBUG : pole angle target
+    // const ikPoleSphere = MeshBuilder.CreateSphere("ik");
+    // const fkPoleSphere = MeshBuilder.CreateSphere("ik");
+    // const matIk = new StandardMaterial("ik", this.scene);
+    // const matfk = new StandardMaterial("ik", this.scene);
+    // matIk.emissiveColor = Color3.Green();
+    // matfk.emissiveColor = Color3.Blue();
+    // ikPoleSphere.material = matIk;
+    // fkPoleSphere.material = matfk;
+
+    // ikPoleSphere.position
   }
 }
