@@ -137,6 +137,7 @@ export class IKModule extends Module {
   public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
     let result = null;
     if (!this._areIKControllersAlreadyAdded()) {
+      console.log('called');
       this._initializeControllers(assetId);
       result = this._generateIkPlaskTransformNodes(assetId);
     }
