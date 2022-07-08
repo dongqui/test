@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
@@ -89,6 +89,7 @@ const VideoMode = ({ browserType }: Props) => {
   const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5;
   const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && standbyCounter !== 5;
   const ON_RECORDING = standbyCounter === -1;
+  const ON_VIDEO_MOUNTED = isVideoLoaded && currentVideoURL;
 
   const headerInspector = async (file: File) => {
     const load = async () => {
@@ -217,6 +218,11 @@ const VideoMode = ({ browserType }: Props) => {
         }, 500);
       }
 
+      let duration = 20;
+      if (videoRef.current) {
+        duration = videoRef.current.duration;
+      }
+
       setTimeline(
         new Timeline(timelineRef, {
           totalDuration: 20,
@@ -246,7 +252,7 @@ const VideoMode = ({ browserType }: Props) => {
               };
 
               if (videoRef.current) {
-                hiddenVideo.currentTime = (videoRef.current.duration / 20) * time;
+                hiddenVideo.currentTime = (duration / 20) * time;
               } else {
                 if (time === 0) {
                   done(hiddenVideo);
@@ -417,6 +423,7 @@ const VideoMode = ({ browserType }: Props) => {
     if (currentVideoURL && videoRef.current) {
       const tempCurrentVideoURL = currentVideoURL;
       setVideoURL('');
+      setDuration(0);
       videoRef.current.src = '';
       URL.revokeObjectURL(tempCurrentVideoURL);
     }
@@ -561,6 +568,21 @@ const VideoMode = ({ browserType }: Props) => {
   const handleChangeEndValue = useCallback((value: number) => {
     setEndValue(value);
   }, []);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (ON_VIDEO_MOUNTED && e.key === ' ') {
+        if (videoStatus === 'stop' || videoStatus === 'pause') {
+          handleChangeVideoStatus('play');
+          videoRef.current?.play();
+        } else {
+          handleChangeVideoStatus('pause');
+          videoRef.current?.pause();
+        }
+      }
+    },
+    [ON_VIDEO_MOUNTED, handleChangeVideoStatus, videoStatus],
+  );
 
   return (
     <div className={cx('wrapper')}>

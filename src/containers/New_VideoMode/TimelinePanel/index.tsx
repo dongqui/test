@@ -62,7 +62,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
     (event: ChangeEvent<HTMLInputElement>) => {
       if (timeline && videoRef.current) {
         videoRef.current.currentTime = Number(event.target.value);
-        const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
+        const value = Number((Number(event.target.value) * 100) / duration);
         setNumber(value);
         setOriginNumber(Number(event.target.value));
       }
@@ -72,7 +72,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
 
   const handleChangeStartValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
+      const value = Number((Number(event.target.value) * 100) / duration);
 
       if (Number(event.target.value) < endValue - 1) {
         onChangeStart(Number(event.target.value));
@@ -82,13 +82,19 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
           width: sliderStyles.width - (value - sliderStyles.left),
         });
       }
+
+      if (videoRef.current && Number(event.target.value) > videoRef.current.currentTime) {
+        videoRef.current.currentTime = Number(event.target.value);
+        setNumber(value);
+        setOriginNumber(value);
+      }
     },
-    [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width],
+    [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
   );
 
   const handleChangeEndValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      const value = Number(((Number(event.target.value) - 0) * 100) / (duration - 0));
+      const value = Number((Number(event.target.value) * 100) / duration);
 
       if (Number(event.target.value) > startValue + 1) {
         onChangeEnd(Number(event.target.value));
@@ -98,8 +104,14 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
           width: sliderStyles.width - (sliderStyles.right - value),
         });
       }
+
+      if (videoRef.current && Number(event.target.value) < videoRef.current.currentTime) {
+        videoRef.current.currentTime = Number(event.target.value);
+        setNumber(value);
+        setOriginNumber(value);
+      }
     },
-    [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue],
+    [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
   );
 
   const requestRef = useRef(0);
@@ -107,7 +119,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
 
   const handleChange = useCallback(() => {
     if (videoRef.current) {
-      const value = Number(((Number(videoRef.current.currentTime) - 0) * 100) / (duration - 0));
+      const value = Number((Number(videoRef.current.currentTime) * 100) / duration);
       setNumber(value);
 
       requestRef.current = requestAnimationFrame(handleChange);
@@ -185,15 +197,13 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
       <div className={cx('dropzone', { hidden: isVideoLoaded })}>
         <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
           {({ open }) => (
-            <div className={cx('dropzone-guide')}>
+            <div className={cx('dropzone-guide')} onClick={open}>
               <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
               <div className={cx('dropzone-guide-text')}>
                 Drag and drop <br />
                 or
               </div>
-              <OutlineButton disabled={dropzoneDisabled} onClick={open}>
-                Browse File
-              </OutlineButton>
+              <OutlineButton disabled={dropzoneDisabled}>Browse File</OutlineButton>
             </div>
           )}
         </BaseDropzone>
