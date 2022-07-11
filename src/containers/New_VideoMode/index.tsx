@@ -599,6 +599,13 @@ const VideoMode = ({ browserType }: Props) => {
     }
   }, [handleKeyDown, modals]);
 
+  useEffect(() => {
+    if (videoRef.current) {
+      const handler = () => {};
+      // videoRef.current.addEventListener("playing". )
+    }
+  }, []);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>

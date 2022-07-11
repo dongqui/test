@@ -86,7 +86,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
       if (videoRef.current && Number(event.target.value) > videoRef.current.currentTime) {
         videoRef.current.currentTime = Number(event.target.value);
         setNumber(value);
-        setOriginNumber(value);
+        setOriginNumber(Number(event.target.value));
       }
     },
     [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
@@ -108,7 +108,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
       if (videoRef.current && Number(event.target.value) < videoRef.current.currentTime) {
         videoRef.current.currentTime = Number(event.target.value);
         setNumber(value);
-        setOriginNumber(value);
+        setOriginNumber(Number(event.target.value));
       }
     },
     [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
@@ -158,9 +158,11 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
 
   useEffect(() => {
     if (videoRef.current && videoStatus === 'pause') {
-      console.log(videoRef.current.currentTime);
+      const value = Number((videoRef.current.currentTime * 100) / duration);
+      setNumber(value);
+      setOriginNumber(videoRef.current.currentTime);
     }
-  }, [videoRef, videoStatus]);
+  }, [duration, videoRef, videoStatus]);
 
   return (
     <Fragment>
