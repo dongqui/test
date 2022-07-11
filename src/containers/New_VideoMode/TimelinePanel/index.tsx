@@ -156,6 +156,12 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
     };
   }, [handleChange, videoRef, videoStatus]);
 
+  useEffect(() => {
+    if (videoRef.current && videoStatus === 'pause') {
+      console.log(videoRef.current.currentTime);
+    }
+  }, [videoRef, videoStatus]);
+
   return (
     <Fragment>
       <div className={cx('wrapper', { hidden: !isVideoLoaded })}>
