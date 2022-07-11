@@ -7,7 +7,6 @@ export interface ShortcutOption {
   ignoreBlacklist?: boolean;
   repeatOnHold?: boolean;
   activeOnlyInOrder?: boolean;
-  // TODO only works when target is focused
   focus?: {
     target: Element | HTMLCanvasElement | null;
   };
