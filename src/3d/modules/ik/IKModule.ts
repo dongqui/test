@@ -422,7 +422,7 @@ export class IKModule extends Module {
       }
       selectedIK.adjustAlignment();
       selectedIK.adjustPoleAngleFromFK();
-      selectedIK.controller.update();
+      selectedIK.update();
       // selectedIK.controller.update();
     });
   }

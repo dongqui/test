@@ -183,6 +183,7 @@ export class IKController {
       // Set upvector to fk
       this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
       this.controller.upVector!.normalize();
+      // Vector3.CrossToRef(this.controller.upVector!, this.controller.targetPosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize(), this.controller.upVector!);
     }
 
     this.controller.update();
