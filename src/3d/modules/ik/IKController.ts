@@ -227,7 +227,7 @@ export class IKController {
       : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
 
     // Selection outline size
-    addMetadata('outlineSize', 0.03, this.handle);
+    addMetadata('outlineSize', 0.015, this.handle);
     addMetadata('ikController', this, this.handle);
 
     params.bone.getPositionToRef(Space.WORLD, params.transformNode, this.handle.position);
