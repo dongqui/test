@@ -1,5 +1,7 @@
 import { Dispatch } from 'redux';
 
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
+import { getTargetCoordinates } from 'utils/common';
 import * as commonActions from 'actions/Common/globalUI';
 
 // Ref: https://www.figma.com/file/cjE07P97OvCTwOIornDmbK/Plask-Master-Design?node-id=2821%3A18043
@@ -41,11 +43,17 @@ class PopupManager {
   }
 
   showOnboalding() {
-    setTimeout(() => {
+    if (this.isNewFeatureModalDone) {
+      setTimeout(() => {
+        if (this.dispatch) {
+          this.dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
+        }
+      }, 2000);
+    } else {
       if (this.dispatch) {
         this.dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
       }
-    }, 2000);
+    }
   }
 
   showNewFeatureModal() {
@@ -57,6 +65,7 @@ class PopupManager {
           title: 'New Feature! Auto Save',
           closeCallback: () => {
             this.next();
+            localStorage.setItem('notification', 'true');
           },
         }),
       );
@@ -66,6 +75,29 @@ class PopupManager {
   showVmOnboarding() {
     if (this.dispatch) {
       const isExpierencedUser = this.isOnboardingDone;
+      const targetElement = document.getElementById(ONBOARDING_ID.VIDEO_MODE);
+      const targetCoordinates = getTargetCoordinates(targetElement);
+      if (targetCoordinates?.rightBottom) {
+        this.dispatch(
+          commonActions.openModal(
+            'GuideModal',
+            {
+              title: isExpierencedUser ? 'Import a video!' : 'Click to extract motion!',
+              message: isExpierencedUser ? 'You can start importing now.' : 'Import or record a video.',
+              postion: {
+                right: '12px',
+                top: `${targetCoordinates?.rightBottom?.y + 8}px`,
+              },
+              onConfirm: () => {
+                localStorage.setItem('onboarding_2', 'onboarding_2');
+              },
+              tooltipArrowPlacement: 'top-end',
+            },
+            '',
+            false,
+          ),
+        );
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ import AnimationMode from './AnimationMode';
 import { VideoMode } from './VideoMode';
 import { useDispatch } from 'react-redux';
 
+import popupManager from 'utils/PopupManager';
 import { tokenManager } from 'api/requestApi';
 import { useSelector } from 'reducers';
 import * as socketActions from 'actions/Common/socket';
@@ -40,6 +41,8 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     }
 
     initProjectAuth();
+    popupManager.init(dispatch);
+    popupManager.next();
   }, [dispatch, sceneId, token, data]);
 
   return (
