@@ -1,4 +1,4 @@
-import { KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
@@ -583,6 +583,12 @@ const VideoMode = ({ browserType }: Props) => {
     },
     [ON_VIDEO_MOUNTED, handleChangeVideoStatus, videoStatus],
   );
+
+  useEffect(() => {
+    window.addEventListener('keypress', handleKeyDown);
+
+    return () => window.removeEventListener('keypress', handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className={cx('wrapper')}>
