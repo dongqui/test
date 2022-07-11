@@ -15,12 +15,13 @@ export interface Modal {
 
   // 같은 이름의 모달을 복수로 사용시 alias 사용
   alias: string;
+  overlay: boolean;
 }
 export interface ModalDefaultProps {
   onClose: () => void;
 }
 export interface OpenModalFn<ReturnType> {
-  <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>, alias?: string): ReturnType;
+  <T extends Modal['name']>(name: T, props: Omit<React.ComponentProps<typeof Modals[T]>, keyof ModalDefaultProps>, alias?: string, overlay?: boolean): ReturnType;
 }
 
 export default function Modal() {
@@ -39,13 +40,15 @@ export default function Modal() {
     return null;
   }
 
+  const topOfModals = modals[modals.length - 1];
+
   return (
     <Fragment>
       {modals.map((modal, i) => {
         const Modal = Modals[modal.name];
         return <Modal key={modal.name + i} onClose={handleClose(modal.alias || modal.name)} {...(modal.props as any)} />;
       })}
-      <Overlay />
+      {topOfModals.overlay && <Overlay />}
     </Fragment>
   );
 }
