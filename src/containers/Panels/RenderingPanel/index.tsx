@@ -22,6 +22,9 @@ import { PlaskTransformNode, PlaskTransformNodeType } from '3d/entities/PlaskTra
 import { selectionChanged } from './stateSync';
 import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
 import { Controller } from 'react-hook-form';
+import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
+import { ShortcutOption } from 'hooks/common/usePlaskShortcut';
+
 const cx = classNames.bind(styles);
 
 interface Props {}
@@ -175,240 +178,92 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     };
   }, [_screenList, dispatch]);
 
+  const RPShortcutOptions: ShortcutOption = {
+    repeatOnHold: false,
+    focus: {
+      target: renderingCanvas1.current,
+    },
+  };
+
   /**
    * shortcuts related to camera navigation, viewport changes
    */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // shortcuts don't work while user is typing on input elements
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-
-      const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-      if (focusedCanvas) {
-        const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-        const focusedScene = focusedPlaskScreen?.scene;
-
-        if (focusedScene) {
-          switch (event.key) {
-            case 'v':
-            case 'V':
-            case 'ㅍ': // v (viewport)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              break;
-            case 't':
-            case 'T':
-            case 'ㅅ': // t (top)
-              plaskEngine.cameraModule.toOrthographic('top');
-              break;
-            case 'b':
-            case 'B':
-            case 'ㅠ': // b (bottom)
-              plaskEngine.cameraModule.toOrthographic('bottom');
-              break;
-            case 'l':
-            case 'L':
-            case 'ㅣ': // l (left)
-              plaskEngine.cameraModule.toOrthographic('left');
-              break;
-            case 'r':
-            case 'R':
-            case 'ㄱ': // r (right)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                plaskEngine.cameraModule.toOrthographic('right');
-              }
-
-              break;
-            case 'f':
-            case 'F':
-            case 'ㄹ': // f (front)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                plaskEngine.cameraModule.toOrthographic('front');
-              }
-              break;
-            case 'k':
-            case 'K':
-            case 'ㅏ': // k (back)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if (multiKeyController[event.key].pressed) {
-                // k with v
-                if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
-                  plaskEngine.cameraModule.toOrthographic('back');
-                }
-              }
-              break;
-            case 'p':
-            case 'P':
-            case 'ㅔ': // p (perspective)
-              plaskEngine.cameraModule.toPerspective();
-              break;
-            case 'h':
-            case 'H':
-            case 'ㅗ': // h (camera reset)
-              plaskEngine.cameraModule.resetView();
-              break;
-            case 'a':
-            case 'A':
-            case 'ㅁ':
-              if (event.ctrlKey || event.metaKey) {
-                dispatch(selectingDataActions.selectAllSelectableObjects());
-              }
-              break;
-            default: {
-              break;
-            }
-          }
-        }
-      }
-
-      // Keyboard events that don't require a canvas focus
-      switch (event.key) {
-        case 'z':
-        case 'Z':
-        case 'ㅋ': {
-          if (event.ctrlKey || event.metaKey) {
-            if (event.shiftKey) {
-              // plaskEngine.redo();
-            } else {
-              // plaskEngine.undo();
-            }
-          }
-          event.preventDefault();
-          break;
-        }
-        case 'p':
-        case 'P':
-        case 'ㅔ': // p (insPector)
-          if (event.ctrlKey || event.metaKey) {
-            plaskEngine.toggleInspector();
-            event.preventDefault();
-          }
-          break;
-        default:
-          break;
-      }
-    };
-
-    const handleKeyUp = (event: KeyboardEvent) => {
-      // shortcuts don't work while user is typing on input elements
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-
-      switch (event.key) {
-        case 'v':
-        case 'V':
-        case 'ㅍ':
-        case 'r':
-        case 'R':
-        case 'ㄱ':
-        case 'k':
-        case 'K':
-        case 'ㅏ':
-        case 'f':
-        case 'F':
-        case 'ㄹ':
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = false;
-          }
-          break;
-        default: {
-          break;
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [_screenList, dispatch, multiKeyController]);
-
+  usePlaskShortcut(
+    ['v', 'f'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('front');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 't'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('top');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'l'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('left');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'k'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('back');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'r'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('right');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'b'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('bottom');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['p'],
+    () => {
+      plaskEngine.cameraModule.toPerspective();
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['h'],
+    () => {
+      plaskEngine.cameraModule.resetView();
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['control', 'a'],
+    () => {
+      dispatch(selectingDataActions.selectAllSelectableObjects());
+    },
+    RPShortcutOptions,
+  );
   /**
    * shortcuts related to editing keyframes
    */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
+
+  usePlaskShortcut(
+    ['k'],
+    () => {
+      if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
+        dispatch(keyframeActions.editKeyframesSocket.request());
       }
-
-      switch (event.key) {
-        case 'v':
-        case 'V':
-        case 'ㅍ': // v (viewport)
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = true;
-          }
-          break;
-        case 'k':
-        case 'K':
-        case 'ㅏ': // insert
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = true;
-          }
-          if (multiKeyController[event.key].pressed) {
-            // k with v not pressed
-            if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
-              dispatch(keyframeActions.editKeyframesSocket.request());
-            }
-          }
-          break;
-        default: {
-          break;
-        }
-      }
-    };
-
-    const handleKeyUp = (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-
-      switch (event.key) {
-        case 'v':
-        case 'V':
-        case 'ㅍ':
-        case 'k':
-        case 'K':
-        case 'ㅏ':
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = false;
-          }
-          break;
-        default: {
-          break;
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [dispatch, multiKeyController]);
-
+    },
+    RPShortcutOptions,
+  );
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
    */

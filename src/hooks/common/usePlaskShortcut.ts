@@ -3,13 +3,13 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
 const BLACKLISTED_DOM_TARGETS = ['INPUT'];
 
-interface ShortcutOption {
+export interface ShortcutOption {
   ignoreBlacklist?: boolean;
   repeatOnHold?: boolean;
   activeOnlyInOrder?: boolean;
   // TODO only works when target is focused
   focus?: {
-    target: Element | HTMLCanvasElement;
+    target: Element | HTMLCanvasElement | null;
   };
 }
 
@@ -36,6 +36,9 @@ export default function usePlaskShortcut(shortcutKeys: Array<string>, callback: 
       }
 
       if (option.focus?.target) {
+        if (option.focus?.target != document.activeElement) {
+          return;
+        }
       }
 
       if (keydownEvent.repeat && !option.repeatOnHold) return;
