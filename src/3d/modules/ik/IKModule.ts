@@ -137,6 +137,7 @@ export class IKModule extends Module {
   public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
     let result = null;
     if (!this._areIKControllersAlreadyAdded()) {
+      console.log('called');
       this._initializeControllers(assetId);
       result = this._generateIkPlaskTransformNodes(assetId);
     }
@@ -420,8 +421,9 @@ export class IKModule extends Module {
         selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
       }
       selectedIK.adjustAlignment();
-
+      selectedIK.adjustPoleAngleFromFK();
       selectedIK.controller.update();
+      // selectedIK.controller.update();
     });
   }
 
@@ -596,20 +598,21 @@ export class IKModule extends Module {
         animationGroupTemp.start();
 
         animationGroupTemp.goToFrame(i);
-        selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
+        // selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
 
-        let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
-        let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
+        // let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
+        // let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
 
-        selectedIK.handle.setAbsolutePosition(position);
-        selectedIK.handle.rotationQuaternion = rotation;
-        if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-          selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
-        }
-        selectedIK.controller.update();
+        // selectedIK.handle.setAbsolutePosition(position);
+        // selectedIK.handle.rotationQuaternion = rotation;
+        // if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
+        //   selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+        // }
+        // selectedIK.controller.update();
+        this.setIKtoFK([selectedIK]);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
-        selectedIK.handle.setAbsolutePosition(position);
-        selectedIK.handle.rotationQuaternion = rotation;
+        // selectedIK.handle.setAbsolutePosition(position);
+        // selectedIK.handle.rotationQuaternion = rotation;
       }
 
       animationGroupTemp.goToFrame(0);
@@ -647,12 +650,12 @@ export class IKModule extends Module {
         defaultBendAxis = new Vector3(0, 0, 1);
         break;
       case 'rightHand':
-        defaultUpVector = new Vector3(0, 1, 0);
-        defaultBendAxis = new Vector3(1, 0, 0);
+        defaultUpVector = new Vector3(-1, 0, 0);
+        defaultBendAxis = new Vector3(0, 0, 1);
         break;
       case 'leftHand':
-        defaultUpVector = new Vector3(0, -1, 0);
-        defaultBendAxis = new Vector3(1, 0, 0);
+        defaultUpVector = new Vector3(-1, 0, 0);
+        defaultBendAxis = new Vector3(0, 0, 1);
         break;
     }
     const result = {
@@ -774,8 +777,8 @@ export class IKModule extends Module {
     const bonesSelection = [
       { bone: 'rightFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
       { bone: 'leftFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'rightHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, 1, 0) },
-      { bone: 'leftHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(1, 0, 0), upVector: new Vector3(0, -1, 0) },
+      { bone: 'rightHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
+      { bone: 'leftHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
     ] as BoneIKParams[];
 
     // Creating IK controls
