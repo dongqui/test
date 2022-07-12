@@ -1,5 +1,6 @@
-import { RefObject, useState, useCallback, ChangeEvent } from 'react';
+import { RefObject, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
+import axios, { Canceler } from 'axios';
 import * as globalUIActions from 'actions/Common/globalUI';
 import requestApi from 'api/requestApi';
 import { FilledButton, OutlineButton } from 'components/Button';
@@ -33,7 +34,9 @@ interface ExtractFormData {
 const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, endValue }: Props) => {
   const dispatch = useDispatch();
 
+  let cancelTokenSource = useRef<Canceler>();
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
+  const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
   const [valueName, setValueName] = useState('');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
@@ -67,6 +70,12 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
   const handleCloseModal = useCallback(() => {
     setValueName('');
     setIsOpenExtractModal(false);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setIsOpenLoadingModal(false);
+    setIsOpenExtractModal(false);
+    cancelTokenSource.current && cancelTokenSource.current();
   }, []);
 
   const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
@@ -103,6 +112,9 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
       formData.append('isFootLock', valueFormData.footLock ? 'true' : 'false');
       formData.append('isTPose', valueFormData.tPose ? 'true' : 'false');
 
+      setIsOpenExtractModal(false);
+      setIsOpenLoadingModal(true);
+
       const response = await requestApi({
         method: 'POST',
         url: `/library/${sceneId}/mocap`,
@@ -110,9 +122,13 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        cancelToken: new axios.CancelToken((cancel) => {
+          cancelTokenSource.current = cancel;
+        }),
       })
         .then((response) => {
-          // console.log(response);
+          console.log(response);
+          const { data } = response;
           return response;
         })
         .catch((error) => {
@@ -120,8 +136,6 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
           // TODO 예외처리
           throw error;
         });
-
-      console.log(response);
     }
   };
 
@@ -149,12 +163,29 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
               <BaseInput className={cx('input-name')} name="name" placeholder="Extracted motion" value={valueName} onChange={handleChangeName} />
             </div>
             <div className={cx('modal-footer')}>
-              <OutlineButton className={cx('button-cancel')} onClick={handleCloseModal}>
+              <OutlineButton className={cx('button-negative')} onClick={handleCloseModal}>
                 Cancel
               </OutlineButton>
-              <FilledButton className={cx('button-extract')} onClick={handleSubmitModal}>
+              <FilledButton className={cx('button-positive')} onClick={handleSubmitModal}>
                 Extract
               </FilledButton>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenLoadingModal && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title')}>Extracting mocap</div>
+            </div>
+            <div className={cx('modal-content')}>
+              <div className={cx('message')}>It can take up to 7 seconds</div>
+            </div>
+            <div className={cx('modal-footer')}>
+              <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
+                Cancel
+              </OutlineButton>
             </div>
           </div>
         </BaseModal>
