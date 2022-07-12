@@ -26,12 +26,12 @@ const filterDeletedNodeAndChildren = (node: LP.Node[], ids: string[]) => {
   }
 };
 
-function filterDeletedNode(nodes: LP.Node[], nodeId: string, parentId?: string) {
-  const withoutDeletedNodeAndChildren = filterDeletedNodeAndChildren(nodes, [nodeId]);
+function filterDeletedNode(nodes: LP.Node[], targetNode: LP.Node) {
+  const withoutDeletedNodeAndChildren = filterDeletedNodeAndChildren(nodes, [targetNode.id]);
   const afterFilteredFromParentNode = produce(withoutDeletedNodeAndChildren, (draft) => {
-    const parentNode = find(draft, { id: parentId });
+    const parentNode = find(draft, { id: targetNode.parentId });
     if (parentNode) {
-      parentNode.childNodeIds = parentNode.childNodeIds.filter((currentId) => currentId !== nodeId);
+      parentNode.childNodeIds = parentNode.childNodeIds.filter((currentId) => currentId !== targetNode.id);
     }
   });
 

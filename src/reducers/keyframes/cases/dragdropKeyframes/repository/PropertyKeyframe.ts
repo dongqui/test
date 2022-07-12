@@ -1,8 +1,8 @@
 import produce, { Draft } from 'immer';
 
-import { TimeEditorTrack, TrasnformKey, ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
+import { TimeEditorTrack, TransformKey, ClusteredKeyframe, Keyframe } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
-import { findElementIndex, getBoneTrackIndex } from 'utils/TP';
+import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
 
@@ -14,12 +14,12 @@ class PropertyKeyframeRepository implements Repository {
   }
 
   // 키프레임 데이터 생성
-  private createPropertyKeyframe = (nextTime: number, transformKey: TrasnformKey): Keyframe => {
+  private createPropertyKeyframe = (nextTime: number, transformKey: TransformKey): Keyframe => {
     return { isDeleted: false, isSelected: true, time: nextTime, value: transformKey.value };
   };
 
   // 키프레임 업데이트
-  private updatePropertyKeyframes = (draft: Draft<TimeEditorTrack>[], trackNumber: number, transformKey: TrasnformKey, timeDiff: number) => {
+  private updatePropertyKeyframes = (draft: Draft<TimeEditorTrack>[], trackNumber: number, transformKey: TransformKey, timeDiff: number) => {
     const trackIndex = findElementIndex(draft, trackNumber, 'trackNumber');
     const propertyKeyframes = draft[trackIndex].keyframes;
     const nextTime = transformKey.time + timeDiff;

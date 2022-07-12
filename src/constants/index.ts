@@ -1,6 +1,6 @@
 import { RetargetSourceBoneType, PlaskProperty } from 'types/common';
 
-export const TRACK_DATA_PROPERTY: PlaskProperty[] = ['position', 'rotation', 'rotationQuaternion', 'scaling'];
+export const TRACK_DATA_PROPERTY: PlaskProperty[] = ['position', 'rotation', 'rotationQuaternion', 'scaling', 'inContact'];
 export const BONE_NAMES: RetargetSourceBoneType[] = [
   'hips',
   'leftUpLeg',

@@ -4,7 +4,6 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
-import plaskEngine from '3d/PlaskEngine';
 interface Props {
   node: LP.Node;
 }
@@ -14,10 +13,6 @@ const MotionNode = ({ node }: Props) => {
   const dispatch = useDispatch();
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!assetId) {
-      return;
-    }
-
     dispatch(lpNodeActions.selectNode({ nodeId: id, assetId }));
     dispatch(
       globalUIActions.openContextMenu('MotionContextMenu', e, {
@@ -34,6 +29,7 @@ const MotionNode = ({ node }: Props) => {
     if (!assetId || !isDroppedOnRP(e)) {
       return;
     }
+    e.stopPropagation();
 
     dispatch(
       lpNodeActions.visualizeMotion({

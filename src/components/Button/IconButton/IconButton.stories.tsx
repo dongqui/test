@@ -1,9 +1,11 @@
 import { Fragment, useMemo, useState } from 'react';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import _IconButton from './';
+import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
-
 import { SvgPath } from 'components/Icon';
+
+import _IconButton from './';
+import './IconButton.stories.module.scss';
 
 export default {
   component: _IconButton,
@@ -68,18 +70,7 @@ const NewIconTestTemplate: ComponentStory<typeof _IconButton> = (args) => {
       const svgData = new Blob([toggle ? svgTextColored : svgText], { type: 'image/svg+xml' });
       const svgURL = URL.createObjectURL(svgData);
 
-      return (
-        <img
-          src={svgURL}
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '16px',
-            height: '16px',
-            userSelect: 'none',
-          }}
-        />
-      );
+      return <Image className="dynamic-svg" width={16} height={16} alt="new svg" src={svgURL} />;
     };
   }, [color, svg, toggle]);
 

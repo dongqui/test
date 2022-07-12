@@ -19,19 +19,17 @@
   border-radius: 10px;
   border: 1px solid $outline;
   box-shadow: 0 0 12px rgb(0 0 0 / 25%);
-  // padding 없애고 자식에서 정해야함.
-  padding: 20px;
   min-width: 280px;
-  max-width: 60%;
   outline: 0;
   background-color: $bg-elevated;
 
-  &.icon {
-    padding-top: 16px;
+  // TODO: remove
+  &.hasPadding {
+    padding: 20px;
   }
 
-  @include media(">lg") {
-    max-width: 600px;
+  &.icon {
+    padding-top: 16px;
   }
 }
 

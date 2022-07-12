@@ -4,7 +4,7 @@ class MyDocument extends Document {
   render() {
     return (
       <Html>
-        <Head>
+        <Head lang="en">
           <meta charSet="utf-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta name="description" content="Description" />

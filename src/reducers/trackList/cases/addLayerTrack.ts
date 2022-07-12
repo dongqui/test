@@ -23,6 +23,7 @@ function setNewLayerTrack(newLayer: AddLayerTrack): LayerTrack {
     trackType: 'layer',
     trackNumber: -1,
     trackId: newLayer.id,
+    parentTrackNumber: -1,
   };
 }
 

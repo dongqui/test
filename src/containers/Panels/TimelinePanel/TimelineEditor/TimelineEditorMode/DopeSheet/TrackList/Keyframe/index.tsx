@@ -18,7 +18,7 @@ const cx = classNames.bind(styles);
 type Props = TrackIdentifier & Keyframe;
 
 const KeyframeComponent: FunctionComponent<Props> = (props) => {
-  const { trackNumber, trackId, trackType, time, isSelected } = props;
+  const { trackNumber, trackId, trackType, time, isSelected, parentTrackNumber } = props;
   const dispatch = useDispatch();
   const keyframeRef = useRef<SVGPathElement>(null);
 
@@ -43,14 +43,14 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         label: 'Select All Row',
         onClick: () => {
           document.getElementById('timeline-editor-svg')?.focus();
-          dispatch(keyframeActions.selectKeyframes({ selectType: 'horizontal', trackId, trackNumber, trackType, time }));
+          dispatch(keyframeActions.selectKeyframes({ selectType: 'horizontal', trackId, trackNumber, trackType, time, parentTrackNumber }));
         },
       },
       {
         label: 'Select All Column',
         onClick: () => {
           document.getElementById('timeline-editor-svg')?.focus();
-          dispatch(keyframeActions.selectKeyframes({ selectType: 'vertical', trackId, trackNumber, trackType, time }));
+          dispatch(keyframeActions.selectKeyframes({ selectType: 'vertical', trackId, trackNumber, trackType, time, parentTrackNumber }));
         },
       },
       {
@@ -58,27 +58,27 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         separator: true,
         onClick: () => {
           document.getElementById('timeline-editor-svg')?.focus();
-          dispatch(keyframeActions.selectKeyframes({ selectType: 'unselectAll', trackId, trackNumber, trackType, time }));
+          dispatch(keyframeActions.selectKeyframes({ selectType: 'unselectAll', trackId, trackNumber, trackType, time, parentTrackNumber }));
         },
       },
       {
         label: 'Delete Keyframe',
         onClick: () => {
           document.getElementById('timeline-editor-svg')?.focus();
-          dispatch(keyframeActions.enterKeyframeDeleteKey());
+          dispatch(keyframeActions.deleteKeyframesSocket.request());
         },
         disabled: !isSelected || TimeIndex.getPlayState() === 'play',
       },
     ],
-    [dispatch, isSelected, time, trackId, trackNumber, trackType],
+    [dispatch, isSelected, time, trackId, trackNumber, trackType, parentTrackNumber],
   );
 
   // 키프레임 클릭
   const clickKeyframe = useCallback(
     (event: React.MouseEvent<Element>) => {
-      dispatch(keyframeActions.selectKeyframes({ selectType: event.ctrlKey || event.metaKey ? 'multiple' : 'left', trackId, trackType, trackNumber, time }));
+      dispatch(keyframeActions.selectKeyframes({ selectType: event.ctrlKey || event.metaKey ? 'multiple' : 'left', trackId, trackType, trackNumber, time, parentTrackNumber }));
     },
-    [dispatch, time, trackId, trackNumber, trackType],
+    [dispatch, time, trackId, trackNumber, trackType, parentTrackNumber],
   );
 
   // 드래그 시작 이벤트 제어
@@ -106,7 +106,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         const scaleX = ScaleLinear.getKeyframeX();
         const originTime = Math.round(scaleX.invert(event.subject.x as number));
         const currentTime = Math.round(scaleX.invert(event.x as number));
-        dispatch(keyframeActions.enterKeyframeDragDropKey({ timeDiff: currentTime - originTime }));
+        dispatch(keyframeActions.moveKeyframesSocket.request({ timeDiff: currentTime - originTime }));
         document.body.style.cursor = 'default';
       }
     },
@@ -163,7 +163,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
     if (isSelected && keyframe) {
       if (trackNumber === TrackNumber.LAYER) {
         subscribeKeyframe(selectedLayerKeyframes);
-      } else if (trackNumber % 10 === TrackNumber.BONE) {
+      } else if (selectedBoneKeyframes.find((boneKeyframe) => trackNumber === boneKeyframe.trackNumber)) {
         subscribeKeyframe(selectedBoneKeyframes);
       } else {
         subscribeKeyframe(selectedPropertyKeyframes);
@@ -183,7 +183,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
       const isContains = keyframeRef.current?.contains(event.target as Node);
       if (isContains) {
         onContextMenuOpen({ top: event.clientY, left: event.clientX, menu: contextMenuList });
-        if (!isSelected) dispatch(keyframeActions.selectKeyframes({ selectType: 'left', trackId, trackType, trackNumber, time }));
+        if (!isSelected) dispatch(keyframeActions.selectKeyframes({ selectType: 'left', trackId, trackType, trackNumber, time, parentTrackNumber }));
       }
     };
     if (currentRef) {
@@ -192,7 +192,7 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         currentRef.removeEventListener('contextmenu', handleContextMenu);
       };
     }
-  }, [contextMenuList, isSelected, time, trackId, trackNumber, trackType, dispatch, onContextMenuOpen]);
+  }, [contextMenuList, isSelected, time, trackId, trackNumber, trackType, parentTrackNumber, dispatch, onContextMenuOpen]);
 
   return (
     <path

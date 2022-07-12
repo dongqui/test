@@ -19,7 +19,7 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
     const selectedLayers: SelectedKeyframe[] = [];
     keyframes.forEach((keyframe) => {
       const { time, isDeleted } = keyframe;
-      if (!isDeleted) selectedLayers.push({ trackId, trackNumber, time, trackType: 'layer' });
+      if (!isDeleted) selectedLayers.push({ trackId, trackNumber, time, parentTrackNumber: -1, trackType: 'layer' });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedLayers);
   };
@@ -30,7 +30,7 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
       const { keyframes, trackId, trackNumber } = boneTrack;
       keyframes.forEach((keyframe) => {
         const { time, isDeleted } = keyframe;
-        if (!isDeleted) selectedBones.push({ trackNumber, trackId, time, trackType: 'bone' });
+        if (!isDeleted) selectedBones.push({ trackNumber, trackId, parentTrackNumber: -1, time, trackType: 'bone' });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBones);
@@ -39,10 +39,10 @@ class LayerKeyframeHorizontal implements HorizontalSelection {
   private getSelectedProperties = ({ state }: Params) => {
     const selectedTransforms: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { keyframes, trackId, trackNumber, trackType } = propertyTrack;
+      const { keyframes, trackId, trackNumber, trackType, parentTrackNumber } = propertyTrack;
       keyframes.forEach((keyframe) => {
         const { time, value, isDeleted } = keyframe;
-        if (!isDeleted) selectedTransforms.push({ trackNumber, trackId, time, value, trackType });
+        if (!isDeleted) selectedTransforms.push({ trackNumber, trackId, time, value, trackType, parentTrackNumber });
       });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedTransforms);

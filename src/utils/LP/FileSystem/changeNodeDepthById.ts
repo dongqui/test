@@ -4,8 +4,6 @@ const changeNodeDepthById = (immerDraftNodes: LP.Node[], childId: string, parent
   const changeNode = find(immerDraftNodes, { id: childId });
 
   if (changeNode) {
-    changeNode.filePath = parentNode.filePath + `\\${parentNode.name}`;
-
     if (changeNode.childNodeIds.length > 0) {
       changeNode.childNodeIds.forEach((child) => {
         changeNodeDepthById(immerDraftNodes, child, changeNode);

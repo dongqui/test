@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, useCallback } from 'react';
+import { FunctionComponent, Fragment, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { changeMode } from 'actions/modeSelection';
@@ -7,6 +7,11 @@ import { UpperBar } from 'containers/UpperBar';
 import AnimationMode from './AnimationMode';
 import VideoMode from './New_VideoMode';
 
+import { tokenManager } from 'api/requestApi';
+import * as socketActions from 'actions/Common/socket';
+import * as lpActions from 'actions/LP/lpNodeAction';
+import { RequestNodeResponse } from 'types/LP';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -14,11 +19,14 @@ const cx = classNames.bind(styles);
 
 interface Props {
   browserType: string;
+  token: string;
+  sceneId: string;
+  data: RequestNodeResponse[];
 }
 
-const Plask: FunctionComponent<Props> = (props) => {
-  const dispatch = useDispatch();
+const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) => {
   const { mode } = useSelector((state) => state.modeSelection);
+  const dispatch = useDispatch();
 
   const classes = cx('wrapper', {
     visible: mode === 'animationMode',
@@ -37,6 +45,18 @@ const Plask: FunctionComponent<Props> = (props) => {
     }
   }, [dispatch, mode]);
 
+  useEffect(() => {
+    // is here the best place to connect socket?
+    function initProjectAuth() {
+      tokenManager.set(token);
+      dispatch(lpActions.setSceneId(sceneId));
+      dispatch(socketActions.connectSocket.request({ sceneId, token }));
+      dispatch(lpActions.initNodes(data));
+    }
+
+    initProjectAuth();
+  }, [dispatch, sceneId, token, data]);
+
   return (
     <Fragment>
       <Box id="UP" {...UBProps}>
@@ -44,7 +64,7 @@ const Plask: FunctionComponent<Props> = (props) => {
       </Box>
       <AnimationMode className={classes} />
       {/* {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={props.browserType} />} */}
-      {mode !== 'animationMode' && <VideoMode browserType={props.browserType} />}
+      {mode !== 'animationMode' && <VideoMode browserType={browserType} />}
     </Fragment>
   );
 };

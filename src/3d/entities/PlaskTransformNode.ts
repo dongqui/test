@@ -1,16 +1,31 @@
 import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, Quaternion, TransformNode, Vector3 } from '@babylonjs/core';
+import { readMetadata } from 'utils/RP/metadata';
 import { PlaskEntity, PlaskEntitySpec } from './PlaskEntity';
 
-export type PlaskTransformNodeType = 'controller' | 'joint' | 'unknwown';
+export type PlaskTransformNodeType = 'controller' | 'joint' | 'ik_controller' | 'unknown';
 export interface PlaskTransformNodeSpec extends PlaskEntitySpec {
   position: number[];
   rotation: number[];
   scaling: number[];
   type: PlaskTransformNodeType;
-  className: 'PlaskTransformNode';
   id: string;
+  jointIds: string[];
+  transformable: Transformable;
 }
+
+export interface Transformable {
+  position: boolean;
+  rotation: {
+    quaternion: boolean;
+    euler: boolean;
+  };
+  scale: boolean;
+}
+
+/**
+ * PlaskTransformNodes are the immutable data representation of a transform node in Babylon.js
+ */
 export class PlaskTransformNode extends PlaskEntity {
   constructor(transformNode?: TransformNode, entityId?: string) {
     super(entityId);
@@ -20,22 +35,64 @@ export class PlaskTransformNode extends PlaskEntity {
 
       const className = transformNode.getClassName();
       if (className === 'Mesh') {
-        this.type = 'controller';
+        if (readMetadata('ikController', transformNode)) {
+          this.type = 'ik_controller';
+        } else {
+          this.type = 'controller';
+        }
+        this._transformable = {
+          position: true,
+          rotation: {
+            euler: true,
+            quaternion: true,
+          },
+          scale: false,
+        };
       } else if (className === 'TransformNode') {
         this.type = 'joint';
       }
 
-      this.fromTransformNode();
+      this.fromTransformNode(transformNode);
     }
   }
-  public transformNodeId: string = '';
   public position: number[] = [];
   public rotation: number[] = [];
   public scaling: number[] = [];
-  public type: PlaskTransformNodeType = 'unknwown';
+  public type: PlaskTransformNodeType = 'unknown';
   public className = 'PlaskTransformNode';
 
   public id: string = '';
+  private _jointIds: string[] = [];
+  private _transformable: Transformable = {
+    position: true,
+    rotation: {
+      euler: true,
+      quaternion: true,
+    },
+    scale: true,
+  };
+
+  public get transformable() {
+    return this._transformable;
+  }
+  public set transformable(transformable: Transformable) {
+    this._transformable = transformable;
+  }
+  /**
+   * The joint ids impacted by this entity.
+   * If not set, returns and array containing the transformNode id
+   * @returns
+   */
+  public get jointIds() {
+    if (this._jointIds.length) {
+      return this._jointIds;
+    }
+    return [this.id];
+  }
+
+  public set jointIds(ids: string[]) {
+    this._jointIds = ids;
+  }
 
   private _reference: Nullable<TransformNode> = null;
   public get reference() {
@@ -46,9 +103,9 @@ export class PlaskTransformNode extends PlaskEntity {
         throw new Error('Trying to access a reference before engine initialization.');
       }
 
-      if (this.type === 'joint') {
+      if (this.type.includes('joint')) {
         this._reference = engine.scene.getTransformNodeById(this.id);
-      } else if (this.type === 'controller') {
+      } else if (this.type.includes('controller')) {
         this._reference = engine.scene.getMeshById(this.id);
       }
 
@@ -63,8 +120,8 @@ export class PlaskTransformNode extends PlaskEntity {
     return this._reference;
   }
 
-  public fromTransformNode() {
-    const transformNode = this.reference;
+  public fromTransformNode(unintializedTransformNode?: TransformNode) {
+    const transformNode = unintializedTransformNode || this.reference;
 
     transformNode.position.toArray(this.position);
     this.rotation.length = 0;
@@ -94,7 +151,8 @@ export class PlaskTransformNode extends PlaskEntity {
 
     this.type = other.type;
     this.id = other.id;
-
+    this.jointIds = other.jointIds;
+    this.transformable = other.transformable;
     // More efficient than instanceof
     if ((other as PlaskTransformNode).className === 'PlaskTransformNode') {
       const otherPtn = other as PlaskTransformNode;
@@ -102,12 +160,14 @@ export class PlaskTransformNode extends PlaskEntity {
         // This is not strictly necessary, but it fills the cache with a known value
         this._reference = otherPtn._reference;
       }
-
-      // When we copy from a PlaskTransformNode, we assume that the corresponding Babylon reference exists and is to be updated
-      this.toTransformNode();
     }
 
     return this;
+  }
+
+  public async onUpdate() {
+    // We must sync with babylon
+    this.toTransformNode();
   }
 
   /**
@@ -125,6 +185,7 @@ export class PlaskTransformNode extends PlaskEntity {
    */
   public setRotation(rotation: Vector3 | Quaternion) {
     rotation.toArray(this.rotation);
+    this.toTransformNode();
   }
 
   /**
@@ -133,17 +194,19 @@ export class PlaskTransformNode extends PlaskEntity {
    */
   public setScaling(scaling: Vector3) {
     scaling.toArray(this.scaling);
+    this.toTransformNode();
   }
 
-  public serialize() {
+  public serialize(): PlaskTransformNodeSpec {
     const obj = super.serialize();
-
     return {
       position: this.position,
       rotation: this.rotation,
       scaling: this.scaling,
       type: this.type,
       id: this.id,
+      jointIds: this.jointIds,
+      transformable: this.transformable,
       ...obj,
     };
   }

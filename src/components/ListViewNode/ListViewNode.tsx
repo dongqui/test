@@ -65,7 +65,7 @@ const ListViewNode = ({
         <div className={classes} id="inner">
           <div className={cx('wrapper')} style={{ paddingLeft: `${16 * (depth - 1)}px` }} id={LPCONSTANTS.DRAG_SELECTABLE} onContextMenu={onContextMenu}>
             <div className={cx('column')} />
-            <ArrowButton isOpen={showChildren} hidden={type === 'Motion' || type === 'Mocap'} onArrowButtonClick={onArrowButtonClick} />
+            <ArrowButton isOpen={showChildren} hidden={type === 'MOTION' || type === 'MOCAP'} onArrowButtonClick={onArrowButtonClick} />
             <div className={cx('contents')}>
               <NodeIcon icon={type} isVisualizedUICondition={isVisualizedUICondition} isSelected={isSelected} />
               <div className={cx('column')} />

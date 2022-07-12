@@ -6,14 +6,24 @@ import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as screenDataActions from 'actions/screenDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as trackListActions from 'actions/trackList';
+import * as keyframeActions from 'actions/keyframes';
 import { useSelector } from 'reducers';
 import { ArrayOfThreeNumbers, GizmoMode, GizmoSpace, PlaskProperty } from 'types/common';
 import { ScreenVisivilityItem } from 'types/RP';
 import plaskEngine from '3d/PlaskEngine';
 import ScreenVisibility from './ScreenVisibility';
+import '@babylonjs/inspector';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { useObserved } from 'hooks/common/useObserved';
+import SelectorModule from '3d/modules/selector/SelectorModule';
+import { PlaskTransformNode, PlaskTransformNodeType } from '3d/entities/PlaskTransformNode';
+import { selectionChanged } from './stateSync';
+import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
+import { Controller } from 'react-hook-form';
+import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
+import { ShortcutOption } from '../../../hooks/common/usePlaskShortcut';
 
 const cx = classNames.bind(styles);
 
@@ -30,11 +40,11 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
+  const _currentAnimationGroup = useSelector((state) => state.animatingControls.currentAnimationGroup);
   const _startTimeIndex = useSelector((state) => state.animatingControls.startTimeIndex);
   const _endTimeIndex = useSelector((state) => state.animatingControls.endTimeIndex);
   const _playState = useSelector((state) => state.animatingControls.playState);
   const _visibilityOptions = useSelector((state) => state.screenData.visibilityOptions);
-  const _plaskSkeletonViewers = useSelector((state) => state.screenData.plaskSkeletonViewers);
 
   const dispatch = useDispatch();
 
@@ -120,8 +130,28 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [dispatch]);
 
-  const prevCameraPositions = plaskEngine.cameraModule.prevPositions;
-  const prevCameraTargets = plaskEngine.cameraModule.prevTargets;
+  /**************************
+   * STATE BIND
+   * ONE WAY FLOW FROM REACT TO BABYLONJS
+   * OBSERVABLES TO UPDATE REDUX STATE
+   *
+   *************************/
+  // Selection
+  useObserved(SelectorModule._onUserSelectRequest, selectionChanged);
+
+  // Animation data
+  // useEffect(() => {
+  //   if (_currentAnimationGroup) {
+  //     plaskEngine.ikModule.setIKtoFK(plaskEngine.ikModule.ikControllers);
+  //   }
+  // }, [_currentAnimationGroup, dispatch]);
+
+  useEffect(() => {
+    const animationGroup = plaskEngine.animationModule.regenerateAnimations(_animationIngredients, _visualizedAssetIds, _startTimeIndex, _endTimeIndex);
+    if (animationGroup) {
+      dispatch(setCurrentAnimationGroup({ animationGroup }));
+    }
+  }, [_animationIngredients, _startTimeIndex, _endTimeIndex, _visualizedAssetIds, dispatch]);
 
   /**
    * dragBox interacting with scene
@@ -148,231 +178,317 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     };
   }, [_screenList, dispatch]);
 
+  const RPShortcutOptions: ShortcutOption = {
+    repeatOnHold: false,
+    focus: this,
+  };
+
   /**
    * shortcuts related to camera navigation, viewport changes
    */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // shortcuts don't work while user is typing on input elements
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
+  usePlaskShortcut(
+    ['v', 'f'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('front');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 't'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('top');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'l'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('left');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'k'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('back');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'r'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('right');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['v', 'b'],
+    () => {
+      plaskEngine.cameraModule.toOrthographic('bottom');
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['p'],
+    () => {
+      plaskEngine.cameraModule.toPerspective();
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['h'],
+    () => {
+      plaskEngine.cameraModule.resetView();
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['control', 'a'],
+    () => {
+      dispatch(selectingDataActions.selectAllSelectableObjects());
+    },
+    RPShortcutOptions,
+  );
+  // useEffect(() => {
+  //   const handleKeyDown = (event: KeyboardEvent) => {
+  //     // shortcuts don't work while user is typing on input elements
+  //     const target = event.target as Element;
+  //     if (target.tagName.toLowerCase() === 'input') {
+  //       return;
+  //     }
 
-      const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
-      if (focusedCanvas) {
-        const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
-        const focusedScene = focusedPlaskScreen?.scene;
+  //     const focusedCanvas: HTMLCanvasElement | null = document.querySelector('canvas:focus');
+  //     if (focusedCanvas) {
+  //       const focusedPlaskScreen = _screenList.find((screen) => screen.canvasId === focusedCanvas.id);
+  //       const focusedScene = focusedPlaskScreen?.scene;
 
-        if (focusedScene) {
-          switch (event.key) {
-            case 'v':
-            case 'V':
-            case 'ㅍ': // v (viewport)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              break;
-            case 't':
-            case 'T':
-            case 'ㅅ': // t (top)
-              plaskEngine.cameraModule.toOrthographic('top');
-              break;
-            case 'b':
-            case 'B':
-            case 'ㅠ': // b (bottom)
-              plaskEngine.cameraModule.toOrthographic('bottom');
-              break;
-            case 'l':
-            case 'L':
-            case 'ㅣ': // l (left)
-              plaskEngine.cameraModule.toOrthographic('left');
-              break;
-            case 'r':
-            case 'R':
-            case 'ㄱ': // r (right)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                plaskEngine.cameraModule.toOrthographic('right');
-              }
+  //       if (focusedScene) {
+  //         switch (event.key) {
+  //           case 'v':
+  //           case 'V':
+  //           case 'ㅍ': // v (viewport)
+  //             if (multiKeyController[event.key]) {
+  //               multiKeyController[event.key].pressed = true;
+  //             }
+  //             break;
+  //           case 't':
+  //           case 'T':
+  //           case 'ㅅ': // t (top)
+  //             plaskEngine.cameraModule.toOrthographic('top');
+  //             break;
+  //           case 'b':
+  //           case 'B':
+  //           case 'ㅠ': // b (bottom)
+  //             plaskEngine.cameraModule.toOrthographic('bottom');
+  //             break;
+  //           case 'l':
+  //           case 'L':
+  //           case 'ㅣ': // l (left)
+  //             plaskEngine.cameraModule.toOrthographic('left');
+  //             break;
+  //           case 'r':
+  //           case 'R':
+  //           case 'ㄱ': // r (right)
+  //             if (multiKeyController[event.key]) {
+  //               multiKeyController[event.key].pressed = true;
+  //             }
+  //             if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
+  //               plaskEngine.cameraModule.toOrthographic('right');
+  //             }
 
-              break;
-            case 'f':
-            case 'F':
-            case 'ㄹ': // f (front)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
-                plaskEngine.cameraModule.toOrthographic('front');
-              }
-              break;
-            case 'k':
-            case 'K':
-            case 'ㅏ': // k (back)
-              if (multiKeyController[event.key]) {
-                multiKeyController[event.key].pressed = true;
-              }
-              if (multiKeyController[event.key].pressed) {
-                // k with v
-                if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
-                  plaskEngine.cameraModule.toOrthographic('back');
-                }
-              }
-              break;
-            case 'p':
-            case 'P':
-            case 'ㅔ': // p (perspective)
-              plaskEngine.cameraModule.toPerspective();
-              break;
-            case 'h':
-            case 'H':
-            case 'ㅗ': // h (camera reset)
-              plaskEngine.cameraModule.resetView();
-              break;
-            case 'a':
-            case 'A':
-            case 'ㅁ':
-              if (event.ctrlKey || event.metaKey) {
-                dispatch(selectingDataActions.selectAllSelectableObjects());
-              }
-              break;
-            default: {
-              break;
-            }
-          }
-        }
-      }
+  //             break;
+  //           case 'f':
+  //           case 'F':
+  //           case 'ㄹ': // f (front)
+  //             if (multiKeyController[event.key]) {
+  //               multiKeyController[event.key].pressed = true;
+  //             }
+  //             if ((multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) && multiKeyController[event.key].pressed) {
+  //               plaskEngine.cameraModule.toOrthographic('front');
+  //             }
+  //             break;
+  //           case 'k':
+  //           case 'K':
+  //           case 'ㅏ': // k (back)
+  //             if (multiKeyController[event.key]) {
+  //               multiKeyController[event.key].pressed = true;
+  //             }
+  //             if (multiKeyController[event.key].pressed) {
+  //               // k with v
+  //               if (multiKeyController.v.pressed || multiKeyController.V.pressed || multiKeyController.ㅍ.pressed) {
+  //                 plaskEngine.cameraModule.toOrthographic('back');
+  //               }
+  //             }
+  //             break;
+  //           case 'p':
+  //           case 'P':
+  //           case 'ㅔ': // p (perspective)
+  //             plaskEngine.cameraModule.toPerspective();
+  //             break;
+  //           case 'h':
+  //           case 'H':
+  //           case 'ㅗ': // h (camera reset)
+  //             plaskEngine.cameraModule.resetView();
+  //             break;
+  //           case 'a':
+  //           case 'A':
+  //           case 'ㅁ':
+  //             if (event.ctrlKey || event.metaKey) {
+  //               dispatch(selectingDataActions.selectAllSelectableObjects());
+  //             }
+  //             break;
+  //           default: {
+  //             break;
+  //           }
+  //         }
+  //       }
+  //     }
 
-      // Keyboard events that don't require a canvas focus
-      switch (event.key) {
-        case 'z':
-        case 'Z':
-        case 'ㅋ': {
-          if (event.ctrlKey || event.metaKey) {
-            if (event.shiftKey) {
-              plaskEngine.redo();
-            } else {
-              plaskEngine.undo();
-            }
-          }
-          event.preventDefault();
-          break;
-        }
-        default:
-          break;
-      }
-    };
+  //     // Keyboard events that don't require a canvas focus
+  //     switch (event.key) {
+  //       case 'z':
+  //       case 'Z':
+  //       case 'ㅋ': {
+  //         if (event.ctrlKey || event.metaKey) {
+  //           if (event.shiftKey) {
+  //             plaskEngine.redo();
+  //           } else {
+  //             plaskEngine.undo();
+  //           }
+  //         }
+  //         event.preventDefault();
+  //         break;
+  //       }
+  //       case 'p':
+  //       case 'P':
+  //       case 'ㅔ': // p (insPector)
+  //         if (event.ctrlKey || event.metaKey) {
+  //           plaskEngine.toggleInspector();
+  //           event.preventDefault();
+  //         }
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   };
 
-    const handleKeyUp = (event: KeyboardEvent) => {
-      // shortcuts don't work while user is typing on input elements
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
+  //   const handleKeyUp = (event: KeyboardEvent) => {
+  //     // shortcuts don't work while user is typing on input elements
+  //     const target = event.target as Element;
+  //     if (target.tagName.toLowerCase() === 'input') {
+  //       return;
+  //     }
 
-      switch (event.key) {
-        case 'v':
-        case 'V':
-        case 'ㅍ':
-        case 'r':
-        case 'R':
-        case 'ㄱ':
-        case 'k':
-        case 'K':
-        case 'ㅏ':
-        case 'f':
-        case 'F':
-        case 'ㄹ':
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = false;
-          }
-          break;
-        default: {
-          break;
-        }
-      }
-    };
+  //     switch (event.key) {
+  //       case 'v':
+  //       case 'V':
+  //       case 'ㅍ':
+  //       case 'r':
+  //       case 'R':
+  //       case 'ㄱ':
+  //       case 'k':
+  //       case 'K':
+  //       case 'ㅏ':
+  //       case 'f':
+  //       case 'F':
+  //       case 'ㄹ':
+  //         if (multiKeyController[event.key]) {
+  //           multiKeyController[event.key].pressed = false;
+  //         }
+  //         break;
+  //       default: {
+  //         break;
+  //       }
+  //     }
+  //   };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
+  //   document.addEventListener('keydown', handleKeyDown);
+  //   document.addEventListener('keyup', handleKeyUp);
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [_screenList, dispatch, multiKeyController]);
+  //   return () => {
+  //     document.removeEventListener('keydown', handleKeyDown);
+  //     document.removeEventListener('keyup', handleKeyUp);
+  //   };
+  // }, [_screenList, dispatch, multiKeyController]);
 
   /**
    * shortcuts related to editing keyframes
    */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
+
+  usePlaskShortcut(
+    ['k'],
+    () => {
+      if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
+        dispatch(keyframeActions.editKeyframesSocket.request());
       }
+    },
+    RPShortcutOptions,
+  );
+  // useEffect(() => {
+  //   const handleKeyDown = (event: KeyboardEvent) => {
+  //     const target = event.target as Element;
+  //     if (target.tagName.toLowerCase() === 'input') {
+  //       return;
+  //     }
 
-      switch (event.key) {
-        case 'v':
-        case 'V':
-        case 'ㅍ': // v (viewport)
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = true;
-          }
-          break;
-        case 'k':
-        case 'K':
-        case 'ㅏ': // insert
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = true;
-          }
-          if (multiKeyController[event.key].pressed) {
-            // k with v not pressed
-            if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
-              dispatch(animationDataActions.editKeyframes());
-            }
-          }
-          break;
-        default: {
-          break;
-        }
-      }
-    };
+  //     switch (event.key) {
+  //       case 'v':
+  //       case 'V':
+  //       case 'ㅍ': // v (viewport)
+  //         if (multiKeyController[event.key]) {
+  //           multiKeyController[event.key].pressed = true;
+  //         }
+  //         break;
+  //       case 'k':
+  //       case 'K':
+  //       case 'ㅏ': // insert
+  //         if (multiKeyController[event.key]) {
+  //           multiKeyController[event.key].pressed = true;
+  //         }
+  //         if (multiKeyController[event.key].pressed) {
+  //           // k with v not pressed
+  //           if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
+  //             dispatch(keyframeActions.editKeyframesSocket.request());
+  //           }
+  //         }
+  //         break;
+  //       default: {
+  //         break;
+  //       }
+  //     }
+  //   };
 
-    const handleKeyUp = (event: KeyboardEvent) => {
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
+  //   const handleKeyUp = (event: KeyboardEvent) => {
+  //     const target = event.target as Element;
+  //     if (target.tagName.toLowerCase() === 'input') {
+  //       return;
+  //     }
 
-      switch (event.key) {
-        case 'v':
-        case 'V':
-        case 'ㅍ':
-        case 'k':
-        case 'K':
-        case 'ㅏ':
-          if (multiKeyController[event.key]) {
-            multiKeyController[event.key].pressed = false;
-          }
-          break;
-        default: {
-          break;
-        }
-      }
-    };
+  //     switch (event.key) {
+  //       case 'v':
+  //       case 'V':
+  //       case 'ㅍ':
+  //       case 'k':
+  //       case 'K':
+  //       case 'ㅏ':
+  //         if (multiKeyController[event.key]) {
+  //           multiKeyController[event.key].pressed = false;
+  //         }
+  //         break;
+  //       default: {
+  //         break;
+  //       }
+  //     }
+  //   };
 
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
+  //   document.addEventListener('keydown', handleKeyDown);
+  //   document.addEventListener('keyup', handleKeyUp);
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [dispatch, multiKeyController]);
+  //   return () => {
+  //     document.removeEventListener('keydown', handleKeyDown);
+  //     document.removeEventListener('keyup', handleKeyUp);
+  //   };
+  // }, [dispatch, multiKeyController]);
 
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
@@ -396,32 +512,44 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       if (target.tagName.toLowerCase() === 'input') {
         return;
       }
-
-      switch (event.key) {
-        case 'w':
-        case 'W':
-        case 'ㅈ': {
+      const selectedTarget = _selectedTargets[0];
+      if (selectedTarget) {
+        if (selectedTarget?.type === 'ik_controller') {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-          break;
         }
-        case 'e':
-        case 'E':
-        case 'ㄷ': {
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
-          break;
-        }
-        case 'r':
-        case 'R':
-        case 'ㄱ': {
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
-          break;
-        }
-        case 'Escape': {
-          dispatch(selectingDataActions.resetSelectedTargets());
-          break;
-        }
-        default: {
-          break;
+
+        switch (event.key) {
+          case 'w':
+          case 'W':
+          case 'ㅈ': {
+            if (selectedTarget.transformable.position) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+            }
+            break;
+          }
+          case 'e':
+          case 'E':
+          case 'ㄷ': {
+            if (selectedTarget.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+            }
+            break;
+          }
+          case 'r':
+          case 'R':
+          case 'ㄱ': {
+            if (selectedTarget.transformable.scale) {
+              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+            }
+            break;
+          }
+          case 'Escape': {
+            dispatch(selectingDataActions.resetSelectedTargets());
+            break;
+          }
+          default: {
+            break;
+          }
         }
       }
     };
@@ -431,7 +559,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [dispatch]);
+  }, [dispatch, _selectedTargets]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -468,33 +596,34 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   /**
    * contextMenu
    */
-
+  // TODO Block
   const transformChildren = useMemo(
     () => [
       {
         label: 'Position',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION,
+        // disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.POSITION || !_selectedTargets[0]?.transformable.position,
+        disabled: !_selectedTargets[0]?.transformable.position,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
         },
       },
       {
         label: 'Rotation',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.ROTATION,
+        disabled: !_selectedTargets[0]?.transformable.rotation.euler || !_selectedTargets[0]?.transformable.rotation.quaternion,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
         },
       },
       {
         label: 'Scale',
-        disabled: plaskEngine.gizmoModule.currentGizmoMode === GizmoMode.SCALE,
+        disabled: !_selectedTargets[0]?.transformable.scale,
         onClick: () => {
           plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
         },
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plaskEngine.gizmoModule.currentGizmoMode],
+    [plaskEngine.gizmoModule.currentGizmoMode, _selectedTargets[0]],
   );
 
   const orientChildren = useMemo(
@@ -602,7 +731,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         disabled: _selectedTargets.length === 0 || _playState === 'play',
         onClick: () => {
           if (!(_selectedTargets.length === 0 || _playState === 'play')) {
-            dispatch(animationDataActions.editKeyframes());
+            dispatch(keyframeActions.editKeyframesSocket.request());
           }
         },
       },
@@ -647,7 +776,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Bone',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Bone');
+            dispatch(screenDataActions.setBoneVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isBoneVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Bone');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isBoneVisible : true,
           active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
@@ -655,7 +785,8 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Mesh',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Mesh');
+            dispatch(screenDataActions.setMeshVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isMeshVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Mesh');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isMeshVisible : true,
           active: !(targetVisibilityOption && !targetVisibilityOption.isBoneVisible),
@@ -663,16 +794,25 @@ const RenderingPanel: FunctionComponent<Props> = () => {
         {
           value: 'Gizmo',
           onSelect: () => {
-            plaskEngine.visibilityLayers.toggleVisibility('Gizmo');
+            dispatch(screenDataActions.setGizmoVisibility({ screenId: targetScreen.id, value: !targetVisibilityOption!.isGizmoVisible }));
+            plaskEngine.visibilityLayers.updateVisibility('Gizmo');
           },
           checked: targetVisibilityOption ? targetVisibilityOption.isGizmoVisible : true,
           active: true,
         },
+        // {
+        //   value: 'IK Controllers',
+        //   onSelect: () => {
+        //     plaskEngine.visibilityLayers.toggleVisibility('IK Controllers');
+        //   },
+        //   checked: targetVisibilityOption ? targetVisibilityOption.isIKControllerVisible : true,
+        //   active: !(targetVisibilityOption && !targetVisibilityOption.isMeshVisible),
+        // },
       ];
     } else {
       return [];
     }
-  }, [_visibilityOptions, _screenList]);
+  }, [dispatch, _visibilityOptions, _screenList]);
 
   return (
     <div className={cx('wrapper')}>

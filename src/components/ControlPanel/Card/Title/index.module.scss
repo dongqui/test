@@ -1,0 +1,86 @@
+@import 'styles/libraries/_typography';
+
+.wrapper {
+  padding: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  &.able {
+    & > .toggle {
+      color: #fff;
+    }
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  margin-top: 16px;
+  margin-right: 4px;
+  background-color: #202122;
+  border-radius: 6px;
+  border: 1px solid #4f4f4f;
+  padding: 4px;
+  z-index: 1;
+
+  & > ul {
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  list-style-type: none;
+  color: #fff;
+  font-size: 11px;
+  line-height: 13px;
+  height: 24px;
+  border-radius: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0f88ff;
+  }
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  color: #4f4f4f;
+  font: $iti-title;
+  line-height: 15px;
+}
+
+.arrowdown-icon {
+  margin-right: 13px;
+  cursor: pointer;
+
+  & > svg {
+    transform: rotate(-90deg);
+    transition: 0.2s ease-in-out;
+    color: #fff !important;
+  }
+
+  &.active {
+    & > svg {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+.toggle-switch {
+  &.inactive {
+    cursor: not-allowed !important;
+
+    & > div {
+      cursor: not-allowed !important;
+    }
+  }
+}

@@ -134,6 +134,8 @@ const Buttons = () => {
           editPlayDirection();
           requestAnimationFrameId.current = window.requestAnimationFrame(() => loopAnimation(_playDirection));
         }
+        // If we dont to that, spacebar presses the current selected button
+        event.preventDefault();
       }
     };
     document.addEventListener('keydown', keydownListener);

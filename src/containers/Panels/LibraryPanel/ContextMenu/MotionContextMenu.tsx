@@ -5,13 +5,11 @@ import { useSelector } from 'reducers';
 import { ExportFormat } from 'types/common';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
-import { useContext } from 'react';
-import plaskEngine from '3d/PlaskEngine';
 interface Props {
   nodeId: string;
   parentId: string;
   nodeName: string;
-  assetId: string;
+  assetId?: string;
   type: string;
 }
 
@@ -27,7 +25,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
         // TODO: MOTION 삭제 메세지
         message: 'Are you sure? All files in the directory will be deleted.',
         onConfirm: () => {
-          dispatch(lpNodeActions.deleteMotion({ nodeId, parentId, assetId }));
+          dispatch(lpNodeActions.deleteNodeSocket.request(nodeId));
         },
         onCancel: () => {},
       }),
@@ -40,7 +38,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   const handleDuplicate = () => {
     dispatch(
-      lpNodeActions.duplicateMotion({
+      lpNodeActions.duplicateMotionAsync.request({
         nodeId,
         parentId,
         nodeName,
@@ -60,14 +58,14 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
 
   const handleCancelVisualization = () => {
     if (assetId) {
-      dispatch(lpNodeActions.cancelVisulization({ assetId }));
+      dispatch(lpNodeActions.cancelVisulization(assetId));
     }
   };
 
   const handleExport = () => {
     if (!assetId) return;
 
-    const currentMotions = animationData.animationIngredients.filter((ingredient) => assetId === ingredient.assetId);
+    const currentMotions = lpNode.nodes.filter((node) => assetId === node.assetId && node.type === 'MOTION');
     dispatch(
       globalUIActions.openModal('ExportModal', {
         onConfirm: (data: { motion: string; format: ExportFormat }) => {
@@ -82,6 +80,7 @@ const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props)
           );
         },
         motions: currentMotions,
+        targetMotrionId: nodeId,
       }),
     );
   };

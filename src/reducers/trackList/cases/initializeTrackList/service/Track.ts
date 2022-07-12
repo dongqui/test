@@ -19,7 +19,7 @@ class TrackService implements Serivice {
   visualizeAnimation = (list: PlaskLayer[], animationIngredientId: string): Partial<TrackListState> => {
     return {
       animationIngredientId,
-      layerTrackList: this.layerTrackRepo.initializeTrackList(list) as LayerTrack[],
+      layerTrackList: this.layerTrackRepo.initializeTrackList(list, { trackUid: -1 }) as LayerTrack[],
       boneTrackList: [],
       propertyTrackList: [],
       selectedLayer: this.layerTrackRepo.initializeSelectedTracks(list) as string,
@@ -30,9 +30,10 @@ class TrackService implements Serivice {
   };
 
   changeSelectedTargets = (list: PlaskTrack[]): Partial<TrackListState> => {
+    const context = { trackUid: 0 };
     return {
-      boneTrackList: this.boneTrackRepo.initializeTrackList(list) as BoneTrack[],
-      propertyTrackList: this.propertyTrackRepo.initializeTrackList(list) as PropertyTrack[],
+      boneTrackList: this.boneTrackRepo.initializeTrackList(list, context) as BoneTrack[],
+      propertyTrackList: this.propertyTrackRepo.initializeTrackList(list, context) as PropertyTrack[],
       selectedBones: this.boneTrackRepo.initializeSelectedTracks() as number[],
       selectedProperties: this.propertyTrackRepo.initializeSelectedTracks() as number[],
       trackScrollTop: 0,

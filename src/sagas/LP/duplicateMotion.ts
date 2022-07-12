@@ -1,83 +1,48 @@
-import { find, filter } from 'lodash';
-import { select, put } from 'redux-saga/effects';
-
+import { find, omitBy } from 'lodash';
+import { select, put, call } from 'redux-saga/effects';
 import produce from 'immer';
 
 import { RootState } from 'reducers';
-import { duplicateAnimationIngredient } from 'utils/RP';
-import { checkPasteDuplicates } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as plaskProjectActions from 'actions/plaskProjectAction';
-import * as animationDataActions from 'actions/animationDataAction';
-import { AnimationIngredient } from 'types/common';
+import * as globalUIActions from 'actions/Common/globalUI';
+import { ServerAnimationLayerRequest, ServerAnimationRequest, ServerAnimationLayer, ServerAnimation, ServerAnimationResponse } from 'types/common';
+import { RequestNodeResponse } from 'types/LP';
+import * as api from 'api';
+import { convertServerResponseToNode } from 'utils/LP/converters';
 
-export default function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicateMotion>) {
-  const { animationData, lpNode }: RootState = yield select();
-  const { animationIngredients } = animationData;
-  const { parentId, nodeName, nodeId } = action.payload;
+export default function* handleDuplicateMotion(action: ReturnType<typeof lpNodeActions.duplicateMotionAsync.request>) {
+  const { lpNode }: RootState = yield select();
+  const { nodeId } = action.payload;
+  const motionNode = find(lpNode.nodes, { id: nodeId });
 
-  let tempMotion: LP.Node | undefined;
-  let tempAnimationIngredient: AnimationIngredient | undefined;
+  try {
+    yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
-  const parentModel = find(lpNode.nodes, { id: parentId });
-
-  const nextNodes = produce(lpNode.nodes, (draft) => {
-    const draftParentModel = find(draft, { id: parentId });
-
-    if (draftParentModel) {
-      const motions = filter(animationIngredients, { assetId: draftParentModel.assetId });
-
-      if (motions && draftParentModel.assetId) {
-        const selectedMotion = find(motions, { id: nodeId });
-
-        if (selectedMotion) {
-          const currentPathNodeNames = lpNode.nodes.filter((node) => node.parentId === parentId && node.name.includes(nodeName)).map((filteredNode) => filteredNode.name);
-
-          const check = checkPasteDuplicates(nodeName, currentPathNodeNames);
-
-          const _nodeName = check === '0' ? nodeName : `${nodeName} (${check})`;
-
-          const animationIngredient = duplicateAnimationIngredient(selectedMotion, nodeName);
-
-          const motion: LP.Node = {
-            id: animationIngredient.id,
-            assetId: draftParentModel.assetId,
-            parentId: draftParentModel.id,
-            name: _nodeName,
-            filePath: draftParentModel.filePath + `\\${draftParentModel.name}`,
-            childNodeIds: [],
-            extension: '',
-            type: 'Motion',
-          };
-
-          tempAnimationIngredient = animationIngredient;
-          tempMotion = motion;
-
-          draftParentModel.childNodeIds.push(motion.id);
-          draft.push(motion);
-        }
-      }
-    }
-  });
-
-  yield put(
-    lpNodeActions.changeNode({
-      nodes: nextNodes,
-    }),
-  );
-
-  if (parentModel && parentModel.assetId && tempMotion && tempAnimationIngredient) {
-    yield put(
-      plaskProjectActions.addAnimationIngredient({
-        assetId: parentModel.assetId,
-        animationIngredientId: tempMotion.id,
-      }),
+    const animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
+    // TODO: resolve ts
+    // @ts-ignore
+    const animationLayersWithoutUid: ServerAnimationLayerRequest[] = animation?.scenesLibraryModelAnimationLayers.map((layer) =>
+      omitBy(layer, (value, key) => key === 'uid' || key === 'scenesLibraryModelAnimationId' || key === 'id'),
     );
+    // @ts-ignore
+    const animationWithoutUid: ServerAnimationRequest = omitBy(animation, (value, key) => key === 'scenesLibraryModelAnimationLayers' || key === 'uid');
+    // @ts-ignore
+    const duplicatedMotionRes: RequestNodeResponse = yield call(api.postMotion, lpNode.sceneId, motionNode?.parentId, {
+      animation: animationWithoutUid,
+      animationLayer: animationLayersWithoutUid,
+    });
+    const duplicatedMotionNode = convertServerResponseToNode(duplicatedMotionRes);
 
-    yield put(
-      animationDataActions.addAnimationIngredient({
-        animationIngredient: tempAnimationIngredient,
-      }),
-    );
+    const nextNodes = produce(lpNode.nodes, (draft) => {
+      const modelNode = find(draft, { id: motionNode?.parentId });
+      modelNode?.childNodeIds.push(duplicatedMotionNode.id);
+
+      draft.push(duplicatedMotionNode);
+    });
+    yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
+  } catch (e) {
+    console.log(e);
+  } finally {
+    yield put(globalUIActions.closeModal('LoadingModal'));
   }
 }

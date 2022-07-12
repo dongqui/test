@@ -8,9 +8,10 @@ import LockOpen from './svg/LockOpen.svg';
 import Plus from './svg/Plus.svg';
 import CameraReset from './svg/CameraReset.svg';
 // import Model from './svg/Model.svg';
-// import Folder from './svg/Folder.svg';
+// import Directory from './svg/Directory.svg';
 // import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
+import More from './svg/More.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import ChevronRight from './svg/ChevronRight.svg';
 import ChevronUp from './svg/ChevronUp.svg';
@@ -35,7 +36,7 @@ import Reset from './svg/Reset.svg';
 import Search from './New_svg/Search.svg';
 import ListView from './New_svg/ListView.svg';
 import IconView from './New_svg/IconView.svg';
-import Folder from './New_svg/Folder.svg';
+import Directory from './New_svg/Directory.svg';
 import Model from './New_svg/Model.svg';
 import Motion from './New_svg/Motion.svg';
 import Mocap from './New_svg/Mocap.svg';
@@ -69,6 +70,7 @@ import CameraStop from '../../../public/images/CameraStop.svg';
 
 type Icon =
   | 'ModalClose'
+  | 'More'
   | 'Close'
   | 'Search'
   | 'EyeClose'
@@ -102,7 +104,7 @@ type Icon =
   | 'Refresh'
   | 'Alert'
   | 'Reset'
-  | 'Folder'
+  | 'Directory'
   | 'Model'
   | 'Motion'
   | 'Mocap'
@@ -141,6 +143,7 @@ const images: Images = {
   Close,
   Search,
   EyeClose,
+  More,
   EyeOpen,
   EyeOpenWhite,
   LockClose,
@@ -171,7 +174,7 @@ const images: Images = {
   Refresh,
   Alert,
   Reset,
-  Folder,
+  Directory,
   Model,
   Motion,
   Mocap,

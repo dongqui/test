@@ -2,7 +2,7 @@ import { PlayState } from 'types/RP';
 
 class TimeIndex {
   private static startTimeIndex = 0;
-  private static endTimeIndex = 100;
+  private static endTimeIndex = 500;
   private static currentTimeIndex = 0;
   private static playState: PlayState = 'stop';
 

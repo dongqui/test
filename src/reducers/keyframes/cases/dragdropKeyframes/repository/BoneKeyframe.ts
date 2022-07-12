@@ -5,6 +5,7 @@ import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 
 import { Repository } from './index';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 class BoneKeyframeRepository implements Repository {
   private readonly state: KeyframesState;
@@ -14,11 +15,10 @@ class BoneKeyframeRepository implements Repository {
   }
 
   // 삭제 된 property keyframe인지 확인
-  private isExistedPropertyKeyframe = (updatedPropertyTrackList: TimeEditorTrack[], propertyNumber: number, time: number) => {
-    const trackIndex = findElementIndex(updatedPropertyTrackList, propertyNumber, 'trackNumber');
-    const keyframeIndex = findElementIndex(updatedPropertyTrackList[trackIndex].keyframes, time, 'time');
-    if (keyframeIndex === -1) return;
-    const isExisted = !updatedPropertyTrackList[trackIndex].keyframes[keyframeIndex].isDeleted;
+  private isExistedPropertyKeyframe = (track: TimeEditorTrack, time: number) => {
+    const keyframeIndex = findElementIndex(track.keyframes, time, 'time');
+    if (keyframeIndex === -1) return false;
+    const isExisted = !track.keyframes[keyframeIndex].isDeleted;
     return isExisted;
   };
 
@@ -37,12 +37,17 @@ class BoneKeyframeRepository implements Repository {
   // 하위 property keyframe이 모두 삭제 될 경우, bone keyframe 삭제
   private deleteBoneKeyframes = (draft: Draft<TimeEditorTrack>[], updatedPropertyTrackList: TimeEditorTrack[], selectedTimes: Map<number, number[]>) => {
     for (const [boneNumber, times] of selectedTimes.entries()) {
+      const selectedTracks = findChildrenTracks(boneNumber, updatedPropertyTrackList) as TimeEditorTrack[];
       times.forEach((time) => {
-        const position = this.isExistedPropertyKeyframe(updatedPropertyTrackList, boneNumber + 1, time);
-        const rotation = this.isExistedPropertyKeyframe(updatedPropertyTrackList, boneNumber + 2, time);
-        const scale = this.isExistedPropertyKeyframe(updatedPropertyTrackList, boneNumber + 3, time);
-        const isAllDeleted = !position && !rotation && !scale;
-        if (isAllDeleted) {
+        let boneKeyframeExists = false;
+        for (const track of selectedTracks) {
+          if (this.isExistedPropertyKeyframe(track, time)) {
+            boneKeyframeExists = true;
+            break;
+          }
+        }
+
+        if (!boneKeyframeExists) {
           const boneIndex = findElementIndex(draft, boneNumber, 'trackNumber');
           const keyframeIndex = findElementIndex(draft[boneIndex].keyframes, time, 'time');
           draft[boneIndex].keyframes[keyframeIndex].isDeleted = true;

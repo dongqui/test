@@ -12,12 +12,13 @@ const cx = classnames.bind(styles);
 
 interface Props {
   onClose: () => void;
-  motions: AnimationIngredient[];
+  motions: LP.Node[];
   onConfirm: (data: any) => void;
   onCancel?: () => void;
+  targetMotrionId?: string;
 }
 
-const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, onCancel }) => {
+const ExportModal: FunctionComponent<Props> = ({ onClose, motions, targetMotrionId, onConfirm, onCancel }) => {
   const baseMotionList =
     motions.length > 0
       ? [
@@ -46,16 +47,14 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
 
   const _assetList = useSelector((state) => state.plaskProject.assetList);
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
+  const _nodes = useSelector((state) => state.lpNode.nodes);
 
-  const initialMotion = filter(motions, { current: true });
-  const currentAsset = find(_assetList, { id: initialMotion[0].assetId });
-
-  const initialMotionValue = initialMotion.map((motion) => ({
-    value: motion.id,
-    label: motion.name,
-  }))[0] || {
-    value: 'none',
-    label: 'None',
+  const assetId = motions[0].assetId;
+  const currentAsset = find(_assetList, { id: assetId });
+  const targetMotion = find(_nodes, { id: targetMotrionId });
+  const initialMotionValue = {
+    value: targetMotion ? targetMotion.id : motions[0].id,
+    label: targetMotion ? targetMotion.name : motions[0].name,
   };
 
   const [values, setValues] = useState({
@@ -68,6 +67,7 @@ const ExportModal: FunctionComponent<Props> = ({ onClose, motions, onConfirm, on
 
   const handleSubmit = (data: any) => {
     onConfirm(data);
+    onClose();
   };
   const retargetMap = currentAsset && find(_retargetMaps, { assetId: currentAsset.id });
   const isErrorRetargetMap = retargetMap && retargetMap.values.some((value) => !value.targetTransformNodeId);

@@ -3,9 +3,10 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+
 import { partition } from 'lodash';
 
-import { IMPORT_ERROR_INVALID_FORMAT, WARNING_02 } from 'constants/Text';
+import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import Box from 'components/Layout/Box';
@@ -26,21 +27,6 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [searchText, setSearchText] = useState('');
   const [searchResultNode, setSearchResultNode] = useState(_lpNode);
-
-  const onNodeChange = useCallback(
-    (files: File[] | string[], showLoading: boolean = true) => {
-      // TODO: clean up
-      for (const file of files) {
-        dispatch(
-          lpNodeActions.fileUpload({
-            file,
-            showLoading,
-          }),
-        );
-      }
-    },
-    [dispatch],
-  );
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -67,7 +53,7 @@ const LibraryPanel: FunctionComponent = () => {
           }),
         );
       } else {
-        dispatch(lpNodeActions._fileUpload(files));
+        dispatch(lpNodeActions.fileUpload(files));
       }
     },
     [dispatch],
@@ -90,25 +76,12 @@ const LibraryPanel: FunctionComponent = () => {
 
   const [isDefaultModelLoaded, setIsDefaultModelLoaded] = useState(false);
 
-  useEffect(() => {
-    if (isSceneReady) {
-      const defaultModels = ['Mannequin.glb', 'Knight.glb', 'Zombie.glb', 'Vanguard.glb'];
-
-      const isAlreadyExist = _lpNode.some((node) => defaultModels.includes(node.name));
-
-      if (!isAlreadyExist && !isDefaultModelLoaded) {
-        onNodeChange(defaultModels, false);
-        setIsDefaultModelLoaded(true);
-      }
-    }
-  }, [_lpNode, isDefaultModelLoaded, isSceneReady, onNodeChange]);
-
   const handleSearch = useCallback(
     (text: string) => {
       setSearchText(text);
 
       if (text.length > 0) {
-        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text) || node.filePath.toLowerCase().includes(text));
+        const searchResult = _lpNode.filter((node) => node.name.toLowerCase().includes(text));
 
         setSearchResultNode(searchResult);
       }

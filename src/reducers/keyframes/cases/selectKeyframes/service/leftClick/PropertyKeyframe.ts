@@ -26,10 +26,10 @@ class PropertyKeyframeLeftClick implements LeftClick {
   };
 
   private selectPropertyKeyframes = ({ state, payload }: Parmas) => {
-    const { time, trackNumber, trackType } = payload;
+    const { time, trackNumber, trackType, parentTrackNumber } = payload;
     const { trackId, keyframes } = this.findEditorTrack(state.propertyTrackList, trackNumber);
     const value = this.findKeyframeValue(keyframes, time);
-    const selectedKeyframes: SelectedKeyframe = { time, trackNumber, trackType, trackId, value };
+    const selectedKeyframes: SelectedKeyframe = { time, trackNumber, trackType, trackId, value, parentTrackNumber };
     return this.clusterKeyframes.initializeClusterKeyframes([selectedKeyframes]);
   };
 

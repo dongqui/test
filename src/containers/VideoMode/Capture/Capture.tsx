@@ -3,7 +3,6 @@
 import { FunctionComponent, Fragment, useState, useCallback, useRef, useEffect, ChangeEvent } from 'react';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
-import produce from 'immer';
 import { UpperBar } from 'containers/UpperBar';
 import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -12,12 +11,13 @@ import { VMRuler } from '../VMRuler';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { useMediaStream } from 'hooks/common';
 import Image from 'next/image';
-import axios, { Canceler } from 'axios';
+import { Canceler } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
 import { BaseModal } from 'components/Modal';
-import { PlaskMocapData } from 'types/common';
+import { addMocap } from 'api/LP';
+import { convertServerResponseToNode } from 'utils/LP/converters';
 
 import classNames from 'classnames/bind';
 import styles from './Capture.module.scss';
@@ -32,6 +32,7 @@ interface Props {
 export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
+  const sceneId = useSelector((state) => state.lpNode.sceneId);
   const lpNode = useSelector((state) => state.lpNode.nodes);
   const { mode, videoURL } = useSelector((state) => state.modeSelection);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -185,102 +186,28 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       setIsTimeout(true);
       return;
     }
-
-    setReadyExtract(false);
-    setOnExtract(true);
-    const formData = new FormData();
-    const file = await convertBlobToFile({ url, type, fileName }).then((response) => {
-      formData.append('file', response);
-      formData.append('type', type);
-      formData.append('id', id);
-      formData.append('start', start.toString());
-      formData.append('end', end.toString());
-      formData.append('startTime', startTime.toString());
-      formData.append('endTime', endTime.toString());
+    try {
+      setReadyExtract(false);
+      setOnExtract(true);
+      const formData = new FormData();
+      const file = await convertBlobToFile({ url, type, fileName });
+      formData.append('file', file);
+      formData.append('name', fileName);
+      formData.append('startTime', startTime);
+      formData.append('endTime', endTime);
       formData.append('duration', duration);
-    });
 
-    const result = await axios({
-      method: 'POST',
-      url: 'https://shootapi.myplask.com:6500/mocap-upload-api-common',
-      data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-      cancelToken: new axios.CancelToken((cancel) => {
-        cancelTokenSource.current = cancel;
-      }),
-    })
-      .then((response) => {
-        const mocapCount = response.data.result.length;
-
-        let nextNodes: LP.Node[];
-
-        if (mocapCount === 1) {
-          const newMotionNode: LP.Node = {
-            id: uuidv4(),
-            parentId: '__root__',
-            name: fileName,
-            filePath: '\\root',
-            childNodeIds: [],
-            extension: '',
-            type: 'Mocap',
-            mocapData: response.data.result[0].trackData,
-          };
-
-          nextNodes = produce(lpNode, (draft) => {
-            draft.push(newMotionNode);
-          });
-        } else {
-          const newFolderNode: LP.Node = {
-            id: uuidv4(),
-            parentId: '__root__',
-            filePath: '\\root',
-            name: fileName,
-            extension: '',
-            type: 'Folder',
-            childNodeIds: [],
-          };
-
-          const newMotionNodes: LP.Node[] = [];
-          response.data.result.forEach((item: { motionNumber: number; trackData: PlaskMocapData }) => {
-            const newMotionNode: LP.Node = {
-              id: uuidv4(),
-              parentId: newFolderNode.id,
-              name: `${fileName}_${item.motionNumber}`,
-              filePath: '\\root' + `\\${fileName}`,
-              childNodeIds: [],
-              extension: '',
-              type: 'Mocap',
-              mocapData: item.trackData,
-            };
-            newMotionNodes.push(newMotionNode);
-            newFolderNode.childNodeIds.push(newMotionNode.id);
-          });
-
-          nextNodes = produce(lpNode, (draft) => {
-            draft.push(newFolderNode);
-
-            newMotionNodes.forEach((newMotionNode) => {
-              draft.push(newMotionNode);
-            });
-          });
-        }
-
-        setReadyExtract(false);
-        dispatch(lpNodeActions.changeNode({ nodes: nextNodes }));
-        dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
-        dispatch(modeSelectActions.changeMode({ videoURL: '' }));
-        setOnExtract(false);
-        return response;
-      })
-      .catch((err) => {
-        // setReadyExtract(false);
-        setOnExtract(false);
-        setIsExtractFailed(true);
-        // throw err;
-      });
-    // return {
-    //   result,
-    // };
+      const response = await addMocap(sceneId, formData, cancelTokenSource);
+      const mocapNode = convertServerResponseToNode(response);
+      setReadyExtract(false);
+      setOnExtract(false);
+      dispatch(lpNodeActions.addNodes([mocapNode]));
+      dispatch(modeSelectActions.changeMode({ videoURL: '' }));
+      dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+    } catch (e) {
+      setOnExtract(false);
+      setIsExtractFailed(true);
+    }
   }, []);
 
   const handleDeleteRecord = useCallback(

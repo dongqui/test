@@ -239,7 +239,7 @@ const TimelineEditor = () => {
         } else if ((event.metaKey || event.ctrlKey) && isPressedCKey) {
           dispatch(keyframesActions.copyKeyframes());
         } else if ((event.metaKey || event.ctrlKey) && isPressedVKey) {
-          dispatch(keyframesActions.enterPasteKey());
+          dispatch(keyframesActions.pasteKeyframesSocket.request());
         }
       };
 

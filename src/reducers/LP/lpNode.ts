@@ -1,8 +1,9 @@
-import { LPNodeAction } from 'actions/LP/lpNodeAction';
+import { ActionType, getType } from 'typesafe-actions';
+
+import * as LPNodeActions from 'actions/LP/lpNodeAction';
 import { getDescendantNodes } from 'utils/LP/FileSystem';
 interface State {
   nodes: LP.Node[];
-  visualizedfileUrl: string | File;
   currentPath: string;
   currentPathId: string;
   clipboard: LP.Node[];
@@ -11,11 +12,11 @@ interface State {
   selectedAssetId: string | null;
   draggedNode: LP.Node | null;
   editingNodeId: null | string;
+  sceneId: string;
 }
 
 const defaultState: State = {
   nodes: [],
-  visualizedfileUrl: '',
   currentPath: '\\root',
   currentPathId: '\\root',
   clipboard: [],
@@ -24,29 +25,19 @@ const defaultState: State = {
   selectedAssetId: null,
   draggedNode: null,
   editingNodeId: null,
+  sceneId: '',
 };
 
-export const lpNode = (state = defaultState, action: LPNodeAction) => {
+export const lpNode = (state = defaultState, action: ActionType<typeof LPNodeActions>) => {
   switch (action.type) {
+    case getType(LPNodeActions.setSceneId): {
+      return Object.assign({}, state, {
+        sceneId: action.payload,
+      });
+    }
     case 'node/CHANGE_NODE': {
       return Object.assign({}, state, {
         nodes: action.payload.nodes,
-      });
-    }
-    case 'node/VISUALIZE': {
-      return Object.assign({}, state, {
-        visualizedfileUrl: action.payload,
-      });
-    }
-    case 'node/CHANGE_CURRENT_PATH': {
-      return Object.assign({}, state, {
-        currentPath: action.payload.currentPath,
-        cdrrentPathId: action.payload.id,
-      });
-    }
-    case 'node/CHANGE_CLIPBOARD': {
-      return Object.assign({}, state, {
-        clipboard: action.payload.data,
       });
     }
     case 'node/SELECT_NODE': {
@@ -66,12 +57,27 @@ export const lpNode = (state = defaultState, action: LPNodeAction) => {
         editingNodeId: action.payload.nodeId,
       });
     }
+
+    case getType(LPNodeActions.addModelAsync.success):
     case 'node/ADD_NODES': {
       return Object.assign({}, state, {
         nodes: [...state.nodes, ...action.payload.nodes],
       });
     }
 
+    case getType(LPNodeActions.addDirectoryAsync.success): {
+      return Object.assign({}, state, {
+        nodes: [...state.nodes, action.payload],
+      });
+    }
+    case getType(LPNodeActions.initNodes):
+    case getType(LPNodeActions.moveNodeSocket.update):
+    case getType(LPNodeActions.editNodeNameSocket.update):
+    case getType(LPNodeActions.deleteNodeSocket.update): {
+      return Object.assign({}, state, {
+        nodes: action.payload,
+      });
+    }
     default: {
       return state;
     }
