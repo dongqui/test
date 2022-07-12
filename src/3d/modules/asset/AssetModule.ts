@@ -248,7 +248,7 @@ export class AssetModule extends Module {
   }
 
   public get selectableObjects() {
-    return this.plaskEngine.state.selectingData.present.selectableObjects;
+    return this.plaskEngine.state.selectingData.selectableObjects;
   }
 
   public get visibilityOptions() {

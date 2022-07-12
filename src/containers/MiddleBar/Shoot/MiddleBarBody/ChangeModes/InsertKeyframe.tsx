@@ -14,7 +14,7 @@ const cx = classNames.bind(styles);
 const InsertKeyframe = () => {
   const dispatch = useDispatch();
 
-  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
+  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _playState = useSelector((state) => state.animatingControls.playState);
 
   const handleClickButton = useCallback(() => {

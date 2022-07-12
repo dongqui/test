@@ -30,8 +30,8 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
-  const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
 
   const [isMappingSectionSpread, setIsMappingSectionSpread] = useState<boolean>(true);
   const [currentSourceBoneName, setCurrentSourceBoneName] = useState<RetargetSourceBoneType>();

@@ -1,0 +1,38 @@
+@mixin common-section {
+  display: flex;
+  height: auto;
+  border-bottom: 1px solid #4f4f4f;
+}
+
+.container {
+  display: none;
+  padding: 12px;
+
+  &.active {
+    position: relative;
+    display: block;
+  }
+
+  & > .inner-container {
+    position: relative;
+
+    & > .text {
+      font-size: 12px;
+      color: #4f4f4f;
+      margin-bottom: 4px;
+
+      &.active {
+        color: #fff;
+      }
+    }
+
+    & > .button {
+      margin-right: 8px;
+    }
+  }
+}
+
+.history-section {
+  @include common-section;
+  flex-direction: column;
+}

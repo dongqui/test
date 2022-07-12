@@ -69,6 +69,9 @@ export const keyframes = (state = initialState, action: KeyframesAction) => {
       Observer.clearAllKeyframes();
       return pasteKeyframes(state, action.payload);
     }
+    case 'keyframes/OVERRIDE': {
+      return Object.assign<{}, KeyframesState, KeyframesState>({}, state, action.payload);
+    }
     default: {
       return state;
     }

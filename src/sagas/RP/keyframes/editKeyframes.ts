@@ -19,6 +19,10 @@ function getPropertyTrackList(state: RootState) {
   return state.trackList.propertyTrackList;
 }
 
+function getKeyframeTrackList(state: RootState) {
+  return state.keyframes.propertyTrackList;
+}
+
 function getAnimationIngredients(state: RootState) {
   return state.animationData.animationIngredients;
 }
@@ -147,34 +151,35 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
         return;
       }
 
+      const putData = {
+        layerId: _selectedLayer,
+        tracks: tracks?.map((track) => {
+          const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
+          return {
+            id: track.id,
+            targetId: track.targetId,
+            filterBeta: track.filterBeta,
+            filterMinCutoff: track.filterMinCutoff,
+            name: track.name,
+            property: track.property,
+            transformKeysMap: [
+              {
+                frameIndex: transformKey?.frame,
+                property: track.property,
+                transformKey:
+                  track.property === 'rotationQuaternion'
+                    ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                    : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+              },
+            ],
+          };
+        }),
+      };
+
       yield put(
         keyframesActions.editKeyframesSocket.send({
           type: 'put-frames',
-          data: {
-            layerId: _selectedLayer,
-            tracks: tracks?.map((track) => {
-              const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
-
-              return {
-                id: track.id,
-                targetId: track.targetId,
-                filterBeta: track.filterBeta,
-                filterMinCutoff: track.filterMinCutoff,
-                name: track.name,
-                property: track.property,
-                transformKeysMap: [
-                  {
-                    frameIndex: transformKey?.frame,
-                    property: track.property,
-                    transformKey:
-                      track.property === 'rotationQuaternion'
-                        ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
-                        : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
-                  },
-                ],
-              };
-            }),
-          },
+          data: putData,
         }),
       );
 
@@ -191,6 +196,7 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
 
 function* handleEditKeyframesReceive(action: ReturnType<typeof keyframesActions.editKeyframesSocket.receive>) {
   // It's optimistic UI for now... but have to fix
+  console.log(action);
 }
 
 function* watchEditKeyframes() {

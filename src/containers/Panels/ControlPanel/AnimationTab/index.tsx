@@ -8,6 +8,7 @@ import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import HistorySection from './HistorySection';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -15,8 +16,8 @@ interface Props {
 }
 const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
-  const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
-  const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);
+  const _selectableObjects = useSelector((state) => state.selectingData.selectableObjects);
+  const _selectedTargets = useSelector((state) => state.selectingData.selectedTargets);
   const _retargetMaps = useSelector((state) => state.animationData.retargetMaps);
   const _selectedLayer = useSelector((state) => state.trackList.selectedLayer); // === selectedLayerId (inappropriate naming)
   const _animationIngredients = useSelector((state) => state.animationData.animationIngredients);
@@ -25,6 +26,7 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
   return (
     <Fragment>
+      <HistorySection isAllActive={isAllActive} />
       <SelectionTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
 
       {_selectedTargets.length > 0 && <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />}
