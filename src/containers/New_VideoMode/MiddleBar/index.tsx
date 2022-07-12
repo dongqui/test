@@ -75,9 +75,9 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, i
     }
 
     return isRecording ? (
-      <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} />
+      <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} onFocus={blurFocused} />
     ) : (
-      <IconButton disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} />
+      <IconButton disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} onFocus={blurFocused} />
     );
   }, [blurFocused, handlePause, handlePlay, handleRecord, handleStop, isCountdown, isRecording, isVideoLoaded, onRecordStop, switchStandbyMode, videoStatus]);
 
