@@ -599,13 +599,6 @@ const VideoMode = ({ browserType }: Props) => {
     }
   }, [handleKeyDown, modals]);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      const handler = () => {};
-      // videoRef.current.addEventListener("playing". )
-    }
-  }, []);
-
   return (
     <div className={cx('wrapper')}>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
@@ -658,6 +651,7 @@ const VideoMode = ({ browserType }: Props) => {
             isCountdown={RECORD_COUNTDOWN}
             isRecording={ON_RECORDING}
             onRecordStop={stopRecording}
+            startValue={startValue}
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>

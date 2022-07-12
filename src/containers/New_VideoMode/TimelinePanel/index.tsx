@@ -61,13 +61,21 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
   const handleChangeCurrentTime = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       if (timeline && videoRef.current) {
-        videoRef.current.currentTime = Number(event.target.value);
-        const value = Number((Number(event.target.value) * 100) / duration);
+        let targetValue = Number(event.target.value);
+        if (targetValue > endValue) {
+          targetValue = endValue;
+        }
+        if (targetValue < startValue) {
+          targetValue = startValue;
+        }
+
+        videoRef.current.currentTime = targetValue;
+        const value = Number((targetValue * 100) / duration);
         setNumber(value);
-        setOriginNumber(Number(event.target.value));
+        setOriginNumber(targetValue);
       }
     },
-    [duration, timeline, videoRef],
+    [duration, endValue, startValue, timeline, videoRef],
   );
 
   const handleChangeStartValue = useCallback(
@@ -119,12 +127,16 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
 
   const handleChange = useCallback(() => {
     if (videoRef.current) {
+      if (videoRef.current.currentTime > endValue || videoRef.current.currentTime < startValue) {
+        videoRef.current.currentTime = startValue;
+      }
+
       const value = Number((Number(videoRef.current.currentTime) * 100) / duration);
       setNumber(value);
 
       requestRef.current = requestAnimationFrame(handleChange);
     }
-  }, [duration, videoRef]);
+  }, [duration, endValue, startValue, videoRef]);
 
   // const changeIndicatorPosition = useCallback(() => {
   //   if (rulerRef.current) {
@@ -157,7 +169,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
   }, [handleChange, videoRef, videoStatus]);
 
   useEffect(() => {
-    if (videoRef.current && videoStatus === 'pause') {
+    if (videoRef.current && videoStatus !== 'play') {
       const value = Number((videoRef.current.currentTime * 100) / duration);
       setNumber(value);
       setOriginNumber(videoRef.current.currentTime);

@@ -16,9 +16,10 @@ interface Props {
   isRecording: boolean;
   isCountdown: boolean;
   switchStandbyMode: () => void;
+  startValue: number;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, isCountdown, isRecording, onRecordStop, switchStandbyMode }: Props) => {
+const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, isCountdown, isRecording, onRecordStop, switchStandbyMode, startValue }: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -36,10 +37,11 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, i
   const handleStop = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-      onChange('stop');
+      videoRef.current.currentTime = startValue;
+      onChange('pause');
+      setTimeout(() => onChange('stop'), 50);
     }
-  }, [onChange, videoRef]);
+  }, [onChange, startValue, videoRef]);
 
   const handleRecord = useCallback(() => {
     if (videoRef.current) {
