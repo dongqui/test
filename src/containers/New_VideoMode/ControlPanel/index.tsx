@@ -129,6 +129,7 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
         .then((response) => {
           console.log(response);
           const { data } = response;
+          setIsOpenLoadingModal(false);
           return response;
         })
         .catch((error) => {
