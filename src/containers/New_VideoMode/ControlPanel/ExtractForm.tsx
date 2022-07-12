@@ -16,21 +16,23 @@ interface Props {
 const ExtractForm = ({ fieldProps }: Props) => {
   const selectOption = [
     {
-      key: 'opt1',
+      key: 'single',
       label: 'single',
       value: false,
     },
     {
-      key: 'opt2',
+      key: 'multi',
       label: 'multi',
       value: true,
     },
   ];
+
   const defaultSelectOptionIndex = 0;
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
+
   useEffect(() => {
     if (isMulti) {
-      fieldProps.control.unregister('Foot lock');
+      fieldProps.control.unregister('footLock');
     }
   }, [fieldProps.control, isMulti]);
 
@@ -47,7 +49,7 @@ const ExtractForm = ({ fieldProps }: Props) => {
           control={fieldProps.control}
           render={(props) => <Switch {...props} />}
           defaultValue={selectOption[defaultSelectOptionIndex].key}
-          name="switch"
+          name="model"
         />
       </div>
       {isMulti && (
@@ -58,12 +60,12 @@ const ExtractForm = ({ fieldProps }: Props) => {
       {!isMulti && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
-          <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="Foot lock" render={(props) => <Toggle {...props} />} defaultValue={false} />
+          <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="footLock" render={(props) => <Toggle {...props} />} defaultValue={false} />
         </div>
       )}
       <div className={cx('section-item')}>
         <Typography>T-pose</Typography>
-        <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="T-pose" render={(props) => <Toggle {...props} />} defaultValue={false} />
+        <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="tPose" render={(props) => <Toggle {...props} />} defaultValue={false} />
       </div>
       <div className={cx('section-item', 'section-text')}>
         <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>

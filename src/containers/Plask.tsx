@@ -64,7 +64,7 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
       </Box>
       <AnimationMode className={classes} />
       {/* {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={props.browserType} />} */}
-      {mode !== 'animationMode' && <VideoMode browserType={browserType} />}
+      {mode !== 'animationMode' && <VideoMode browserType={browserType} sceneId={sceneId} />}
     </Fragment>
   );
 };

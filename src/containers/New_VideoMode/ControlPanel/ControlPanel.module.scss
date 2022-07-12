@@ -1,7 +1,4 @@
-@import "styles/libraries/colors";
-
-.wrapper {
-}
+@import 'styles/libraries/colors';
 
 .section {
   padding: 0 16px;
@@ -9,14 +6,12 @@
   .section-title {
     display: flex;
     align-items: center;
-
     height: 40px;
 
     .tag {
       display: flex;
       align-items: center;
       justify-content: center;
-
       font-weight: 400;
       font-size: var(--font-size-3);
       line-height: 13px;
@@ -26,5 +21,78 @@
       color: $primary;
       border-radius: 6px;
     }
+  }
+}
+
+.modal-inner {
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.title {
+  color: $content-active;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.message {
+  color: $content-medium;
+  font-size: 14px;
+  font-weight: 300;
+  margin-bottom: 16px;
+}
+
+.button-close {
+  position: relative;
+  color: $content-active;
+  width: 24px;
+  height: 24px;
+
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+
+  .label-name {
+    color: $content-active;
+    font-size: 12px;
+    font-weight: 300;
+    margin-bottom: 8px;
+  }
+
+  .input-name {
+    border: 1px solid $primary;
+    border-radius: 6px;
+    padding: 4.5px 8px;
+    font-size: 12px;
+
+    &::placeholder {
+      color: $content-inactive;
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: right;
+
+  .button-cancel {
+    margin-right: 8px;
   }
 }

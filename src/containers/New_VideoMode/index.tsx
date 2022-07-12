@@ -22,9 +22,10 @@ const cx = classNames.bind(styles);
 
 interface Props {
   browserType: string;
+  sceneId: string;
 }
 
-const VideoMode = ({ browserType }: Props) => {
+const VideoMode = ({ browserType, sceneId }: Props) => {
   const dispatch = useDispatch();
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 
@@ -635,7 +636,7 @@ const VideoMode = ({ browserType }: Props) => {
               </div>
             </div>
           ) : (
-            <ControlPanel startValue={startValue} endValue={endValue} />
+            <ControlPanel startValue={startValue} endValue={endValue} duration={duration} videoRef={videoRef} sceneId={sceneId} browserType={browserType} />
           )}
         </Box>
       </Box>
