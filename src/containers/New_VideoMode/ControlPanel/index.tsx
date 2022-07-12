@@ -1,3 +1,5 @@
+import { useDispatch } from 'react-redux';
+import * as globalUIActions from 'actions/Common/globalUI';
 import { Typography } from 'components/Typography';
 import { BaseForm } from 'components/Form';
 import ExtractForm from './ExtractForm';
@@ -13,9 +15,19 @@ interface Props {
 }
 
 const ControlPanel = ({ startValue, endValue }: Props) => {
-  // TODO: handler와 api 연결
+  const dispatch = useDispatch();
+
   const handleSubmit = async (data: any) => {
-    console.log(data, startValue, endValue);
+    if (endValue - startValue >= 300) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          title: 'Import Failed',
+          message: 'Videos longer than 5 minutes are difficult to apply. Cut it within 5 minutes and try again.',
+        }),
+      );
+    } else {
+      console.log(data, startValue, endValue);
+    }
   };
 
   return (

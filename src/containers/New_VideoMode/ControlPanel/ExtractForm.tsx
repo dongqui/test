@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { FocusEvent, Fragment, useCallback, useEffect, useState } from 'react';
 import { Typography } from 'components/Typography';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
@@ -34,6 +34,8 @@ const ExtractForm = ({ fieldProps }: Props) => {
     }
   }, [fieldProps.control, isMulti]);
 
+  const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
+
   return (
     <Fragment>
       <div className={cx('section-item')}>
@@ -67,7 +69,7 @@ const ExtractForm = ({ fieldProps }: Props) => {
         <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
       </div>
       <div className={cx('section-item')}>
-        <FilledButton fullSize type="submit">
+        <FilledButton fullSize type="submit" onFocus={blurFocused}>
           <Typography type="button">Extract</Typography>
         </FilledButton>
       </div>

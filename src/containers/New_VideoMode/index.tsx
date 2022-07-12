@@ -51,6 +51,7 @@ const VideoMode = ({ browserType }: Props) => {
 
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
   const dataRef = useRef<Blob[]>([]);
+  const modals = useSelector((state) => state.globalUI.modals);
 
   const boxProps = useMemo(
     () => ({
@@ -89,6 +90,7 @@ const VideoMode = ({ browserType }: Props) => {
   const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5;
   const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && standbyCounter !== 5;
   const ON_RECORDING = standbyCounter === -1;
+  const ON_VIDEO_MOUNTED = isVideoLoaded && currentVideoURL;
 
   const headerInspector = async (file: File) => {
     const load = async () => {
@@ -198,6 +200,57 @@ const VideoMode = ({ browserType }: Props) => {
       });
   };
 
+  const createThumbnails = useCallback(() => {
+    let duration = 20;
+    if (videoRef.current) {
+      duration = videoRef.current.duration;
+    }
+
+    setTimeline(
+      new Timeline(timelineRef, {
+        totalDuration: 20,
+        thumbnailWidth: 128,
+        thumbnailHeight: 96,
+        loadingTextureURI: '/images/Loading.png',
+        getThumbnailCallback: (time: number, done: (input: ThinTexture | HTMLCanvasElement | HTMLVideoElement | string) => void) => {
+          const hiddenVideo = document.createElement('video');
+          document.body.append(hiddenVideo);
+
+          hiddenVideo.setAttribute('playsinline', '');
+          hiddenVideo.style.display = 'none';
+          hiddenVideo.style.width = '1px';
+          hiddenVideo.style.height = '1px';
+          hiddenVideo.muted = true;
+          hiddenVideo.loop = false;
+          hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') <= 0;
+          hiddenVideo.src = currentVideoURL;
+
+          hiddenVideo.onloadeddata = () => {
+            hiddenVideo.onseeked = () => {
+              done(hiddenVideo);
+
+              if (hiddenVideo.parentNode) {
+                hiddenVideo.parentNode.removeChild(hiddenVideo);
+              }
+            };
+
+            if (videoRef.current) {
+              hiddenVideo.currentTime = (duration / 20) * time;
+            } else {
+              if (time === 0) {
+                done(hiddenVideo);
+              } else {
+                hiddenVideo.currentTime = time;
+              }
+            }
+          };
+
+          setTimeout(() => hiddenVideo.load(), time * 10);
+        },
+      }),
+    );
+  }, [currentVideoURL, timelineRef]);
+
   const handleLoadMetadata = useCallback(() => {
     if (videoRef.current && videoRef.current.src && currentVideoURL && isVideoLoaded) {
       videoRef.current.pause();
@@ -206,6 +259,8 @@ const VideoMode = ({ browserType }: Props) => {
       if (videoRef.current.duration !== Infinity) {
         setDuration(videoRef.current.duration);
         setEndValue(videoRef.current.duration);
+
+        createThumbnails();
       } else {
         videoRef.current.currentTime = Number.MAX_SAFE_INTEGER;
         setTimeout(() => {
@@ -213,55 +268,13 @@ const VideoMode = ({ browserType }: Props) => {
             videoRef.current.currentTime = 0;
             setDuration(videoRef.current.duration);
             setEndValue(videoRef.current.duration);
+
+            createThumbnails();
           }
         }, 500);
       }
-
-      setTimeline(
-        new Timeline(timelineRef, {
-          totalDuration: 20,
-          thumbnailWidth: 128,
-          thumbnailHeight: 96,
-          loadingTextureURI: '/images/Loading.png',
-          getThumbnailCallback: (time: number, done: (input: ThinTexture | HTMLCanvasElement | HTMLVideoElement | string) => void) => {
-            const hiddenVideo = document.createElement('video');
-            document.body.append(hiddenVideo);
-
-            hiddenVideo.setAttribute('playsinline', '');
-            hiddenVideo.style.display = 'none';
-            hiddenVideo.style.width = '1px';
-            hiddenVideo.style.height = '1px';
-            hiddenVideo.muted = true;
-            hiddenVideo.loop = false;
-            hiddenVideo.autoplay = navigator.userAgent.indexOf('Edge') <= 0;
-            hiddenVideo.src = currentVideoURL;
-
-            hiddenVideo.onloadeddata = () => {
-              hiddenVideo.onseeked = () => {
-                done(hiddenVideo);
-
-                if (hiddenVideo.parentNode) {
-                  hiddenVideo.parentNode.removeChild(hiddenVideo);
-                }
-              };
-
-              if (videoRef.current) {
-                hiddenVideo.currentTime = (videoRef.current.duration / 20) * time;
-              } else {
-                if (time === 0) {
-                  done(hiddenVideo);
-                } else {
-                  hiddenVideo.currentTime = time;
-                }
-              }
-            };
-
-            setTimeout(() => hiddenVideo.load(), time * 10);
-          },
-        }),
-      );
     }
-  }, [currentVideoURL, isVideoLoaded, timelineRef]);
+  }, [createThumbnails, currentVideoURL, isVideoLoaded]);
 
   useEffect(() => {
     if (timeline) {
@@ -417,6 +430,7 @@ const VideoMode = ({ browserType }: Props) => {
     if (currentVideoURL && videoRef.current) {
       const tempCurrentVideoURL = currentVideoURL;
       setVideoURL('');
+      setDuration(0);
       videoRef.current.src = '';
       URL.revokeObjectURL(tempCurrentVideoURL);
     }
@@ -562,6 +576,29 @@ const VideoMode = ({ browserType }: Props) => {
     setEndValue(value);
   }, []);
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (ON_VIDEO_MOUNTED && e.key === ' ') {
+        if (videoStatus === 'stop' || videoStatus === 'pause') {
+          handleChangeVideoStatus('play');
+          videoRef.current?.play();
+        } else {
+          handleChangeVideoStatus('pause');
+          videoRef.current?.pause();
+        }
+      }
+    },
+    [ON_VIDEO_MOUNTED, handleChangeVideoStatus, videoStatus],
+  );
+
+  useEffect(() => {
+    if (modals.length === 0) {
+      window.addEventListener('keypress', handleKeyDown);
+
+      return () => window.removeEventListener('keypress', handleKeyDown);
+    }
+  }, [handleKeyDown, modals]);
+
   return (
     <div className={cx('wrapper')}>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
@@ -587,7 +624,13 @@ const VideoMode = ({ browserType }: Props) => {
                 </div>
                 <div className={cx('section-item')}>
                   <Typography type="body">Camera</Typography>
-                  <Dropdown disabled={!cameraPermission || RECORD_COUNTDOWN} alignContext="right" className={cx('dropdown')} list={dropdownList} onSelect={selectHandler} />
+                  <Dropdown
+                    disabled={!cameraPermission || RECORD_COUNTDOWN || ON_RECORDING}
+                    alignContext="right"
+                    className={cx('dropdown')}
+                    list={dropdownList}
+                    onSelect={selectHandler}
+                  />
                 </div>
               </div>
             </div>
@@ -608,6 +651,7 @@ const VideoMode = ({ browserType }: Props) => {
             isCountdown={RECORD_COUNTDOWN}
             isRecording={ON_RECORDING}
             onRecordStop={stopRecording}
+            startValue={startValue}
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>
