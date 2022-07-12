@@ -89,12 +89,12 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
           right: sliderStyles.right,
           width: sliderStyles.width - (value - sliderStyles.left),
         });
-      }
 
-      if (videoRef.current && Number(event.target.value) > videoRef.current.currentTime) {
-        videoRef.current.currentTime = Number(event.target.value);
-        setNumber(value);
-        setOriginNumber(Number(event.target.value));
+        if (videoRef.current && Number(event.target.value) > videoRef.current.currentTime) {
+          videoRef.current.currentTime = Number(event.target.value);
+          setNumber(value);
+          setOriginNumber(Number(event.target.value));
+        }
       }
     },
     [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
@@ -111,12 +111,12 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
           right: value,
           width: sliderStyles.width - (sliderStyles.right - value),
         });
-      }
 
-      if (videoRef.current && Number(event.target.value) < videoRef.current.currentTime) {
-        videoRef.current.currentTime = Number(event.target.value);
-        setNumber(value);
-        setOriginNumber(Number(event.target.value));
+        if (videoRef.current && Number(event.target.value) < videoRef.current.currentTime) {
+          videoRef.current.currentTime = Number(event.target.value);
+          setNumber(value);
+          setOriginNumber(Number(event.target.value));
+        }
       }
     },
     [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
@@ -138,15 +138,6 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
     }
   }, [duration, endValue, startValue, videoRef]);
 
-  // const changeIndicatorPosition = useCallback(() => {
-  //   if (rulerRef.current) {
-  //     const value = Number(((Number(rulerRef.current.value) - 0) * 100) / (duration - 0));
-  //
-  //     setNumber(value);
-  //     requestRef.current = requestAnimationFrame(changeIndicatorPosition);
-  //   }
-  // }, [duration]);
-
   useEffect(() => {
     requestRef.current = requestAnimationFrame(handleChange);
     // if (isPlaying) {
@@ -157,18 +148,13 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
       cancelAnimationFrame(requestRef.current);
     }
 
-    if (videoRef.current) {
-      if (videoRef.current.currentTime === 0 && videoStatus !== 'play') {
-        setNumber(0);
-      }
-    }
-
     return () => {
       cancelAnimationFrame(requestRef.current);
     };
   }, [handleChange, videoRef, videoStatus]);
 
   useEffect(() => {
+    // on pause, stop recalculate scrubber position
     if (videoRef.current && videoStatus !== 'play') {
       const value = Number((videoRef.current.currentTime * 100) / duration);
       setNumber(value);
