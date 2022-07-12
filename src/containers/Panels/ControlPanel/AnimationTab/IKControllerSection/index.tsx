@@ -24,6 +24,7 @@ import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { removeIK } from 'sagas/RP/ik/removeIK';
+import * as plaskHistoryAction from 'actions/plaskHistoryAction';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -180,13 +181,12 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
-          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+          // dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
           const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
           if (animationIngredient) {
             dispatch(editAnimationIngredient({ animationIngredient }));
           }
-
           // Set FK position to newly updated values
           plaskEngine.ikModule.setIKtoFK();
 
@@ -199,7 +199,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
         } catch (e) {
           console.log(e);
         } finally {
-          dispatch(globalUIActions.closeModal('LoadingModal'));
+          // dispatch(globalUIActions.closeModal('LoadingModal'));
         }
       },
     },
@@ -209,13 +209,11 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
-          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
-
           const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+
           for (const animationIngredient of animationIngredients) {
             dispatch(editAnimationIngredient({ animationIngredient }));
           }
-
           // Set FK position to newly updated values
           plaskEngine.ikModule.setFKtoIK();
 
@@ -225,10 +223,12 @@ const IKControllerSection: FunctionComponent<Props> = ({
           // Refresh tracks by forcing the selection update.
           // Could be better using ADD_KEYFRAME
           dispatch(changeSelectedTargets());
+
+          dispatch(plaskHistoryAction.updateServer());
         } catch (e) {
           console.log(e);
         } finally {
-          dispatch(globalUIActions.closeModal('LoadingModal'));
+          // dispatch(globalUIActions.closeModal('LoadingModal'));
         }
       },
     },

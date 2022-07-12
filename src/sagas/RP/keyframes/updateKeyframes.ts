@@ -87,12 +87,12 @@ function* handleKeyframesUpdate() {
   const currentPropertyTrack: TimeEditorTrack[] = currentKeyframes.propertyTrackList;
   const previousPropertyTrack: TimeEditorTrack[] = previousKeyframes.propertyTrackList;
 
-  console.log('_history');
   console.log(_history);
-  console.log('currentPropertyTrack');
-  console.log(currentPropertyTrack);
-  console.log('previousPropertyTrack');
+  console.log(_propertyTrackList);
+  console.log(previousKeyframes);
+  console.log(currentKeyframes);
   console.log(previousPropertyTrack);
+  console.log(currentPropertyTrack);
   const historyActions: {
     redo: {
       trackId: string;
@@ -169,8 +169,6 @@ function* handleKeyframesUpdate() {
   }
   console.log('CHANGED HISTORY');
   console.log(historyActions);
-
-  // Find Added
 
   // Update Ingredient
   if (_selectedLayer && _propertyTrackList.length > 0 && _animationIngredients.length > 0) {
@@ -263,6 +261,7 @@ function* handleKeyframesUpdate() {
       console.log(deletedTracks);
       console.log('Added');
       console.log(addedTracks);
+
       const updatedLayer = newAnimationIngredient.layers.find((layer) => layer.id === _selectedLayer);
       const tracks = updatedLayer?.tracks.filter((track) => _targetTrackIds.includes(track.id));
       if (!tracks) {

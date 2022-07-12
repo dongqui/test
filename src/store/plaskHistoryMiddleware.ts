@@ -6,6 +6,7 @@ import * as plaskHistoryAction from 'actions/plaskHistoryAction';
 import { dispatch, pointer } from 'd3';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as keyframeActions from 'actions/keyframes';
+import { cloneDeep } from 'lodash';
 
 const filterType = (type: string) => {
   const primary = type.split('/')[0];
@@ -121,8 +122,6 @@ export const plaskHistory: Middleware = (store) => (next) => (action) => {
 
     default:
       next(action);
-      console.log(type);
-      console.log(history);
       const commandName = filterType(type);
 
       if (commandName) {
