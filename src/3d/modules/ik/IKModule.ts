@@ -775,10 +775,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { bone: 'rightFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'leftFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'rightHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
-      { bone: 'leftHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
+      { bone: 'rightFoot', controllerSize: 0.3 },
+      { bone: 'leftFoot', controllerSize: 0.3 },
+      { bone: 'rightHand', controllerSize: 0.4 },
+      { bone: 'leftHand', controllerSize: 0.4 },
     ] as BoneIKParams[];
 
     // Creating IK controls
@@ -808,10 +808,6 @@ export class IKModule extends Module {
         return;
       }
 
-      const { upVector, bendAxis } = this._guessLimbUpBend(transformNode, elem.bone);
-      elem.upVector = upVector;
-      elem.bendAxis = bendAxis;
-
       const ikBone = this._ghost.skeleton!.bones[skeleton.bones.indexOf(bone)];
       const ikController = new IKController(
         {
@@ -823,8 +819,6 @@ export class IKModule extends Module {
           fkTransformNode: transformNode,
           assetId,
           limb: elem.bone,
-          upVector: elem.upVector,
-          bendAxis: elem.bendAxis,
           controllerSize: elem.controllerSize,
         },
         scene,
