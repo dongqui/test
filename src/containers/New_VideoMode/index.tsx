@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FocusEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
@@ -8,6 +8,9 @@ import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { Typography } from 'components/Typography';
 import { Dropdown } from 'components/Dropdown';
+import { changeMode } from 'actions/modeSelection';
+import { GhostButton } from 'components/Button';
+import { IconWrapper, SvgPath } from 'components/Icon';
 import { WARNING_02 } from 'constants/Text';
 import RenderingPanel from './RenderingPanel';
 import MiddleBar from './MiddleBar';
@@ -16,7 +19,6 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { changeMode } from 'actions/modeSelection';
 
 const cx = classNames.bind(styles);
 
@@ -601,11 +603,22 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
   }, [handleKeyDown, modals]);
 
+  const blurFocused = (e: FocusEvent<HTMLButtonElement>) => e.target.blur();
+
   return (
     <div className={cx('wrapper')}>
       <Box id="US" className={cx('upper-section')} {...boxProps.US}>
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
-          {/* LP */}
+          <div className={cx('lp-button-wrapper')}>
+            {ON_VIDEO_MOUNTED && (
+              <GhostButton onFocus={blurFocused} onClick={switchStandbyMode} className={cx('lp-button')}>
+                <div className={cx('lp-button-inner')}>
+                  <IconWrapper icon={SvgPath.ChevronLeft} className={cx('button-icon')} />
+                  <Typography type="title">back to standby</Typography>
+                </div>
+              </GhostButton>
+            )}
+          </div>
         </Box>
         <Box id="RP" className={cx('rendering-panel')} {...boxProps.RP}>
           <RenderingPanel
@@ -618,7 +631,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
-          {!currentVideoURL ? (
+          {!ON_VIDEO_MOUNTED ? (
             <div className={cx('wrapper')}>
               <div className={cx('section')}>
                 <div className={cx('section-title')}>
