@@ -2,6 +2,8 @@ import { RefObject, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { useDispatch } from 'react-redux';
 import axios, { Canceler } from 'axios';
 import * as globalUIActions from 'actions/Common/globalUI';
+import * as modeSelectActions from 'actions/modeSelection';
+import * as lpActions from 'actions/LP/lpNodeAction';
 import requestApi from 'api/requestApi';
 import { FilledButton, OutlineButton } from 'components/Button';
 import { Typography } from 'components/Typography';
@@ -18,11 +20,13 @@ const cx = classNames.bind(styles);
 
 interface Props {
   sceneId: string;
+  token: string;
   browserType: string;
   videoRef: RefObject<HTMLVideoElement>;
   duration: number;
   startValue: number;
   endValue: number;
+  onUnmount: () => void;
 }
 
 interface ExtractFormData {
@@ -31,7 +35,7 @@ interface ExtractFormData {
   tPose: boolean;
 }
 
-const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, endValue }: Props) => {
+const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount }: Props) => {
   const dispatch = useDispatch();
 
   let cancelTokenSource = useRef<Canceler>();
@@ -53,8 +57,6 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
         }),
       );
     } else {
-      console.log(data, startValue, endValue);
-
       setValueFormData({
         ...data,
       });
@@ -96,9 +98,6 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
   }, []);
 
   const handleSubmitModal = async () => {
-    console.log(valueName);
-    console.log(valueFormData);
-
     if (videoRef.current) {
       const formData = new FormData();
 
@@ -115,7 +114,7 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
       setIsOpenExtractModal(false);
       setIsOpenLoadingModal(true);
 
-      const response = await requestApi({
+      await requestApi({
         method: 'POST',
         url: `/library/${sceneId}/mocap`,
         data: formData,
@@ -126,14 +125,35 @@ const ControlPanel = ({ sceneId, browserType, videoRef, duration, startValue, en
           cancelTokenSource.current = cancel;
         }),
       })
-        .then((response) => {
-          console.log(response);
-          const { data } = response;
-          setIsOpenLoadingModal(false);
-          return response;
+        .then(async (response) => {
+          // const { data } = response;
+
+          const { loaded, data, error } = await requestApi({
+            method: 'GET',
+            url: `/library/get/${sceneId}/library`,
+          })
+            .then((response) => {
+              setIsOpenLoadingModal(false);
+              onUnmount();
+              dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: '' }));
+              dispatch(lpActions.initNodes(response.data));
+
+              return {
+                loaded: true,
+                error: null,
+                data: response.data,
+              };
+            })
+            .catch((error) => {
+              return {
+                loaded: false,
+                data: [],
+                error: error,
+              };
+            });
         })
         .catch((error) => {
-          // console.log(error);
+          //
           // TODO 예외처리
           throw error;
         });
