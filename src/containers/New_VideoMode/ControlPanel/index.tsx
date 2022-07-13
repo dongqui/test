@@ -201,7 +201,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
               <div className={cx('title')}>Extracting mocap</div>
             </div>
             <div className={cx('modal-content')}>
-              <div className={cx('message')}>It can take up to 7 seconds</div>
+              <div className={cx('message')}>It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}</div>
             </div>
             <div className={cx('modal-footer')}>
               <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
