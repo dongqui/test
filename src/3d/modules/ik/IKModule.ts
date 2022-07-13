@@ -152,7 +152,7 @@ export class IKModule extends Module {
 
   private _areIKControllersAlreadyAdded() {
     // We assume that we always add 4 IK at the same time, so testing for left foot is just as good as testing for 4 IKs
-    const entities = this.plaskEngine.state.selectingData.allEntitiesMap;
+    const entities = this.plaskEngine.state.selectingData.present.allEntitiesMap;
     for (const key in entities) {
       const entity = entities[key];
       if (entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).type === 'ik_controller') {

@@ -1,7 +1,6 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { AbstractMesh, Animation, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
-export * from './plaskHistory';
 
 export enum GizmoMode {
   POSITION,
@@ -64,6 +63,7 @@ export interface PlaskAsset {
   animationIngredientIds: string[];
   retargetMapId: string;
 }
+
 export interface ServerAnimation {
   uid: string; // uid -> id
   scenesLibraryUid: string; // don't know what is
