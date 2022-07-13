@@ -1,7 +1,6 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 
-import { SelectingData } from 'types/common';
 export type SelectingDataAction =
   | ReturnType<typeof updateSelectableObjects>
   | ReturnType<typeof addSelectableObjects>
@@ -16,9 +15,7 @@ export type SelectingDataAction =
   | ReturnType<typeof selectAllSelectableObjects>
   | ReturnType<typeof resetSelectedTargets>
   | ReturnType<typeof addEntity>
-  | ReturnType<typeof editEntity>
-  | ReturnType<typeof removeEntity>
-  | ReturnType<typeof override>;
+  | ReturnType<typeof removeEntity>;
 
 const UPDATE_SELECTABLE_OBJECTS = 'selectingDataAction/UPDATE_SELECTABLE_OBJECTS' as const;
 const ADD_SELECTABLE_OBJECTS = 'selectingDataAction/ADD_SELECTABLE_OBJECTS' as const;
@@ -36,10 +33,7 @@ const CTRL_KEY_MULTI_SELECT = 'selectingDataAction/CTRL_KEY_MULTI_SELECT' as con
 const SELECT_ALL_SELECTABLE_OBJECTS = 'selectingDataAction/SELECT_ALL_SELECTABLE_OBJECTS' as const;
 const RESET_SELECTED_TARGETS = 'selectingDataAction/RESET_SELECTED_TARGETS' as const;
 const ADD_ENTITIES = 'selectingDataAction/ADD_ENTITIES' as const;
-const EDIT_ENTITIES = 'selectingDataAction/EDIT_ENTITIES' as const;
 const REMOVE_ENTITIES = 'selectingDataAction/REMOVE_ENTITIES' as const;
-
-const OVERRIDE = 'selectingDataAction/OVERRIDE' as const;
 
 interface SelectableObjects {
   objects: Array<PlaskTransformNode>;
@@ -210,20 +204,10 @@ export const selectAllSelectableObjects = () => ({
 });
 
 /**
- * Add entities.
+ * Updates entities. TODO : should not be undoable
  */
 export const addEntity = (params: UpdateSelectedTargets) => ({
   type: ADD_ENTITIES,
-  payload: {
-    ...params,
-  },
-});
-
-/**
- * Updates entities. TODO : should not be undoable
- */
-export const editEntity = (params: UpdateSelectedTargets) => ({
-  type: EDIT_ENTITIES,
   payload: {
     ...params,
   },
@@ -244,11 +228,4 @@ export const removeEntity = (params: UpdateSelectedTargets) => ({
  */
 export const resetSelectedTargets = () => ({
   type: RESET_SELECTED_TARGETS,
-});
-
-export const override = (params: SelectingData) => ({
-  type: OVERRIDE,
-  payload: {
-    ...params,
-  },
 });

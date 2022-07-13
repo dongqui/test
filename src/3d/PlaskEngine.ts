@@ -32,7 +32,7 @@ import { Module } from './modules/Module';
 import SelectorModuleSingleton, { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
 import { EntityMap, EntityStore, PlaskSpec } from './entities/EntityStore';
-import { editEntity } from 'actions/selectingDataAction';
+import { addEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
 import { AnimationModule } from './modules/animation/AnimationModule';
@@ -41,6 +41,8 @@ import { paste } from 'actions/keyframes';
 type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
+
+const FEATURE_HISTORY = false;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -279,7 +281,7 @@ export class PlaskEngine {
       'Entities updated ',
       entities.map((entity) => entity.clone()),
     );
-    this.dispatch(editEntity({ targets: entities.map((entity) => entity.clone()) }));
+    this.dispatch(addEntity({ targets: entities.map((entity) => entity.clone()) }));
   }
 
   /**
@@ -288,6 +290,27 @@ export class PlaskEngine {
    */
   public get currentScreenId() {
     return this.state.plaskProject.screenList[0].id;
+  }
+
+  // TODO : MOVE TO REACT PART
+  /**
+   * Undoes the last action
+   * @todo move to react world
+   */
+  public undo() {
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.undo());
+    }
+  }
+
+  /**
+   * Redoes the last action
+   * @todo move to react world
+   */
+  public redo() {
+    if (FEATURE_HISTORY) {
+      this.dispatch(ActionCreators.redo());
+    }
   }
 
   /**
@@ -306,6 +329,13 @@ export class PlaskEngine {
     this._entityStore.unserializeAll(JSON.parse(json) as PlaskSpec);
     // TODO : update entity action
     // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
+  }
+
+  /**
+   * Clears the undo/redo history
+   */
+  public clearHistory() {
+    this.dispatch(ActionCreators.clearHistory());
   }
 
   /**

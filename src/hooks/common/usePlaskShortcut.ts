@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-
 // auto build trigger
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
@@ -9,8 +8,9 @@ export interface ShortcutOption {
   ignoreBlacklist?: boolean;
   repeatOnHold?: boolean;
   activeOnlyInOrder?: boolean;
+  // TODO only works when target is focused
   focus?: {
-    target: Element | HTMLCanvasElement | null;
+    target: Element | HTMLCanvasElement;
   };
 }
 
@@ -37,9 +37,6 @@ export default function usePlaskShortcut(shortcutKeys: Array<string>, callback: 
       }
 
       if (option.focus?.target) {
-        if (option.focus?.target != document.activeElement) {
-          return;
-        }
       }
 
       if (keydownEvent.repeat && !option.repeatOnHold) return;
@@ -73,7 +70,6 @@ export default function usePlaskShortcut(shortcutKeys: Array<string>, callback: 
         }
       }
       pressedKeys.current = [...new Set(_pressedKeys)];
-
       return;
     },
     [shortcutKeysId],

@@ -1,5 +1,6 @@
 import { Middleware } from 'redux';
 import requestApi from 'api/requestApi';
+
 // import axios from 'axios';
 // axios.defaults.withCredentials = true;
 
@@ -8,7 +9,7 @@ import requestApi from 'api/requestApi';
  * 로그, 액션 취소, 다른 액션 트리거 등
  * 또한 비동기적인 요청을 받기 위해 사용한다.
  */
-const middleware: Middleware = (store) => {
+const middleware: Middleware = () => {
   return (next) => (action) => {
     const { promise, type, api, ...rest } = action;
 
@@ -21,7 +22,6 @@ const middleware: Middleware = (store) => {
           next({ ...rest, payload: result, type: `${type}_SUCCESS` });
         })
         .catch((error: unknown) => {
-          console.log(error);
           next({ ...rest, payload: error, type: `${type}_FAILURE` });
         });
     } else {
