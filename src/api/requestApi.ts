@@ -10,6 +10,7 @@ interface Payload {
   headers?: any;
   params?: any;
   data?: any;
+  cancelToken?: any;
   [key: string]: any;
 }
 
@@ -24,7 +25,7 @@ export const tokenManager = {
 };
 
 const requestApi = async (payload: Payload, hasToken = true) => {
-  const { base, url, headers = {}, ...rest } = payload;
+  const { base, url, headers = {}, cancelToken, ...rest } = payload;
 
   const isServer = typeof window === 'undefined';
 
@@ -59,6 +60,7 @@ const requestApi = async (payload: Payload, hasToken = true) => {
     headers,
     baseURL: base || process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: url,
+    cancelToken,
     ...rest,
     // timeout: 15000,
   };
