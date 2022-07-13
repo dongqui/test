@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ff55ea0e-2806-4788-a2b9-c9c5df5b3d71" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/MiddleBar/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/MiddleBar/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/RenderingPanel/index.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/RenderingPanel/index.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/index.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/index.module.scss" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -96,6 +97,7 @@
       <workItem from="1656466637057" duration="14000" />
       <workItem from="1656466668691" duration="11599000" />
       <workItem from="1656488351238" duration="3138000" />
+      <workItem from="1657618949950" duration="2620000" />
     </task>
     <servers />
   </component>

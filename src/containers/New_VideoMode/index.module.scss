@@ -21,6 +21,33 @@
   z-index: 1;
 }
 
+.lp-button-wrapper {
+  display: flex;
+  height: 40px;
+  align-items: center;
+}
+
+.lp-button {
+  margin-left: -8px;
+}
+
+.lp-button-inner {
+  display: flex;
+  flex-direction: row;
+}
+
+.button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  padding-top: 1px;
+
+  svg {
+    width: 5px;
+    height: 10px;
+  }
+}
+
 .rendering-panel {
   position: absolute;
   top: 0;
