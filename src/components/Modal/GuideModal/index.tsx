@@ -14,7 +14,7 @@ interface Props {
   title: string;
   message: string;
   confirmText?: string;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   onClose: () => void;
   postion: {
     left?: string;
@@ -28,7 +28,7 @@ interface Props {
 const GuideModal = ({ onClose, onConfirm, postion, title, message, confirmText = 'OK', tooltipArrowPlacement }: Props) => {
   const handleCloseModal = () => {
     onClose();
-    onConfirm();
+    onConfirm && onConfirm();
   };
 
   return (
