@@ -232,6 +232,7 @@ export class IKController {
     // );
     this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     this.poleAngle = poleAngle;
+    this._getUpVectorFromFK(this.limb);
     this.controller.update();
   }
 
