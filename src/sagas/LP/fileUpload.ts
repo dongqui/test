@@ -55,6 +55,7 @@ export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fil
                 right: '12px',
                 top: `${targetCoordinates?.rightBottom?.y + 8}px`,
               },
+              onConfirm: () => localStorage.setItem('onboarding_2', 'onboarding_2'),
               tooltipArrowPlacement: 'top-end',
             },
             '',
