@@ -5,16 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ff55ea0e-2806-4788-a2b9-c9c5df5b3d71" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/OnBoarding/index.module.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/OnBoarding/index.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/next-env.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next-env.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/index.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/index.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Button/IconButton/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Button/IconButton/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Dropdown/Dropdown.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Dropdown/Dropdown.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/MiddleBar/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/MiddleBar/index.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/containers/New_VideoMode/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/New_VideoMode/index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+        <option value="SCSS File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -46,6 +56,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;SCSS&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -97,7 +108,7 @@
       <workItem from="1656466637057" duration="14000" />
       <workItem from="1656466668691" duration="11599000" />
       <workItem from="1656488351238" duration="3138000" />
-      <workItem from="1657618949950" duration="2620000" />
+      <workItem from="1657618949950" duration="10716000" />
     </task>
     <servers />
   </component>

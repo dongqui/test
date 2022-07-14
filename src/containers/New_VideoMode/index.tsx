@@ -1,4 +1,4 @@
-import { FocusEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createRef, FocusEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
@@ -19,6 +19,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import OnBoarding from 'containers/New_VideoMode/OnBoarding';
 
 const cx = classNames.bind(styles);
 
@@ -56,6 +57,11 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
   const dataRef = useRef<Blob[]>([]);
   const modals = useSelector((state) => state.globalUI.modals);
+  const recordButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    console.log(recordButtonRef.current);
+  }, [recordButtonRef]);
 
   const boxProps = useMemo(
     () => ({
@@ -676,6 +682,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             isRecording={ON_RECORDING}
             onRecordStop={stopRecording}
             startValue={startValue}
+            recordButtonRef={recordButtonRef}
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>
@@ -694,6 +701,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           />
         </Box>
       </Box>
+      <OnBoarding recordButtonRef={recordButtonRef} />
     </div>
   );
 };
