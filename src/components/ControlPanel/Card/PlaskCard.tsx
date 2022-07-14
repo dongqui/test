@@ -25,7 +25,10 @@ interface Props {
     canToggle?: boolean;
   };
 
-  dropdownOptions?: Array<{ text: string; handleSelect: () => void }>;
+  dropdownOptions?: {
+    active: boolean;
+    items: Array<{ text: string; handleSelect: () => void }>;
+  };
 }
 
 const PlaskCard: FunctionComponent<Props> = ({ children, className, type = 'normal', title, isPowerOn = true, activeStatus, toggleOptions, dropdownOptions }) => {

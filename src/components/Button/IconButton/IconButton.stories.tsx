@@ -59,7 +59,7 @@ const NewIconTestTemplate: ComponentStory<typeof _IconButton> = (args) => {
       setSvg(svgText);
     }
   };
-  const { getRootProps } = useDropzone({ onDrop: handleDrop });
+  const { getRootProps } = useDropzone({ onDrop: handleDrop, noClick: true });
 
   const SVGComponent = useMemo(() => {
     return function _SVG() {

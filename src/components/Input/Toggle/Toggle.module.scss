@@ -1,0 +1,43 @@
+@import "styles/libraries/colors";
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  height: 12px;
+  padding: 2px;
+
+  background-color: $contentbg-base;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color ease 0.25s;
+
+ &.checked {
+   background-color: $primary;
+ }
+
+  &.disabled {
+    background-color: $contentbg-base;
+    cursor: default;
+  }
+}
+
+.handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: $content-active;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left ease 0.25s, background-color ease 0.25s;
+
+  &.checked {
+    left: 14px;
+  }
+
+  &.disabled {
+    background-color: $content-inactive;
+  }
+}

@@ -29,3 +29,4 @@ export const MOCAP_QUATERNION_MIN_CUTOFF = 3.0;
 
 // use constant below, when user want to assign a source bone to none of target bone
 export const RETARGET_TARGET_BONE_NONE = 'none';
+export const VM_ON_BOARDING_KEY = 'vm_onboarding';

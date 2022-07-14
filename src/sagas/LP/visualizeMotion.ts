@@ -119,13 +119,14 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
 
     if (animationIngredient) {
-      const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+      // const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+      const contactData = [];
       if (contactData.length) {
-        console.log('Auto add IK because foot locking is required.');
-        yield call(addIK, addIKAction(asset.id, animationIngredient));
-        // Update after adding IK tracks
-        animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
-        animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+        // console.log('Auto add IK because foot locking is required.');
+        // yield call(addIK, addIKAction(asset.id, animationIngredient));
+        // // Update after adding IK tracks
+        // animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
+        // animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));

@@ -1,13 +1,29 @@
 @import 'styles/libraries/_mixins';
-
 @import 'styles/libraries/_functions';
+@import 'styles/libraries/colors';
 
 .menu-item {
   @include reset-list-style();
-  padding: 6px 8px;
+  padding: 6px 24px 6px 28px;
   cursor: pointer;
   border-radius: 6px;
   margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 300;
+  color: $content-active;
+
+  &.selected {
+    &::before {
+      position: absolute;
+      left: 12px;
+      content: url("../Icon/svg/Check-thin.svg");
+      stroke: $content-active;
+      margin: 2px 0 0 2px;
+      height: 12px;
+      width: 12px;
+
+    }
+  }
 
   &:last-child {
     margin: 0;
