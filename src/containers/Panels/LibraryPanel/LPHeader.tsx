@@ -23,8 +23,8 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
     dispatch(
       globalUIActions.openModal('DropZoneModal', {
         title: 'Import',
-        subTitle: 'Import your 3D assets or source videos',
-        extensionMesaage: '.fbx, .glb, .mp4, .mov, .avi, .webm supported',
+        subTitle: 'Import your 3D assets',
+        extensionMesaage: '.fbx, .glb supported',
         cancelButtonText: 'Cancel',
         onDrop: onLoad,
       }),

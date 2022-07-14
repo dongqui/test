@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface BaseProps {
   type: ButtonColor | 'outline' | 'ghost';
   icon: FunctionComponent;
-  ref?: RefObject<HTMLButtonElement>;
+  r?: (ref: HTMLButtonElement) => void;
 }
 
 export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
@@ -19,7 +19,8 @@ const defaultProps: Partial<BaseProps> = {
   type: 'primary',
 };
 
-const IconButton: FunctionComponent<Props> = ({ ref, type, icon, disabled, onClick, className, children, ...rest }) => {
+const IconButton: FunctionComponent<Props> = ({ r, type, icon, disabled, onClick, className, children, ...rest }) => {
+  // console.log('IconButton', ref);
   const classes = cx('icon-button', className, type, {
     disabled,
   });
@@ -34,7 +35,7 @@ const IconButton: FunctionComponent<Props> = ({ ref, type, icon, disabled, onCli
   );
 
   return (
-    <button ref={ref} className={classes} onClick={handleClick} disabled={disabled} {...rest}>
+    <button ref={(ref) => r && ref && r(ref)} className={classes} onClick={handleClick} disabled={disabled} {...rest}>
       <IconWrapper icon={icon} hasFrame={false} />
     </button>
   );

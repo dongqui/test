@@ -1,4 +1,4 @@
-import { Fragment, RefObject, useCallback, FocusEvent, useRef } from 'react';
+import { Fragment, RefObject, useCallback, FocusEvent, useRef, useEffect } from 'react';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
 import classNames from 'classnames/bind';
@@ -17,7 +17,7 @@ interface Props {
   isCountdown: boolean;
   switchStandbyMode: () => void;
   startValue: number;
-  recordButtonRef: RefObject<HTMLButtonElement>;
+  recordButtonRef: (ref: HTMLButtonElement | null) => void;
 }
 
 const MiddleBar = ({ videoRef, recordButtonRef, videoStatus, onChange, isVideoLoaded, onRecord, isCountdown, isRecording, onRecordStop, switchStandbyMode, startValue }: Props) => {
@@ -78,9 +78,15 @@ const MiddleBar = ({ videoRef, recordButtonRef, videoStatus, onChange, isVideoLo
     return isRecording ? (
       <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} onFocus={blurFocused} />
     ) : (
-      <IconButton ref={recordButtonRef} disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} onFocus={blurFocused} />
+      <IconButton r={recordButtonRef} disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} onFocus={blurFocused} />
     );
   }, [blurFocused, handlePause, handlePlay, handleRecord, handleStop, isCountdown, isRecording, isVideoLoaded, onRecordStop, recordButtonRef, switchStandbyMode, videoStatus]);
+
+  useEffect(() => {
+    if (isVideoLoaded) {
+      recordButtonRef(null);
+    }
+  }, [isVideoLoaded, recordButtonRef]);
 
   return (
     <div className={cx('wrapper')}>

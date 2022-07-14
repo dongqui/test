@@ -54,14 +54,15 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
 
+  // ref related to onboarding session
+  const [recordButtonRef, setRecordButtonRef] = useState<HTMLButtonElement | null>(null);
+  const [leftCropSlicerRef, setLeftCropSliderRef] = useState<HTMLInputElement | null>(null);
+  const [CPModified, setCPModified] = useState<undefined | boolean>(undefined);
+  const [extractButtonRef, setExtractButtonRef] = useState<HTMLButtonElement | null>(null);
+
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
   const dataRef = useRef<Blob[]>([]);
   const modals = useSelector((state) => state.globalUI.modals);
-  const recordButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    console.log(recordButtonRef.current);
-  }, [recordButtonRef]);
 
   const boxProps = useMemo(
     () => ({
@@ -682,7 +683,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             isRecording={ON_RECORDING}
             onRecordStop={stopRecording}
             startValue={startValue}
-            recordButtonRef={recordButtonRef}
+            recordButtonRef={setRecordButtonRef}
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>
@@ -698,10 +699,11 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             endValue={endValue}
             onChangeStart={handleChangeStartValue}
             onChangeEnd={handleChangeEndValue}
+            leftCropSliderRef={setLeftCropSliderRef}
           />
         </Box>
       </Box>
-      <OnBoarding recordButtonRef={recordButtonRef} />
+      <OnBoarding recordButtonRef={recordButtonRef} leftCropSliderRef={leftCropSlicerRef} CPModified={CPModified} extractButtonRef={extractButtonRef} />
     </div>
   );
 };
