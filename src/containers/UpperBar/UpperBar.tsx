@@ -39,6 +39,12 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
     dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
   }, [dispatch]);
 
+  const handleChangeSwitchMode = useCallback(() => {
+    dispatch(commonActions.closeModal('GuideModal'));
+    localStorage.setItem('onboarding_2', 'onboarding_2');
+    switchMode();
+  }, [dispatch, switchMode]);
+
   const UBOption = [
     {
       key: 'EM',
@@ -93,7 +99,7 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
           options={UBOption}
           type="primary"
           defaultValue={defaultMode}
-          onChange={switchMode}
+          onChange={handleChangeSwitchMode}
           className={cx('mode-switch')}
           value={mode === 'videoMode' ? 'VM' : mode === 'animationMode' ? 'EM' : ''}
         />
