@@ -25,6 +25,7 @@ export const globalUI = (state = defaultState, action: globalUIActions.GlobalUIA
             name: action.payload.name,
             props: action.payload.props,
             alias: action.payload.alias || action.payload.name,
+            overlay: action.payload.overlay === undefined ? true : action.payload.overlay,
           },
         ],
       });

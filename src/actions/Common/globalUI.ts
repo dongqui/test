@@ -14,6 +14,7 @@ interface OpenModalReturnyType {
     name: Modal['name'];
     props?: unknown;
     alias?: string;
+    overlay?: boolean;
   };
 }
 
@@ -30,12 +31,13 @@ interface ProgressOnboarding {
   onboardingStep: OnboardingStep;
 }
 
-export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props, alias) => ({
+export const openModal: OpenModalFn<OpenModalReturnyType> = (name, props, alias, overlay) => ({
   type: OPEN_MODAL,
   payload: {
     name,
     props,
     alias,
+    overlay,
   },
 });
 

@@ -7,6 +7,7 @@ import { UpperBar } from 'containers/UpperBar';
 import AnimationMode from './AnimationMode';
 import VideoMode from './New_VideoMode';
 
+import popupManager from 'utils/PopupManager';
 import { tokenManager } from 'api/requestApi';
 import * as socketActions from 'actions/Common/socket';
 import * as lpActions from 'actions/LP/lpNodeAction';
@@ -55,6 +56,8 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     }
 
     initProjectAuth();
+    popupManager.init(dispatch);
+    popupManager.next();
   }, [dispatch, sceneId, token, data]);
 
   return (
