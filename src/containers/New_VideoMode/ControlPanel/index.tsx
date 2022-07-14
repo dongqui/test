@@ -39,12 +39,18 @@ interface ExtractFormData {
   tPose: boolean;
 }
 
+interface MocapException {
+  isOpen: boolean;
+  case?: 'OverLength' | 'Timeout' | 'Condition' | 'Others';
+}
+
 const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount, doneVMOnBoarding, setCPModified }: Props) => {
   const dispatch = useDispatch();
 
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
+  const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
@@ -77,6 +83,10 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
   const handleCloseModal = useCallback(() => {
     setValueName('Extracted motion');
     setIsOpenExtractModal(false);
+    setIsOpenLoadingModal(false);
+    setIsOpenExceptionModal({
+      isOpen: false,
+    });
   }, []);
 
   const handleCancel = useCallback(() => {
@@ -104,6 +114,15 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
 
   const handleSubmitModal = async () => {
     if (videoRef.current) {
+      if (endValue - startValue > 300) {
+        setIsOpenExceptionModal({
+          isOpen: true,
+          case: 'OverLength',
+        });
+
+        return;
+      }
+
       const formData = new FormData();
 
       const file = await convertBlobToFile({ url: videoRef.current.src, type: browserType === 'safari' ? 'mp4' : 'webm', valueName });
@@ -131,9 +150,7 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
         }),
       })
         .then(async (response) => {
-          // const { data } = response;
-
-          const { loaded, data, error } = await requestApi({
+          await requestApi({
             method: 'GET',
             url: `/library/get/${sceneId}/library`,
           })
@@ -158,9 +175,30 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
             });
         })
         .catch((error) => {
-          //
-          // TODO 예외처리
-          throw error;
+          const { statusCode } = error;
+          setIsOpenLoadingModal(false);
+
+          if (error.isCancel) {
+            setIsOpenLoadingModal(false);
+            return;
+          }
+
+          if (statusCode === 500.9) {
+            setIsOpenExceptionModal({
+              isOpen: true,
+              case: 'Condition',
+            });
+          } else if (statusCode === 408) {
+            setIsOpenExceptionModal({
+              isOpen: true,
+              case: 'Timeout',
+            });
+          } else {
+            setIsOpenExceptionModal({
+              isOpen: true,
+              case: 'Others',
+            });
+          }
         });
     }
   };
@@ -215,6 +253,61 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
               <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
                 Cancel
               </OutlineButton>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'OverLength' && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title-area')}>
+                <IconWrapper className={cx('icon-warning')} icon={SvgPath.ErrorWarning} />
+                <div className={cx('title')}>Clip the length of the video</div>
+              </div>
+              <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
+            </div>
+            <div className={cx('modal-content', 'nomargin')}>
+              <div className={cx('message', 'nomargin')}>
+                Longer than 5 minutes have difficulty in <br /> making motions. Reduce the length of the video and try again.
+              </div>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Condition' && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title-area')}>
+                <IconWrapper className={cx('icon-warning')} icon={SvgPath.ErrorWarning} />
+                <div className={cx('title')}>Check the requirements</div>
+              </div>
+              <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
+            </div>
+            <div className={cx('modal-content', 'nomargin')}>
+              <div className={cx('message', 'nomargin')}>
+                It seems that the video does not enough on
+                <br /> the <span className={cx('impact')}>requirements</span> for get motion.
+              </div>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Others' && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title-area')}>
+                <IconWrapper className={cx('icon-warning')} icon={SvgPath.ErrorWarning} />
+                <div className={cx('title')}>There was an unknown problem</div>
+              </div>
+              <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
+            </div>
+            <div className={cx('modal-content', 'nomargin')}>
+              <div className={cx('message', 'nomargin')}>
+                Please try again. <br /> If the problem occurs again, please let us know through the website chat window.
+              </div>
             </div>
           </div>
         </BaseModal>

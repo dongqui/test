@@ -40,6 +40,16 @@
   margin-bottom: 22px;
 }
 
+.title-area {
+  display: flex;
+  align-items: center;
+
+  .icon-warning {
+    display: flex;
+    margin-right: 8px;
+  }
+}
+
 .title {
   color: $content-active;
   font-size: 16px;
@@ -51,6 +61,15 @@
   font-size: 14px;
   font-weight: 300;
   margin-bottom: 16px;
+  line-height: 1.4em;
+
+  &.nomargin {
+    margin-bottom: 0;
+  }
+
+  .impact {
+    color: $primary;
+  }
 }
 
 .button-close {
@@ -73,6 +92,10 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
+
+  &.nomargin {
+    margin-bottom: 0;
+  }
 
   .label-name {
     color: $content-active;
