@@ -28,14 +28,14 @@ export class SelectorModule extends Module {
    * All selectable objects
    */
   public get selectableObjects() {
-    return this.plaskEngine.state.selectingData.selectableObjects;
+    return this.plaskEngine.state.selectingData.present.selectableObjects;
   }
 
   /**
    * All selected objects
    */
   public get selectedObjects() {
-    return this.plaskEngine.state.selectingData.selectedTargets.map((entity) => entity);
+    return this.plaskEngine.state.selectingData.present.selectedTargets.map((entity) => entity);
   }
 
   private _startPosition: Nullable<Vector2> = null;
@@ -48,18 +48,18 @@ export class SelectorModule extends Module {
    */
   public _onUserSelectRequest: Observable<{ ptn: PlaskTransformNode[]; ctrlPressed: boolean }> = new Observable();
 
-  public reduxObservedStates = ['selectingData.selectedTargets', 'selectingData.selectableObjects'];
+  public reduxObservedStates = ['selectingData.present.selectedTargets', 'selectingData.present.selectableObjects'];
   public onStateChanged(key: string, previousState: any) {
-    if (key === 'selectingData.selectedTargets') {
+    if (key === 'selectingData.present.selectedTargets') {
       this.onSelectionChangeObservable.notifyObservers(this.selectedObjects);
       return;
     }
 
-    if (key === 'selectingData.selectableObjects') {
+    if (key === 'selectingData.present.selectableObjects') {
       if (this.selectableObjects !== previousState.selectableObjects) {
         // TODO : we clear history here because we don't handle undoing/redoing a model change.
         // It should be removed once we handle that
-        // this.plaskEngine.clearHistory();
+        this.plaskEngine.clearHistory();
         // Init positions
       }
       return;

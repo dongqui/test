@@ -1,18 +1,20 @@
-import { FunctionComponent, Fragment, useEffect } from 'react';
-import AnimationMode from './AnimationMode';
-import { VideoMode } from './VideoMode';
+import { FunctionComponent, Fragment, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-
-import { tokenManager } from 'api/requestApi';
 import { useSelector } from 'reducers';
+import { changeMode } from 'actions/modeSelection';
+import { Box } from 'components/Layout';
+import { UpperBar } from 'containers/UpperBar';
+import AnimationMode from './AnimationMode';
+import VideoMode from './New_VideoMode';
+
+import popupManager from 'utils/PopupManager';
+import { tokenManager } from 'api/requestApi';
 import * as socketActions from 'actions/Common/socket';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import { RequestNodeResponse } from 'types/LP';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
-import * as plaskHistoryAction from 'actions/plaskHistoryAction';
 
 const cx = classNames.bind(styles);
 
@@ -24,15 +26,25 @@ interface Props {
 }
 
 const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) => {
-  const mode = useSelector((state) => state.modeSelection.mode);
+  const { mode } = useSelector((state) => state.modeSelection);
   const dispatch = useDispatch();
 
   const classes = cx('wrapper', {
     visible: mode === 'animationMode',
-    hidden: mode === 'videoMode',
+    hidden: mode !== 'animationMode',
   });
-  usePlaskShortcut(['control', 'z'], (shortcutKeys: string[]) => dispatch(plaskHistoryAction.undo()), { repeatOnHold: false });
-  usePlaskShortcut(['control', 'shift', 'z'], (shortcutKeys: string[]) => dispatch(plaskHistoryAction.redo()), { repeatOnHold: false });
+
+  const UBProps = {
+    height: 36,
+  };
+
+  const handleChangeMode = useCallback(() => {
+    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode' }));
+
+    if (mode === 'videoMode') {
+      return false;
+    }
+  }, [dispatch, mode]);
 
   useEffect(() => {
     // is here the best place to connect socket?
@@ -44,12 +56,18 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     }
 
     initProjectAuth();
+    popupManager.init(dispatch);
+    popupManager.next();
   }, [dispatch, sceneId, token, data]);
 
   return (
     <Fragment>
+      <Box id="UP" {...UBProps}>
+        <UpperBar switchMode={handleChangeMode} defaultMode="EM" />
+      </Box>
       <AnimationMode className={classes} />
-      {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={browserType} />}
+      {/* {mode !== 'animationMode' && <VideoMode className={cx('wrapper')} browserType={props.browserType} />} */}
+      {mode !== 'animationMode' && <VideoMode browserType={browserType} sceneId={sceneId} token={token} />}
     </Fragment>
   );
 };

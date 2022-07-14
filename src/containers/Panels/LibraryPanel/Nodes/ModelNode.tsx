@@ -37,6 +37,7 @@ const ModelNode = ({ node }: Props) => {
       lpNodeActions.applyMocapToModel.request({
         nodeId: id,
         assetId,
+        mocapId: draggedNode.id,
       }),
     );
   };

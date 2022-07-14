@@ -4,7 +4,8 @@ import { channel } from 'redux-saga';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
-import { CONFIRM_01 } from 'constants/Text';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
+import { getTargetCoordinates } from 'utils/common';
 
 const confirmSwitchModeChannel = channel();
 const isValidModelType = (name: string) => name.toLocaleLowerCase().includes('glb') || name.toLocaleLowerCase().includes('fbx');
@@ -41,22 +42,26 @@ export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fil
     } else if (isModelFile) {
       yield put(lpNodeActions.addModelAsync.request(file));
     } else if (isVideo) {
-      yield put(
-        globalUIActions.openModal('ConfirmModal', {
-          title: 'Extract',
-          message: CONFIRM_01,
-          confirmText: 'Confirm',
-          cancelText: 'Cancel',
-          onConfirm: () => {
-            confirmSwitchModeChannel.put(
-              modeSelectActions.changeMode({
-                mode: 'videoMode',
-                videoURL: URL.createObjectURL(file),
-              }),
-            );
-          },
-        }),
-      );
+      const targetElement = document.getElementById(ONBOARDING_ID.VIDEO_MODE);
+      const targetCoordinates = getTargetCoordinates(targetElement);
+      if (targetCoordinates?.rightBottom) {
+        yield put(
+          globalUIActions.openModal(
+            'GuideModal',
+            {
+              title: 'Import a video!',
+              message: 'You can start importing now.',
+              postion: {
+                right: '12px',
+                top: `${targetCoordinates?.rightBottom?.y + 8}px`,
+              },
+              tooltipArrowPlacement: 'top-end',
+            },
+            '',
+            false,
+          ),
+        );
+      }
     }
   }
 }

@@ -104,11 +104,13 @@ export async function getAnimation(animationId: string) {
   return response.data;
 }
 
-export async function getMocapData(mocapId: string) {
+// export async function getMocapData(mocapId: string) {
+export async function getMocapData(scenesId: string, libraryId: string) {
   const response = await requestApi({
     method: 'GET',
     base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
-    url: `/library/get/${mocapId}/mocap`,
+    // url: `/library/get/${mocapId}/mocap`,
+    url: `/library/get/${scenesId}/${libraryId}/mocap`,
   });
 
   return response.data;
