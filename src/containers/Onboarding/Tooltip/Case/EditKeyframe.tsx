@@ -4,7 +4,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { getTargetCoordinates } from 'utils/common';
 
 import StepTemplate from '../Template/StepTemplate';
-import Arrow from '../Arrow';
+import Arrow from 'components/TooltipArrow';
 
 const EditKeyframe = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);

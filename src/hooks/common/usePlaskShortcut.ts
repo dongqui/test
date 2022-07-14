@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+// auto build trigger
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 
 const BLACKLISTED_DOM_TARGETS = ['INPUT'];
