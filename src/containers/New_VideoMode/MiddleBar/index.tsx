@@ -18,9 +18,23 @@ interface Props {
   switchStandbyMode: () => void;
   startValue: number;
   recordButtonRef: (ref: HTMLButtonElement | null) => void;
+  doneVMOnBoarding: (index: number) => void;
 }
 
-const MiddleBar = ({ videoRef, recordButtonRef, videoStatus, onChange, isVideoLoaded, onRecord, isCountdown, isRecording, onRecordStop, switchStandbyMode, startValue }: Props) => {
+const MiddleBar = ({
+  videoRef,
+  recordButtonRef,
+  videoStatus,
+  onChange,
+  isVideoLoaded,
+  onRecord,
+  isCountdown,
+  isRecording,
+  onRecordStop,
+  switchStandbyMode,
+  startValue,
+  doneVMOnBoarding,
+}: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -47,8 +61,9 @@ const MiddleBar = ({ videoRef, recordButtonRef, videoStatus, onChange, isVideoLo
   const handleRecord = useCallback(() => {
     if (videoRef.current) {
       onRecord();
+      doneVMOnBoarding(1);
     }
-  }, [onRecord, videoRef]);
+  }, [doneVMOnBoarding, onRecord, videoRef]);
 
   const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
 

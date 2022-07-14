@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { VM_ON_BOARDING_KEY } from 'utils/const';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -19,7 +20,7 @@ const OnBoarding = ({ recordButtonRef, leftCropSliderRef, CPModified, extractBut
   const [step4, setStep4] = useState(false);
 
   useEffect(() => {
-    const OnBoardingMask = Number(localStorage.getItem('vm_onboarding') ?? '0');
+    const OnBoardingMask = Number(localStorage.getItem(VM_ON_BOARDING_KEY) ?? '0');
     const STEP1_KEY = 1 << 0;
     const STEP2_KEY = 1 << 1;
     const STEP3_KEY = 1 << 2;
@@ -29,6 +30,10 @@ const OnBoarding = ({ recordButtonRef, leftCropSliderRef, CPModified, extractBut
     setStep2(!!(!(OnBoardingMask & STEP2_KEY) && leftCropSliderRef));
     setStep3(!(OnBoardingMask & STEP3_KEY) && CPModified === false);
     setStep4(!!(!(OnBoardingMask & STEP4_KEY) && extractButtonRef));
+
+    if (recordButtonRef) {
+      console.log(recordButtonRef.getBoundingClientRect());
+    }
   }, [CPModified, extractButtonRef, leftCropSliderRef, recordButtonRef]);
 
   return (

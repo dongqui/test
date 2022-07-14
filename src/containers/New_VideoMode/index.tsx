@@ -1,4 +1,4 @@
-import { createRef, FocusEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FocusEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
@@ -12,6 +12,8 @@ import { changeMode } from 'actions/modeSelection';
 import { GhostButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { WARNING_02 } from 'constants/Text';
+import { VM_ON_BOARDING_KEY } from 'utils/const';
+import OnBoarding from './OnBoarding';
 import RenderingPanel from './RenderingPanel';
 import MiddleBar from './MiddleBar';
 import TimelinePanel from './TimelinePanel';
@@ -19,7 +21,6 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import OnBoarding from 'containers/New_VideoMode/OnBoarding';
 
 const cx = classNames.bind(styles);
 
@@ -63,6 +64,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const timelineRef = document.getElementById('timelineCanvas') as HTMLCanvasElement;
   const dataRef = useRef<Blob[]>([]);
   const modals = useSelector((state) => state.globalUI.modals);
+
+  const doneVMOnBoarding = useCallback((index: number) => {
+    const KEY = 1 << (index - 1);
+    const OnBoardingMask = Number(localStorage.getItem(VM_ON_BOARDING_KEY) ?? '0');
+
+    return Number(OnBoardingMask | KEY).toString();
+  }, []);
 
   const boxProps = useMemo(
     () => ({
@@ -684,6 +692,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             onRecordStop={stopRecording}
             startValue={startValue}
             recordButtonRef={setRecordButtonRef}
+            doneVMOnBoarding={doneVMOnBoarding}
           />
         </Box>
         <Box id="TP" {...boxProps.TP}>
