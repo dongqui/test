@@ -87,8 +87,17 @@ const requestApi = async (payload: Payload, hasToken = true) => {
     return response.data;
   } catch (e: any) {
     const axiosError = { ...e };
+    const isCancel = axios.isCancel(e);
     const isTimeout = axiosError.code === 'ECONNABORTED';
     const response = e.response;
+
+    if (isCancel) {
+      const error = {
+        isCancel: true,
+      };
+
+      throw error;
+    }
 
     if (isTimeout) {
       const error = {
