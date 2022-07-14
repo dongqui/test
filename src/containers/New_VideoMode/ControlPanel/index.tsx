@@ -173,6 +173,11 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
           const { statusCode } = error;
           setIsOpenLoadingModal(false);
 
+          if (error.isCancel) {
+            setIsOpenLoadingModal(false);
+            return;
+          }
+
           if (statusCode === 500.9) {
             setIsOpenExceptionModal({
               isOpen: true,
