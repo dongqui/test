@@ -22,9 +22,10 @@ interface Props {
   onChange: (key: string) => void | boolean;
   className?: string;
   value?: string;
+  id?: string;
 }
 
-const Switch = ({ defaultValue, disabled = false, fullSize = false, options, type = 'default', onChange, className, value }: Props) => {
+const Switch = ({ defaultValue, disabled = false, fullSize = false, options, type = 'default', onChange, className, value, id }: Props) => {
   // set to default index only if that index exists on options
   const [selectedKey, setSelectedKey] = useState(defaultValue);
 
@@ -57,7 +58,7 @@ const Switch = ({ defaultValue, disabled = false, fullSize = false, options, typ
   }, [value]);
 
   return (
-    <div className={classes}>
+    <div className={classes} id={id}>
       <div className={cx('btn-select', type, { disabled })} style={{ width: `${100 / options.length}%`, left: `${(100 / options.length) * selectedIndex}%` }} />
       {options.map((option, index) => (
         <SwitchItem option={option} key={`${option.key}.${index}`} disabled={disabled} onClick={handleChange} selected={option.key === selectedKey} />

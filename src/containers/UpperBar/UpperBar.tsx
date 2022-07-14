@@ -10,6 +10,7 @@ import Dropdown from 'new_components/Dropdown';
 
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 const cx = classNames.bind(styles);
 
@@ -88,6 +89,7 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
       </div>
       <div className={cx('right-upper')}>
         <Switch
+          id={ONBOARDING_ID.VIDEO_MODE}
           options={UBOption}
           type="primary"
           defaultValue={defaultMode}

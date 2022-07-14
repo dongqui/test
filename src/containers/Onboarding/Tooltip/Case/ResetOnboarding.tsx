@@ -4,7 +4,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { getTargetCoordinates } from 'utils/common';
 
 import BaseTemplate from '../Template/BaseTemplate';
-import Arrow from '../Arrow';
+import Arrow from 'components/TooltipArrow';
 
 const ResetOnboarding = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);
