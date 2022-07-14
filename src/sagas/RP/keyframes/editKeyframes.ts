@@ -154,6 +154,7 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
             layerId: _selectedLayer,
             tracks: tracks?.map((track) => {
               const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
+
               return {
                 id: track.id,
                 targetId: track.targetId,

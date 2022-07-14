@@ -7,12 +7,16 @@ const DynamicWithNoSSR = dynamic(() => import('containers/index'), { ssr: false 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { query } = context;
-  let { sceneUid } = query;
+  let { sceneUid, t } = query;
   let token = context.req?.cookies?.authToken;
   if (process.env.NODE_ENV === 'development') {
     token = process.env.DEV_LOCAL_TOKEN || '';
     sceneUid = process.env.DEV_LOCAL_SCENE_ID;
   }
+  if (t && typeof t === 'string') {
+    token = t;
+  }
+
   if (token && !sceneUid) {
     await requestApi({
       method: 'GET',

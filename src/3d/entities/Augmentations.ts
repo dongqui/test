@@ -149,9 +149,31 @@ BoneIKController.prototype.update = function () {
       upAxis.normalize();
     }
   }
+  // bone2Pos.subtractToRef(bonePos, yaxis);
+  // yaxis.normalize();
+  // target.subtractToRef(bonePos, upAxis);
+  // Vector3.CrossToRef(yaxis, upAxis, zaxis);
+  // if (zaxis.length() < 1e-5) {
+  //   // target and y are aligned, using bone1 parent to get upVector
+  //   bone1.parent!.getAbsolutePositionToRef(this.mesh, )
+  // }
+  // zaxis.normalize();
+  // Vector3.CrossToRef(yaxis, zaxis, xaxis);
+  // xaxis.normalize();
+  // Matrix.FromXYZAxesToRef(xaxis, yaxis, zaxis, mat1);
+  // TODO : Use upvector from FK
   target.subtractToRef(bonePos, yaxis);
   yaxis.normalize();
   Vector3.CrossToRef(yaxis, upAxis, zaxis);
+  if (zaxis.length() < 1e-5) {
+    if (yaxis.x !== 0) {
+      zaxis.set(yaxis.y, -yaxis.x, yaxis.z);
+    } else if (yaxis.y !== 0) {
+      zaxis.set(yaxis.x, yaxis.z, -yaxis.y);
+    } else {
+      zaxis.set(-yaxis.z, yaxis.y, yaxis.x);
+    }
+  }
   zaxis.normalize();
   Vector3.CrossToRef(yaxis, zaxis, xaxis);
   xaxis.normalize();
@@ -189,10 +211,15 @@ BoneIKController.prototype.update = function () {
     mat2.multiplyToRef(mat1, mat1);
     mat3.multiplyToRef(mat1, mat3);
     if (this._bendMatrixDirty) {
+      // mat1 is bend space to world space (rotation only)
+      // bendMatrix1 is world to bend space (rotation only)
+      // bend space Y is initial target direction, Z is bendAxis, X is up (orthonormalized)
       mat1.invertToRef(this._bendMatrixBone1);
       const tmpMat = BoneIKController['_tmpMats'][2];
+      // tmpMat is local to world
       tmpMat.copyFrom(bone1.getRotationMatrix(Space.WORLD, this.mesh));
       tmpMat.multiplyToRef(this._bendMatrixBone1, this._bendMatrixBone1);
+      // bendMatrix1 is now local to bend space (rotation only)
 
       mat3.invertToRef(this._bendMatrixBone2);
       tmpMat.copyFrom(this['_bone2'].getRotationMatrix(Space.WORLD, this.mesh));
@@ -206,7 +233,16 @@ BoneIKController.prototype.update = function () {
     mat2.multiplyToRef(mat1, mat1);
   }
 
+  // if (this.poleAngle) {
+  //   Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
+  //   mat1.multiplyToRef(mat2, mat1);
+  //   mat3.multiplyToRef(mat2, mat3);
+  // }
   if (this.poleAngle) {
+    // Matrix.RotationAxisToRef(Vector3.UpReadOnly, this.poleAngle, mat2);
+    // mat2.multiplyToRef(mat1, mat1);
+    // mat2.multiplyToRef(mat3, mat3);
+
     Matrix.RotationAxisToRef(yaxis, this.poleAngle, mat2);
     mat1.multiplyToRef(mat2, mat1);
     mat3.multiplyToRef(mat2, mat3);

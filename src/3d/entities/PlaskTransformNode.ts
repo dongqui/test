@@ -43,8 +43,8 @@ export class PlaskTransformNode extends PlaskEntity {
         this._transformable = {
           position: true,
           rotation: {
-            euler: false,
-            quaternion: false,
+            euler: true,
+            quaternion: true,
           },
           scale: false,
         };

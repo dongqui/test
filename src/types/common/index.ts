@@ -283,3 +283,17 @@ export interface MocapDataResponse {
     trackData: PlaskMocapData;
   }[];
 }
+
+export type TooltipArrowPlacement =
+  | 'top-start'
+  | 'top-middle'
+  | 'top-end'
+  | 'bottom-start'
+  | 'bottom-middle'
+  | 'bottom-end'
+  | 'left-start'
+  | 'left-middle'
+  | 'left-end'
+  | 'right-start'
+  | 'right-middle'
+  | 'right-end';

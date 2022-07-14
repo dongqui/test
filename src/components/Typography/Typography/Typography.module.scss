@@ -1,0 +1,21 @@
+.wrapper {
+  font-size: var(--font-size-4);
+
+  &.title {
+    font-weight: 600;
+  }
+
+  &.body {
+    font-weight: 300;
+  }
+
+  &.button {
+    font-weight: 500;
+    line-height: 13px;
+  }
+
+  &.list {
+    font-weight: 400;
+    line-height: 13px;
+  }
+}

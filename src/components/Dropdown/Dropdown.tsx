@@ -1,7 +1,8 @@
-import { FunctionComponent, memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { find, map, isEqual } from 'lodash';
 import DropdownItem from './DropdownItem';
 import { IconWrapper, SvgPath } from 'components/Icon';
+
 import classNames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
 
@@ -29,25 +30,29 @@ export interface Props {
     isSelected: boolean;
   }[];
   fixed?: boolean;
+  className?: string;
+  alignContext?: 'left' | 'right';
+  disabled?: boolean;
 }
 
 /**
  *
  * @todo 추후, Sub Menu를 위한 Cascading 기능 추가 예정
  */
-const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
+const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', disabled = false }: Props) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [transform, setTransform] = useState<string>();
 
   const defaultValue = useMemo(() => find(list, { isSelected: true })?.value || list[0]?.value, [list]);
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const handleToggle = useCallback(() => {
-    setIsOpen((prevState) => !prevState);
-  }, []);
+    if (!disabled) {
+      setIsOpen((prevState) => !prevState);
+    }
+  }, [disabled]);
 
   const handleClose = useCallback(() => {
     isOpen && setIsOpen(false);
@@ -61,12 +66,6 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
     },
     [onSelect],
   );
-
-  useEffect(() => {
-    if (buttonRef && buttonRef.current) {
-      setTransform(`translate3d(0px, ${buttonRef.current.offsetHeight - 21}px, 0px)`);
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     const currentRef = wrapperRef?.current;
@@ -142,26 +141,27 @@ const Dropdown: FunctionComponent<Props> = ({ list, onSelect, fixed }) => {
 
   const buttonClasses = cx('button-toggle', {
     open: isOpen,
+    disabled,
   });
 
   const arrowClasses = cx('arrow', {
     open: isOpen,
   });
 
-  const dropdownClasses = cx('menu', {
+  const dropdownClasses = cx('menu', alignContext, {
     fixed: fixed,
   });
 
   return (
-    <div ref={wrapperRef} className={cx('wrapper')}>
+    <div ref={wrapperRef} className={cx('wrapper', className)}>
       <div className={cx('header')}>
         <button type="button" ref={buttonRef} className={buttonClasses} onClick={handleToggle}>
-          <div className={cx('text')}>{selectedValue}</div>
+          <div className={cx('text')}>{selectedValue ? selectedValue : 'None'}</div>
           <IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />
         </button>
       </div>
       {isOpen && (
-        <ul className={dropdownClasses} style={{ transform }} role="menu">
+        <ul className={dropdownClasses} role="menu">
           {map(list, (item, i) => {
             const key = `${item.key}_${i}`;
             return <DropdownItem key={key} item={item} selectedValue={selectedValue} onSelect={handleSelect} />;
