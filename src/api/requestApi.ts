@@ -11,6 +11,7 @@ interface Payload {
   params?: any;
   data?: any;
   cancelToken?: any;
+  timeout?: number;
   [key: string]: any;
 }
 
@@ -25,7 +26,7 @@ export const tokenManager = {
 };
 
 const requestApi = async (payload: Payload, hasToken = true) => {
-  const { base, url, headers = {}, cancelToken, ...rest } = payload;
+  const { base, url, headers = {}, cancelToken, timeout, ...rest } = payload;
 
   const isServer = typeof window === 'undefined';
 
@@ -61,6 +62,7 @@ const requestApi = async (payload: Payload, hasToken = true) => {
     baseURL: base || process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: url,
     cancelToken,
+    timeout,
     ...rest,
     // timeout: 15000,
   };
@@ -84,7 +86,20 @@ const requestApi = async (payload: Payload, hasToken = true) => {
 
     return response.data;
   } catch (e: any) {
+    const axiosError = { ...e };
+    const isTimeout = axiosError.code === 'ECONNABORTED';
     const response = e.response;
+
+    if (isTimeout) {
+      const error = {
+        success: false,
+        status: 408,
+        message: `timeout of ${timeout}ms exceeded`,
+      };
+
+      throw error;
+    }
+
     const error = (response && response.data) || {
       success: false,
       status: response ? response.status : 500,
