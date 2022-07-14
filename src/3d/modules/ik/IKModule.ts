@@ -1076,13 +1076,13 @@ export class IKModule extends Module {
     const targetLayer = animationIngredient.layers[0];
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
     // Values for the animation in Toebase
-    let angles = [0, -0.05, -0.10, -0.15, -0.20, -0.25, -0.20, -0.15, -0.10, -0.05, 0];
+    let angles = [0, -0.05, -0.15, -0.25, -0.35, -0.25, -0.15];
     let anglesEvolution = 0;
     if (targetTrack) {
       targetTrack.transformKeys.forEach((key, index, array) => {
         // Evaluate the end of a contact period 
         if (key.value === 0 && array[index-1].value === 1 && array[index-2].value === 1) {
-          anglesEvolution = angles.length;
+            anglesEvolution = angles.length;
         }
         // Insert the flow of animation in ToeBase
         if (anglesEvolution > 0) {
