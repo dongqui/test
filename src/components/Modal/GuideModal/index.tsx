@@ -1,4 +1,3 @@
-import { FilledButton } from 'components/Button';
 import { Html } from 'components/Typography';
 import { IconButton } from 'components/Button';
 import { SvgPath } from 'components/Icon';

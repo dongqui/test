@@ -16,21 +16,34 @@
 .button-toggle {
   @include reset-button-style();
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-around;
-  padding: 4px 8px;
+  padding: 4.5px 8px;
   // background-color: #303030;
   color: #fff;
   min-width: 72px;
+  flex: 1;
   max-height: 10rem;
+  height: 24px;
   text-align: left;
-  font-weight: 300;
   border-radius: 4px;
+
+  &.disabled {
+    cursor: default;
+  }
 }
 
 .text {
   margin-right: 8px;
   letter-spacing: 0.2px;
+  font-size: 12px;
+  min-width: 110px;
+  //max-width: 100px;
+  font-weight: 300;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .arrow {
@@ -55,7 +68,7 @@
   background-color: #282727;
   min-width: 72px;
   color: #a7a7a7;
-  padding: 6px;
+  padding: 4px;
   max-height: 10rem;
   border-radius: 6px;
   border: 1px solid var(--gray300);
@@ -63,9 +76,22 @@
   z-index: 999;
   letter-spacing: 1px;
   overflow-y: scroll;
+  width: max-content;
+  top: 24px;
+  margin: 4px 0 0 0 ;
 
   &::-webkit-scrollbar {
     display: none;
+  }
+
+  &.left {
+    left: 0;
+    right: unset;
+  }
+
+  &.right {
+    left: unset;
+    right: 0;
   }
 }
 

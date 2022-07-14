@@ -17,11 +17,9 @@ export interface Props {
 const DropdownItem: FunctionComponent<Props> = ({ item, selectedValue, onSelect }) => {
   const handleClick: MouseEventHandler<HTMLLIElement> = useCallback(
     (_e) => {
-      if (!_.isEqual(selectedValue, item.value)) {
-        onSelect(item.key, item.value);
-      }
+      onSelect(item.key, item.value);
     },
-    [item.key, item.value, onSelect, selectedValue],
+    [item.key, item.value, onSelect],
   );
 
   const handleSelect: KeyboardEventHandler<HTMLLIElement> = useCallback(
@@ -36,7 +34,7 @@ const DropdownItem: FunctionComponent<Props> = ({ item, selectedValue, onSelect 
   );
 
   return (
-    <li key={item.key} tabIndex={0} className={cx('menu-item')} onClick={handleClick} onKeyDown={handleSelect} role="menuitem">
+    <li key={item.key} tabIndex={0} className={cx('menu-item', { selected: selectedValue === item.value })} onClick={handleClick} onKeyDown={handleSelect} role="menuitem">
       {item.value}
     </li>
   );
