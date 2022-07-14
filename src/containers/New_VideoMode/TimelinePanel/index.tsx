@@ -3,6 +3,7 @@ import { Timeline } from '@babylonjs/controls';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 

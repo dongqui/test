@@ -1,5 +1,6 @@
-import { useState, useRef, RefObject, Fragment } from 'react';
+import { useRef, RefObject, Fragment } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -17,7 +18,6 @@ interface Props {
 const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true, standByCount, cancelCountdown }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // mirror: videoRef.current && !videoRef.current.src,
   const classes = cx('video', {
     mirror: !isVideoLoaded,
   });

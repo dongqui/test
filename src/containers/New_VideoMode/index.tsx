@@ -3,16 +3,18 @@ import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
+
 import * as globalUIActions from 'actions/Common/globalUI';
+import { changeMode } from 'actions/modeSelection';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { Typography } from 'components/Typography';
 import { Dropdown } from 'components/Dropdown';
-import { changeMode } from 'actions/modeSelection';
 import { GhostButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { WARNING_02 } from 'constants/Text';
 import { VM_ON_BOARDING_KEY } from 'utils/const';
+
 import OnBoarding from './OnBoarding';
 import RenderingPanel from './RenderingPanel';
 import MiddleBar from './MiddleBar';
