@@ -15,6 +15,7 @@ import ExtractForm from './ExtractForm';
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { Overlay } from 'components/Overlay';
 
 const cx = classNames.bind(styles);
 
@@ -27,6 +28,9 @@ interface Props {
   startValue: number;
   endValue: number;
   onUnmount: () => void;
+  setExtractButtonRef: (ref: HTMLButtonElement) => void;
+  doneVMOnBoarding: (step: number) => void;
+  setCPModified: (modified: boolean) => void;
 }
 
 interface ExtractFormData {
@@ -35,13 +39,13 @@ interface ExtractFormData {
   tPose: boolean;
 }
 
-const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount }: Props) => {
+const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount, doneVMOnBoarding, setCPModified }: Props) => {
   const dispatch = useDispatch();
 
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
-  const [valueName, setValueName] = useState('');
+  const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
     footLock: false,
@@ -57,6 +61,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
         }),
       );
     } else {
+      doneVMOnBoarding(4);
       setValueFormData({
         ...data,
       });
@@ -70,7 +75,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
   }, []);
 
   const handleCloseModal = useCallback(() => {
-    setValueName('');
+    setValueName('Extracted motion');
     setIsOpenExtractModal(false);
   }, []);
 
@@ -161,7 +166,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
   };
 
   return (
-    <div className={cx('wrapper')}>
+    <div className={cx('wrapper')} onMouseEnter={() => setCPModified(false)}>
       <div className={cx('section')}>
         <div className={cx('section-title')}>
           <Typography type="title">Extract option</Typography>
@@ -169,7 +174,9 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
             <Typography>Beta</Typography>
           </div>
         </div>
-        <BaseForm onSubmit={handleSubmit}>{(fieldProps) => <ExtractForm fieldProps={fieldProps} />}</BaseForm>
+        <BaseForm onSubmit={handleSubmit}>
+          {(fieldProps) => <ExtractForm doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />}
+        </BaseForm>
       </div>
       {isOpenExtractModal && (
         <BaseModal>
@@ -181,7 +188,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
             <div className={cx('modal-content')}>
               <div className={cx('message')}>Enter the name of the mocap to extract.</div>
               <label className={cx('label-name')}>Name</label>
-              <BaseInput className={cx('input-name')} name="name" placeholder="Extracted motion" value={valueName} onChange={handleChangeName} />
+              <BaseInput className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
             <div className={cx('modal-footer')}>
               <OutlineButton className={cx('button-negative')} onClick={handleCloseModal}>
@@ -192,6 +199,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
               </FilledButton>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
       {isOpenLoadingModal && (

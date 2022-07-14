@@ -21,6 +21,7 @@ interface Props {
   onChangeStart: (value: number) => void;
   onChangeEnd: (value: number) => void;
   leftCropSliderRef: (ref: HTMLInputElement | null) => void;
+  doneVMOnBoarding: (step: number) => void;
 }
 
 const TimelinePanel = ({
@@ -36,6 +37,7 @@ const TimelinePanel = ({
   onChangeStart,
   onChangeEnd,
   dropzoneDisabled = false,
+  doneVMOnBoarding,
 }: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
@@ -94,6 +96,7 @@ const TimelinePanel = ({
 
   const handleChangeStartValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
+      doneVMOnBoarding(2);
       const value = Number((Number(event.target.value) * 100) / duration);
 
       if (Number(event.target.value) < endValue - 1) {
@@ -111,11 +114,12 @@ const TimelinePanel = ({
         }
       }
     },
-    [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
+    [doneVMOnBoarding, duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
   );
 
   const handleChangeEndValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
+      doneVMOnBoarding(2);
       const value = Number((Number(event.target.value) * 100) / duration);
 
       if (Number(event.target.value) > startValue + 1) {

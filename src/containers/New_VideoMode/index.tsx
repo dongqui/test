@@ -65,11 +65,29 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const dataRef = useRef<Blob[]>([]);
   const modals = useSelector((state) => state.globalUI.modals);
 
+  const [step1, setStep1] = useState(false);
+  const [step2, setStep2] = useState(false);
+  const [step3, setStep3] = useState(false);
+  const [step4, setStep4] = useState(false);
+
   const doneVMOnBoarding = useCallback((index: number) => {
     const KEY = 1 << (index - 1);
     const OnBoardingMask = Number(localStorage.getItem(VM_ON_BOARDING_KEY) ?? '0');
 
-    return Number(OnBoardingMask | KEY).toString();
+    if (index === 1) {
+      setStep1(false);
+    }
+    if (index === 2) {
+      setStep2(false);
+    }
+    if (index === 3) {
+      setStep3(false);
+    }
+    if (index === 4) {
+      setStep4(false);
+    }
+
+    localStorage.setItem(VM_ON_BOARDING_KEY, Number(OnBoardingMask | KEY).toString());
   }, []);
 
   const boxProps = useMemo(
@@ -200,6 +218,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     await headerInspector(file)
       .then(() => {
         if (videoRef.current) {
+          doneVMOnBoarding(1);
           const videoURL = URL.createObjectURL(files[0]);
 
           setIsVideoLoaded(true);
@@ -463,6 +482,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         confirmText: 'Delete',
         confirmButtonColor: 'negative',
         onConfirm: () => {
+          setExtractButtonRef(null);
+          setCPModified(undefined);
           setStartValue(0);
           setEndValue(0);
           unmountVideo();
@@ -674,6 +695,9 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               sceneId={sceneId}
               token={token}
               browserType={browserType}
+              setExtractButtonRef={setExtractButtonRef}
+              doneVMOnBoarding={doneVMOnBoarding}
+              setCPModified={setCPModified}
             />
           )}
         </Box>
@@ -709,10 +733,25 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             onChangeStart={handleChangeStartValue}
             onChangeEnd={handleChangeEndValue}
             leftCropSliderRef={setLeftCropSliderRef}
+            doneVMOnBoarding={doneVMOnBoarding}
           />
         </Box>
       </Box>
-      <OnBoarding recordButtonRef={recordButtonRef} leftCropSliderRef={leftCropSlicerRef} CPModified={CPModified} extractButtonRef={extractButtonRef} />
+      <OnBoarding
+        step1={step1}
+        step2={step2}
+        step3={step3}
+        step4={step4}
+        setStep1={setStep1}
+        setStep2={setStep2}
+        setStep3={setStep3}
+        setStep4={setStep4}
+        recordButtonRef={recordButtonRef}
+        leftCropSliderRef={leftCropSlicerRef}
+        CPModified={CPModified}
+        extractButtonRef={extractButtonRef}
+        doneVMOnBoarding={doneVMOnBoarding}
+      />
     </div>
   );
 };

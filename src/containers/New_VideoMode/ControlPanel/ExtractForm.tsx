@@ -11,9 +11,11 @@ const cx = classNames.bind(styles);
 
 interface Props {
   fieldProps: Field.FormProps;
+  setExtractButtonRef: (ref: HTMLButtonElement) => void;
+  doneVMOnBoarding: (step: number) => void;
 }
 
-const ExtractForm = ({ fieldProps }: Props) => {
+const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
   const selectOption = [
     {
       key: 'single',
@@ -43,7 +45,10 @@ const ExtractForm = ({ fieldProps }: Props) => {
       <div className={cx('section-item')}>
         <Typography>Model</Typography>
         <BaseField<Field.SwitchProps, string>
-          onChange={(value) => setIsMulti(selectOption.find((option) => option.key === value)!.value)}
+          onChange={(value) => {
+            doneVMOnBoarding(3);
+            setIsMulti(selectOption.find((option) => option.key === value)!.value);
+          }}
           className={cx('switch')}
           options={selectOption}
           control={fieldProps.control}
@@ -60,18 +65,30 @@ const ExtractForm = ({ fieldProps }: Props) => {
       {!isMulti && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
-          <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="footLock" render={(props) => <Toggle {...props} />} defaultValue={false} />
+          <BaseField<Field.ToggleProps, boolean>
+            onChange={() => doneVMOnBoarding(3)}
+            control={fieldProps.control}
+            name="footLock"
+            render={(props) => <Toggle {...props} />}
+            defaultValue={false}
+          />
         </div>
       )}
       <div className={cx('section-item')}>
         <Typography>T-pose</Typography>
-        <BaseField<Field.ToggleProps, boolean> control={fieldProps.control} name="tPose" render={(props) => <Toggle {...props} />} defaultValue={false} />
+        <BaseField<Field.ToggleProps, boolean>
+          onChange={() => doneVMOnBoarding(3)}
+          control={fieldProps.control}
+          name="tPose"
+          render={(props) => <Toggle {...props} />}
+          defaultValue={false}
+        />
       </div>
       <div className={cx('section-item', 'section-text')}>
         <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
       </div>
       <div className={cx('section-item')}>
-        <FilledButton fullSize type="submit" onFocus={blurFocused}>
+        <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused}>
           <Typography type="button">Extract</Typography>
         </FilledButton>
       </div>
