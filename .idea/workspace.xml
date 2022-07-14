@@ -6,7 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="ff55ea0e-2806-4788-a2b9-c9c5df5b3d71" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Modal/GuideModal/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Modal/GuideModal/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Modal/common.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Modal/common.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Typography/Html.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Typography/Html.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,9 +46,12 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "js.linters.configure.manually.selectedeslint": "true",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
     "node.js.detected.package.stylelint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.eslint": "/Users/junhyeok/Desktop/plask/node_modules/eslint",
+    "node.js.selected.package.standard": "",
     "node.js.selected.package.stylelint": "/Users/junhyeok/Desktop/plask/node_modules/stylelint",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "yarn",
@@ -132,5 +138,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

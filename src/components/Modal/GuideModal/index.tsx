@@ -38,14 +38,14 @@ const GuideModal = ({ onClose, onConfirm, postion, title, message, confirmText =
         <h3 className={cx('title')}>{title}</h3>
         <IconButton onClick={handleCloseModal} type="ghost" icon={SvgPath['ModalClose']} />
       </header>
-      <div className={cx('content')}>
-        <Html content={message} />
-      </div>
-      <footer className={cx('buttons')}>
-        <FilledButton onClick={handleCloseModal} type={'primary'} dataCy="modal-confirm" size="medium">
-          {confirmText}
-        </FilledButton>
-      </footer>
+      {/*<div className={cx('content')}>*/}
+      <Html content={message} className={cx('content')} />
+      {/*</div>*/}
+      {/*<footer className={cx('buttons')}>*/}
+      {/*  <FilledButton onClick={handleCloseModal} type={'primary'} dataCy="modal-confirm" size="medium">*/}
+      {/*    {confirmText}*/}
+      {/*  </FilledButton>*/}
+      {/*</footer>*/}
     </div>
   );
 };
