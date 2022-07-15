@@ -25,7 +25,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   const isBaseLayer = useMemo(() => trackName === 'Base Layer', [trackName]);
   const layerTrackList = useSelector((state) => state.trackList.layerTrackList);
 
-  const baseLayer = layerTrackList.find(layer => layer.trackName === 'Base Layer');
+  const baseLayer = layerTrackList.find((layer) => layer.trackName === 'Base Layer');
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
@@ -59,7 +59,6 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
                   dispatch(trackListActions.changeSelectedTargets());
                   dispatch(trackListActions.deleteLayerSocket.request(trackId));
                 }
-                
               },
               cancelText: 'Cancel',
               confirmButtonColor: 'negative',
@@ -68,7 +67,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         },
       },
     ],
-    [dispatch, isBaseLayer, isSelected, trackId],
+    [dispatch, isBaseLayer, isSelected, trackId, baseLayer],
   );
 
   // 트랙 클릭
