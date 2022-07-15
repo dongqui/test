@@ -13,7 +13,7 @@ const checkMoveDuplicates = (name: string, nameArray: string[]) => {
     const extractedNumber = currentNode.match(/ \(\d+\)$/g);
 
     if (!_.isNull(extractedNumber)) {
-      const number = (currentNode.match(/\d/g) as unknown) as string;
+      const number = currentNode.match(/\d/g) as unknown as string;
 
       const resultNumber = number === '0' ? '2' : '0';
       return resultNumber;

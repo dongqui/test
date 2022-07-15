@@ -5,7 +5,7 @@ export function createSocketActions<
   TSendType extends TypeConstant,
   TReceiveType extends TypeConstant,
   TUpdateType extends TypeConstant,
-  TFailureType extends TypeConstant
+  TFailureType extends TypeConstant,
 >(TRequestActionType: TRequestType, TSendActionType: TSendType, TReceiveActionType: TReceiveType, TUpdateActionType: TUpdateType, TFailureActionType: TFailureType) {
   return function <RequestActionParam, SendActionParam, ReceiveActionParam, UpdateActionParam, FailureActionParam>() {
     return {

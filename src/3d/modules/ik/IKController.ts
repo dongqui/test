@@ -1,8 +1,9 @@
 import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { BoneIKController } from '@babylonjs/core/Bones/boneIKController';
 import { addMetadata } from 'utils/RP/metadata';
 import { convertToDegree } from 'utils/common';
+import { BoneIk } from './BoneIk';
+import setAbsoluteRotation from '3d/utils/setAbsoluteRotation';
 
 export type IKControllerParams = {
   body: TransformNode;
@@ -14,8 +15,6 @@ export type IKControllerParams = {
   assetId: string;
   limb: string;
   controllerSize: number;
-  upVector: Vector3;
-  bendAxis: Vector3;
 };
 
 class IKHandle extends Mesh {
@@ -93,7 +92,7 @@ export class IKController {
   /**
    * IK controller for user defined target (where the handle stands)
    */
-  public controller: BoneIKController;
+  public controller: BoneIk;
   /**
    * Final target position for IK (after applying blend)
    */
@@ -137,13 +136,6 @@ export class IKController {
     return ikControllerHandle;
   }
 
-  public adjustAlignment() {
-    if (this.handle.rotationQuaternion) {
-      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
-      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
-    }
-  }
-
   public adjustPoleAngleFromFK() {
     // if (!this.fkInfluenceChain) {
     //   return;
@@ -156,14 +148,49 @@ export class IKController {
     this.poleAngle = 0;
   }
 
+  public adjustAlignment() {
+    if (this.handle.rotationQuaternion) {
+      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
+      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
+    }
+  }
   public alignTargetInfluenceChainWithHandle() {
     if (this.handle.rotationQuaternion) {
-      const targetHandle = this.handle.rotationQuaternion.clone();
-      this.targetInfluenceChain[0].rotationQuaternion?.copyFrom(targetHandle);
-
+      const targetHandle = this.handle.absoluteRotationQuaternion.clone();
+      setAbsoluteRotation(this.targetInfluenceChain[0], targetHandle);
       this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
       this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
       this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
+    }
+  }
+
+  private _getUpVectorFromFK(boneType: string) {
+    if (this.fkInfluenceChain) {
+      this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, TmpVectors.Vector3[0]);
+      this.fkInfluenceChain[0].absolutePosition.subtractToRef(this.fkInfluenceChain[1].absolutePosition, TmpVectors.Vector3[1]);
+      const a = TmpVectors.Vector3[0].normalize();
+      const b = TmpVectors.Vector3[1].normalize();
+      Vector3.CrossToRef(b, a, TmpVectors.Vector3[1]);
+      const right = TmpVectors.Vector3[1];
+      if (right.length() < 1e-5) {
+        // both sections are aligned, cannot guess an up vector
+        switch (boneType) {
+          case 'rightFoot':
+          case 'leftFoot':
+            this.controller.upVector.copyFromFloats(0, 0, 1);
+            break;
+          case 'rightHand':
+            this.controller.upVector.copyFromFloats(-1, 0, 0);
+            break;
+          case 'leftHand':
+            this.controller.upVector.copyFromFloats(-1, 0, 0);
+            break;
+        }
+        return;
+      }
+      // Bones are slightly bent, we can cross again to find the upvector and bend axis
+      right.normalize();
+      Vector3.CrossToRef(right, a, this.controller.upVector);
     }
   }
 
@@ -176,13 +203,15 @@ export class IKController {
 
       this.alignTargetInfluenceChainWithHandle();
 
-      this.controller.bone1Quat = this.fkInfluenceChain[2].rotationQuaternion;
-      this.controller.bone2Quat = this.fkInfluenceChain[1].rotationQuaternion;
+      this.controller.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
+      this.controller.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
       this.controller.blend = this.blend;
 
       // Set upvector to fk
-      this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
-      this.controller.upVector!.normalize();
+      this._getUpVectorFromFK(this.limb);
+      // this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
+      // this.controller.upVector!.normalize();
+      // Vector3.CrossToRef(this.controller.upVector!, this.controller.targetPosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize(), this.controller.upVector!);
     }
 
     this.controller.update();
@@ -202,6 +231,7 @@ export class IKController {
     // );
     this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     this.poleAngle = poleAngle;
+    this._getUpVectorFromFK(this.limb);
     this.controller.update();
   }
 
@@ -230,8 +260,10 @@ export class IKController {
     addMetadata('outlineSize', 0.015, this.handle);
     addMetadata('ikController', this, this.handle);
 
-    params.bone.getPositionToRef(Space.WORLD, params.transformNode, this.handle.position);
+    params.bone.getPositionToRef(Space.WORLD, params.body, this.handle.position);
+    this.target.position.setAll(0);
     this.target.parent = this.handle;
+    this.target.computeWorldMatrix(true);
 
     const tnIk = params.transformNode;
     const tn1Ik = tnIk?.parent as TransformNode;
@@ -243,15 +275,7 @@ export class IKController {
     this.targetInfluenceChain = [tnIk, tn1Ik, tn2Ik];
 
     // Creating IK Controllers
-    this.controller = new BoneIKController(params.body, (params.bone as any)._parent as Bone, {
-      targetMesh: this.target,
-      poleAngle: 0,
-      bendAxis: params.bendAxis,
-    });
-    this.controller.upVector = params.upVector;
-    (this.controller as any)._adjustRoll = 0;
-    this.controller.setIKtoRest();
-    this.controller.update();
+    this.controller = new BoneIk(params.body, params.bone, this.target, Vector3.Up());
 
     // IK controllers for FK (for blending)
     if (params.fkBone && params.fkTransformNode && params.fkBody) {
@@ -265,6 +289,10 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
+    this._getUpVectorFromFK(this.limb);
+    this.controller.initializeFromPose();
+
+    this.update();
 
     // DEBUG : pole angle target
     // const ikPoleSphere = MeshBuilder.CreateSphere("ik");
