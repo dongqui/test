@@ -157,16 +157,10 @@ export class IKController {
   public alignTargetInfluenceChainWithHandle() {
     if (this.handle.rotationQuaternion) {
       const targetHandle = this.handle.absoluteRotationQuaternion.clone();
-
-      const targetAngle = targetHandle.subtract(this.targetInfluenceChain[1].absoluteRotationQuaternion.clone());
-
       setAbsoluteRotation(this.targetInfluenceChain[0], targetHandle);
-      // this.targetInfluenceChain[0].getWorldMatrix().decomposeToTransformNode(this.handle);
-      // this.targetInfluenceChain[0].setDirection(this.handle.getDirection());
-
-      // this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
-      // this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
-      // this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
+      this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
     }
   }
 
