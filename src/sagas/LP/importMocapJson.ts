@@ -29,7 +29,6 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
   reader.onload = async function (e) {
     if (typeof e?.target?.result === 'string') {
       try {
-
         const json: MocapJson = JSON.parse(e.target.result);
         checkMocapJson(json);
 
