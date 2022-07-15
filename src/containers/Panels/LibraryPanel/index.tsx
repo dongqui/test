@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+
 import { partition } from 'lodash';
 
 import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
@@ -58,7 +59,7 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch],
   );
 
-  const { getRootProps } = useDropzone({ onDrop: handleDrop });
+  const { getRootProps } = useDropzone({ onDrop: handleDrop, noClick: true });
 
   const [isSceneReady, setIsSceneReady] = useState(false);
 

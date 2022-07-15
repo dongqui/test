@@ -1,26 +1,21 @@
+import { Quaternion, Vector3 } from '@babylonjs/core';
 import { TrackIdentifier } from './index';
 
 /**
  * @description postion, rotation, scale 키프레임이 가지고 있는 value
  */
-export interface Vector3 {
-  x: number;
-  y: number;
-  z: number;
-}
-
-export interface TrasnformKey {
+export interface TransformKey {
   time: number;
 
   /**
    * @description property keyframe이 가지고 있는 value 데이터
    * @optional property keyframe인 경우 value에다가 Vector3값을 할당
    */
-  value?: Vector3;
+  value?: Vector3 | Quaternion | number;
 }
 
 // 키프레임 데이터 타입
-export interface Keyframe extends TrasnformKey {
+export interface Keyframe extends TransformKey {
   /**
    * @description 삭제 된 키프레임인지 체크
    * @default false false인 경우 화면에 키프레임이 보임. true인 경우 화면에 키프레임이 보이지 않음
@@ -40,11 +35,11 @@ export type TimeEditorTrack = TrackIdentifier & {
 };
 
 // 선택 된 키프레임 데이터 타입
-export type SelectedKeyframe = TrackIdentifier & TrasnformKey;
+export type SelectedKeyframe = TrackIdentifier & TransformKey;
 
 // 선택 된 키프레임들을 cluster
 export type ClusteredKeyframe = TrackIdentifier & {
-  keyframes: TrasnformKey[];
+  keyframes: TransformKey[];
 };
 
 export interface UpdatedTransformKey {
@@ -54,7 +49,7 @@ export interface UpdatedTransformKey {
 
   to: number;
 
-  value: Vector3;
+  value: Quaternion | Vector3 | number;
 }
 
 export interface UpdatedPropertyKeyframes {

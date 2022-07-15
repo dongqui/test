@@ -4,20 +4,33 @@ import { Repository } from './index';
 
 class PropertyKeyframeRepository implements Repository {
   // property 트랙 리스트 초기화
-  initializeTimeEditorTrack(plaskTracks: PlaskTrack[]): TimeEditorTrack[] {
+  initializeTimeEditorTrack(plaskTracks: PlaskTrack[], context: { trackUid: number }): TimeEditorTrack[] {
     const propertyTimeEditorTrackList: TimeEditorTrack[] = [];
-    let trackNumber = 0;
-    plaskTracks.forEach((plaskTrack) => {
-      trackNumber += 1;
-      if (trackNumber % 10 === 4) trackNumber += 7; // 4 -> 11, 14 -> 21
-      const keyframes: Keyframe[] = plaskTrack.transformKeys.map((transformKey) => ({
-        time: transformKey.frame,
-        value: transformKey.value,
-        isDeleted: false,
-        isSelected: false,
-      }));
-      propertyTimeEditorTrackList.push({ trackNumber, trackId: plaskTrack.id, trackType: 'property', keyframes });
-    });
+
+    const indexedTrackMap: { [key: string]: PlaskTrack[] } = {};
+    for (let i = 0; i < plaskTracks.length; i++) {
+      const track = plaskTracks[i];
+      if (!indexedTrackMap[track.targetId]) {
+        indexedTrackMap[track.targetId] = [];
+      }
+      indexedTrackMap[track.targetId].push(track);
+    }
+
+    let parentTrackNumber = 0;
+    for (const targetId of Object.keys(indexedTrackMap)) {
+      for (const plaskTrack of indexedTrackMap[targetId]) {
+        const keyframes: Keyframe[] = plaskTrack.transformKeys.map((transformKey) => ({
+          time: transformKey.frame,
+          value: transformKey.value,
+          isDeleted: false,
+          isSelected: false,
+        }));
+        propertyTimeEditorTrackList.push({ trackNumber: context.trackUid, trackId: plaskTrack.id, trackType: 'property', keyframes, parentTrackNumber });
+        context.trackUid++;
+      }
+      parentTrackNumber++;
+    }
+
     return propertyTimeEditorTrackList;
   }
 

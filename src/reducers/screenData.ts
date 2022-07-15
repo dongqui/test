@@ -9,6 +9,7 @@ interface VisibilityOption {
   isGridVisible: boolean;
   isShadowVisible: boolean;
   isGizmoVisible: boolean;
+  isIKControllerVisible: boolean;
 }
 
 interface PlaskSkeletonViewer {
@@ -40,6 +41,7 @@ export const screenData = (state = defaultState, action: ScreenDataAction) => {
             isGridVisible: true,
             isShadowVisible: true,
             isGizmoVisible: true,
+            isIKControllerVisible: true,
           },
         ],
       });
@@ -88,6 +90,13 @@ export const screenData = (state = defaultState, action: ScreenDataAction) => {
       return Object.assign({}, state, {
         visibilityOptions: state.visibilityOptions.map((visibilityOption) =>
           visibilityOption.screenId === action.payload.screenId ? { ...visibilityOption, isGizmoVisible: action.payload.value } : visibilityOption,
+        ),
+      });
+    }
+    case 'screenDataAction/SET_IK_CONTROLLER_VISIBILITY': {
+      return Object.assign({}, state, {
+        visibilityOptions: state.visibilityOptions.map((visibilityOption) =>
+          visibilityOption.screenId === action.payload.screenId ? { ...visibilityOption, isIKControllerVisible: action.payload.value } : visibilityOption,
         ),
       });
     }

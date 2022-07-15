@@ -76,7 +76,7 @@ const addJointSpheres = (bones: Bone[], mesh: AbstractMesh, scene: Scene, assetI
     );
 
     scene.onBeforeRenderObservable.add(() => {
-      sphere.setAbsolutePosition(bone.getAbsolutePosition());
+      sphere.setAbsolutePosition(bone.getAbsolutePosition(mesh));
     });
   });
 

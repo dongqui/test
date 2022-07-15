@@ -34,7 +34,7 @@ const createGround = (scene: Scene, useTexture: boolean, width: number, height: 
   const groundMaterial = new StandardMaterial('groundMaterial', scene);
 
   if (useTexture) {
-    const emissiveTexture = new Texture('texture/texture_02.png', scene);
+    const emissiveTexture = new Texture('texture/texture_03.png', scene);
     // settings for texture repeat
     emissiveTexture.wrapU = Texture.WRAP_ADDRESSMODE;
     emissiveTexture.wrapV = Texture.WRAP_ADDRESSMODE;

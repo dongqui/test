@@ -1,6 +1,8 @@
 import { ClickBoneTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
+import { PropertyTrack } from 'types/TP/track';
 import { getBinarySearch } from 'utils/TP';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 import { MultipleClick, SelectedTracks } from './index';
 
@@ -24,17 +26,17 @@ class BoneTrackMultipleClick implements MultipleClick {
     return flatten.sort((a, b) => a - b);
   };
 
-  private setSelectedTracks = (payload: ClickBoneTrackBody): SelectedTracks => {
+  private setSelectedTracks = (boneNumber: number, propertyTrackList: PropertyTrack[]): SelectedTracks => {
+    const childTracks = findChildrenTracks(boneNumber, propertyTrackList);
     const selectedProperties: number[] = [];
-    const boneNumber = payload.trackNumber;
-    for (let transform = boneNumber + 1; transform <= boneNumber + 3; transform++) {
-      selectedProperties.push(transform);
+    for (const child of childTracks) {
+      selectedProperties.push(child.trackNumber);
     }
     return { selectedBones: [boneNumber], selectedProperties };
   };
 
   public clickMultipleSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
-    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload);
+    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload.trackNumber, state.propertyTrackList);
     const nextSelectedBones = this.filterSelectedTracks(state.selectedBones, selectedBones);
     const nextSelectedProselectedProperties = this.filterSelectedTracks(state.selectedProperties, selectedProperties);
     return {
@@ -44,7 +46,7 @@ class BoneTrackMultipleClick implements MultipleClick {
   };
 
   public clickMultipleNotSelectedTrack = ({ state, payload }: Parmas): SelectedTracks => {
-    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload);
+    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload.trackNumber, state.propertyTrackList);
     const nextSelectedBones = this.sortAscendingNumbers(state.selectedBones, selectedBones);
     const nextSelectedProselectedProperties = this.sortAscendingNumbers(state.selectedProperties, selectedProperties);
     return {

@@ -7,15 +7,15 @@ export type PlaskSpec = {
   [key: string]: PlaskEntitySpec;
 };
 
+export type EntityMap = { [id: string]: PlaskEntity };
 export class EntityStore {
-  private _entities: { [id: string]: PlaskEntity } = {};
+  private _entities: EntityMap = {};
   public get entities() {
     return this._entities;
   }
 
   constructor(public scene: Scene) {
     // TODO : remove debug
-    (window as any).debugSerialize = () => console.log(this.serializeAll());
   }
 
   /**
@@ -42,12 +42,26 @@ export class EntityStore {
     return result;
   }
 
-  public registerEntity(entity: PlaskEntity) {
+  public async registerEntity(entity: PlaskEntity) {
     if (this._entities[entity.entityId]) {
+      this._entities[entity.entityId].onDispose();
       this._entities[entity.entityId].copyFrom(entity);
+      await this._entities[entity.entityId].onUpdate();
     } else {
-      this._entities[entity.entityId] = entity;
+      // Cloning so we make sure that history is not impacted
+      this._entities[entity.entityId] = entity.clone();
+      await this._entities[entity.entityId].onInitialize();
     }
+  }
+
+  public unregisterEntity(entity: PlaskEntity) {
+    if (!this._entities[entity.entityId]) {
+      console.warn('Trying to unregister a non-registered entity');
+      return;
+    }
+
+    delete this._entities[entity.entityId];
+    entity.onDispose();
   }
 
   public serializeAll() {

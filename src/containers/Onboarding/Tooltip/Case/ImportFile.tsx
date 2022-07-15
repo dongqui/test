@@ -4,7 +4,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { getTargetCoordinates } from 'utils/common';
 
 import StepTemplate from '../Template/StepTemplate';
-import Arrow from '../Arrow';
+import Arrow from 'components/TooltipArrow';
 
 const ImportFile = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -23,8 +23,7 @@ const ImportFile = () => {
       <StepTemplate step={1} ref={tooltipRef}>
         <h3>Import files into the library</h3>
         <p>
-          Import your <span>model or video files</span> by clicking the button <br />
-          or simply drag and drop them in the library.
+          Import your <span>model file</span> by clicking the button or simply drag and drop them in the library.
         </p>
         <Arrow placement="left-start" />
       </StepTemplate>

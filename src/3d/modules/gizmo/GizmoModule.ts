@@ -9,14 +9,21 @@ import {
   PlaneRotationGizmo,
   PointerEventTypes,
   TransformNode,
+  CreateSphere,
   Vector3,
+  CreateBox,
+  PlaneDragGizmo,
+  Material,
 } from '@babylonjs/core';
-import { updateEntity } from 'actions/selectingDataAction';
+
 import * as animationDataActions from 'actions/animationDataAction';
 import { GizmoMode, GizmoSpace } from 'types/common';
 import { checkIsTargetMesh } from 'utils/RP';
 import { Module } from '../Module';
 import { SelectorModule } from '../selector/SelectorModule';
+import { readMetadata } from 'utils/RP/metadata';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { PlaskGizmoManager } from './PlaskGizmoManager';
 
 type GizmoDragObserver = Nullable<
   Observer<{
@@ -27,9 +34,8 @@ type GizmoDragObserver = Nullable<
 type GizmoDragStartObserver = Nullable<Observer<{ dragPlanePoint: Vector3; pointerId: number }>>;
 
 export class GizmoModule extends Module {
-  public state = {};
   private _isAutokeyMode: boolean = false;
-  private _gizmoManager!: GizmoManager;
+  private _gizmoManager!: PlaskGizmoManager;
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _currentGizmoMode: GizmoMode = GizmoMode.POSITION;
   private _currentGizmoSpace: GizmoSpace = GizmoSpace.LOCAL;
@@ -56,7 +62,8 @@ export class GizmoModule extends Module {
   };
 
   public initialize() {
-    this._gizmoManager = new GizmoManager(this.plaskEngine.scene);
+    this._gizmoManager = new PlaskGizmoManager(this.plaskEngine.scene);
+
     this._gizmoManager.usePointerToAttachGizmos = false;
     this._currentGizmoMode = GizmoMode.POSITION;
     this._gizmoManager.positionGizmoEnabled = true; // position
@@ -66,20 +73,21 @@ export class GizmoModule extends Module {
     this._selectionChangeObserver = this.plaskEngine.selectorModule.onSelectionChangeObservable.add((objects) => this._onSelectionChange(objects));
     this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.add((event) => this._changePointerIcon(event));
   }
-
   public dispose() {
     this.plaskEngine.selectorModule.onSelectionChangeObservable.remove(this._selectionChangeObserver);
     this._gizmoManager.utilityLayer.utilityLayerScene.onPointerObservable.clear();
     this._gizmoManager.dispose();
   }
 
-  private _onSelectionChange(selectedTargets: TransformNode[]) {
+  private _onSelectionChange(selectedTargets: PlaskTransformNode[]) {
     // Clear previous outline
     this._clearOutline();
 
+    const selectedTargetsNodes = selectedTargets.map((node) => node.reference);
+
     // Update active targets
     this._activeTargets.length = 0;
-    for (const target of selectedTargets) {
+    for (const target of selectedTargetsNodes) {
       this._activeTargets.push(target);
     }
 
@@ -87,6 +95,10 @@ export class GizmoModule extends Module {
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * Changes the gizmo space, to be either local or world
+   * @param space
+   */
   public changeGizmoSpace(space: GizmoSpace) {
     if (this._currentGizmoMode === GizmoMode.POSITION) {
       this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = space === GizmoSpace.LOCAL;
@@ -98,24 +110,40 @@ export class GizmoModule extends Module {
     this._currentGizmoSpace = space;
   }
 
+  /**
+   * Changes the gizmo mode between rotation position and scale
+   * @param mode
+   */
   public changeGizmoMode(mode: GizmoMode) {
     this._currentGizmoMode = mode;
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * @hidden
+   */
   public updateVisibility() {
     // Refresh attachment
     this._attachGizmo(this._activeTargets);
   }
 
+  /**
+   * The current gizmo space
+   */
   public get currentGizmoSpace() {
     return this._currentGizmoSpace;
   }
 
+  /**
+   * The current gizmo mode
+   */
   public get currentGizmoMode() {
     return this._currentGizmoMode;
   }
 
+  /**
+   * Set to true to enable auto keyframe when changing the gizmo
+   */
   public get isAutokeyMode() {
     return this._isAutokeyMode;
   }
@@ -261,14 +289,14 @@ export class GizmoModule extends Module {
         // controller
         target.renderOutline = true;
         target.outlineColor = Color3.White();
-        target.outlineWidth = 0.1;
+        target.outlineWidth = readMetadata('outlineSize', target) || 0.1;
       } else {
         // joint(transformNode)
         const joint = target.getScene().getMeshById(target.id.replace('transformNode', 'joint'));
         if (joint) {
           joint.renderOutline = true;
           joint.outlineColor = Color3.White();
-          joint.outlineWidth = 0.03; // set outline width according to joint's diameter
+          joint.outlineWidth = readMetadata('outlineSize', target) || 0.03; // set outline width according to joint's diameter
         }
       }
     });
@@ -276,6 +304,20 @@ export class GizmoModule extends Module {
 
   private _attachGizmo(selectedTargets: TransformNode[]) {
     this._clearObservers();
+
+    // if (!this._planeDragGizmo) {
+    //   this._planeDragGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.White(), this._gizmoManager.utilityLayer, this._gizmoManager.gizmos.positionGizmo);
+    //   this._planeDragGizmo.isEnabled = false;
+    //   const customMesh = CreateBox('screenspaceBox', { size: 0.01 }, this._planeDragGizmo.gizmoLayer.utilityLayerScene);
+    //   this._planeDragGizmo.setCustomMesh(customMesh);
+    //   this._planeDragGizmo.dragBehavior.onDragObservable.add(() => {
+    //     const cam = this.plaskEngine.scene.activeCamera;
+    //     if (!cam) return;
+
+    //     const F = cam.getDirection(new Vector3(0, 0, 1));
+    //     this._planeDragGizmo.dragBehavior.options.dragPlaneNormal?.copyFrom(F.normalize());
+    //   });
+    // }
     if (selectedTargets.length === 0) {
       // Deselection
       this._gizmoManager.attachToNode(null);
@@ -285,22 +327,27 @@ export class GizmoModule extends Module {
         // Enable gizmo for the current mode
         case GizmoMode.POSITION: {
           this._gizmoManager.positionGizmoEnabled = true;
+          this._gizmoManager.planeDragGizmoEnabled = true;
           this._gizmoManager.rotationGizmoEnabled = false;
           this._gizmoManager.scaleGizmoEnabled = false;
+
           this._gizmoManager.gizmos.positionGizmo!.updateGizmoPositionToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           this._gizmoManager.gizmos.positionGizmo!.updateGizmoRotationToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           break;
         }
         case GizmoMode.ROTATION: {
           this._gizmoManager.positionGizmoEnabled = false;
+          this._gizmoManager.planeDragGizmoEnabled = false;
           this._gizmoManager.rotationGizmoEnabled = true;
           this._gizmoManager.scaleGizmoEnabled = false;
+
           this._gizmoManager.gizmos.rotationGizmo!.updateGizmoPositionToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           this._gizmoManager.gizmos.rotationGizmo!.updateGizmoRotationToMatchAttachedMesh = this._currentGizmoSpace === GizmoSpace.LOCAL;
           break;
         }
         case GizmoMode.SCALE: {
           this._gizmoManager.positionGizmoEnabled = false;
+          this._gizmoManager.planeDragGizmoEnabled = false;
           this._gizmoManager.rotationGizmoEnabled = false;
           this._gizmoManager.scaleGizmoEnabled = true;
           break;
@@ -311,13 +358,8 @@ export class GizmoModule extends Module {
       }
 
       if (this.plaskEngine.visibilityLayers.visibilityOptions.isGizmoVisible) {
-        if (!checkIsTargetMesh(selectedTargets[0])) {
-          // transformNode single selection
-          this._gizmoManager.attachToNode(selectedTargets[0]);
-          this._addObservables(selectedTargets[0]);
-        } else {
-          this._gizmoManager.attachToMesh(selectedTargets[0]);
-        }
+        this._gizmoManager.attachToNode(selectedTargets[0]);
+        this._addObservables(selectedTargets[0]);
       } else {
         this._gizmoManager.attachToNode(null);
       }

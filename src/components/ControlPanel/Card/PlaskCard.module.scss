@@ -1,0 +1,12 @@
+@import 'styles/libraries/_typography';
+
+@mixin common-section {
+  display: flex;
+  height: auto;
+  border-bottom: 1px solid #4f4f4f;
+}
+
+.section {
+  @include common-section;
+  flex-direction: column;
+}

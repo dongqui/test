@@ -1,5 +1,5 @@
 import { find, cloneDeep, omitBy } from 'lodash';
-import { select, put, SagaReturnType, call, take } from 'redux-saga/effects';
+import { select, put, SagaReturnType, call, take, all, putResolve } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 import produce from 'immer';
 
@@ -29,9 +29,9 @@ export function* watchConfirmOnError() {
 
 export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNodeActions.applyMocapToModel.request>) {
   const { lpNode, plaskProject }: RootState = yield select();
-  const { draggedNode, nodes } = lpNode;
+  const { draggedNode, nodes, sceneId } = lpNode;
   const { assetList } = plaskProject;
-  const { nodeId } = action.payload;
+  const { nodeId, mocapId } = action.payload;
   const modelNode = find(nodes, { id: nodeId });
   const targetRetargetMap = modelNode?.retargetMap;
   const isErrorRetargetMap = targetRetargetMap && targetRetargetMap.values.some((value) => !value.targetTransformNodeId);
@@ -74,7 +74,11 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     return;
   }
 
-  const mocapData: MocapDataResponse = yield call(api.getMocapData, draggedNode.mocapId);
+  console.log('sceneId : ' + sceneId, mocapId);
+  // const mocapData: MocapDataResponse = yield call(api.getMocapData, draggedNode.mocapId);
+  const mocapData: MocapDataResponse = yield call(api.getMocapData, sceneId, mocapId);
+
+  console.log(mocapData);
 
   const mocapAnimationIngredient: SagaReturnType<typeof plaskEngine.animationModule.createAnimationIngredientFromMocapData> = yield call(
     [plaskEngine.animationModule, plaskEngine.animationModule.createAnimationIngredientFromMocapData],
@@ -97,7 +101,7 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
   const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
   const animationLayers = _animation?.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
   const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-  const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
+  let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, targetAsset.transformNodes, false, targetAsset.id);
 
   const nextNodes = produce(nodes, (draft) => {
     const targetModel = find(draft, { id: nodeId });

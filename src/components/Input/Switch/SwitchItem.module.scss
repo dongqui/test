@@ -1,0 +1,59 @@
+@import "styles/libraries/colors";
+
+.btn {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex: 1;
+
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 6px;
+
+  .btn-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+  }
+
+  .btn-icon {
+    width: 16px;
+    height: 16px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .padding {
+    opacity: 0;
+    width: 100%;
+  }
+
+  .btn-padding {
+    opacity: 0;
+  }
+
+  input {
+    display: none;
+  }
+
+  &:hover {
+    color: $content-active;
+  }
+
+  &.selected {
+    color: $content-active;
+  }
+
+  &.disabled {
+    cursor: default;
+    color: $content-inactive;
+  }
+}
