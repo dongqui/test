@@ -3,6 +3,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { addMetadata } from 'utils/RP/metadata';
 import { convertToDegree } from 'utils/common';
 import { BoneIk } from './BoneIk';
+import setAbsoluteRotation from '3d/utils/setAbsoluteRotation';
 
 export type IKControllerParams = {
   body: TransformNode;
@@ -135,13 +136,6 @@ export class IKController {
     return ikControllerHandle;
   }
 
-  public adjustAlignment() {
-    if (this.handle.rotationQuaternion) {
-      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
-      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
-    }
-  }
-
   public adjustPoleAngleFromFK() {
     // if (!this.fkInfluenceChain) {
     //   return;
@@ -154,14 +148,25 @@ export class IKController {
     this.poleAngle = 0;
   }
 
+  public adjustAlignment() {
+    if (this.handle.rotationQuaternion) {
+      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
+      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
+    }
+  }
   public alignTargetInfluenceChainWithHandle() {
     if (this.handle.rotationQuaternion) {
-      const targetHandle = this.handle.rotationQuaternion.clone();
-      this.targetInfluenceChain[0].rotationQuaternion?.copyFrom(targetHandle);
+      const targetHandle = this.handle.absoluteRotationQuaternion.clone();
 
-      this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
-      this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
-      this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
+      const targetAngle = targetHandle.subtract(this.targetInfluenceChain[1].absoluteRotationQuaternion.clone());
+
+      setAbsoluteRotation(this.targetInfluenceChain[0], targetHandle);
+      // this.targetInfluenceChain[0].getWorldMatrix().decomposeToTransformNode(this.handle);
+      // this.targetInfluenceChain[0].setDirection(this.handle.getDirection());
+
+      // this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
+      // this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
+      // this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
     }
   }
 
@@ -292,6 +297,7 @@ export class IKController {
     }
     this._getUpVectorFromFK(this.limb);
     this.controller.initializeFromPose();
+
     this.update();
 
     // DEBUG : pole angle target

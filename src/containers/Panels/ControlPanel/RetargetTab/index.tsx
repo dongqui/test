@@ -43,9 +43,10 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
   const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => target.type === 'joint').length > 1, [_selectedTargets]);
   const visualizedRetargetMap = useMemo(() => _retargetMaps.find((retargetMap) => retargetMap.assetId === _visualizedAssetIds[0]), [_retargetMaps, _visualizedAssetIds]); // 단일 모델
-  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => object.type === 'joint' && !object.reference.name.toLowerCase().includes('armature')), [
-    _selectableObjects,
-  ]);
+  const visualizedTransformNodes = useMemo(
+    () => _selectableObjects.filter((object) => object.type === 'joint' && !object.reference.name.toLowerCase().includes('armature')),
+    [_selectableObjects],
+  );
 
   // 이미 mapping 된 target bone인지 체크
   const checkAlreadyMappedTargetBone = useCallback(
