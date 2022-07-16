@@ -20,7 +20,6 @@ const defaultProps: Partial<BaseProps> = {
 };
 
 const IconButton: FunctionComponent<Props> = ({ r, type, icon, disabled, onClick, className, children, ...rest }) => {
-  // console.log('IconButton', ref);
   const classes = cx('icon-button', className, type, {
     disabled,
   });
