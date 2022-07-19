@@ -3,8 +3,7 @@ name: Engine docs auto-deploy
 on:
   push:
     branches:
-      - master
-      - feature/api-3d
+      - develop
 
 jobs:
   cd:

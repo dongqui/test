@@ -305,7 +305,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}
-              type="button"
+              type="default"
               disabled={!isAllActive || info.disabled}
               fullSize={true}
             />

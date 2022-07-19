@@ -120,6 +120,8 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
     if (animationIngredient) {
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+      console.log(contactData);
+      //const contactData = [];
       if (contactData.length) {
         console.log('Auto add IK because foot locking is required.');
         yield call(addIK, addIKAction(asset.id, animationIngredient));
