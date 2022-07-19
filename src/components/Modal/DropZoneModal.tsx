@@ -1,13 +1,14 @@
 import React, { useRef, FunctionComponent } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-import { FilledButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
-import { Html } from 'components/Typography';
+import { Html, Typography } from 'components/Typography';
 
 import classnames from 'classnames/bind';
 import styles from './DropZoneModal.module.scss';
+import { IconButton, OutlineButton } from 'components/Button';
+import { BaseDropzone } from 'components/Input/Dropzone';
 
 const cx = classnames.bind(styles);
 
@@ -23,21 +24,6 @@ interface Props {
   subTitle: string;
 
   /**
-   * 확장자 지원을 알려주는 메시지
-   */
-  extensionMesaage: string;
-
-  /**
-   * 취소 버튼 메시지
-   */
-  cancelButtonText: string;
-
-  /**
-   * 모달 취소 이벤트
-   */
-  onCancel?: () => void;
-
-  /**
    * 모달 종료 이벤트
    */
   onClose: () => void;
@@ -48,61 +34,32 @@ interface Props {
   onDrop: (files: File[]) => void;
 }
 
-const DropZoneModal: FunctionComponent<Props> = (props) => {
-  const { cancelButtonText, title, subTitle, extensionMesaage, onCancel, onClose, onDrop } = props;
-
-  const { getRootProps } = useDropzone({
-    onDrop: (files) => {
-      onDrop(files);
-      onClose();
-    },
-    noClick: true,
-  });
-
-  const fileExplorerRef = useRef<HTMLInputElement>(null);
-
-  // input file 변경
-  const handleInputFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files !== null) {
-      const files = Array.from(e.target.files);
-      e.target.value = '';
-      onDrop(files);
-      onClose();
-    }
-  };
-
-  // Select Files 텍스트 클릭
-  const handleSelectFilesClick = () => {
-    if (fileExplorerRef.current) {
-      fileExplorerRef.current.click();
-    }
-  };
-
-  // 취소 버튼 클릭
-  const handleCloseButtonClick = () => {
-    onCancel && onCancel();
-    onClose();
-  };
-
+const DropZoneModal: FunctionComponent<Props> = ({ title, subTitle, onClose, onDrop }) => {
   return (
-    <BaseModal>
-      <h3 className={cx('title')}>{title}</h3>
+    <BaseModal className={cx('base-wrapper')}>
+      <Typography type="title" className={cx('title')}>
+        {title}
+      </Typography>
       <div className={cx('content')}>
-        <Html content={subTitle} />
-        <div className={cx('drop-zone-wrapper')} {...getRootProps()}>
-          <span>{extensionMesaage}</span>
-          <IconWrapper className={cx('cloud-upload-icon')} icon={SvgPath.CloudUpload} hasFrame={false} />
-          <div className={cx('select-files-wrapper')}>
-            <span>Drag & Drop here</span>
-            <span>or</span>
-            <strong onClick={handleSelectFilesClick}>Select files</strong>
-            <input type="file" multiple ref={fileExplorerRef} onChange={handleInputFileChange} />
-          </div>
+        <Typography type="body" className={cx('subTitle')}>
+          {subTitle}
+        </Typography>
+        <div className={cx('dropzone')}>
+          <BaseDropzone onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+            {({ open }) => (
+              <div className={cx('dropzone-guide')} onClick={open}>
+                <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
+                <div className={cx('dropzone-guide-text')}>
+                  Drag and drop <br />
+                  or
+                </div>
+                <OutlineButton>Browse File</OutlineButton>
+              </div>
+            )}
+          </BaseDropzone>
+          <IconButton icon={SvgPath.Close} onClick={onClose} type="ghost" className={cx('dropzone-button')} />
         </div>
       </div>
-      <FilledButton className={cx('cancel-button')} onClick={handleCloseButtonClick}>
-        {cancelButtonText}
-      </FilledButton>
     </BaseModal>
   );
 };

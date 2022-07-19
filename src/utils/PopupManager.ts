@@ -14,7 +14,7 @@ class PopupManager {
 
   constructor() {
     this.isOnboardingDone = !!localStorage.getItem('onboarding_1');
-    this.isNewFeatureModalDone = !!localStorage.getItem('notification');
+    this.isNewFeatureModalDone = localStorage.getItem('notification') === '1';
     this.isVMOnboardingDone = !!localStorage.getItem('onboarding_2');
 
     this.proceedGenerator = null;
@@ -60,12 +60,12 @@ class PopupManager {
     if (this.dispatch) {
       this.dispatch(
         commonActions.openModal('NotificationModal', {
-          message:
-            'You can save your work on Plask as of June 9th, 2022. See a list of savable items <a href="https://knowledge.plask.ai/en/scene_save" target="_blank" rel="noopener noreferrer">here.</a>',
-          title: 'New Feature! Auto Save',
+          message: 'Check out the newly updated features.',
+          title: 'New Feature!',
           closeCallback: () => {
             this.next();
-            localStorage.setItem('notification', 'true');
+            // key value change rule: '1' -> '2'
+            localStorage.setItem('notification', '1');
           },
         }),
       );
