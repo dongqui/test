@@ -1,0 +1,15 @@
+.wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.onboarding-modal {
+  z-index: 997;
+  appearance: none;
+  transition: appearance 1s;
+
+  &.show {
+    appearance: unset;
+  }
+}

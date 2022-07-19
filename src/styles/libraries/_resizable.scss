@@ -60,7 +60,7 @@
   // cursor: ew-resize;
   left: 0;
   cursor: ew-resize;
-  width: 20px;
+  width: 5px;
   position: absolute;
   height: 100%;
   transform: translateX(-50%);
@@ -70,7 +70,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 20px;
+  width: 5px;
   height: 100%;
   cursor: ew-resize;
   transform: translateX(50%);
@@ -86,7 +86,7 @@
   transform: translateY(-50%);
   cursor: ns-resize;
   width: 100%;
-  height: 20px;
+  height: 5px;
 }
 
 .react-resizable-handle-n {

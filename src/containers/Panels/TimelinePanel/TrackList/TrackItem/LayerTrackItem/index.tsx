@@ -23,6 +23,9 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
   const trackItemRef = useRef<HTMLLIElement>(null);
   const boneTrackList = useSelector((state) => state.trackList.boneTrackList);
   const isBaseLayer = useMemo(() => trackName === 'Base Layer', [trackName]);
+  const layerTrackList = useSelector((state) => state.trackList.layerTrackList);
+
+  const baseLayer = layerTrackList.find((layer) => layer.trackName === 'Base Layer');
 
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
@@ -41,7 +44,8 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
       },
       {
         label: 'Delete Layer',
-        disabled: isBaseLayer || isSelected,
+        // disabled: isBaseLayer || isSelected,
+        disabled: isBaseLayer,
         onClick: () => {
           dispatch(
             globalUIActions.openModal('ConfirmModal', {
@@ -49,7 +53,12 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
               message: 'Are you sure you want to delete a animation layer?<br />This will delete all keyframes in this layer',
               confirmText: 'Delete',
               onConfirm: () => {
-                dispatch(trackListActions.deleteLayerSocket.request(trackId));
+                if (baseLayer) {
+                  const payload: trackListActions.ClickLayerTrackBody = { eventType: 'leftClick', trackId: baseLayer.trackId, trackType: 'layer' };
+                  dispatch(trackListActions.clickTrackBody(payload));
+                  dispatch(trackListActions.changeSelectedTargets());
+                  dispatch(trackListActions.deleteLayerSocket.request(trackId));
+                }
               },
               cancelText: 'Cancel',
               confirmButtonColor: 'negative',
@@ -58,7 +67,7 @@ const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
         },
       },
     ],
-    [dispatch, isBaseLayer, isSelected, trackId],
+    [dispatch, isBaseLayer, isSelected, trackId, baseLayer],
   );
 
   // 트랙 클릭

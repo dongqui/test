@@ -15,6 +15,7 @@ import ExtractForm from './ExtractForm';
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { Overlay } from 'components/Overlay';
 
 const cx = classNames.bind(styles);
 
@@ -27,6 +28,9 @@ interface Props {
   startValue: number;
   endValue: number;
   onUnmount: () => void;
+  setExtractButtonRef: (ref: HTMLButtonElement) => void;
+  doneVMOnBoarding: (step: number) => void;
+  setCPModified: (modified: boolean) => void;
 }
 
 interface ExtractFormData {
@@ -35,13 +39,19 @@ interface ExtractFormData {
   tPose: boolean;
 }
 
-const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount }: Props) => {
+interface MocapException {
+  isOpen: boolean;
+  case?: 'OverLength' | 'Timeout' | 'Condition' | 'Others';
+}
+
+const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount, doneVMOnBoarding, setCPModified }: Props) => {
   const dispatch = useDispatch();
 
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
-  const [valueName, setValueName] = useState('');
+  const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
+  const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
     footLock: false,
@@ -57,6 +67,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
         }),
       );
     } else {
+      doneVMOnBoarding(4);
       setValueFormData({
         ...data,
       });
@@ -70,8 +81,12 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
   }, []);
 
   const handleCloseModal = useCallback(() => {
-    setValueName('');
+    setValueName('Extracted motion');
     setIsOpenExtractModal(false);
+    setIsOpenLoadingModal(false);
+    setIsOpenExceptionModal({
+      isOpen: false,
+    });
   }, []);
 
   const handleCancel = useCallback(() => {
@@ -99,6 +114,15 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
 
   const handleSubmitModal = async () => {
     if (videoRef.current) {
+      if (endValue - startValue > 300) {
+        setIsOpenExceptionModal({
+          isOpen: true,
+          case: 'OverLength',
+        });
+
+        return;
+      }
+
       const formData = new FormData();
 
       const file = await convertBlobToFile({ url: videoRef.current.src, type: browserType === 'safari' ? 'mp4' : 'webm', valueName });
@@ -126,9 +150,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
         }),
       })
         .then(async (response) => {
-          // const { data } = response;
-
-          const { loaded, data, error } = await requestApi({
+          await requestApi({
             method: 'GET',
             url: `/library/get/${sceneId}/library`,
           })
@@ -153,15 +175,36 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
             });
         })
         .catch((error) => {
-          //
-          // TODO 예외처리
-          throw error;
+          const { statusCode } = error;
+          setIsOpenLoadingModal(false);
+
+          if (error.isCancel) {
+            setIsOpenLoadingModal(false);
+            return;
+          }
+
+          if (statusCode === 500.9) {
+            setIsOpenExceptionModal({
+              isOpen: true,
+              case: 'Condition',
+            });
+          } else if (statusCode === 408) {
+            setIsOpenExceptionModal({
+              isOpen: true,
+              case: 'Timeout',
+            });
+          } else {
+            setIsOpenExceptionModal({
+              isOpen: true,
+              case: 'Others',
+            });
+          }
         });
     }
   };
 
   return (
-    <div className={cx('wrapper')}>
+    <div className={cx('wrapper')} onMouseEnter={() => setCPModified(false)}>
       <div className={cx('section')}>
         <div className={cx('section-title')}>
           <Typography type="title">Extract option</Typography>
@@ -169,7 +212,9 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
             <Typography>Beta</Typography>
           </div>
         </div>
-        <BaseForm onSubmit={handleSubmit}>{(fieldProps) => <ExtractForm fieldProps={fieldProps} />}</BaseForm>
+        <BaseForm onSubmit={handleSubmit}>
+          {(fieldProps) => <ExtractForm doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />}
+        </BaseForm>
       </div>
       {isOpenExtractModal && (
         <BaseModal>
@@ -181,7 +226,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
             <div className={cx('modal-content')}>
               <div className={cx('message')}>Enter the name of the mocap to extract.</div>
               <label className={cx('label-name')}>Name</label>
-              <BaseInput className={cx('input-name')} name="name" placeholder="Extracted motion" value={valueName} onChange={handleChangeName} />
+              <BaseInput className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
             <div className={cx('modal-footer')}>
               <OutlineButton className={cx('button-negative')} onClick={handleCloseModal}>
@@ -192,6 +237,7 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
               </FilledButton>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
       {isOpenLoadingModal && (
@@ -207,6 +253,61 @@ const ControlPanel = ({ sceneId, token, browserType, videoRef, duration, startVa
               <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
                 Cancel
               </OutlineButton>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'OverLength' && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title-area')}>
+                <IconWrapper className={cx('icon-warning')} icon={SvgPath.ErrorWarning} />
+                <div className={cx('title')}>Clip the length of the video</div>
+              </div>
+              <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
+            </div>
+            <div className={cx('modal-content', 'nomargin')}>
+              <div className={cx('message', 'nomargin')}>
+                Longer than 5 minutes have difficulty in <br /> making motions. Reduce the length of the video and try again.
+              </div>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Condition' && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title-area')}>
+                <IconWrapper className={cx('icon-warning')} icon={SvgPath.ErrorWarning} />
+                <div className={cx('title')}>Check the requirements</div>
+              </div>
+              <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
+            </div>
+            <div className={cx('modal-content', 'nomargin')}>
+              <div className={cx('message', 'nomargin')}>
+                It seems that the video does not enough on
+                <br /> the <span className={cx('impact')}>requirements</span> for get motion.
+              </div>
+            </div>
+          </div>
+        </BaseModal>
+      )}
+      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Others' && (
+        <BaseModal>
+          <div className={cx('modal-inner')}>
+            <div className={cx('modal-header')}>
+              <div className={cx('title-area')}>
+                <IconWrapper className={cx('icon-warning')} icon={SvgPath.ErrorWarning} />
+                <div className={cx('title')}>There was an unknown problem</div>
+              </div>
+              <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
+            </div>
+            <div className={cx('modal-content', 'nomargin')}>
+              <div className={cx('message', 'nomargin')}>
+                Please try again. <br /> If the problem occurs again, please let us know through the website chat window.
+              </div>
             </div>
           </div>
         </BaseModal>

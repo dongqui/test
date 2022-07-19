@@ -20,9 +20,25 @@ interface Props {
   endValue: number;
   onChangeStart: (value: number) => void;
   onChangeEnd: (value: number) => void;
+  leftCropSliderRef: (ref: HTMLInputElement | null) => void;
+  doneVMOnBoarding: (step: number) => void;
 }
 
-const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duration, onDrop, startValue, endValue, onChangeStart, onChangeEnd, dropzoneDisabled = false }: Props) => {
+const TimelinePanel = ({
+  videoRef,
+  leftCropSliderRef,
+  timeline,
+  isVideoLoaded,
+  videoStatus,
+  duration,
+  onDrop,
+  startValue,
+  endValue,
+  onChangeStart,
+  onChangeEnd,
+  dropzoneDisabled = false,
+  doneVMOnBoarding,
+}: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
   const [originNumber, setOriginNumber] = useState(0);
@@ -80,6 +96,7 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
 
   const handleChangeStartValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
+      doneVMOnBoarding(2);
       const value = Number((Number(event.target.value) * 100) / duration);
 
       if (Number(event.target.value) < endValue - 1) {
@@ -97,11 +114,12 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
         }
       }
     },
-    [duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
+    [doneVMOnBoarding, duration, endValue, onChangeStart, sliderStyles.left, sliderStyles.right, sliderStyles.width, videoRef],
   );
 
   const handleChangeEndValue = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
+      doneVMOnBoarding(2);
       const value = Number((Number(event.target.value) * 100) / duration);
 
       if (Number(event.target.value) > startValue + 1) {
@@ -195,7 +213,24 @@ const TimelinePanel = ({ videoRef, timeline, isVideoLoaded, videoStatus, duratio
             <canvas id="timelineCanvas" className={cx('timeline-canvas')} />
             <input className={cx('scrubber')} type="range" min={0} max={duration} step="0.001" value={videoRef.current?.currentTime} onChange={handleChangeCurrentTime} />
             <input className={cx('crop-slider-start')} type="range" min={0} max={duration} step="0.001" value={startValue} onChange={handleChangeStartValue} />
-            <input className={cx('crop-slider-end')} type="range" min={0} max={duration} step="0.001" value={endValue} onChange={handleChangeEndValue} />
+            <input
+              ref={(ref) => {
+                if (ref && leftCropSliderRef) {
+                  if (isVideoLoaded) {
+                    leftCropSliderRef(ref);
+                  } else {
+                    leftCropSliderRef(null);
+                  }
+                }
+              }}
+              className={cx('crop-slider-end')}
+              type="range"
+              min={0}
+              max={duration}
+              step="0.001"
+              value={endValue}
+              onChange={handleChangeEndValue}
+            />
             <div className={cx('slider-time')} style={{ left: `calc(${sliderStyles.left}%)`, width: `calc(${sliderStyles.width}%)` }} />
           </div>
         </div>
