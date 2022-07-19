@@ -182,24 +182,27 @@ const IKControllerSection: FunctionComponent<Props> = ({
         try {
           dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
-          const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
-          if (animationIngredient) {
-            dispatch(editAnimationIngredient({ animationIngredient }));
-          }
+          // TODO Need to Fix
+          setTimeout(() => {
+            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+            if (animationIngredient) {
+              dispatch(editAnimationIngredient({ animationIngredient }));
+            }
 
-          // Set FK position to newly updated values
-          plaskEngine.ikModule.setIKtoFK();
+            // Set FK position to newly updated values
+            plaskEngine.ikModule.setIKtoFK();
 
-          // Select baked FK so the user notices the change
-          dispatch(defaultMultiSelect({ targets: impactedIK }));
+            // Select baked FK so the user notices the change
+            dispatch(defaultMultiSelect({ targets: impactedIK }));
 
-          // Refresh tracks by forcing the selection update.
-          // Could be better using ADD_KEYFRAME
-          dispatch(changeSelectedTargets());
+            // Refresh tracks by forcing the selection update.
+            // Could be better using ADD_KEYFRAME
+            dispatch(changeSelectedTargets());
+            dispatch(globalUIActions.closeModal('LoadingModal'));
+          }, 100);
         } catch (e) {
           console.log(e);
         } finally {
-          dispatch(globalUIActions.closeModal('LoadingModal'));
         }
       },
     },
@@ -211,24 +214,27 @@ const IKControllerSection: FunctionComponent<Props> = ({
         try {
           dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
-          const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
-          for (const animationIngredient of animationIngredients) {
-            dispatch(editAnimationIngredient({ animationIngredient }));
-          }
+          // TODO Need to Fix
+          setTimeout(() => {
+            const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+            for (const animationIngredient of animationIngredients) {
+              dispatch(editAnimationIngredient({ animationIngredient }));
+            }
 
-          // Set FK position to newly updated values
-          plaskEngine.ikModule.setFKtoIK();
+            // Set FK position to newly updated values
+            plaskEngine.ikModule.setFKtoIK();
 
-          // Select baked FK so the user notices the change
-          dispatch(defaultMultiSelect({ targets: impactedFK }));
+            // Select baked FK so the user notices the change
+            dispatch(defaultMultiSelect({ targets: impactedFK }));
 
-          // Refresh tracks by forcing the selection update.
-          // Could be better using ADD_KEYFRAME
-          dispatch(changeSelectedTargets());
+            // Refresh tracks by forcing the selection update.
+            // Could be better using ADD_KEYFRAME
+            dispatch(changeSelectedTargets());
+            dispatch(globalUIActions.closeModal('LoadingModal'));
+          }, 100);
         } catch (e) {
           console.log(e);
         } finally {
-          dispatch(globalUIActions.closeModal('LoadingModal'));
         }
       },
     },
