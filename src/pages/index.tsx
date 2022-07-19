@@ -29,6 +29,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       });
   }
 
+  alert(process.env.NEXT_PUBLIC_BACKEND_API_URL);
+
   /**
    * Possible error cases when accessing the app from the homepage
    * 401.1 - Invalid token
