@@ -5,12 +5,23 @@
 .inner {
   width: 100%;
   height: 100%;
-  overflow-y: scroll;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  overflow-y: hidden;
+
+  &:hover {
+    overflow-y: auto;
+    overflow-y: overlay;
+  }
 
   &::-webkit-scrollbar {
-    display: none;
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    box-shadow: inset 0 0 14px rgb(73 77 80 / 80%);
+    padding: 2px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   .onboarding-export-file-target {
