@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
@@ -34,6 +34,14 @@ interface Props {
 }
 
 const DropZoneModal: FunctionComponent<Props> = ({ title, subTitle, onClose, onDrop }) => {
+  const dropHandler = useCallback(
+    (files: File[]) => {
+      onClose();
+      onDrop(files);
+    },
+    [onClose, onDrop],
+  );
+
   return (
     <BaseModal className={cx('base-wrapper')}>
       <Typography type="title" className={cx('title')}>
@@ -44,7 +52,7 @@ const DropZoneModal: FunctionComponent<Props> = ({ title, subTitle, onClose, onD
           {subTitle}
         </Typography>
         <div className={cx('dropzone')}>
-          <BaseDropzone onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+          <BaseDropzone onDrop={dropHandler} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
             {({ open }) => (
               <div className={cx('dropzone-guide')} onClick={open}>
                 <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
