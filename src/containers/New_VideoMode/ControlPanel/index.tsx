@@ -211,7 +211,6 @@ const ControlPanel = ({
               <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
             </div>
             <div className={cx('modal-content')}>
-              <div className={cx('message')}>Enter the name of the mocap to extract.</div>
               <label className={cx('label-name')}>Name</label>
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
