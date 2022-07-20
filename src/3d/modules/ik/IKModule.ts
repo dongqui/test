@@ -725,9 +725,10 @@ export class IKModule extends Module {
       // ! Hard coded length of prefix
       // TODO : we need a better way to retrieve the origin transform node
       const originNodeName = node.name.substring(6);
-      const originTransform = scene.getTransformNodeByName(originNodeName);
+      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
       if (originTransform) {
         copyTransformFrom(originTransform, node);
+        node.id = `__plask_ghost_${originTransform.id}`;
       } else {
         console.warn('Could not find origin transform, ghost may have wrong posture ' + originNodeName);
       }
@@ -746,6 +747,11 @@ export class IKModule extends Module {
     }
 
     this._ghost.skeleton = clone.skeletons[0];
+    const bones = this._ghost.skeleton.bones;
+    clone.skeletons[0].id = '__plask_ghost_skeleton';
+    bones.forEach((bone) => {
+      bone.id = '__plask_ghost_' + bone.id;
+    });
     this.forceUpdateGhostSkeleton();
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {
@@ -1060,7 +1066,8 @@ export class IKModule extends Module {
         {
           targetId: ikController.handle.id,
           property: 'poleAngle' as PlaskProperty,
-          value: poleAngleRotation,
+          // value: poleAngleRotation,
+          value: 0,
         },
         {
           targetId: ikController.handle.id,
