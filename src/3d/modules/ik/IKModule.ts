@@ -1036,7 +1036,8 @@ export class IKModule extends Module {
         {
           targetId: ikController.handle.id,
           property: 'poleAngle' as PlaskProperty,
-          value: poleAngleRotation,
+          // value: poleAngleRotation,
+          value: 0,
         },
         {
           targetId: ikController.handle.id,
