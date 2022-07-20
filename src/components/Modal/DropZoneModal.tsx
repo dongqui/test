@@ -1,14 +1,13 @@
-import React, { useRef, FunctionComponent } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { FunctionComponent } from 'react';
 
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { BaseModal } from 'components/Modal';
-import { Html, Typography } from 'components/Typography';
+import { Typography } from 'components/Typography';
+import { IconButton, OutlineButton } from 'components/Button';
+import { BaseDropzone } from 'components/Input/Dropzone';
 
 import classnames from 'classnames/bind';
 import styles from './DropZoneModal.module.scss';
-import { IconButton, OutlineButton } from 'components/Button';
-import { BaseDropzone } from 'components/Input/Dropzone';
 
 const cx = classnames.bind(styles);
 
