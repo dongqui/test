@@ -24,8 +24,6 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
       globalUIActions.openModal('DropZoneModal', {
         title: 'Import',
         subTitle: 'Import your 3D assets',
-        extensionMesaage: '.fbx, .glb supported',
-        cancelButtonText: 'Cancel',
         onDrop: onLoad,
       }),
     );

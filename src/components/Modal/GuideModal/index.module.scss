@@ -18,7 +18,7 @@
   background-color: $bg-elevated;
   padding: 24px;
   width: 394px;
-  z-index: 999;
+  z-index: 998;
 
   .balloon {
     &::before,
@@ -51,6 +51,7 @@
     span {
       color: $secondary;
       font-weight: 600;
+      font-size: 14px;
     }
   }
 
