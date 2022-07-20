@@ -165,7 +165,7 @@ const ControlPanel = ({
             .then((response) => {
               setIsOpenLoadingModal(false);
               onUnmount();
-              dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: '' }));
+              dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
               dispatch(lpActions.initNodes(response.data));
 
               return {

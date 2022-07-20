@@ -18,7 +18,7 @@ const Record: FunctionComponent<Props> = () => {
   const handleRecordButtonClick = useCallback(() => {
     dispatch(commonActions.closeModal('GuideModal'));
     localStorage.setItem('onboarding_2', 'onboarding_2');
-    dispatch(modeSelectionActions.changeMode({ mode: 'videoMode' }));
+    dispatch(modeSelectionActions.changeMode({ mode: 'videoMode', videoURL: undefined }));
   }, [dispatch]);
 
   return <IconWrapper id="recordButton" className={cx('record')} hasFrame={false} icon={SvgPath.Record} onClick={handleRecordButtonClick} />;
