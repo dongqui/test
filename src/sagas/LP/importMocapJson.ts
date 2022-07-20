@@ -12,6 +12,7 @@ import { convertServerResponseToNode } from 'utils/LP/converters';
 
 const readJsonChannel = channel();
 
+// delete this comment
 export function* watchReadJsonChannel() {
   while (true) {
     const action: SagaReturnType<typeof globalUIActions.openModal> = yield take(readJsonChannel);
@@ -28,10 +29,9 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
   reader.onload = async function (e) {
     if (typeof e?.target?.result === 'string') {
       try {
-        const json = JSON.parse(e.target.result);
-        // TODO : reinstate
+        const json: MocapJson = JSON.parse(e.target.result);
+        checkMocapJson(json);
 
-        // checkMocapJson(json);
         const reponseNode = await api.addMocapByJson(lpNode.sceneId, {
           name: mocapJsonFile.name,
           json: json.result,
@@ -73,6 +73,7 @@ function checkMocapJson(json: MocapJson) {
     }
     for (const trackData of mocapResult.trackData) {
       const isInvalidProperty = !TRACK_DATA_PROPERTY.includes(trackData.property);
+
       // TODO : reinstate
       // const hasInvalidTransformKey = trackData.transformKeys.some((key) => isInvalidTransformKey(key, trackData.property === 'position'));
 

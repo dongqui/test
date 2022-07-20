@@ -110,6 +110,7 @@
     "eslint-plugin-react": "^7.28.0",
     "fork-ts-checker-webpack-plugin": "^6.1.0",
     "image-minimizer-webpack-plugin": "^2.2.0",
+    "imagemin-svgo": "^10.0.1",
     "prettier": "^2.2.1",
     "redux-devtools-extension": "^2.13.9",
     "redux-logger": "^3.0.6",

@@ -422,7 +422,7 @@ export class IKModule extends Module {
       }
       selectedIK.adjustAlignment();
       selectedIK.adjustPoleAngleFromFK();
-      selectedIK.controller.update();
+      selectedIK.update();
       // selectedIK.controller.update();
     });
   }
@@ -640,48 +640,6 @@ export class IKModule extends Module {
     }
   }
 
-  private _guessLimbUpBend(endTransformNode: TransformNode, boneType: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand') {
-    let defaultUpVector;
-    let defaultBendAxis;
-    switch (boneType) {
-      case 'rightFoot':
-      case 'leftFoot':
-        defaultUpVector = new Vector3(0, 0, 1);
-        defaultBendAxis = new Vector3(0, 0, 1);
-        break;
-      case 'rightHand':
-        defaultUpVector = new Vector3(-1, 0, 0);
-        defaultBendAxis = new Vector3(0, 0, 1);
-        break;
-      case 'leftHand':
-        defaultUpVector = new Vector3(-1, 0, 0);
-        defaultBendAxis = new Vector3(0, 0, 1);
-        break;
-    }
-    const result = {
-      upVector: defaultUpVector,
-      bendAxis: defaultBendAxis,
-    };
-
-    try {
-      const node2 = endTransformNode;
-      const node1 = endTransformNode.parent as TransformNode;
-      const node0 = node1.parent as TransformNode;
-      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition()).normalize();
-      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition()).normalize();
-      const right = Vector3.Cross(b, a);
-      if (right.length() < 1e-5) {
-        // both sections are aligned, cannot guess an up vector
-        return result;
-      }
-      // Bones are slightly bent, we can cross again to find the upvector and bend axis
-      result.upVector.copyFrom(right.normalize().cross(a));
-      return result;
-    } catch {
-      return result;
-    }
-  }
-
   // public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
   //   const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
   //     (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
@@ -739,9 +697,10 @@ export class IKModule extends Module {
       // ! Hard coded length of prefix
       // TODO : we need a better way to retrieve the origin transform node
       const originNodeName = node.name.substring(6);
-      const originTransform = scene.getTransformNodeByName(originNodeName);
+      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
       if (originTransform) {
         copyTransformFrom(originTransform, node);
+        node.id = `__plask_ghost_${originTransform.id}`;
       } else {
         console.warn('Could not find origin transform, ghost may have wrong posture ' + originNodeName);
       }
@@ -760,6 +719,11 @@ export class IKModule extends Module {
     }
 
     this._ghost.skeleton = clone.skeletons[0];
+    const bones = this._ghost.skeleton.bones;
+    clone.skeletons[0].id = '__plask_ghost_skeleton';
+    bones.forEach((bone) => {
+      bone.id = '__plask_ghost_' + bone.id;
+    });
     this.forceUpdateGhostSkeleton();
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {
@@ -775,10 +739,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { bone: 'rightFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'leftFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'rightHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
-      { bone: 'leftHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
+      { bone: 'rightFoot', controllerSize: 0.3 },
+      { bone: 'leftFoot', controllerSize: 0.3 },
+      { bone: 'rightHand', controllerSize: 0.4 },
+      { bone: 'leftHand', controllerSize: 0.4 },
     ] as BoneIKParams[];
 
     // Creating IK controls
@@ -808,10 +772,6 @@ export class IKModule extends Module {
         return;
       }
 
-      const { upVector, bendAxis } = this._guessLimbUpBend(transformNode, elem.bone);
-      elem.upVector = upVector;
-      elem.bendAxis = bendAxis;
-
       const ikBone = this._ghost.skeleton!.bones[skeleton.bones.indexOf(bone)];
       const ikController = new IKController(
         {
@@ -823,8 +783,6 @@ export class IKModule extends Module {
           fkTransformNode: transformNode,
           assetId,
           limb: elem.bone,
-          upVector: elem.upVector,
-          bendAxis: elem.bendAxis,
           controllerSize: elem.controllerSize,
         },
         scene,
@@ -854,8 +812,7 @@ export class IKModule extends Module {
     // Evaluate if Toe Base
     if (boneName.includes('Toe')) {
       targetAnimation = this.adjustToeBase(boneName, animationIngredient);
-    }
-    else {
+    } else {
       // Create/find an IK controller for this bone
       const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
 
@@ -1000,8 +957,8 @@ export class IKModule extends Module {
                 // Evaluate if there are NO CONTACT points stored
                 if (noContactPoints.length > 0) {
                   // Adjust Blend limit
-                  while (noContactPoints.length/2 < blendFrames) {
-                    blendFrames --;
+                  while (noContactPoints.length / 2 < blendFrames) {
+                    blendFrames--;
                   }
                   //console.log("going Curve");
                   setAdjustedCurve(this.plaskEngine.scene, result);
@@ -1010,10 +967,10 @@ export class IKModule extends Module {
                   adjustedPoints.push(result);
                 }
                 // Storing BlendIn index
-                if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true; 
+                if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true;
                 // Storing BlendOut index
                 if (array[index + blendFrames]) array[index + blendFrames].blendOut = true;
-                blendFrames = 5; 
+                blendFrames = 5;
               } else {
                 noContactPoints.push(value.position);
                 pointsQty++;
@@ -1032,15 +989,15 @@ export class IKModule extends Module {
               // Evaluate if last point
               if (index === array.length - 1) {
                 // Evaluate quantity of NO CONTACT points
-                if (noContactPoints.length > reduceValue*1.5) {
+                if (noContactPoints.length > reduceValue * 1.5) {
                   reducedPoints = noContactPoints.slice(reduceValue);
                   reduceValue = 1;
                 } else {
                   reducedPoints = noContactPoints;
                 }
               } else {
-                if (noContactPoints.length > reduceValue*2) {
-                  reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);                  
+                if (noContactPoints.length > reduceValue * 2) {
+                  reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);
                 }
               }
 
@@ -1079,9 +1036,9 @@ export class IKModule extends Module {
           blendValue = 1;
         }
         if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
-          blendQty = 1/blendFrames;
+          blendQty = 1 / blendFrames;
         } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
-          blendQty = -1/blendFrames;
+          blendQty = -1 / blendFrames;
         }
         blendValue = blendValue + blendQty;
         if (blendValue < 0) blendValue = 0;
@@ -1098,7 +1055,8 @@ export class IKModule extends Module {
           {
             targetId: ikController.handle.id,
             property: 'poleAngle' as PlaskProperty,
-            value: poleAngleRotation,
+            // value: poleAngleRotation,
+            value: 0,
           },
           {
             targetId: ikController.handle.id,
@@ -1136,9 +1094,9 @@ export class IKModule extends Module {
     let anglesEvolution = 0;
     if (targetTrack) {
       targetTrack.transformKeys.forEach((key, index, array) => {
-        // Evaluate the end of a contact period 
-        if (key.value === 0 && array[index-1].value === 1 && array[index-2].value === 1) {
-            anglesEvolution = angles.length;
+        // Evaluate the end of a contact period
+        if (key.value === 0 && array[index - 1].value === 1 && array[index - 2].value === 1) {
+          anglesEvolution = angles.length;
         }
         // Insert the flow of animation in ToeBase
         if (anglesEvolution > 0) {
@@ -1152,7 +1110,7 @@ export class IKModule extends Module {
           ];
           targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, index, targetDataList);
         }
-      })
+      });
     }
     return targetAnimation;
   }
