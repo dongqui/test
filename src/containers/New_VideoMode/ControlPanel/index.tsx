@@ -1,4 +1,4 @@
-import { RefObject, useState, useCallback, useRef, ChangeEvent } from 'react';
+import { RefObject, useState, useCallback, useRef, ChangeEvent, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import axios, { Canceler } from 'axios';
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -31,6 +31,10 @@ interface Props {
   setExtractButtonRef: (ref: HTMLButtonElement) => void;
   doneVMOnBoarding: (step: number) => void;
   setCPModified: (modified: boolean) => void;
+  isOpenExtractModal: boolean;
+  setIsOpenExtractModal: (state: boolean) => void;
+  isOpenLoadingModal: boolean;
+  setIsOpenLoadingModal: (state: boolean) => void;
 }
 
 interface ExtractFormData {
@@ -39,18 +43,39 @@ interface ExtractFormData {
   tPose: boolean;
 }
 
-const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoRef, duration, startValue, endValue, onUnmount, doneVMOnBoarding, setCPModified }: Props) => {
+const ControlPanel = ({
+  setExtractButtonRef,
+  sceneId,
+  token,
+  browserType,
+  videoRef,
+  duration,
+  startValue,
+  endValue,
+  onUnmount,
+  doneVMOnBoarding,
+  setCPModified,
+  isOpenExtractModal,
+  setIsOpenExtractModal,
+  isOpenLoadingModal,
+  setIsOpenLoadingModal,
+}: Props) => {
   const dispatch = useDispatch();
 
   let cancelTokenSource = useRef<Canceler>();
-  const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
-  const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
     footLock: false,
     tPose: false,
   });
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpenExtractModal && inputRef.current) {
+      inputRef.current.select();
+    }
+  }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
     if (endValue - startValue >= 300) {
@@ -77,13 +102,13 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
   const handleCloseModal = useCallback(() => {
     setValueName('Extracted motion');
     setIsOpenExtractModal(false);
-  }, []);
+  }, [setIsOpenExtractModal]);
 
   const handleCancel = useCallback(() => {
     setIsOpenLoadingModal(false);
     setIsOpenExtractModal(false);
     cancelTokenSource.current && cancelTokenSource.current();
-  }, []);
+  }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
   const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
     const response = await fetch(url);
@@ -188,7 +213,7 @@ const ControlPanel = ({ setExtractButtonRef, sceneId, token, browserType, videoR
             <div className={cx('modal-content')}>
               <div className={cx('message')}>Enter the name of the mocap to extract.</div>
               <label className={cx('label-name')}>Name</label>
-              <BaseInput className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
+              <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
             <div className={cx('modal-footer')}>
               <OutlineButton className={cx('button-negative')} onClick={handleCloseModal}>

@@ -23,6 +23,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { Overlay } from 'components/Overlay';
 
 const cx = classNames.bind(styles);
 
@@ -56,6 +57,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
+  const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
+  const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
 
   // ref related to onboarding session
   const [recordButtonRef, setRecordButtonRef] = useState<HTMLButtonElement | null>(null);
@@ -634,12 +637,12 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   );
 
   useEffect(() => {
-    if (modals.length === 0) {
+    if (modals.length === 0 && !isOpenExtractModal && !isOpenLoadingModal) {
       window.addEventListener('keypress', handleKeyDown);
 
       return () => window.removeEventListener('keypress', handleKeyDown);
     }
-  }, [handleKeyDown, modals]);
+  }, [handleKeyDown, isOpenExtractModal, isOpenLoadingModal, modals]);
 
   const blurFocused = (e: FocusEvent<HTMLButtonElement>) => e.target.blur();
 
@@ -700,6 +703,10 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               setExtractButtonRef={setExtractButtonRef}
               doneVMOnBoarding={doneVMOnBoarding}
               setCPModified={setCPModified}
+              isOpenExtractModal={isOpenExtractModal}
+              setIsOpenExtractModal={setIsOpenExtractModal}
+              isOpenLoadingModal={isOpenLoadingModal}
+              setIsOpenLoadingModal={setIsOpenLoadingModal}
             />
           )}
         </Box>
@@ -754,6 +761,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         extractButtonRef={extractButtonRef}
         doneVMOnBoarding={doneVMOnBoarding}
       />
+      {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
     </div>
   );
 };
