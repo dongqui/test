@@ -68,7 +68,7 @@ const ControlPanel = ({
   const dispatch = useDispatch();
 
   let cancelTokenSource = useRef<Canceler>();
-    const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
+  const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
@@ -112,7 +112,7 @@ const ControlPanel = ({
     setIsOpenExceptionModal({
       isOpen: false,
     });
-  }, [setIsOpenExtractModal]);
+  }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
   const handleCancel = useCallback(() => {
     setIsOpenLoadingModal(false);
