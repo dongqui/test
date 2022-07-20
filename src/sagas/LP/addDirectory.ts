@@ -1,5 +1,6 @@
 import { find } from 'lodash';
 import { select, call, put } from 'redux-saga/effects';
+import produce from 'immer';
 
 import { RootState } from 'reducers';
 import { checkCreateDuplicates } from 'utils/LP/FileSystem';
@@ -40,7 +41,16 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
     };
 
     const res: RequestNodeResponse = yield call(api.createFolderOrMocap, lpNode.sceneId, data, parentNode?.id);
-    yield put(lpNodeActions.addDirectoryAsync.success(convertServerResponseToNode(res)));
+    const directoryNode = convertServerResponseToNode(res);
+    const nodes = produce(lpNode.nodes, (draft) => {
+      draft.push(directoryNode);
+      if (directoryNode.parentId) {
+        const parentNode = draft.find((node) => node.id === directoryNode.parentId);
+        parentNode?.childNodeIds.push(directoryNode.id);
+      }
+    });
+
+    yield put(lpNodeActions.addDirectoryAsync.success({ nodes, newDirectory: directoryNode }));
   } catch (e) {
     // yield put(lpNodeActions.addDirectoryAsync.failure(e));
   }
