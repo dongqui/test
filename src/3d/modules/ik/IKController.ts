@@ -166,31 +166,33 @@ export class IKController {
 
   private _getUpVectorFromFK(boneType: string) {
     if (this.fkInfluenceChain) {
-      this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, TmpVectors.Vector3[0]);
-      this.fkInfluenceChain[0].absolutePosition.subtractToRef(this.fkInfluenceChain[1].absolutePosition, TmpVectors.Vector3[1]);
-      const a = TmpVectors.Vector3[0].normalize();
-      const b = TmpVectors.Vector3[1].normalize();
-      Vector3.CrossToRef(b, a, TmpVectors.Vector3[1]);
-      const right = TmpVectors.Vector3[1];
-      if (right.length() < 1e-5) {
-        // both sections are aligned, cannot guess an up vector
+      const chainParent = this.fkInfluenceChain[2].parent as TransformNode;
+      if (chainParent) {
+        // throw new Error("FK chain must have a parent to compute up vector")
+        chainParent.absolutePosition.subtractToRef(this.handle.absolutePosition, TmpVectors.Vector3[0]);
+        this.fkInfluenceChain[2].absolutePosition.subtractToRef(this.handle.absolutePosition, TmpVectors.Vector3[1]);
+        const a = TmpVectors.Vector3[0].normalize();
+        const b = TmpVectors.Vector3[1].normalize();
+        Vector3.CrossToRef(a, b, TmpVectors.Vector3[0]);
+        const upVector = TmpVectors.Vector3[0].normalize();
         switch (boneType) {
           case 'rightFoot':
+            break;
           case 'leftFoot':
-            this.controller.upVector.copyFromFloats(0, 0, 1);
+            upVector.scaleInPlace(-1);
+            // this.controller.upVector.copyFromFloats(0, 0, 1);
             break;
           case 'rightHand':
-            this.controller.upVector.copyFromFloats(-1, 0, 0);
+            Vector3.CrossToRef(upVector, b, upVector);
+            // this.controller.upVector.copyFromFloats(-1, 0, 0);
             break;
           case 'leftHand':
-            this.controller.upVector.copyFromFloats(-1, 0, 0);
+            Vector3.CrossToRef(b, upVector, upVector);
             break;
         }
-        return;
+
+        this.controller.upVector.copyFrom(upVector);
       }
-      // Bones are slightly bent, we can cross again to find the upvector and bend axis
-      right.normalize();
-      Vector3.CrossToRef(right, a, this.controller.upVector);
     }
   }
 

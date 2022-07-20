@@ -45,6 +45,7 @@ export class IKModule extends Module {
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _fkControlledJoints: { ikNode: TransformNode; fkNode: TransformNode }[] = [];
+  private _fkPoseJoints: TransformNode[] = [];
   private _selectedIkControllers: Array<IKController> = [];
   private _ghostMeshes: Mesh[] = [];
   private _ghost = {
@@ -137,7 +138,6 @@ export class IKModule extends Module {
   public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
     let result = null;
     if (!this._areIKControllersAlreadyAdded()) {
-      console.log('called');
       this._initializeControllers(assetId);
       result = this._generateIkPlaskTransformNodes(assetId);
     }
@@ -179,6 +179,7 @@ export class IKModule extends Module {
     }
     this.ikControllers.length = 0;
     this._fkControlledJoints.length = 0;
+    this._fkPoseJoints.length = 0;
 
     for (const mesh of this._ghostMeshes) {
       mesh.dispose();
@@ -662,6 +663,33 @@ export class IKModule extends Module {
   //   return null;
   // }
 
+  private _updatePoseJointBones(assetId: string) {
+    // const bonesSelection = ['hips'];
+    // bonesSelection.forEach((elem) => {
+    //   // Finding Bone
+    //   const retargetMap = this.getRetargetMap(assetId);
+    //   if (!retargetMap) {
+    //     console.warn('Cannot find retarget map');
+    //     return;
+    //   }
+    //   const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes(elem));
+    //   if (!retargetValue) {
+    //     console.warn('Cannot find bone name, check boneSelection');
+    //     return;
+    //   }
+    //   const transformNode = this.plaskEngine.scene.getTransformNodeById(retargetValue.targetTransformNodeId!);
+    //   const bone = skeleton.bones.find((bone) => bone.getTransformNode() === transformNode);
+    //   if (!bone) {
+    //     console.warn(`Cannot insert IK controller on bone ${elem.bone} : bone not found`);
+    //     return;
+    //   }
+    //   if (!transformNode) {
+    //     console.warn(`Cannot insert IK controller on bone ${elem.bone} : associated transformNode not found`);
+    //     return;
+    //   }
+    // });
+  }
+
   private _initializeControllers(assetId: string) {
     const scene = this.plaskEngine.scene;
 
@@ -730,6 +758,8 @@ export class IKModule extends Module {
     // TODO : retrieve skeleton and body more cleanly
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
     const skeleton = scene.skeletons[0]; // store skeleton
+
+    this._updatePoseJointBones(assetId);
 
     // Defining bones to be used in IK
     const bonesSelection = [
