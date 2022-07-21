@@ -11,6 +11,7 @@ import CameraReset from './svg/CameraReset.svg';
 // import Directory from './svg/Directory.svg';
 // import Motion from './svg/Motion.svg';
 import FilledArrow from './svg/FilledArrow.svg';
+import More from './svg/More.svg';
 import ChevronLeft from './svg/ChevronLeft.svg';
 import ChevronRight from './svg/ChevronRight.svg';
 import ChevronUp from './svg/ChevronUp.svg';
@@ -62,9 +63,14 @@ import Support from './New_svg/Support.svg';
 import CloudUpload from './svg/CloudUpload.svg';
 import ErrorWarning from './svg/ErrorWarning.svg';
 import ModalClose from './svg/ModalClose.svg';
+import CameraPlay from '../../../public/images/CameraPlay.svg';
+import CameraRecord from '../../../public/images/CameraRecord.svg';
+import CameraPause from '../../../public/images/CameraPause.svg';
+import CameraStop from '../../../public/images/CameraStop.svg';
 
 type Icon =
   | 'ModalClose'
+  | 'More'
   | 'Close'
   | 'Search'
   | 'EyeClose'
@@ -123,7 +129,11 @@ type Icon =
   | 'Logo'
   | 'Support'
   | 'CloudUpload'
-  | 'ErrorWarning';
+  | 'ErrorWarning'
+  | 'CameraPlay'
+  | 'CameraRecord'
+  | 'CameraPause'
+  | 'CameraStop';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -133,6 +143,7 @@ const images: Images = {
   Close,
   Search,
   EyeClose,
+  More,
   EyeOpen,
   EyeOpenWhite,
   LockClose,
@@ -190,6 +201,10 @@ const images: Images = {
   CloudUpload,
   ErrorWarning,
   ModalClose,
+  CameraPlay,
+  CameraRecord,
+  CameraPause,
+  CameraStop,
 };
 
 export default images;

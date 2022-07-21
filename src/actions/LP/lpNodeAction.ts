@@ -96,6 +96,7 @@ interface DeleteNodeReceiveParam {
 interface ApplyMocapToModelRequestParams {
   nodeId: string;
   assetId?: string;
+  mocapId: string;
 }
 
 export const addAssetsAndAnimationIngredients = createAction('node/ADD_ASSETS_AND_ANIMATION_INGRIDIENTS', (modelNode: LP.Node, motionNodeId?: string) => ({

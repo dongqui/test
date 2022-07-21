@@ -1,0 +1,86 @@
+@import "styles/libraries/colors";
+@import "styles/libraries/mixins";
+
+.wrapper {
+  color: #fff;
+}
+
+.upper-section {
+  position: relative;
+}
+
+.lower-section {
+  position: relative;
+  z-index: 1;
+}
+
+.library-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.lp-button-wrapper {
+  display: flex;
+  height: 40px;
+  align-items: center;
+}
+
+.lp-button {
+  margin-left: -8px;
+}
+
+.lp-button-inner {
+  display: flex;
+  flex-direction: row;
+}
+
+.button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  padding-top: 1px;
+
+  svg {
+    width: 5px;
+    height: 10px;
+  }
+}
+
+.rendering-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.control-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.section {
+  padding: 0 16px;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    height: 40px;
+  }
+
+  .section-item {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    justify-content: space-between;
+  }
+}
+
+.dropdown {
+  margin-left: 30px;
+  background-color: $contentbg-base;
+  border-radius: 6px;
+  max-width: 189px;
+}

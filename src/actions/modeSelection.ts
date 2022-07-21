@@ -1,7 +1,7 @@
 export type ModeSelectionAction = ReturnType<typeof changeMode>;
 export interface ChangeMode {
-  mode?: 'animationMode' | 'videoMode';
-  videoURL?: string;
+  mode?: 'animationMode' | 'videoMode' | 'unmountVideoMode';
+  videoURL?: File;
 }
 
 export const CHANGE_MODE = 'modeSelection/CHANGE_MODE' as const;

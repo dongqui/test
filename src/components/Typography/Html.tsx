@@ -2,6 +2,7 @@ import { FunctionComponent } from 'react';
 
 export interface Props {
   content: string;
+  className?: string;
 }
 
 const Html: FunctionComponent<Props> = ({ content, ...rest }) => {

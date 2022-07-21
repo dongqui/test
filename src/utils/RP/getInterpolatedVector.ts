@@ -29,14 +29,14 @@ const getInterpolatedVector = (transformKeys: IAnimationKey[], targetFrame: numb
       // case: first - o - targetFrame - o - last
       let prev = transformKeys[0];
       let current = transformKeys[1];
-      let dt = targetFrame / (current.frame - prev.frame);
+      let dt = 0;
 
       for (let i = 0; i < transformKeys.length - 1; i += 1) {
         prev = transformKeys[i];
         current = transformKeys[i + 1];
 
-        if (current.frame > targetFrame) {
-          dt = targetFrame / (current.frame - prev.frame);
+        if (current.frame >= targetFrame) {
+          dt = 1 - (current.frame - targetFrame) / (current.frame - prev.frame);
           break;
         }
       }

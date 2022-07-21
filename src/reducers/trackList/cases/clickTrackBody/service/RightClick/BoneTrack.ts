@@ -1,12 +1,15 @@
 import { ClickBoneTrackBody } from 'actions/trackList';
 import { TrackListState } from 'reducers/trackList';
+import { PropertyTrack } from 'types/TP/track';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 import { RightClick, SelectedTracks } from './index';
 
 class BoneTrackRightClick implements RightClick {
-  private setSelectedTracks = (boneNumber: number): SelectedTracks => {
+  private setSelectedTracks = (boneNumber: number, propertyTrackList: PropertyTrack[]): SelectedTracks => {
+    const childTracks = findChildrenTracks(boneNumber, propertyTrackList);
     const selectedProperties: number[] = [];
-    for (let transform = boneNumber + 1; transform <= boneNumber + 3; transform++) {
-      selectedProperties.push(transform);
+    for (const child of childTracks) {
+      selectedProperties.push(child.trackNumber);
     }
     return { selectedBones: [boneNumber], selectedProperties };
   };
@@ -18,9 +21,9 @@ class BoneTrackRightClick implements RightClick {
   };
 
   // 선택 효과가 적용되지 않은 트랙을 마우스 우클릭
-  public clickRightNotSelectedTrack = (params: { payload: ClickBoneTrackBody }): SelectedTracks => {
-    const { payload } = params;
-    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload.trackNumber);
+  public clickRightNotSelectedTrack = (params: { payload: ClickBoneTrackBody; state: TrackListState }): SelectedTracks => {
+    const { payload, state } = params;
+    const { selectedBones, selectedProperties } = this.setSelectedTracks(payload.trackNumber, state.propertyTrackList);
     return { selectedBones, selectedProperties };
   };
 }

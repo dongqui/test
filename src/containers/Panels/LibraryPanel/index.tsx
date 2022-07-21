@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useSelector } from 'reducers';
 import { useDropzone } from 'react-dropzone';
 import '@babylonjs/loaders/glTF';
+
 import { partition } from 'lodash';
 
 import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
@@ -31,12 +32,12 @@ const LibraryPanel: FunctionComponent = () => {
     async (files: File[]) => {
       const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
 
-      const hasMoreThanOneViedo = videos.length > 1;
+      const hasMoreThanOneVideo = videos.length > 1;
       const isInvalidFileFormat = !filesExceptVideo.every((file) => {
         return file.name.toLocaleLowerCase().includes('glb') || file.name.toLocaleLowerCase().includes('fbx') || file.type.includes('json');
       });
 
-      if (hasMoreThanOneViedo) {
+      if (hasMoreThanOneVideo) {
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
@@ -58,7 +59,7 @@ const LibraryPanel: FunctionComponent = () => {
     [dispatch],
   );
 
-  const { getRootProps } = useDropzone({ onDrop: handleDrop });
+  const { getRootProps } = useDropzone({ onDrop: handleDrop, noClick: true });
 
   const [isSceneReady, setIsSceneReady] = useState(false);
 

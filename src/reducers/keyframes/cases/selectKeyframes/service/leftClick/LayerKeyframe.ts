@@ -24,7 +24,7 @@ class LayerKeyframeLeftClick implements LeftClick {
   private selectLayerKeyframes = ({ state, payload }: Parmas) => {
     const { time, trackType, trackNumber } = payload;
     const { trackId } = state.layerTrack;
-    const selectedLayerKeyframe: SelectedKeyframe = { time, trackType, trackNumber, trackId };
+    const selectedLayerKeyframe: SelectedKeyframe = { time, trackType, parentTrackNumber: -1, trackNumber, trackId };
     return this.clusterKeyframes.initializeClusterKeyframes([selectedLayerKeyframe]);
   };
 
@@ -34,7 +34,7 @@ class LayerKeyframeLeftClick implements LeftClick {
     state.boneTrackList.forEach((boneTrack) => {
       const { trackId, trackNumber, trackType } = boneTrack;
       const keyframe = this.findKeyframe(boneTrack.keyframes, time);
-      if (keyframe && !keyframe.isDeleted) selectedBoneKeyframes.push({ trackId, trackNumber, time, trackType });
+      if (keyframe && !keyframe.isDeleted) selectedBoneKeyframes.push({ trackId, parentTrackNumber: -1, trackNumber, time, trackType });
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedBoneKeyframes);
   };
@@ -43,10 +43,10 @@ class LayerKeyframeLeftClick implements LeftClick {
     const { time } = payload;
     const selectedPropertyKeyframes: SelectedKeyframe[] = [];
     state.propertyTrackList.forEach((propertyTrack) => {
-      const { trackId, trackNumber, trackType, keyframes } = propertyTrack;
+      const { trackId, trackNumber, trackType, keyframes, parentTrackNumber } = propertyTrack;
       const keyframe = this.findKeyframe(keyframes, time);
       if (keyframe && !keyframe.isDeleted) {
-        selectedPropertyKeyframes.push({ trackId, trackNumber, trackType, time, value: keyframe.value });
+        selectedPropertyKeyframes.push({ trackId, trackNumber, trackType, time, value: keyframe.value, parentTrackNumber });
       }
     });
     return this.clusterKeyframes.initializeClusterKeyframes(selectedPropertyKeyframes);

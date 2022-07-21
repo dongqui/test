@@ -37,6 +37,22 @@ export abstract class PlaskEntity {
   public abstract copyFrom(other: PlaskEntity | PlaskEntitySpec): PlaskEntity;
 
   /**
+   * This function is called when this PlaskEntity updates the project state
+   * (It replaces the current PlaskEntity with the same entityId in the project state)
+   */
+  public async onUpdate() {}
+
+  /**
+   * This function is called when this PlaskEntity is created in the project
+   * (No PlaskEntity with the same id was present before)
+   */
+  public async onInitialize() {}
+
+  /**
+   * This function is called when this PlaskEntity is disposed
+   */
+  public onDispose() {}
+  /**
    * Serializes this entity to a plain Javascript object
    *
    * @returns

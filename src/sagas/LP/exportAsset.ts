@@ -23,7 +23,7 @@ async function getAllAnimationIngredients(animationIngredients: AnimationIngredi
         const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
         const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
 
-        return AnimationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+        return plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
       }
     }),
   );
@@ -52,13 +52,12 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       const animationIds = targetMotion ? [targetMotion.animationId!] : nodes.filter((node) => node.assetId === assetId && node.type === 'MOTION').map((node) => node.animationId!);
       const ingredients: AnimationIngredient[] = yield call(getAllAnimationIngredients, animationIngredients, animationIds, asset!);
 
-      console.log(ingredients);
       ingredients.forEach((animationIngredient) => {
         const animationGroup = plaskEngine.animationModule.createAnimationGroupFromIngredient(animationIngredient, fps);
       });
     }
 
-    plaskEngine.assetModule.unpowerSkeletonViewer(baseScreen.id);
+    plaskEngine.assetModule.hideSkeleton(baseScreen.id);
 
     const parentAsset = find(nodes, { id: parentId });
 
@@ -74,7 +73,8 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       file.path = resultName;
 
       try {
-        const fbxUrl: string = yield call(convertModel, file, format);
+        const fbxUrl: string = yield call(convertModel, lpNode.sceneId, file, format);
+        console.log(fbxUrl);
         const link = document.createElement('a');
         link.href = fbxUrl;
         link.download = resultName;
@@ -104,7 +104,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
           file.path = resultName;
 
           try {
-            const bvhUrl: string = yield call(convertModel, file, 'bvh', bvhMap);
+            const bvhUrl: string = yield call(convertModel, lpNode.sceneId, file, 'bvh', bvhMap);
             const link = document.createElement('a');
             link.href = bvhUrl;
             link.download = resultName;
@@ -127,9 +127,9 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
 
     const targetVisibilityOption = visibilityOptions.find((visibilityOption) => visibilityOption.screenId === baseScreen.id);
     if (targetVisibilityOption && !targetVisibilityOption.isBoneVisible) {
-      plaskEngine.assetModule.unpowerSkeletonViewer(baseScreen.id);
+      plaskEngine.assetModule.hideSkeleton(baseScreen.id);
     } else {
-      plaskEngine.assetModule.powerSkeletonViewer(baseScreen.id);
+      plaskEngine.assetModule.showSkeleton(baseScreen.id);
     }
   }
 

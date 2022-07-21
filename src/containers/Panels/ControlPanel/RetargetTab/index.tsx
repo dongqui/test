@@ -4,7 +4,7 @@ import { isNull } from 'lodash';
 
 import { useSelector } from 'reducers';
 import { FilledButton } from 'components/Button';
-import { AnimationRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMapIndicator } from 'components/ControlPanel';
+import { StaticRangeInput, AnimationTitleToggle, DropdownWrapper, RetargetMapIndicator } from 'components/ControlPanel';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { RetargetSourceBoneType } from 'types/common';
 import * as selectingDataActions from 'actions/selectingDataAction';
@@ -43,9 +43,10 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
   const mappingCompleted = useMemo(() => mappedBones.length === 24, [mappedBones.length]);
   const multipleBoneSelected = useMemo(() => _selectedTargets.filter((target) => target.type === 'joint').length > 1, [_selectedTargets]);
   const visualizedRetargetMap = useMemo(() => _retargetMaps.find((retargetMap) => retargetMap.assetId === _visualizedAssetIds[0]), [_retargetMaps, _visualizedAssetIds]); // 단일 모델
-  const visualizedTransformNodes = useMemo(() => _selectableObjects.filter((object) => object.type === 'joint' && !object.reference.name.toLowerCase().includes('armature')), [
-    _selectableObjects,
-  ]);
+  const visualizedTransformNodes = useMemo(
+    () => _selectableObjects.filter((object) => object.type === 'joint' && !object.reference.name.toLowerCase().includes('armature')),
+    [_selectableObjects],
+  );
 
   // 이미 mapping 된 target bone인지 체크
   const checkAlreadyMappedTargetBone = useCallback(
@@ -288,16 +289,15 @@ const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
             </FilledButton>
             {!canAssign && <div className={cx('inactive-overlay')} />}
           </div>
-          <AnimationRangeInput
+          <StaticRangeInput
             text="Hip space"
             step={0.01}
-            currentMax={10}
+            max={1000}
             currentValue={hipSpace}
             decimalDigit={1}
             activeStatus={isAllActive}
             onChangeEnd={dispatchChangedHipSpace}
             handleChange={handleChange}
-            limitMax={1000}
           />
           {(!isAllActive || _selectedTargets.length >= 2) && <div className={cx('inactive-overlay')} />}
         </div>

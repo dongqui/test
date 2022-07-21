@@ -60,8 +60,8 @@ class DragDropKeyframesService implements Service {
     const selectedChildren = new Map<number, number[]>();
     const timeDiff = scrubberTime - this.getSmallestKeyframeTime();
     copiedPropertyKeyframes.forEach((group) => {
-      const { trackNumber, keyframes } = group;
-      const boneNumber = getBoneTrackIndex(trackNumber);
+      const { keyframes } = group;
+      const boneNumber = getBoneTrackIndex(group);
       const currentKeyframeTimes = selectedChildren.get(boneNumber);
       const set = new Set<number>(currentKeyframeTimes);
       keyframes.forEach((keyframe) => set.add(keyframe.time + timeDiff));

@@ -17,6 +17,8 @@ import {
   Vector2,
   Vector3,
 } from '@babylonjs/core';
+// import '@babylonjs/inspector';
+
 import { RootState } from 'reducers';
 import { Dispatch } from 'redux';
 import { stateDiff } from 'utils/common';
@@ -27,19 +29,20 @@ import { CameraModule } from './modules/camera/CameraModule';
 import { GizmoModule } from './modules/gizmo/GizmoModule';
 import { IKModule } from './modules/ik/IKModule';
 import { Module } from './modules/Module';
-import { SelectorModule } from './modules/selector/SelectorModule';
+import SelectorModuleSingleton, { SelectorModule } from './modules/selector/SelectorModule';
 import { ActionCreators } from 'redux-undo';
-import { EntityStore, PlaskSpec } from './entities/EntityStore';
-import { updateEntity } from 'actions/selectingDataAction';
+import { EntityMap, EntityStore, PlaskSpec } from './entities/EntityStore';
+import { addEntity } from 'actions/selectingDataAction';
 import { VisibilityLayersModule } from './modules/visibilityLayers/VisibilityLayersModule';
 import { AssetModule } from './modules/asset/AssetModule';
 import { AnimationModule } from './modules/animation/AnimationModule';
+import { paste } from 'actions/keyframes';
 
 type VisibilityOptions = {
   isGizmoVisible: boolean;
 };
 
-const FEATURE_HISTORY = true;
+const FEATURE_HISTORY = false;
 
 export class PlaskEngine {
   private _modules: Module[] = [];
@@ -50,6 +53,7 @@ export class PlaskEngine {
   private _camera!: ArcRotateCamera;
   private _hemiLight!: HemisphericLight;
   private _dirLight!: DirectionalLight;
+  private _inspectorActive = false;
 
   public dispatch!: Dispatch<any>;
 
@@ -63,6 +67,9 @@ export class PlaskEngine {
    */
   public onContextMenuOpenObservable: Observable<Vector2> = new Observable();
 
+  /**
+   * Disposes the engine
+   */
   public dispose() {
     this._engine.dispose();
     this._scene.dispose();
@@ -71,6 +78,8 @@ export class PlaskEngine {
       module.dispose();
     }
     this._modules.length = 0;
+
+    this.onPickObservable.clear();
   }
 
   public get scene() {
@@ -95,6 +104,9 @@ export class PlaskEngine {
 
   private _entityStore!: EntityStore;
 
+  // OBSERVABLES
+  public onPickObservable: Observable<Mesh> = new Observable();
+
   constructor() {
     // allow animation interpolation using matrix
     Animation.AllowMatricesInterpolation = true;
@@ -102,6 +114,11 @@ export class PlaskEngine {
     PlaskEngine.Instance = this;
   }
 
+  /**
+   * Initializes the engine to start the render loop
+   * @param canvas HTML canvas to render on
+   * @param dispatch Redux' dispatch. TODO : remove as this shouldn't be accessible from the engine
+   */
   public initialize(canvas: HTMLCanvasElement, dispatch: Dispatch<any>) {
     console.log('Initializing plask engine...');
     this._canvas = canvas;
@@ -116,9 +133,13 @@ export class PlaskEngine {
       module.initialize();
     }
 
-    this._engine.runRenderLoop(() => {
-      this._scene.render();
-    });
+    this.startRenderLoop();
+  }
+
+  private _tick(elapsed: number) {
+    for (const module of this._modules) {
+      module.tick(elapsed);
+    }
   }
 
   /**
@@ -128,7 +149,7 @@ export class PlaskEngine {
    * @param state
    * @param previousState
    */
-  public onStateChanged(action: any, state: RootState, previousState: RootState) {
+  public async onStateChanged(action: any, state: RootState, previousState: RootState) {
     this.state = state;
 
     for (const module of this._modules) {
@@ -151,12 +172,56 @@ export class PlaskEngine {
         }
       }
     }
+  }
+
+  /**
+   * Stops the render loop
+   */
+  public stopRenderLoop() {
+    this._engine.stopRenderLoop();
+  }
+
+  /**
+   * Starts the render loop
+   */
+  public startRenderLoop() {
+    let last = new Date();
+    this._engine.runRenderLoop(() => {
+      this._scene.render();
+
+      const current = new Date();
+      this._tick(current.getTime() - last.getTime());
+      last = current;
+    });
+  }
+
+  /**
+   * @hidden
+   * @param currentEntities
+   * @param previousEntities
+   */
+  public async onEntitiesChanged(currentEntities: EntityMap, previousEntities: EntityMap) {
+    // TODO : make it a static prop
+    const entityOrder = ['PlaskTransformNode'];
 
     // Entities update
-    for (const entityId in this.state.selectingData.present.allEntitiesMap) {
-      if (this.state.selectingData.present.allEntitiesMap[entityId] !== previousState.selectingData.present.allEntitiesMap[entityId]) {
-        // Entity is dirty
-        this._entityStore.registerEntity(this.state.selectingData.present.allEntitiesMap[entityId]);
+    if (currentEntities !== previousEntities) {
+      for (const entityClass of entityOrder) {
+        for (const entityId in currentEntities) {
+          const currentEntity = currentEntities[entityId];
+          const previousEntity = previousEntities[entityId];
+          if (currentEntity.className === entityClass && currentEntity !== previousEntity) {
+            // Entity is dirty
+            await this._entityStore.registerEntity(currentEntities[entityId]);
+          }
+        }
+      }
+
+      // Remove any entity that is not present in the new state
+      for (const entityId in previousEntities) {
+        if (!currentEntities[entityId]) {
+          this._entityStore.unregisterEntity(previousEntities[entityId]);
+        }
       }
     }
   }
@@ -166,6 +231,9 @@ export class PlaskEngine {
    */
   public state!: RootState;
 
+  /**
+   * Resizes the 3D engin to match the canvas' size
+   */
   public resize() {
     this._engine.resize();
 
@@ -184,14 +252,6 @@ export class PlaskEngine {
   /**
    * Entity accessors
    */
-
-  /**
-   * Registers an entity
-   * @param entity
-   */
-  public registerEntity(entity: PlaskEntity) {
-    this._entityStore.registerEntity(entity);
-  }
 
   /**
    * Retrieves an entity with its entity id
@@ -217,54 +277,95 @@ export class PlaskEngine {
    * @param entities Updated entities
    */
   public userAction(entities: PlaskEntity[]) {
-    this.dispatch(updateEntity({ targets: entities.map((entity) => entity.clone()) }));
+    console.log(
+      'Entities updated ',
+      entities.map((entity) => entity.clone()),
+    );
+    this.dispatch(addEntity({ targets: entities.map((entity) => entity.clone()) }));
   }
 
+  /**
+   * Gets the current screen id.
+   * For now, only one screen is supported.
+   */
   public get currentScreenId() {
     return this.state.plaskProject.screenList[0].id;
   }
 
   // TODO : MOVE TO REACT PART
+  /**
+   * Undoes the last action
+   * @todo move to react world
+   */
   public undo() {
     if (FEATURE_HISTORY) {
       this.dispatch(ActionCreators.undo());
     }
   }
 
+  /**
+   * Redoes the last action
+   * @todo move to react world
+   */
   public redo() {
     if (FEATURE_HISTORY) {
       this.dispatch(ActionCreators.redo());
     }
   }
 
+  /**
+   *
+   * @todo
+   */
   public save() {
     return JSON.stringify(this._entityStore.serializeAll());
   }
 
+  /**
+   * @todo
+   * @param json
+   */
   public load(json: string) {
     this._entityStore.unserializeAll(JSON.parse(json) as PlaskSpec);
     // TODO : update entity action
     // this.dispatch(updateTransform({ targets: this._entityStore.entities }))
   }
 
+  /**
+   * Clears the undo/redo history
+   */
   public clearHistory() {
     this.dispatch(ActionCreators.clearHistory());
   }
 
+  /**
+   * Shows/hides Babylon's inspector
+   */
+  public toggleInspector() {
+    if (!this._inspectorActive) {
+      this.scene.debugLayer.show({ overlay: true });
+      document.getElementById('scene-explorer-host')!.style.zIndex = '1000';
+      document.getElementById('inspector-host')!.style.zIndex = '1000';
+    } else {
+      this.scene.debugLayer.hide();
+    }
+    this._inspectorActive = !this._inspectorActive;
+  }
+
   private _registerModules() {
     this._modules.push((this.cameraModule = new CameraModule(this)));
-    this._modules.push((this.selectorModule = new SelectorModule(this)));
+    this._modules.push((this.selectorModule = SelectorModuleSingleton));
     this._modules.push((this.gizmoModule = new GizmoModule(this)));
+    this._modules.push((this.ikModule = new IKModule(this)));
     this._modules.push((this.visibilityLayers = new VisibilityLayersModule(this)));
     this._modules.push((this.assetModule = new AssetModule(this)));
-    // this._modules.push((this.ikModule = new IKModule(this)));
     this._modules.push((this.animationModule = new AnimationModule(this)));
   }
 
   private _onSceneReady() {
     // callback to call when scene is ready
     this.scene.useRightHandedSystem = true;
-    this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#202020'));
+    this.scene.clearColor = Color4.FromColor3(Color3.FromHexString('#343638'));
 
     // add default elements to the scene
     this._grounds = createGrounds(this.scene, true);
@@ -321,7 +422,11 @@ export class PlaskEngine {
         }
       }
     }
+    if (pickInfo && pickInfo.hit) {
+      this.onPickObservable.notifyObservers(pickInfo.pickedMesh as Mesh);
+    }
   }
 }
 
-export default new PlaskEngine();
+const engine = new PlaskEngine();
+export default engine;

@@ -9,15 +9,13 @@ class LayerKeyframeRepository implements Repository {
     plaskTracks.forEach((plaskTrack) => {
       plaskTrack.transformKeys.forEach((transformKey) => layerFrames.add(transformKey.frame));
     });
-    return [...layerFrames]
-      .sort((a, b) => a - b)
-      .map<Keyframe>((frame) => ({ isDeleted: false, isSelected: false, time: frame }));
+    return [...layerFrames].sort((a, b) => a - b).map<Keyframe>((frame) => ({ isDeleted: false, isSelected: false, time: frame }));
   };
 
   initializeTimeEditorTrack = (plaskTracks: PlaskTrack[]): TimeEditorTrack | null => {
     if (plaskTracks.length) {
       const layerKeyframes = this.setLayerKeyframes(plaskTracks);
-      const layerTimeEditorTrack: TimeEditorTrack = { trackNumber: -1, trackId: plaskTracks[0].layerId, trackType: 'layer', keyframes: layerKeyframes };
+      const layerTimeEditorTrack: TimeEditorTrack = { trackNumber: -1, trackId: plaskTracks[0].layerId, trackType: 'layer', keyframes: layerKeyframes, parentTrackNumber: -1 };
       return layerTimeEditorTrack;
     }
     return null;

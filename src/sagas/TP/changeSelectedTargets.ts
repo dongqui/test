@@ -38,16 +38,14 @@ function* findSelectedLayer(visualizedAnimationIngredient: AnimationIngredient) 
 
 function* filterPlaskTracks(layer: PlaskLayer) {
   const selectedTargets = getSelectedTargets(yield select());
-  const filteredTracks: PlaskTrack[] = [];
+  let filteredTracks: PlaskTrack[] = [];
 
-  selectedTargets.forEach((plaskTrack) => {
-    const { id, name } = plaskTrack.reference;
-    if (name !== 'Armature') {
-      const selectedTrackIndex = layer.tracks.findIndex((track) => track.targetId === id && track.layerId === layer.id);
-      for (let propertyTrackIndex = selectedTrackIndex; propertyTrackIndex <= selectedTrackIndex + 3; propertyTrackIndex += 1) {
-        const propertyTrack = layer.tracks[propertyTrackIndex];
-        if (propertyTrack.property !== 'rotationQuaternion') filteredTracks.push(propertyTrack);
-      }
+  selectedTargets.forEach((plaskTransformNode) => {
+    const ids = plaskTransformNode.jointIds;
+    for (const id of ids) {
+      // TODO IK
+      // We don't display the rotationQuaternion track as we already display the rotation track
+      filteredTracks = filteredTracks.concat(layer.tracks.filter((track) => id === track.targetId && track.layerId === layer.id && track.property !== 'rotationQuaternion'));
     }
   });
 

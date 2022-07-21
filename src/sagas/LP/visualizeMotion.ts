@@ -1,5 +1,5 @@
 import { find, omitBy } from 'lodash';
-import { select, put, take, call, SagaReturnType } from 'redux-saga/effects';
+import { select, put, take, call, SagaReturnType, all, putResolve } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 
 import * as api from 'api';
@@ -14,6 +14,9 @@ import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { goToSpecificPoses } from 'utils/RP';
 import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
+import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { addIKAction, removeIKAction } from 'actions/iKAction';
+import { addIK } from 'sagas/RP/ik/addIK';
 
 const clickJointChannel = channel();
 
@@ -58,9 +61,9 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
-      const animationIngredient = AnimationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+      let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
 
-      yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
+      yield put(animationDataActions.addAnimationIngredient({ animationIngredient }));
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
 
@@ -82,7 +85,15 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
-      plaskEngine.assetModule.clearAssetFromScene(prevAssetId);
+      // Find transform node
+      const ptns = plaskEngine.getEntitiesByPredicate((entity) => entity.className === 'PlaskTransformNode' && (entity as PlaskTransformNode).id.includes(prevAssetId));
+      yield put(selectingDataActions.removeEntity({ targets: ptns }));
+
+      yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
+      yield put(plaskProjectActions.unrenderAsset({ assetId: prevAssetId }));
+      yield put(removeIKAction(prevAssetId));
+      plaskEngine.assetModule.unvisualizeModel(prevAssetId);
+
       yield put(selectingDataActions.unrenderAsset({ assetId: prevAssetId }));
     }
 
@@ -91,8 +102,37 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     if (modelNode?.assetId && !visualizedAssetIds.includes(modelNode.assetId)) {
       const asset = find(newPlaskProject.assetList, { id: modelNode.assetId });
       if (asset?.animationIngredientIds[0]) {
-        plaskEngine.assetModule.visualizeModel(modelNode.assetId, clickJointChannel);
+        plaskEngine.assetModule.visualizeModel(modelNode.assetId);
+        let plaskTransformNodes = plaskEngine.assetModule.generateJointPlaskTransformNodes(modelNode.assetId);
+        // Auto add ik code
+        // plaskTransformNodes = plaskTransformNodes.concat(plaskEngine.ikModule.addIK(modelNode.assetId));
+        yield put(selectingDataActions.addEntity({ targets: plaskTransformNodes }));
+        // This appends PlaskTransformNodes to state.selectableObjects
+        yield put(selectingDataActions.updateSelectableObjects({ objects: plaskTransformNodes }));
+
+        // This only sets state.visualizedAssetIds
+        yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
+    }
+
+    // Foot locking
+    let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+
+    if (animationIngredient) {
+      // const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+      const contactData = [];
+      if (contactData.length) {
+        // console.log('Auto add IK because foot locking is required.');
+        // yield call(addIK, addIKAction(asset.id, animationIngredient));
+        // // Update after adding IK tracks
+        // animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
+        // animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+      } else if (plaskEngine.ikModule.isEnabled) {
+        // IK was enabled before, so we need to add tracks for this new ingredient
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
+        animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
+      }
+      yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 
     forceClickAnimationPlayAndStop(50);

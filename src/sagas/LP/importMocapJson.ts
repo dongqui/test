@@ -31,6 +31,7 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
       try {
         const json: MocapJson = JSON.parse(e.target.result);
         checkMocapJson(json);
+
         const reponseNode = await api.addMocapByJson(lpNode.sceneId, {
           name: mocapJsonFile.name,
           json: json.result,
@@ -72,15 +73,17 @@ function checkMocapJson(json: MocapJson) {
     }
     for (const trackData of mocapResult.trackData) {
       const isInvalidProperty = !TRACK_DATA_PROPERTY.includes(trackData.property);
-      const hasInvalidTransformKey = trackData.transformKeys.some((key) => isInvalidTransformKey(key, trackData.property === 'position'));
+
+      // TODO : reinstate
+      // const hasInvalidTransformKey = trackData.transformKeys.some((key) => isInvalidTransformKey(key, trackData.property === 'position'));
 
       if (isInvalidProperty) {
         throw new Error(`${trackData.property} is an invalid property`);
       }
 
-      if (hasInvalidTransformKey) {
-        throw new Error('This json has invalid transformkey');
-      }
+      // if (hasInvalidTransformKey) {
+      //   throw new Error('This json has invalid transformkey');
+      // }
     }
   }
 }

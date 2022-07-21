@@ -3,9 +3,9 @@ import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import { IconWrapper, SvgPath } from 'components/Icon';
-
 import { OnboardingStep } from 'containers/Onboarding';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
+import popupManager from 'utils/PopupManager';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -24,9 +24,11 @@ const BaseTemplate = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const dispatch = useDispatch();
 
   const handleCloseButtonClick = useCallback(() => {
+    localStorage.setItem('onboarding_1', 'onboarding_1');
     if (onboardingStep === 999) {
       dispatch(globalUIActions.progressOnboarding({ onboardingStep: null }));
       document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();
+      popupManager.next();
     } else {
       dispatch(globalUIActions.progressOnboarding({ onboardingStep: 999 }));
     }

@@ -1,0 +1,269 @@
+@import "styles/libraries/colors";
+@import "styles/libraries/mixins";
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.dropzone {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.dropzone-outer {
+  display: flex;
+  background-color: $bg-elevated;
+  border: 1px dotted $content-inactive;
+  border-radius: 6px;
+}
+
+.dropzone-guide {
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.icon-plus {
+  color: $content-inactive;
+  width: 16px;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.dropzone-guide-text {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 300;
+  color: $content-medium;
+  margin-bottom: 8px;
+}
+
+.ruler {
+  display: flex;
+  background-color: var(--grey010);
+  width: 100%;
+  height: 16px;
+  justify-content: center;
+
+  .ruler-inner {
+    user-select: none;
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 16px;
+    padding: 0 86px;
+  }
+
+  .indicator-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: calc(100% - 140px);
+    z-index: 3;
+  }
+
+  .indicator {
+    width: 100%;
+    appearance: none;
+    background: transparent;
+    margin: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      background-image: url("/images/Handler.svg");
+      background-repeat: no-repeat;
+      width: 34px;
+      height: 14px;
+    }
+  }
+
+  .indicator-value {
+    position: absolute;
+    user-select: none;
+    top: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: transparent;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 500;
+    pointer-events: none;
+  }
+
+  .indicator-line {
+    border-left: 1px solid $primary;
+    height: 134px;
+    position: absolute;
+    top: 0;
+    transform: translateY(14px);
+  }
+}
+
+.timeline-wrapper {
+  position: relative;
+  padding: 18px 86px;
+  height: calc(100% - 16px);
+}
+
+.timeline {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.timeline-canvas {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 100%;
+  height: calc(100% + 2px);
+  border-radius: 12px;
+}
+
+.scrubber-wrapper {
+  position: absolute;
+  padding: 18px 86px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scrubber {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  background: transparent;
+  margin: 0;
+  z-index: 2;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 0;
+  }
+}
+
+.crop-slider-start {
+  appearance: none;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 0;
+  outline: none;
+  cursor: col-resize;
+  margin: 0;
+  z-index: 2;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    width: 14px;
+    height: 96px;
+    pointer-events: all;
+  }
+
+  &::-webkit-slider-runnable-track {
+    cursor: col-resize;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.crop-slider-end {
+  appearance: none;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 0;
+  outline: none;
+  margin: 0;
+  cursor: col-resize;
+  z-index: 2;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    width: 14px;
+    height: 96px;
+    pointer-events: all;
+  }
+
+  &::-webkit-slider-runnable-track {
+    cursor: col-resize;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.slider-time {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 2px solid $secondary;
+  border-radius: 14px;
+  height: 100%;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 100vw;
+    height: calc(100% + 2px);
+    left: calc(-100vw - 2px);
+    background-color: rgb(18 19 19 / 40%);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 100vw;
+    height: calc(100% + 2px);
+    right: calc(-100vw - 2px);
+    background-color: rgb(18 19 19 / 40%);
+  }
+}

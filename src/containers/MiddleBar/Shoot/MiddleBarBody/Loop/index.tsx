@@ -78,7 +78,7 @@ const Loop = () => {
     <div className={cx('loop')}>
       <p>Loop</p>
       <LoopInput defaultValue={0} onBlurInput={handleStartInputBlur} onChangeInput={handleStartInputChange} prefix="Start" />
-      <LoopInput defaultValue={100} onBlurInput={handleEndInputBlur} onChangeInput={handleEndInputChange} prefix="End" />
+      <LoopInput defaultValue={500} onBlurInput={handleEndInputBlur} onChangeInput={handleEndInputChange} prefix="End" />
     </div>
   );
 };

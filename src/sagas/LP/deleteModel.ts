@@ -22,7 +22,7 @@ export default function* handleDeleteModel(action: ReturnType<typeof lpNodeActio
 
   const nextNodes = filterDeletedNode(lpNode.nodes, targetNode);
 
-  plaskEngine.assetModule.clearAssetFromScene(assetId);
+  plaskEngine.assetModule.unvisualizeModel(assetId);
 
   yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
   yield put(plaskProjectActions.removeAsset({ assetId }));

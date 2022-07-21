@@ -12,7 +12,7 @@ import { RootState } from 'reducers';
 import { getValueInsertedTransformKeys } from 'utils/RP';
 
 import setUpdatedPropertyKeyframes from './setUpdatedPropertyKeyframes';
-import { Vector3 } from '@babylonjs/core';
+import { Quaternion, Vector3 } from '@babylonjs/core';
 
 function getCurrentTimeIndex(state: RootState) {
   return state.animatingControls.currentTimeIndex;
@@ -66,12 +66,18 @@ function* handlePasteKeyFramesRequest(action: ReturnType<typeof keyframesActions
               targetTrack = targetLayer.tracks.find((track) => track.id === trackId);
             }
             if (targetTrack) {
-              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, new Vector3(value.x, value.y, value.z));
+              let newValue: typeof value;
+              if (value instanceof Vector3 || value instanceof Quaternion) {
+                newValue = value.clone();
+              } else {
+                newValue = value;
+              }
+              targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, to, value);
 
               if (targetTrack.property === 'rotation') {
                 const peerTrack = targetLayer.tracks.find((track) => track.id === trackId.replace('//rotation', '//rotationQuaternion'));
                 if (peerTrack) {
-                  peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, new Vector3(value.x, value.y, value.z).toQuaternion());
+                  peerTrack.transformKeys = getValueInsertedTransformKeys(peerTrack.transformKeys, to, (value as Vector3).toQuaternion());
                 }
               }
             }

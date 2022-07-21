@@ -9,21 +9,22 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   size?: 'small' | 'medium' | 'large';
-  type?: ButtonColor;
+  buttonType?: ButtonColor;
   text?: string;
   fullSize?: boolean;
   dataCy?: string;
+  r?: (ref: HTMLButtonElement) => void;
 }
 
-export type Props = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>;
+export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const defaultProps: Partial<BaseProps> = {
-  type: 'primary',
+  buttonType: 'primary',
   size: 'small',
 };
 
-const FilledButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
-  const classes = cx('filled', className, size, type, {
+const FilledButton: FunctionComponent<Props> = ({ r, size, text, buttonType, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
+  const classes = cx('filled', className, size, buttonType, {
     disabled,
     fullSize,
   });
@@ -38,7 +39,7 @@ const FilledButton: FunctionComponent<Props> = ({ size, text, type, fullSize, di
   );
 
   return (
-    <button className={classes} onClick={handleClick} data-cy={dataCy} {...rest}>
+    <button ref={(ref) => r && ref && r(ref)} className={classes} onClick={handleClick} data-cy={dataCy} {...rest}>
       {text || children}
     </button>
   );

@@ -1,9 +1,10 @@
 import { SelectKeyframesByDragBox } from 'actions/keyframes';
-import { ClusteredKeyframe } from 'types/TP/keyframe';
+import { ClusteredKeyframe, TimeEditorTrack } from 'types/TP/keyframe';
 import { KeyframesState } from 'reducers/keyframes';
 import { findElementIndex } from 'utils/TP';
 
 import { DragBox } from './index';
+import { findChildrenTracks } from 'utils/TP/findChildrenTracks';
 
 class KeyframeDragBox implements DragBox {
   private readonly state: KeyframesState;
@@ -20,7 +21,8 @@ class KeyframeDragBox implements DragBox {
 
     keyframes.forEach((keyframe) => {
       const { time, trackNumber } = keyframe;
-      const selectedKeyframes = trackNumber === -1 ? layerKeyframeMap : trackNumber % 10 === 0 ? boneKeyframeMap : propertyKeyframeMap;
+      const isBoneTrack = !!boneTrackList.find((boneTrack) => boneTrack.trackNumber === trackNumber);
+      const selectedKeyframes = trackNumber === -1 ? layerKeyframeMap : isBoneTrack ? boneKeyframeMap : propertyKeyframeMap;
       const currentValue = selectedKeyframes.get(trackNumber);
       if (currentValue) {
         currentValue.add(time);
@@ -58,9 +60,9 @@ class KeyframeDragBox implements DragBox {
 
     if (boneKeyframeMap.size) {
       boneKeyframeMap.forEach((selectedBoneKeyframes, boneNumber) => {
-        for (let propertyNumber = boneNumber + 1; propertyNumber <= boneNumber + 3; propertyNumber++) {
-          const proertyTrackIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
-          const propertyTrack = propertyTrackList[proertyTrackIndex];
+        const childTracks = findChildrenTracks(boneNumber, propertyTrackList);
+        for (const propertyTrack of childTracks) {
+          const propertyNumber = propertyTrack.trackNumber;
           const currentValue = propertyKeyframeMap.get(propertyNumber);
           if (!currentValue) propertyKeyframeMap.set(propertyNumber, new Set());
           selectedBoneKeyframes.forEach((boneFrame) => {
@@ -81,7 +83,13 @@ class KeyframeDragBox implements DragBox {
     const { layerTrack } = this.state;
     const selectedLayerKeyframes: ClusteredKeyframe[] = [];
     layerKeyframeMap.forEach((selectedKeyframes) => {
-      selectedLayerKeyframes.push({ trackId: layerTrack.trackId, trackNumber: -1, trackType: 'layer', keyframes: [...selectedKeyframes].map((time) => ({ time })) });
+      selectedLayerKeyframes.push({
+        trackId: layerTrack.trackId,
+        parentTrackNumber: -1,
+        trackNumber: -1,
+        trackType: 'layer',
+        keyframes: [...selectedKeyframes].map((time) => ({ time })),
+      });
     });
     return selectedLayerKeyframes;
   };
@@ -93,7 +101,7 @@ class KeyframeDragBox implements DragBox {
     boneKeyframeMap.forEach((selectedKeyframes, boneNumber) => {
       const trackIndex = findElementIndex(boneTrackList, boneNumber, 'trackNumber');
       const { trackId } = boneTrackList[trackIndex];
-      selectedBoneKeyframes.push({ trackId, trackNumber: boneNumber, trackType: 'bone', keyframes: [...selectedKeyframes].map((time) => ({ time })) });
+      selectedBoneKeyframes.push({ trackId, trackNumber: boneNumber, parentTrackNumber: -1, trackType: 'bone', keyframes: [...selectedKeyframes].map((time) => ({ time })) });
     });
     return selectedBoneKeyframes;
   };
@@ -104,13 +112,13 @@ class KeyframeDragBox implements DragBox {
     const selectedPropertyKeyframes: ClusteredKeyframe[] = [];
     propertyKeyframeMap.forEach((selectedKeyframes, propertyNumber) => {
       const trackIndex = findElementIndex(propertyTrackList, propertyNumber, 'trackNumber');
-      const { trackId } = propertyTrackList[trackIndex];
+      const { trackId, parentTrackNumber } = propertyTrackList[trackIndex];
       const keyframes = [...selectedKeyframes].map((time) => {
         const keyframeIndex = findElementIndex(propertyTrackList[trackIndex].keyframes, time, 'time');
         const { value } = propertyTrackList[trackIndex].keyframes[keyframeIndex];
         return { time, value };
       });
-      selectedPropertyKeyframes.push({ trackId, trackNumber: propertyNumber, trackType: 'property', keyframes });
+      selectedPropertyKeyframes.push({ trackId, trackNumber: propertyNumber, trackType: 'property', keyframes, parentTrackNumber });
     });
     return selectedPropertyKeyframes;
   };
