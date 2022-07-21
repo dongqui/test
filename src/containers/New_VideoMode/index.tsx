@@ -245,7 +245,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           );
         });
     },
-    [dispatch, doneVMOnBoarding, unmountCurrentStream],
+    [dispatch, doneVMOnBoarding, mode, unmountCurrentStream],
   );
 
   useEffect(() => {
