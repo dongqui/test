@@ -82,8 +82,10 @@ class PopupManager {
           commonActions.openModal(
             'GuideModal',
             {
-              title: isExpierencedUser ? 'Import a video!' : 'Click to extract motion!',
-              message: isExpierencedUser ? 'You can start importing now.' : 'Import or record a video.',
+              title: isExpierencedUser ? 'Try new feature in here!' : 'Click to extract motion!',
+              message: isExpierencedUser
+                ? 'You can extract <span>more than one person’s</span> motion from the video.'
+                : 'Extract <span>one or more than one person’s</span> motion from video that import or record.',
               postion: {
                 right: '12px',
                 top: `${targetCoordinates?.rightBottom?.y + 8}px`,

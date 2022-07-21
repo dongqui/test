@@ -241,7 +241,7 @@ const ControlPanel = ({
             {tagToolTip && (
               <div className={cx('tooltip')}>
                 <div className={cx('arrow')} />
-                <Typography type="body">Currently in Beta and is free!</Typography>
+                <Typography type="body">Currently in Beta and free!</Typography>
               </div>
             )}
           </div>
