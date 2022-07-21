@@ -103,9 +103,25 @@ const ControlPanel = ({
     }
   };
 
-  const handleChangeName = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setValueName(event.target.value);
-  }, []);
+  const handleChangeName = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      let currentValue = event.target.value;
+
+      if (currentValue.length === 1) {
+        currentValue = currentValue.replace(/[0-9]/gi, '');
+      }
+
+      const first = currentValue.charAt(0);
+
+      if (first.match(/[0-9]/g)) {
+        setValueName(valueName);
+      } else {
+        currentValue = currentValue.replace(/[^A-Za-z0-9_-\s\(\)]/gi, '');
+        setValueName(currentValue);
+      }
+    },
+    [valueName],
+  );
 
   const handleCloseModal = useCallback(() => {
     setValueName('Extracted motion');
@@ -241,7 +257,7 @@ const ControlPanel = ({
             {tagToolTip && (
               <div className={cx('tooltip')}>
                 <div className={cx('arrow')} />
-                <Typography type="body">Currently in Beta and is free!</Typography>
+                <Typography type="body">Currently in Beta and free!</Typography>
               </div>
             )}
           </div>
