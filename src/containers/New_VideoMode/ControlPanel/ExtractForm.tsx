@@ -33,6 +33,8 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
 
   const defaultSelectOptionIndex = 0;
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
+  const [trackingTooltip, setTrackingTooltip] = useState(false);
+  const [tPoseTooltip, setTPoseTooltip] = useState(false);
 
   useEffect(() => {
     if (isMulti && FOOT_LOCK_AVAILABLE) {
@@ -45,7 +47,16 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   return (
     <Fragment>
       <div className={cx('section-item')}>
-        <Typography>Tracking</Typography>
+        <div className={cx('tracking')}>
+          <Typography>Tracking</Typography>
+          <div className={cx('overlay')} onMouseEnter={() => setTrackingTooltip(true)} onMouseLeave={() => setTrackingTooltip(false)} />
+          {trackingTooltip && (
+            <div className={cx('tooltip')}>
+              <div className={cx('arrow')} />
+              <Typography type="body">Select either ‘Single’ or ‘Multi to extract one or more than one person’s motion from the video.</Typography>
+            </div>
+          )}
+        </div>
         <BaseField<Field.SwitchProps, string>
           onChange={(value) => {
             doneVMOnBoarding(3);
@@ -77,7 +88,16 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
         </div>
       )}
       <div className={cx('section-item')}>
-        <Typography>T-pose</Typography>
+        <div className={cx('t-pose')}>
+          <Typography>T-pose</Typography>
+          <div className={cx('overlay')} onMouseEnter={() => setTPoseTooltip(true)} onMouseLeave={() => setTPoseTooltip(false)} />
+          {tPoseTooltip && (
+            <div className={cx('tooltip')}>
+              <div className={cx('arrow')} />
+              <Typography type="body">Overwrite the first keyframe with the T-pose.</Typography>
+            </div>
+          )}
+        </div>
         <BaseField<Field.ToggleProps, boolean>
           onChange={() => doneVMOnBoarding(3)}
           control={fieldProps.control}
