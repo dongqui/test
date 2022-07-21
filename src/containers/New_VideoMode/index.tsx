@@ -112,7 +112,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         height: windowHeight - 180 - 38,
       } as BoxProps,
       CP: {
-        width: 250,
+        width: 300,
         height: windowHeight - 180 - 38,
       } as BoxProps,
       MB: {
@@ -236,6 +236,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           }
         })
         .catch(() => {
+          dispatch(changeMode({ mode: mode, videoURL: undefined }));
           dispatch(
             globalUIActions.openModal('_AlertModal', {
               message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
@@ -244,7 +245,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           );
         });
     },
-    [dispatch, doneVMOnBoarding, unmountCurrentStream],
+    [dispatch, doneVMOnBoarding, mode, unmountCurrentStream],
   );
 
   useEffect(() => {
