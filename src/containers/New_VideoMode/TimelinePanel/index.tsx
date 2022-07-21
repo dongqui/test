@@ -138,7 +138,7 @@ const TimelinePanel = ({
         }
       }
     },
-    [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
+    [doneVMOnBoarding, duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
   );
 
   const requestRef = useRef(0);

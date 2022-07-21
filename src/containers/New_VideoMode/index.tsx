@@ -206,43 +206,46 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
   }, [currentVideoStream]);
 
-  const handleDrop = async (files: File[]) => {
-    if (files.length > 1) {
-      dispatch(
-        globalUIActions.openModal('AlertModal', {
-          title: 'Warning',
-          message: WARNING_02,
-          confirmText: 'Close',
-        }),
-      );
-
-      return;
-    }
-
-    const file = files[0];
-
-    await headerInspector(file)
-      .then(() => {
-        if (videoRef.current) {
-          doneVMOnBoarding(1);
-          const videoURL = URL.createObjectURL(files[0]);
-
-          setIsVideoLoaded(true);
-          setVideoURL(videoURL);
-          unmountCurrentStream();
-
-          videoRef.current.src = videoURL;
-        }
-      })
-      .catch(() => {
+  const handleDrop = useCallback(
+    async (files: File[]) => {
+      if (files.length > 1) {
         dispatch(
-          globalUIActions.openModal('_AlertModal', {
-            message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
-            title: 'Import failed',
+          globalUIActions.openModal('AlertModal', {
+            title: 'Warning',
+            message: WARNING_02,
+            confirmText: 'Close',
           }),
         );
-      });
-  };
+
+        return;
+      }
+
+      const file = files[0];
+
+      await headerInspector(file)
+        .then(() => {
+          if (videoRef.current) {
+            doneVMOnBoarding(1);
+            const videoURL = URL.createObjectURL(files[0]);
+
+            setIsVideoLoaded(true);
+            setVideoURL(videoURL);
+            unmountCurrentStream();
+
+            videoRef.current.src = videoURL;
+          }
+        })
+        .catch(() => {
+          dispatch(
+            globalUIActions.openModal('_AlertModal', {
+              message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
+              title: 'Import failed',
+            }),
+          );
+        });
+    },
+    [dispatch, doneVMOnBoarding, unmountCurrentStream],
+  );
 
   useEffect(() => {
     if (videoURL && !lock.current) {
@@ -569,7 +572,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         unmountCurrentStream();
       }
     }
-  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded]);
+  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded, videoURL]);
 
   useEffect(() => {
     if (currentVideoDevice !== null && !isDeviceInitialized) {
