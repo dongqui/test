@@ -159,7 +159,9 @@ export class IKController {
       const targetHandle = this.handle.absoluteRotationQuaternion.clone();
       setAbsoluteRotation(this.targetInfluenceChain[0], targetHandle);
 
-      if (this.handle.name.includes('Hand')) this.targetInfluenceChain[0].rotate(this.handle.forward, -Math.PI / 2, Space.LOCAL);
+      if (this.handle.name.includes('Hand')) {
+        this.targetInfluenceChain[0].rotate(this.fkInfluenceChain![0].forward, -Math.PI / 2, Space.LOCAL);
+      }
     }
   }
 

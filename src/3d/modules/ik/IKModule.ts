@@ -416,7 +416,7 @@ export class IKModule extends Module {
       selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone());
 
       if (selectedIK.handle.name.includes('Hand')) {
-        selectedIK.handle.rotate(selectedIK.fkInfluenceChain![0].forward.clone(), Math.PI / 2, Space.LOCAL);
+        selectedIK.handle.rotate(selectedIK.fkInfluenceChain![0].forward, Math.PI / 2, Space.LOCAL);
       }
       selectedIK.adjustPoleAngleFromFK();
       selectedIK.update();
@@ -593,23 +593,9 @@ export class IKModule extends Module {
         }
 
         animationGroupTemp.start();
-
         animationGroupTemp.goToFrame(i);
-        // selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
-
-        // let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
-        // let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
-
-        // selectedIK.handle.setAbsolutePosition(position);
-        // selectedIK.handle.rotationQuaternion = rotation;
-        // if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        //   selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
-        // }
-        // selectedIK.controller.update();
         this.setIKtoFK([selectedIK]);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
-        // selectedIK.handle.setAbsolutePosition(position);
-        // selectedIK.handle.rotationQuaternion = rotation;
       }
 
       animationGroupTemp.goToFrame(0);
