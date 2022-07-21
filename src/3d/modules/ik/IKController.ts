@@ -165,6 +165,8 @@ export class IKController {
   }
 
   private _getUpVectorFromFK(boneType: string) {
+    // Vector3.TransformNormalToRef(new Vector3(0, 0, 1), this.targetInfluenceChain![2]._localMatrix, this.controller.upVector);
+    return;
     if (this.fkInfluenceChain) {
       const chainParent = this.fkInfluenceChain[2].parent as TransformNode;
       if (chainParent) {
@@ -277,7 +279,19 @@ export class IKController {
     this.targetInfluenceChain = [tnIk, tn1Ik, tn2Ik];
 
     // Creating IK Controllers
-    this.controller = new BoneIk(params.body, params.bone, this.target, Vector3.Up());
+    let defaultUpVector = new Vector3();
+    switch (this.limb) {
+      case 'rightFoot':
+      case 'leftFoot':
+        defaultUpVector.set(0, 0, 1);
+        break;
+      case 'rightHand':
+      case 'leftHand':
+        defaultUpVector.set(0, 0, -1);
+        break;
+    }
+
+    this.controller = new BoneIk(params.body, params.bone, this.target, defaultUpVector);
 
     // IK controllers for FK (for blending)
     if (params.fkBone && params.fkTransformNode && params.fkBody) {

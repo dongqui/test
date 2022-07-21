@@ -16,6 +16,8 @@ export class BoneIk {
   private _maxReach: number;
   private _tNode: TransformNode;
   private _defaultUpVector: Vector3;
+  private _initialUpVector = new Vector3();
+  private _initialTargetDirection = new Vector3();
 
   public poleAngle: number = 0;
   public blend: number = 1;
@@ -46,6 +48,29 @@ export class BoneIk {
     this._maxReach = this._bone0Length + this._bone1Length;
   }
 
+  private _updateUpVector(target: Vector3, bone0Pos: Vector3) {
+    target.subtractToRef(bone0Pos, TmpVectors.Vector3[6]);
+    TmpVectors.Vector3[6].normalize();
+    Vector3.CrossToRef(this._initialTargetDirection, TmpVectors.Vector3[6], TmpVectors.Vector3[7]);
+    const len = TmpVectors.Vector3[7].length();
+
+    if (len < 1e-5) {
+      // Aligned vectors, use initial upvector
+      this.upVector.copyFrom(this._initialUpVector);
+      return;
+    }
+    TmpVectors.Vector3[7].normalize();
+    const sin = len;
+    const cos = Vector3.Dot(TmpVectors.Vector3[6], this._initialTargetDirection);
+    const angle = Math.atan2(sin, cos);
+    Quaternion.RotationAxisToRef(TmpVectors.Vector3[7], angle, TmpVectors.Quaternion[0]);
+    Matrix.FromQuaternionToRef(TmpVectors.Quaternion[0], TmpVectors.Matrix[3]);
+    Vector3.TransformNormalToRef(this._initialUpVector, TmpVectors.Matrix[3], this.upVector);
+    console.log(Vector3.TransformNormal(this._initialTargetDirection, TmpVectors.Matrix[3]));
+    // Vector3.CrossToRef(this.upVector, TmpVectors.Vector3[6], this.upVector);
+    // this.upVector.normalize();
+  }
+
   public update() {
     const bone0Pos = TmpVectors.Vector3[0];
     const bone1Pos = TmpVectors.Vector3[5];
@@ -53,13 +78,11 @@ export class BoneIk {
     const xaxis = TmpVectors.Vector3[2];
     const yaxis = TmpVectors.Vector3[3];
     const upVector = TmpVectors.Vector3[4];
-    const _tmpQuat = TmpVectors.Quaternion[0];
     const mat0 = TmpVectors.Matrix[0];
     const mat1 = TmpVectors.Matrix[1];
     const mat2 = TmpVectors.Matrix[2];
 
     const target = this.target.absolutePosition;
-    upVector.copyFrom(this.upVector);
 
     this._tNode.computeWorldMatrix(true);
     this._bone0.computeWorldMatrix(true);
@@ -71,6 +94,9 @@ export class BoneIk {
 
     target.subtractToRef(bone0Pos, yaxis);
     yaxis.normalize();
+    this._updateUpVector(target, bone0Pos);
+    upVector.copyFrom(this.upVector);
+
     Vector3.CrossToRef(yaxis, upVector, zaxis);
     if (zaxis.length() < 1e-5) {
       if (yaxis.x !== 0) {
@@ -144,7 +170,21 @@ export class BoneIk {
     const bone1Pos = this._bone1.getAbsolutePosition(this._tNode);
     const bone2Pos = this._bone2.getAbsolutePosition(this._tNode);
 
-    const upVector = this.upVector;
+    // Infering initial up vector
+    const targetDirection = bone2Pos.subtract(bone0Pos).normalize();
+    const halfDirection = bone1Pos.subtract(bone0Pos).normalize();
+    const upVector = Vector3.Cross(targetDirection, halfDirection);
+
+    if (upVector.length() > 1e-5) {
+      // Reliable initial bend, we can use this as upVector
+      this._initialUpVector = upVector.normalize().cross(targetDirection);
+    } else {
+      // We use default upVector from a standard T-Pose
+      // Probably not the best method though
+      this._initialUpVector.copyFrom(this._defaultUpVector);
+    }
+    this._initialTargetDirection.copyFrom(targetDirection);
+    upVector.copyFrom(this._initialUpVector);
 
     // Bone 0 frame
     let yaxis = bone1Pos.subtract(bone0Pos).normalize();
