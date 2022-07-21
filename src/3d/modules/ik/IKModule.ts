@@ -412,15 +412,12 @@ export class IKModule extends Module {
   public setIKtoFK(controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
-      selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
-      selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
+      selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition.clone());
+      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone());
 
-      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
-
-      if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
+      if (selectedIK.handle.name.includes('Hand')) {
+        selectedIK.handle.rotate(selectedIK.fkInfluenceChain![0].forward.clone(), Math.PI / 2, Space.LOCAL);
       }
-      selectedIK.adjustAlignment();
       selectedIK.adjustPoleAngleFromFK();
       selectedIK.update();
       // selectedIK.controller.update();
