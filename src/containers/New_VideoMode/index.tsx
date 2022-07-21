@@ -236,6 +236,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           }
         })
         .catch(() => {
+          dispatch(changeMode({ mode: mode, videoURL: undefined }));
           dispatch(
             globalUIActions.openModal('_AlertModal', {
               message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
