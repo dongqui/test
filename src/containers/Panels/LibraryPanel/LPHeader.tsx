@@ -23,7 +23,7 @@ const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
     dispatch(
       globalUIActions.openModal('DropZoneModal', {
         title: 'Import',
-        subTitle: 'Import your 3D assets',
+        subTitle: 'Import your 3D asset or source video.',
         onDrop: onLoad,
       }),
     );
