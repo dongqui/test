@@ -199,9 +199,6 @@ export class IKController {
       if (this.lockToFk) {
         this.handle.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
       }
-
-      this.alignTargetInfluenceChainWithHandle();
-
       this.controller.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
       this.controller.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
       this.controller.blend = this.blend;
@@ -211,6 +208,8 @@ export class IKController {
       // this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
       // this.controller.upVector!.normalize();
       // Vector3.CrossToRef(this.controller.upVector!, this.controller.targetPosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize(), this.controller.upVector!);
+
+      this.alignTargetInfluenceChainWithHandle();
     }
 
     this.controller.update();
