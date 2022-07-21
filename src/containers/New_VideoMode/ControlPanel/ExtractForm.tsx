@@ -15,6 +15,8 @@ interface Props {
   doneVMOnBoarding: (step: number) => void;
 }
 
+const FOOT_LOCK_AVAILABLE = false;
+
 const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
   const selectOption = [
     {
@@ -33,7 +35,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
 
   useEffect(() => {
-    if (isMulti) {
+    if (isMulti && FOOT_LOCK_AVAILABLE) {
       fieldProps.control.unregister('footLock');
     }
   }, [fieldProps.control, isMulti]);
@@ -43,7 +45,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   return (
     <Fragment>
       <div className={cx('section-item')}>
-        <Typography>Model</Typography>
+        <Typography>Tracking</Typography>
         <BaseField<Field.SwitchProps, string>
           onChange={(value) => {
             doneVMOnBoarding(3);
@@ -59,10 +61,10 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       </div>
       {isMulti && (
         <div className={cx('section-item', 'section-text')}>
-          <Typography className={cx('section-comments')}>We recommend videos with no more than 10 people.</Typography>
+          <Typography className={cx('section-comments')}>For optimized performance, we recommended your video have less than 10 people in it.</Typography>
         </div>
       )}
-      {!isMulti && (
+      {!isMulti && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
           <BaseField<Field.ToggleProps, boolean>
@@ -84,9 +86,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
           defaultValue={false}
         />
       </div>
-      <div className={cx('section-item', 'section-text')}>
-        <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
-      </div>
+      <div style={{ height: '10px' }} />
       <div className={cx('section-item')}>
         <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused}>
           <Typography type="button">Extract</Typography>

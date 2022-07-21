@@ -11,10 +11,11 @@
   &.section-text {
     display: flex;
     align-items: flex-start;
+    margin-bottom: 8px;
   }
 
   .switch {
-    width: 140px;
+    width: 180px;
   }
 
   .section-comments {
@@ -22,5 +23,6 @@
     font-size: var(--font-size-11);
     font-weight: 300;
     line-height: 13px;
+    padding-left: 88px;
   }
 }
