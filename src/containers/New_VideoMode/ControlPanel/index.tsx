@@ -16,6 +16,7 @@ import ExtractForm from './ExtractForm';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
+import TooltipArrow from 'components/TooltipArrow';
 
 const cx = classNames.bind(styles);
 
@@ -75,6 +76,7 @@ const ControlPanel = ({
     footLock: false,
     tPose: false,
   });
+  const [tagToolTip, setTagToolTip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -234,7 +236,14 @@ const ControlPanel = ({
         <div className={cx('section-title')}>
           <Typography type="title">Extract option</Typography>
           <div className={cx('tag')}>
-            <Typography>Beta</Typography>
+            <Typography className={cx('text')}>Beta</Typography>
+            <div className={cx('overlay')} onMouseEnter={() => setTagToolTip(true)} onMouseLeave={() => setTagToolTip(false)} />
+            {tagToolTip && (
+              <div className={cx('tooltip')}>
+                <div className={cx('arrow')} />
+                <Typography type="body">Currently in Beta and is free!</Typography>
+              </div>
+            )}
           </div>
         </div>
         <BaseForm onSubmit={handleSubmit}>
