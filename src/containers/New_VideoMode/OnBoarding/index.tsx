@@ -100,7 +100,7 @@ const OnBoarding = ({
             doneVMOnBoarding(3);
           }}
           postion={{
-            right: '266px',
+            right: '316px',
             top: '52px',
           }}
           tooltipArrowPlacement="right-start"
