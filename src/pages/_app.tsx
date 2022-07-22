@@ -5,9 +5,16 @@ import { wrapper } from 'store';
 import { hotjar } from 'analytics';
 import Head from 'next/head';
 import TagManager from 'react-gtm-module';
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
 import 'styles/core.scss';
 
 const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  integrations: [new BrowserTracing()],
+});
 
 const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Component, pageProps }) => {
   useEffect(() => {
