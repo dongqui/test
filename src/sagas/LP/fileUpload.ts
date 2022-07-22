@@ -42,26 +42,33 @@ export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fil
     } else if (isModelFile) {
       yield put(lpNodeActions.addModelAsync.request(file));
     } else if (isVideo) {
-      const targetElement = document.getElementById(ONBOARDING_ID.VIDEO_MODE);
-      const targetCoordinates = getTargetCoordinates(targetElement);
-      if (targetCoordinates?.rightBottom) {
-        yield put(
-          globalUIActions.openModal(
-            'GuideModal',
-            {
-              title: 'Import a video!',
-              message: 'You can start importing now.',
-              postion: {
-                right: '12px',
-                top: `${targetCoordinates?.rightBottom?.y + 8}px`,
-              },
-              tooltipArrowPlacement: 'top-end',
-            },
-            '',
-            false,
-          ),
-        );
-      }
+      // const targetElement = document.getElementById(ONBOARDING_ID.VIDEO_MODE);
+      // const targetCoordinates = getTargetCoordinates(targetElement);
+      // if (targetCoordinates?.rightBottom) {
+      //   yield put(
+      //     globalUIActions.openModal(
+      //       'GuideModal',
+      //       {
+      //         title: 'Import a video!',
+      //         message: 'You can start importing now.',
+      //         postion: {
+      //           right: '12px',
+      //           top: `${targetCoordinates?.rightBottom?.y + 8}px`,
+      //         },
+      //         onConfirm: () => localStorage.setItem('onboarding_2', 'onboarding_2'),
+      //         tooltipArrowPlacement: 'top-end',
+      //       },
+      //       '',
+      //       false,
+      //     ),
+      //   );
+      // }
+      yield put(
+        modeSelectActions.changeMode({
+          mode: 'videoMode',
+          videoURL: file,
+        }),
+      );
     }
   }
 }

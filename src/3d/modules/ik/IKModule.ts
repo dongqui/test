@@ -422,7 +422,7 @@ export class IKModule extends Module {
       }
       selectedIK.adjustAlignment();
       selectedIK.adjustPoleAngleFromFK();
-      selectedIK.controller.update();
+      selectedIK.update();
       // selectedIK.controller.update();
     });
   }
@@ -640,48 +640,6 @@ export class IKModule extends Module {
     }
   }
 
-  private _guessLimbUpBend(endTransformNode: TransformNode, boneType: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand') {
-    let defaultUpVector;
-    let defaultBendAxis;
-    switch (boneType) {
-      case 'rightFoot':
-      case 'leftFoot':
-        defaultUpVector = new Vector3(0, 0, 1);
-        defaultBendAxis = new Vector3(0, 0, 1);
-        break;
-      case 'rightHand':
-        defaultUpVector = new Vector3(-1, 0, 0);
-        defaultBendAxis = new Vector3(0, 0, 1);
-        break;
-      case 'leftHand':
-        defaultUpVector = new Vector3(-1, 0, 0);
-        defaultBendAxis = new Vector3(0, 0, 1);
-        break;
-    }
-    const result = {
-      upVector: defaultUpVector,
-      bendAxis: defaultBendAxis,
-    };
-
-    try {
-      const node2 = endTransformNode;
-      const node1 = endTransformNode.parent as TransformNode;
-      const node0 = node1.parent as TransformNode;
-      const a = node1.getAbsolutePosition().subtract(node0.getAbsolutePosition()).normalize();
-      const b = node2.getAbsolutePosition().subtract(node1.getAbsolutePosition()).normalize();
-      const right = Vector3.Cross(b, a);
-      if (right.length() < 1e-5) {
-        // both sections are aligned, cannot guess an up vector
-        return result;
-      }
-      // Bones are slightly bent, we can cross again to find the upvector and bend axis
-      result.upVector.copyFrom(right.normalize().cross(a));
-      return result;
-    } catch {
-      return result;
-    }
-  }
-
   // public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
   //   const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
   //     (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
@@ -775,10 +733,10 @@ export class IKModule extends Module {
 
     // Defining bones to be used in IK
     const bonesSelection = [
-      { bone: 'rightFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'leftFoot', controllerSize: 0.3, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(0, 0, 1) },
-      { bone: 'rightHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
-      { bone: 'leftHand', controllerSize: 0.4, poleAngle: 0, bendAxis: new Vector3(0, 0, 1), upVector: new Vector3(1, 0, 0) },
+      { bone: 'rightFoot', controllerSize: 0.3 },
+      { bone: 'leftFoot', controllerSize: 0.3 },
+      { bone: 'rightHand', controllerSize: 0.4 },
+      { bone: 'leftHand', controllerSize: 0.4 },
     ] as BoneIKParams[];
 
     // Creating IK controls
@@ -808,10 +766,6 @@ export class IKModule extends Module {
         return;
       }
 
-      const { upVector, bendAxis } = this._guessLimbUpBend(transformNode, elem.bone);
-      elem.upVector = upVector;
-      elem.bendAxis = bendAxis;
-
       const ikBone = this._ghost.skeleton!.bones[skeleton.bones.indexOf(bone)];
       const ikController = new IKController(
         {
@@ -823,8 +777,6 @@ export class IKModule extends Module {
           fkTransformNode: transformNode,
           assetId,
           limb: elem.bone,
-          upVector: elem.upVector,
-          bendAxis: elem.bendAxis,
           controllerSize: elem.controllerSize,
         },
         scene,

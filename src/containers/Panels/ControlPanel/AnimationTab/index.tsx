@@ -1,5 +1,4 @@
 import { Fragment, FunctionComponent } from 'react';
-import IKControllerSection from './IKControllerSection';
 import FilterSection from './FilterSection';
 import TransformSection from './TransformSection';
 import SelectionTrackerSection from './SelectionTrackerSection';
@@ -28,17 +27,6 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
       <SelectionTrackerSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />
 
       {_selectedTargets.length > 0 && <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />}
-      {_selectedTargets.length > 0 && (
-        <IKControllerSection
-          isAllActive={isAllActive}
-          visualizedAssetIds={_visualizedAssetIds}
-          retargetMaps={_retargetMaps}
-          seletedLayer={_selectedLayer}
-          animationIngredients={_animationIngredients}
-          selectableObjects={_selectableObjects}
-          selectedTargets={_selectedTargets}
-        />
-      )}
       {_selectedTargets.length > 0 && (
         <FilterSection
           isAllActive={isAllActive}

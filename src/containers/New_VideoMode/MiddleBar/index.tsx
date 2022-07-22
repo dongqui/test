@@ -1,6 +1,7 @@
-import { Fragment, RefObject, useCallback, FocusEvent } from 'react';
+import { Fragment, RefObject, useCallback, FocusEvent, useEffect } from 'react';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -17,9 +18,24 @@ interface Props {
   isCountdown: boolean;
   switchStandbyMode: () => void;
   startValue: number;
+  recordButtonRef: (ref: HTMLButtonElement | null) => void;
+  doneVMOnBoarding: (index: number) => void;
 }
 
-const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, isCountdown, isRecording, onRecordStop, switchStandbyMode, startValue }: Props) => {
+const MiddleBar = ({
+  videoRef,
+  recordButtonRef,
+  videoStatus,
+  onChange,
+  isVideoLoaded,
+  onRecord,
+  isCountdown,
+  isRecording,
+  onRecordStop,
+  switchStandbyMode,
+  startValue,
+  doneVMOnBoarding,
+}: Props) => {
   const handlePlay = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -46,8 +62,9 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, i
   const handleRecord = useCallback(() => {
     if (videoRef.current) {
       onRecord();
+      doneVMOnBoarding(1);
     }
-  }, [onRecord, videoRef]);
+  }, [doneVMOnBoarding, onRecord, videoRef]);
 
   const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
 
@@ -77,9 +94,15 @@ const MiddleBar = ({ videoRef, videoStatus, onChange, isVideoLoaded, onRecord, i
     return isRecording ? (
       <IconButton icon={SvgPath.CameraStop} type="negative" onClick={onRecordStop} onFocus={blurFocused} />
     ) : (
-      <IconButton disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} onFocus={blurFocused} />
+      <IconButton r={recordButtonRef} disabled={isCountdown} icon={SvgPath.CameraRecord} type="negative" onClick={handleRecord} onFocus={blurFocused} />
     );
-  }, [blurFocused, handlePause, handlePlay, handleRecord, handleStop, isCountdown, isRecording, isVideoLoaded, onRecordStop, switchStandbyMode, videoStatus]);
+  }, [blurFocused, handlePause, handlePlay, handleRecord, handleStop, isCountdown, isRecording, isVideoLoaded, onRecordStop, recordButtonRef, switchStandbyMode, videoStatus]);
+
+  useEffect(() => {
+    if (isVideoLoaded) {
+      recordButtonRef(null);
+    }
+  }, [isVideoLoaded, recordButtonRef]);
 
   return (
     <div className={cx('wrapper')}>

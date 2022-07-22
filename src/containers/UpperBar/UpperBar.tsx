@@ -15,7 +15,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 const cx = classNames.bind(styles);
 
 interface Props {
-  switchMode: () => void;
+  switchMode: () => void | boolean;
   defaultMode: 'VM' | 'EM';
 }
 
@@ -38,6 +38,12 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
   const handleDropdownClose = useCallback(() => {
     dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
   }, [dispatch]);
+
+  const handleChangeSwitchMode = useCallback(() => {
+    dispatch(commonActions.closeModal('GuideModal'));
+    localStorage.setItem('onboarding_2', 'onboarding_2');
+    return switchMode();
+  }, [dispatch, switchMode]);
 
   const UBOption = [
     {
@@ -93,7 +99,7 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
           options={UBOption}
           type="primary"
           defaultValue={defaultMode}
-          onChange={switchMode}
+          onChange={handleChangeSwitchMode}
           className={cx('mode-switch')}
           value={mode === 'videoMode' ? 'VM' : mode === 'animationMode' ? 'EM' : ''}
         />

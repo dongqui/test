@@ -173,7 +173,7 @@ const Buttons = () => {
 
   return (
     <div className={cx('animation-buttons')}>
-      <Record />
+      {/*<Record />*/}
       <ButtonState />
       <Stop requestAnimationFrameId={requestAnimationFrameId} />
     </div>

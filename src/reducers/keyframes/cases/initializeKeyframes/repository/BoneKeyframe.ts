@@ -14,9 +14,7 @@ class BoneKeyframeRepository implements Repository {
     const union = new Set<number>();
     frames.forEach((frame) => union.add(frame));
 
-    return [...union]
-      .sort((a, b) => a - b)
-      .map<Keyframe>((frame) => ({ isDeleted: false, isSelected: false, time: frame }));
+    return [...union].sort((a, b) => a - b).map<Keyframe>((frame) => ({ isDeleted: false, isSelected: false, time: frame }));
   };
 
   // bone 트랙 리스트 초기화
