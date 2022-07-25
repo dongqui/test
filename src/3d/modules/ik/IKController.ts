@@ -1,4 +1,19 @@
-import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
+import {
+  Bone,
+  Color3,
+  CreateTorusVertexData,
+  Matrix,
+  Mesh,
+  MeshBuilder,
+  Observable,
+  Quaternion,
+  Scene,
+  Space,
+  StandardMaterial,
+  TmpVectors,
+  Vector3,
+  VertexData,
+} from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { addMetadata } from 'utils/RP/metadata';
 import { convertToDegree } from 'utils/common';
@@ -137,15 +152,25 @@ export class IKController {
   }
 
   public adjustPoleAngleFromFK() {
-    // if (!this.fkInfluenceChain) {
-    //   return;
-    // }
+    if (!this.fkInfluenceChain) {
+      return;
+    }
 
     // const fkBoneVector = this.fkInfluenceChain[1].absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize();
     // const ikBoneVector = this.targetInfluenceChain[1].absolutePosition.subtract(this.targetInfluenceChain[2].absolutePosition).normalize();
     // const angle = Math.acos(Vector3.Dot(fkBoneVector, ikBoneVector));
 
     this.poleAngle = 0;
+    this.controller.target.computeWorldMatrix(true);
+    this.controller.update();
+
+    const rotMatFK = this.fkInfluenceChain[2].getWorldMatrix().getRotationMatrix();
+    const rotMatIK = this.controller.getRotationMatrix();
+
+    const poleRotationMatrix = rotMatIK.clone().invert().multiply(rotMatFK);
+    const q = Quaternion.FromRotationMatrix(poleRotationMatrix);
+    const angle = 2 * Math.acos(q.w);
+    this.poleAngle = angle;
   }
 
   public adjustAlignment() {
@@ -164,40 +189,6 @@ export class IKController {
     }
   }
 
-  private _getUpVectorFromFK(boneType: string) {
-    // Vector3.TransformNormalToRef(new Vector3(0, 0, 1), this.targetInfluenceChain![2]._localMatrix, this.controller.upVector);
-    return;
-    if (this.fkInfluenceChain) {
-      const chainParent = this.fkInfluenceChain[2].parent as TransformNode;
-      if (chainParent) {
-        // throw new Error("FK chain must have a parent to compute up vector")
-        chainParent.absolutePosition.subtractToRef(this.handle.absolutePosition, TmpVectors.Vector3[0]);
-        this.fkInfluenceChain[2].absolutePosition.subtractToRef(this.handle.absolutePosition, TmpVectors.Vector3[1]);
-        const a = TmpVectors.Vector3[0].normalize();
-        const b = TmpVectors.Vector3[1].normalize();
-        Vector3.CrossToRef(a, b, TmpVectors.Vector3[0]);
-        const upVector = TmpVectors.Vector3[0].normalize();
-        switch (boneType) {
-          case 'rightFoot':
-            break;
-          case 'leftFoot':
-            upVector.scaleInPlace(-1);
-            // this.controller.upVector.copyFromFloats(0, 0, 1);
-            break;
-          case 'rightHand':
-            Vector3.CrossToRef(upVector, b, upVector);
-            // this.controller.upVector.copyFromFloats(-1, 0, 0);
-            break;
-          case 'leftHand':
-            Vector3.CrossToRef(b, upVector, upVector);
-            break;
-        }
-
-        this.controller.upVector.copyFrom(upVector);
-      }
-    }
-  }
-
   public update() {
     // Blend only if we have a FK target
     if (this.fkInfluenceChain) {
@@ -210,12 +201,6 @@ export class IKController {
       this.controller.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
       this.controller.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
       this.controller.blend = this.blend;
-
-      // Set upvector to fk
-      this._getUpVectorFromFK(this.limb);
-      // this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
-      // this.controller.upVector!.normalize();
-      // Vector3.CrossToRef(this.controller.upVector!, this.controller.targetPosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize(), this.controller.upVector!);
     }
 
     this.controller.update();
@@ -235,7 +220,6 @@ export class IKController {
     // );
     this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
     this.poleAngle = poleAngle;
-    this._getUpVectorFromFK(this.limb);
     this.controller.update();
   }
 
@@ -305,7 +289,6 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
-    this._getUpVectorFromFK(this.limb);
     this.controller.initializeFromPose();
 
     this.update();

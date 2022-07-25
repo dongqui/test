@@ -26,6 +26,10 @@ export class BoneIk {
   public bone0Quat: Quaternion = new Quaternion();
   public bone1Quat: Quaternion = new Quaternion();
 
+  public getRotationMatrix() {
+    return this._bone0.getRotationMatrix(Space.WORLD, this._tNode);
+  }
+
   constructor(skeletonNode: TransformNode, bone: Bone, target: TransformNode, defaultUpVector: Vector3) {
     this._bone2 = bone;
     // Babylon bug
@@ -54,9 +58,10 @@ export class BoneIk {
     Vector3.CrossToRef(this._initialTargetDirection, TmpVectors.Vector3[6], TmpVectors.Vector3[7]);
     const len = TmpVectors.Vector3[7].length();
 
+    (this._bone0 as any)._parent.getRotationMatrixToRef(Space.WORLD, this._tNode, TmpVectors.Matrix[4]);
     if (len < 1e-5) {
       // Aligned vectors, use initial upvector
-      this.upVector.copyFrom(this._initialUpVector);
+      Vector3.TransformNormalToRef(this._initialUpVector, TmpVectors.Matrix[4], this.upVector);
       return;
     }
     TmpVectors.Vector3[7].normalize();
@@ -65,8 +70,8 @@ export class BoneIk {
     const angle = Math.atan2(sin, cos);
     Quaternion.RotationAxisToRef(TmpVectors.Vector3[7], angle, TmpVectors.Quaternion[0]);
     Matrix.FromQuaternionToRef(TmpVectors.Quaternion[0], TmpVectors.Matrix[3]);
-    Vector3.TransformNormalToRef(this._initialUpVector, TmpVectors.Matrix[3], this.upVector);
-    console.log(Vector3.TransformNormal(this._initialTargetDirection, TmpVectors.Matrix[3]));
+    Vector3.TransformNormalToRef(this._initialUpVector, TmpVectors.Matrix[4], this.upVector);
+    Vector3.TransformNormalToRef(this.upVector, TmpVectors.Matrix[3], this.upVector);
     // Vector3.CrossToRef(this.upVector, TmpVectors.Vector3[6], this.upVector);
     // this.upVector.normalize();
   }
@@ -185,6 +190,11 @@ export class BoneIk {
     }
     this._initialTargetDirection.copyFrom(targetDirection);
     upVector.copyFrom(this._initialUpVector);
+
+    // Save initial up vector in parent's local space
+    (this._bone0 as any)._parent.getRotationMatrixToRef(Space.WORLD, this._tNode, TmpVectors.Matrix[0]);
+    TmpVectors.Matrix[0].invert();
+    Vector3.TransformNormalToRef(this._initialUpVector, TmpVectors.Matrix[0], this._initialUpVector);
 
     // Bone 0 frame
     let yaxis = bone1Pos.subtract(bone0Pos).normalize();
