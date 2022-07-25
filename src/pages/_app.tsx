@@ -21,11 +21,20 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Compone
     if (process.env.NODE_ENV === 'production') {
       hotjar.initialize();
     }
-  }, []);
-
-  useEffect(() => {
     if (gtmId) {
       TagManager.initialize({ gtmId });
+    }
+
+    const productGTM = process.env.NEXT_PUBLIC_PRODUCT_GTM_ID;
+    const productGTMAuth = process.env.NEXT_PUBLIC_PRODUCT_GTM_AUTH;
+    const productGTMPreview = process.env.NEXT_PUBLIC_PRODUCT_GTM_PREVIEW;
+
+    if (process.env.NODE_ENV === 'production' && productGTM && productGTMAuth && productGTMPreview) {
+      TagManager.initialize({
+        gtmId: productGTM,
+        auth: productGTMAuth,
+        preview: productGTMPreview,
+      });
     }
   }, []);
 
