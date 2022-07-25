@@ -316,6 +316,11 @@ export class IKModule extends Module {
         property: 'rotationQuaternion' as PlaskProperty,
         value: pickedIkCtrl.handle.rotationQuaternion!.asArray() as ArrayOfFourNumbers,
       },
+      {
+        targetId: pickedIkCtrl.handle.id,
+        property: 'poleAngle' as PlaskProperty,
+        value: pickedIkCtrl.poleAngle,
+      },
     );
     return targetDataList;
   }
@@ -610,6 +615,7 @@ export class IKModule extends Module {
         //   selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
         // }
         // selectedIK.controller.update();
+        this.forceUpdateGhostSkeleton();
         this.setIKtoFK([selectedIK]);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
         // selectedIK.handle.setAbsolutePosition(position);
