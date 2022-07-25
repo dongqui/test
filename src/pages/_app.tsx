@@ -29,7 +29,7 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Compone
     const productGTMAuth = process.env.NEXT_PUBLIC_PRODUCT_GTM_AUTH;
     const productGTMPreview = process.env.NEXT_PUBLIC_PRODUCT_GTM_PREVIEW;
 
-    if (process.env.NODE_ENV === 'production' && productGTM && productGTMAuth && productGTMPreview) {
+    if (productGTM && productGTMAuth && productGTMPreview) {
       TagManager.initialize({
         gtmId: productGTM,
         auth: productGTMAuth,
