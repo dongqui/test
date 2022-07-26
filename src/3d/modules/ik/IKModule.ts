@@ -890,8 +890,8 @@ export class IKModule extends Module {
           const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty / adjustedPoints.length));
 
           // To visualize the ADJUSTED PATH
-          const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
-          finalCurveLine.color = new Color3(0, 0.6, 1);
+          //const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
+          //finalCurveLine.color = new Color3(0, 0.6, 1);
 
           if (centerPoints[centerPoints.length - 2] && !centerPoints[centerPoints.length - 2].used) {
             for (let i = 0; i < centerPoints[centerPoints.length - 2].qty; i++) {
@@ -1014,8 +1014,8 @@ export class IKModule extends Module {
           }
         });
         // To visualize the ORIGINAL PATH
-        const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
-        origCurveLine.color = new Color3(1, 0.6, 0);
+        //const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
+        //origCurveLine.color = new Color3(1, 0.6, 0);
 
         //console.log(origPoints);
       }
@@ -1095,7 +1095,7 @@ export class IKModule extends Module {
     if (targetTrack) {
       targetTrack.transformKeys.forEach((key, index, array) => {
         // Evaluate the end of a contact period
-        if (key.value === 0 && array[index - 1].value === 1 && array[index - 2].value === 1) {
+        if (key && key.value === 0 && array[index - 1] && array[index - 1].value === 1 && array[index - 2] && array[index - 2].value === 1) {
           anglesEvolution = angles.length;
         }
         // Insert the flow of animation in ToeBase

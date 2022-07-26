@@ -133,7 +133,30 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
+
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+
+      // Bake IK to FK after Foot Lock compute
+      let index = 0;
+      while (index < 4) {
+        const controller = plaskEngine.ikModule.ikControllers[index];
+        //for (const controller of plaskEngine.ikModule.ikControllers) {
+        plaskEngine.ikModule.setSelectedIk([]);
+        if (controller.limb.includes('Foot')) {
+          plaskEngine.ikModule.setSelectedIk([controller]);
+
+          const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+
+          animationIngredient = animationIngredients[0];
+
+          yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+
+          // Set FK position to newly updated values
+          plaskEngine.ikModule.setFKtoIK();
+        }
+        index++;
+      }
+      //console.log(animationIngredient);
     }
 
     forceClickAnimationPlayAndStop(50);
