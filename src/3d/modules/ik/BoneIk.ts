@@ -27,6 +27,7 @@ export class BoneIk {
   public bone1Quat: Quaternion = new Quaternion();
 
   public getRotationMatrix() {
+    this._bone0.computeWorldMatrix(true);
     return this._bone0.getRotationMatrix(Space.WORLD, this._tNode);
   }
 

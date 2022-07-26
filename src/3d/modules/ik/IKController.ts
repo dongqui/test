@@ -13,6 +13,7 @@ import {
   TmpVectors,
   Vector3,
   VertexData,
+  Scalar,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { addMetadata } from 'utils/RP/metadata';
@@ -156,21 +157,50 @@ export class IKController {
       return;
     }
 
-    // const fkBoneVector = this.fkInfluenceChain[1].absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize();
-    // const ikBoneVector = this.targetInfluenceChain[1].absolutePosition.subtract(this.targetInfluenceChain[2].absolutePosition).normalize();
-    // const angle = Math.acos(Vector3.Dot(fkBoneVector, ikBoneVector));
-
+    for (let i = 0; i < this.fkInfluenceChain.length; i++) {
+      this.fkInfluenceChain![i].computeWorldMatrix(true);
+    }
     this.poleAngle = 0;
     this.controller.target.computeWorldMatrix(true);
     this.controller.update();
+    for (let i = 0; i < this.targetInfluenceChain.length; i++) {
+      this.targetInfluenceChain![i].computeWorldMatrix(true);
+    }
 
-    const rotMatFK = this.fkInfluenceChain[2].getWorldMatrix().getRotationMatrix();
-    const rotMatIK = this.controller.getRotationMatrix();
+    const targetDirection = this.fkInfluenceChain![0].absolutePosition.subtract(this.fkInfluenceChain![2].absolutePosition).normalize();
+    const halfDirection = this.fkInfluenceChain![1].absolutePosition.subtract(this.fkInfluenceChain![2].absolutePosition).normalize();
+    const bendAxis = Vector3.Cross(targetDirection, halfDirection);
+    if (bendAxis.length() < 1e-5) {
+      // limb is fully extended, default pole angle to 0;
+      return;
+    }
+    const upVector = Vector3.Cross(targetDirection, bendAxis).normalize();
 
-    const poleRotationMatrix = rotMatIK.clone().invert().multiply(rotMatFK);
-    const q = Quaternion.FromRotationMatrix(poleRotationMatrix);
-    const angle = 2 * Math.acos(q.w);
+    const targetDirectionIK = this.targetInfluenceChain![0].absolutePosition.subtract(this.targetInfluenceChain![2].absolutePosition).normalize();
+    const halfDirectionIK = this.targetInfluenceChain![1].absolutePosition.subtract(this.targetInfluenceChain![2].absolutePosition).normalize();
+    const bendAxisIK = Vector3.Cross(targetDirectionIK, halfDirectionIK);
+    const upVectorIK = Vector3.Cross(targetDirectionIK, bendAxisIK).normalize();
+    const cos = Vector3.Dot(upVector, upVectorIK);
+    const axis = upVectorIK.cross(upVector);
+    const l = axis.length();
+    if (l < 1e-5) {
+      this.poleAngle = 0;
+      return;
+    }
+    const sin = l * Math.sign(Vector3.Dot(targetDirection, axis));
+    const angle = Math.atan2(sin, cos);
+
     this.poleAngle = angle;
+
+    // const rotMatFK = this.fkInfluenceChain[2].getWorldMatrix().getRotationMatrix();
+    // const rotMatIK = this.controller.getRotationMatrix();
+
+    // const poleRotationMatrix = rotMatIK.clone().invert().multiply(rotMatFK);
+    // const q = Quaternion.FromRotationMatrix(poleRotationMatrix);
+    // const angle = 2 * Math.acos(Scalar.Clamp(q.w, -1, 1));
+    // const axis = TmpVectors.Vector3[0].set(q.x, q.y, q.z);
+    // const toTarget = this.controller.target.absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition);
+    // this.poleAngle = angle * Math.sign(Vector3.Dot(toTarget, axis));
   }
 
   public adjustAlignment() {

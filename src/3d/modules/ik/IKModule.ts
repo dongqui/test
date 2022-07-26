@@ -420,7 +420,6 @@ export class IKModule extends Module {
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
-
       selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
 
       if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
@@ -615,7 +614,9 @@ export class IKModule extends Module {
         //   selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
         // }
         // selectedIK.controller.update();
+        this._updateIKGhost();
         this.forceUpdateGhostSkeleton();
+
         this.setIKtoFK([selectedIK]);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
         // selectedIK.handle.setAbsolutePosition(position);
