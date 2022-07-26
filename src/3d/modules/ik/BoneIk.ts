@@ -25,10 +25,15 @@ export class BoneIk {
   public upVector: Vector3 = new Vector3();
   public bone0Quat: Quaternion = new Quaternion();
   public bone1Quat: Quaternion = new Quaternion();
+  public bone2Quat: Quaternion = new Quaternion();
 
   public getRotationMatrix() {
     this._bone0.computeWorldMatrix(true);
     return this._bone0.getRotationMatrix(Space.WORLD, this._tNode);
+  }
+
+  public setExtremityRotation(q: Quaternion) {
+    this._bone2.setRotationQuaternion(q, Space.WORLD);
   }
 
   constructor(skeletonNode: TransformNode, bone: Bone, target: TransformNode, defaultUpVector: Vector3) {
@@ -164,6 +169,10 @@ export class BoneIk {
     this._bone1.setRotationMatrix(mat2.getRotationMatrix(), Space.WORLD, this._tNode);
     this._updateLinkedTransformRotation(this._bone0, this.bone0Quat);
     this._updateLinkedTransformRotation(this._bone1, this.bone1Quat);
+
+    // Lock rotation of last bone of the chain
+    this._bone1.setRotationQuaternion(this.target.absoluteRotationQuaternion, Space.WORLD, this._tNode);
+    this._updateLinkedTransformRotation(this._bone2, this.bone2Quat);
   }
 
   /**

@@ -209,15 +209,6 @@ export class IKController {
       this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
     }
   }
-  public alignTargetInfluenceChainWithHandle() {
-    if (this.handle.rotationQuaternion) {
-      const targetHandle = this.handle.absoluteRotationQuaternion.clone();
-      setAbsoluteRotation(this.targetInfluenceChain[0], targetHandle);
-      this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
-      this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
-      this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
-    }
-  }
 
   public update() {
     // Blend only if we have a FK target
@@ -226,10 +217,9 @@ export class IKController {
         this.handle.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
       }
 
-      this.alignTargetInfluenceChainWithHandle();
-
       this.controller.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
       this.controller.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
+      this.controller.bone2Quat = this.fkInfluenceChain[0].rotationQuaternion!;
       this.controller.blend = this.blend;
     }
 
