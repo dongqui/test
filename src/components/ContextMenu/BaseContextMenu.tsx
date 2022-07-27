@@ -18,18 +18,20 @@ export const ContextMenu: FunctionComponent<Props> = ({ children }) => {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function initContextMenuPosition() {
-      if (contextMenu) {
+      if (contextMenu && nodeRef.current) {
         const { innerWidth: windowWidth, innerHeight: windowHeight } = window;
-        const { offsetWidth: menuWidth, offsetHeight: menuHeight } = nodeRef.current!;
+        const { offsetWidth: menuWidth, offsetHeight: menuHeight } = nodeRef.current;
         let { x, y } = getMousePosition(contextMenu.event);
+
         if (x + menuWidth > windowWidth) {
           x -= x + menuWidth - windowWidth;
         }
         if (y + menuHeight > windowHeight) {
           y -= y + menuHeight - windowHeight;
         }
+
         setPosition({ x, y });
       }
     }
@@ -50,18 +52,14 @@ export const ContextMenu: FunctionComponent<Props> = ({ children }) => {
   }, [contextMenu, dispatch]);
 
   const menuStyle = {
-    display: position ? 'block' : 'none',
     left: position?.x,
     top: position?.y,
   };
 
   return (
-    <Fragment>
-      {}
-      <div className={cx('wrapper')} ref={nodeRef} style={menuStyle}>
-        {children}
-      </div>
-    </Fragment>
+    <div className={cx('wrapper')} ref={nodeRef} style={menuStyle}>
+      {children}
+    </div>
   );
 };
 
