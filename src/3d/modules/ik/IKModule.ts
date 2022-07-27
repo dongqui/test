@@ -422,9 +422,6 @@ export class IKModule extends Module {
       selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition.clone());
       selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone());
 
-      if (selectedIK.handle.name.includes('Hand')) {
-        selectedIK.handle.rotate(selectedIK.fkInfluenceChain![0].forward, Math.PI / 2, Space.LOCAL);
-      }
       selectedIK.adjustPoleAngleFromFK();
       selectedIK.update();
       // selectedIK.controller.update();

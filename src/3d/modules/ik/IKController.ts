@@ -262,6 +262,8 @@ export class IKController {
     this.handle.rotationQuaternion = params.limb.includes('Hand')
       ? Quaternion.FromLookDirectionLH(Vector3.Up(), Vector3.Right())
       : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
+    this.handle.computeWorldMatrix(true);
+    this.handle.bakeCurrentTransformIntoVertices();
 
     // Selection outline size
     addMetadata('outlineSize', 0.015, this.handle);
