@@ -180,11 +180,11 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
-          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Baking the IK controllers', message: 'This can take up to 3 minutes' }));
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeFKintoIK();
             if (animationIngredient) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
@@ -212,11 +212,11 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
-          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Baking the bones', message: 'This can take up to 3 minutes' }));
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+            const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
             for (const animationIngredient of animationIngredients) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
@@ -241,19 +241,8 @@ const IKControllerSection: FunctionComponent<Props> = ({
   ];
 
   const handleSetupIK = useCallback(() => {
-    dispatch(
-      globalUIActions.openModal('ConfirmModal', {
-        title: 'Setup IK',
-        message: 'This action will create IK controllers',
-        confirmText: 'Confirm',
-        onConfirm: () => {
-          const assetId = _visualizedAssetIds[0];
-          dispatch(addIKAction(assetId));
-        },
-        cancelText: 'Cancel',
-        confirmButtonColor: 'primary',
-      }),
-    );
+    const assetId = _visualizedAssetIds[0];
+    dispatch(addIKAction(assetId));
   }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = {
