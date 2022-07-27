@@ -125,12 +125,6 @@ const ControlPanel = ({
   );
 
   const handleCloseModal = useCallback(() => {
-    TagManager.dataLayer({
-      dataLayer: {
-        event: 'export-motion-cancel',
-      },
-    });
-
     setValueName('Extracted motion');
     setIsOpenExtractModal(false);
     setIsOpenLoadingModal(false);
@@ -140,6 +134,12 @@ const ControlPanel = ({
   }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
   const handleCancel = useCallback(() => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'export-motion-cancel',
+      },
+    });
+
     setIsOpenLoadingModal(false);
     setIsOpenExtractModal(false);
     cancelTokenSource.current && cancelTokenSource.current();
