@@ -3,16 +3,18 @@ import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
+
 import * as globalUIActions from 'actions/Common/globalUI';
+import { changeMode } from 'actions/modeSelection';
 import { useWindowSize } from 'hooks/common';
 import Box, { BoxProps } from 'components/Layout/Box';
 import { Typography } from 'components/Typography';
 import { Dropdown } from 'components/Dropdown';
-import { changeMode } from 'actions/modeSelection';
 import { GhostButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { WARNING_02 } from 'constants/Text';
 import { VM_ON_BOARDING_KEY } from 'utils/const';
+
 import OnBoarding from './OnBoarding';
 import RenderingPanel from './RenderingPanel';
 import MiddleBar from './MiddleBar';
@@ -21,6 +23,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import { Overlay } from 'components/Overlay';
 
 const cx = classNames.bind(styles);
 
@@ -32,7 +35,7 @@ interface Props {
 
 const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const dispatch = useDispatch();
-  const { mode } = useSelector((state: RootState) => state.modeSelection);
+  const { mode, videoURL } = useSelector((state: RootState) => state.modeSelection);
 
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -54,6 +57,9 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
+  const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
+  const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
+  const lock = useRef<boolean>(false);
 
   // ref related to onboarding session
   const [recordButtonRef, setRecordButtonRef] = useState<HTMLButtonElement | null>(null);
@@ -106,7 +112,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         height: windowHeight - 180 - 38,
       } as BoxProps,
       CP: {
-        width: 250,
+        width: 300,
         height: windowHeight - 180 - 38,
       } as BoxProps,
       MB: {
@@ -200,43 +206,54 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
   }, [currentVideoStream]);
 
-  const handleDrop = async (files: File[]) => {
-    if (files.length > 1) {
-      dispatch(
-        globalUIActions.openModal('AlertModal', {
-          title: 'Warning',
-          message: WARNING_02,
-          confirmText: 'Close',
-        }),
-      );
-
-      return;
-    }
-
-    const file = files[0];
-
-    await headerInspector(file)
-      .then(() => {
-        if (videoRef.current) {
-          doneVMOnBoarding(1);
-          const videoURL = URL.createObjectURL(files[0]);
-
-          setIsVideoLoaded(true);
-          setVideoURL(videoURL);
-          unmountCurrentStream();
-
-          videoRef.current.src = videoURL;
-        }
-      })
-      .catch(() => {
+  const handleDrop = useCallback(
+    async (files: File[]) => {
+      if (files.length > 1) {
         dispatch(
-          globalUIActions.openModal('_AlertModal', {
-            message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
-            title: 'Import failed',
+          globalUIActions.openModal('AlertModal', {
+            title: 'Warning',
+            message: WARNING_02,
+            confirmText: 'Close',
           }),
         );
-      });
-  };
+
+        return;
+      }
+
+      const file = files[0];
+
+      await headerInspector(file)
+        .then(() => {
+          if (videoRef.current) {
+            doneVMOnBoarding(1);
+            const videoURL = URL.createObjectURL(files[0]);
+
+            setIsVideoLoaded(true);
+            setVideoURL(videoURL);
+            unmountCurrentStream();
+
+            videoRef.current.src = videoURL;
+          }
+        })
+        .catch(() => {
+          dispatch(changeMode({ mode: mode, videoURL: undefined }));
+          dispatch(
+            globalUIActions.openModal('_AlertModal', {
+              message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
+              title: 'Import failed',
+            }),
+          );
+        });
+    },
+    [dispatch, doneVMOnBoarding, mode, unmountCurrentStream],
+  );
+
+  useEffect(() => {
+    if (videoURL && !lock.current) {
+      lock.current = true;
+      handleDrop([videoURL]);
+    }
+  }, [ON_VIDEO_MOUNTED, handleDrop, videoURL, lock]);
 
   const createThumbnails = useCallback(() => {
     let duration = 20;
@@ -482,6 +499,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         confirmText: 'Delete',
         confirmButtonColor: 'negative',
         onConfirm: () => {
+          dispatch(changeMode({ mode: mode, videoURL: undefined }));
           setExtractButtonRef(null);
           setCPModified(undefined);
           setStartValue(0);
@@ -493,7 +511,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         },
       }),
     );
-  }, [dispatch, unmountVideo]);
+  }, [dispatch, mode, unmountVideo]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -543,7 +561,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
-    if (!ON_RECORDING && !RECORD_COUNTDOWN && !currentVideoURL && !isVideoLoaded) {
+    if (!ON_RECORDING && !RECORD_COUNTDOWN && !currentVideoURL && !isVideoLoaded && !videoURL) {
       if (videoDeviceListLoaded && videoDeviceList.length > 0) {
         if (!currentVideoDevice) {
           setCurrentVideoDevice(videoDeviceList[0]);
@@ -555,7 +573,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         unmountCurrentStream();
       }
     }
-  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded]);
+  }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded, videoURL]);
 
   useEffect(() => {
     if (currentVideoDevice !== null && !isDeviceInitialized) {
@@ -593,17 +611,17 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             onConfirm: () => {
               unmountVideo();
               unmountCurrentStream();
-              dispatch(changeMode({ mode: 'animationMode' }));
+              dispatch(changeMode({ mode: 'animationMode', videoURL: undefined }));
             },
             onCancel: () => {
-              dispatch(changeMode({ mode: 'videoMode' }));
+              dispatch(changeMode({ mode: 'videoMode', videoURL: undefined }));
             },
           }),
         );
       } else {
         unmountVideo();
         unmountCurrentStream();
-        dispatch(changeMode({ mode: 'animationMode' }));
+        dispatch(changeMode({ mode: 'animationMode', videoURL: undefined }));
       }
     }
   }, [currentVideoURL, dispatch, mode, unmountCurrentStream, unmountVideo]);
@@ -632,12 +650,12 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   );
 
   useEffect(() => {
-    if (modals.length === 0) {
+    if (modals.length === 0 && !isOpenExtractModal && !isOpenLoadingModal) {
       window.addEventListener('keypress', handleKeyDown);
 
       return () => window.removeEventListener('keypress', handleKeyDown);
     }
-  }, [handleKeyDown, modals]);
+  }, [handleKeyDown, isOpenExtractModal, isOpenLoadingModal, modals]);
 
   const blurFocused = (e: FocusEvent<HTMLButtonElement>) => e.target.blur();
 
@@ -698,6 +716,10 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               setExtractButtonRef={setExtractButtonRef}
               doneVMOnBoarding={doneVMOnBoarding}
               setCPModified={setCPModified}
+              isOpenExtractModal={isOpenExtractModal}
+              setIsOpenExtractModal={setIsOpenExtractModal}
+              isOpenLoadingModal={isOpenLoadingModal}
+              setIsOpenLoadingModal={setIsOpenLoadingModal}
             />
           )}
         </Box>
@@ -752,6 +774,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         extractButtonRef={extractButtonRef}
         doneVMOnBoarding={doneVMOnBoarding}
       />
+      {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
     </div>
   );
 };

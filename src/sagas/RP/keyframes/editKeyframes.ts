@@ -152,28 +152,30 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
           type: 'put-frames',
           data: {
             layerId: _selectedLayer,
-            tracks: tracks?.map((track) => {
-              const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
+            tracks: tracks
+              .filter((track) => track.property !== 'isContact')
+              .map((track) => {
+                const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
 
-              return {
-                id: track.id,
-                targetId: track.targetId,
-                filterBeta: track.filterBeta,
-                filterMinCutoff: track.filterMinCutoff,
-                name: track.name,
-                property: track.property,
-                transformKeysMap: [
-                  {
-                    frameIndex: transformKey?.frame,
-                    property: track.property,
-                    transformKey:
-                      track.property === 'rotationQuaternion'
-                        ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
-                        : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
-                  },
-                ],
-              };
-            }),
+                return {
+                  id: track.id,
+                  targetId: track.targetId,
+                  filterBeta: track.filterBeta,
+                  filterMinCutoff: track.filterMinCutoff,
+                  name: track.name,
+                  property: track.property,
+                  transformKeysMap: [
+                    {
+                      frameIndex: transformKey?.frame,
+                      property: track.property,
+                      transformKey:
+                        track.property === 'rotationQuaternion'
+                          ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
+                          : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
+                    },
+                  ],
+                };
+              }),
           },
         }),
       );

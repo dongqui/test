@@ -32,12 +32,12 @@ const LibraryPanel: FunctionComponent = () => {
     async (files: File[]) => {
       const [videos, filesExceptVideo] = partition(files, (v) => v.type.includes('video'));
 
-      const hasMoreThanOneViedo = videos.length > 1;
+      const hasMoreThanOneVideo = videos.length > 1;
       const isInvalidFileFormat = !filesExceptVideo.every((file) => {
         return file.name.toLocaleLowerCase().includes('glb') || file.name.toLocaleLowerCase().includes('fbx') || file.type.includes('json');
       });
 
-      if (hasMoreThanOneViedo) {
+      if (hasMoreThanOneVideo) {
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
