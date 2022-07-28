@@ -203,13 +203,6 @@ export class IKController {
     // this.poleAngle = angle * Math.sign(Vector3.Dot(toTarget, axis));
   }
 
-  public adjustAlignment() {
-    if (this.handle.rotationQuaternion) {
-      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
-      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
-    }
-  }
-
   public update() {
     // Blend only if we have a FK target
     if (this.fkInfluenceChain) {
@@ -234,11 +227,10 @@ export class IKController {
    */
   public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, ikRotationQuaternion: Quaternion, blend: number, poleAngle: number) {
     Vector3.LerpToRef(fkOriginalAbsolutePosition, ikAbsolutePosition, blend, TmpVectors.Vector3[0]);
-    // console.log(
-    //   `blend: ${blend}\nfkOriginalAbsolutePosition: ${fkOriginalAbsolutePosition}\nikAbsolutePosition: ${ikAbsolutePosition}\nTmpVectors.Vector3:${TmpVectors.Vector3[0]}`,
-    // );
-    this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
+    this.handle.position.copyFrom(ikAbsolutePosition);
+    this.handle.rotationQuaternion?.copyFrom(ikRotationQuaternion);
     this.poleAngle = poleAngle;
+    this.target.computeWorldMatrix(true);
     this.controller.update();
   }
 

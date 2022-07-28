@@ -216,8 +216,8 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
-            for (const animationIngredient of animationIngredients) {
+            const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
+            if (animationIngredient) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
 

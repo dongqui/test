@@ -52,12 +52,13 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       const animationIds = targetMotion ? [targetMotion.animationId!] : nodes.filter((node) => node.assetId === assetId && node.type === 'MOTION').map((node) => node.animationId!);
 
       // TODO: Room for improvement, Make Loading Modal work
-      const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeIKintoFKExport();
-      console.log(animationIngredients);
+      const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFKExport();
+      if (!animationIngredient) {
+        throw new Error('could not bake IK track');
+      }
 
-      const ingredients: AnimationIngredient[] = yield call(getAllAnimationIngredients, animationIngredients, animationIds, asset!);
+      const ingredients: AnimationIngredient[] = yield call(getAllAnimationIngredients, [animationIngredient], animationIds, asset!);
       ingredients.forEach((animationIngredient) => {
-        console.log(animationIngredient);
         const animationGroup = plaskEngine.animationModule.createAnimationGroupFromIngredient(animationIngredient, fps);
       });
     }
