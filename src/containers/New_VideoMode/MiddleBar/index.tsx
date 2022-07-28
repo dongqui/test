@@ -1,6 +1,7 @@
-import { Fragment, RefObject, useCallback, FocusEvent, useRef, useEffect } from 'react';
+import { Fragment, RefObject, useCallback, FocusEvent, useEffect } from 'react';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 

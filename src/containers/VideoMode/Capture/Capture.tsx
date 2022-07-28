@@ -202,8 +202,8 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       setReadyExtract(false);
       setOnExtract(false);
       dispatch(lpNodeActions.addNodes([mocapNode]));
-      dispatch(modeSelectActions.changeMode({ videoURL: '' }));
-      dispatch(modeSelectActions.changeMode({ mode: 'animationMode' }));
+      // dispatch(modeSelectActions.changeMode({ videoURL: '' }));
+      dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
     } catch (e) {
       setOnExtract(false);
       setIsExtractFailed(true);
@@ -335,7 +335,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   // LP에서 비디오가 넘어올 경우를 위한 분기
   useEffect(() => {
     if (videoURL) {
-      if (videoRef.current) videoRef.current.src = videoURL;
+      if (videoRef.current) videoRef.current.src = URL.createObjectURL(videoURL);
       handleMetaData();
       setRecordOverTwice(true);
     }

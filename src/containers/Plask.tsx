@@ -39,7 +39,7 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
   };
 
   const handleChangeMode = useCallback(() => {
-    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode' }));
+    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode', videoURL: undefined }));
 
     if (mode === 'videoMode') {
       return false;

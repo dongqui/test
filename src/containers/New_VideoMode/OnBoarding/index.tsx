@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
+import GuideModal from 'components/Modal/GuideModal';
 import { VM_ON_BOARDING_KEY } from 'utils/const';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import GuideModal from 'components/Modal/GuideModal';
 
 const cx = classNames.bind(styles);
 
@@ -100,7 +100,7 @@ const OnBoarding = ({
             doneVMOnBoarding(3);
           }}
           postion={{
-            right: '266px',
+            right: '316px',
             top: '52px',
           }}
           tooltipArrowPlacement="right-start"

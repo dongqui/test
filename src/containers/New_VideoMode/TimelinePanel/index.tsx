@@ -3,6 +3,7 @@ import { Timeline } from '@babylonjs/controls';
 import { BaseDropzone } from 'components/Input/Dropzone';
 import { OutlineButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -137,7 +138,7 @@ const TimelinePanel = ({
         }
       }
     },
-    [duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
+    [doneVMOnBoarding, duration, onChangeEnd, sliderStyles.left, sliderStyles.right, sliderStyles.width, startValue, videoRef],
   );
 
   const requestRef = useRef(0);

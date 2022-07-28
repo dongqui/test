@@ -6,6 +6,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import * as commonActions from 'actions/Common/globalUI';
 
 const cx = classNames.bind(styles);
 
@@ -15,7 +16,9 @@ const Record: FunctionComponent<Props> = () => {
   const dispatch = useDispatch();
 
   const handleRecordButtonClick = useCallback(() => {
-    dispatch(modeSelectionActions.changeMode({ mode: 'videoMode' }));
+    dispatch(commonActions.closeModal('GuideModal'));
+    localStorage.setItem('onboarding_2', 'onboarding_2');
+    dispatch(modeSelectionActions.changeMode({ mode: 'videoMode', videoURL: undefined }));
   }, [dispatch]);
 
   return <IconWrapper id="recordButton" className={cx('record')} hasFrame={false} icon={SvgPath.Record} onClick={handleRecordButtonClick} />;

@@ -1,5 +1,5 @@
-@import "styles/libraries/_colors";
-@import "styles/libraries/_mixins";
+@import "styles/libraries/colors";
+@import "styles/libraries/mixins";
 
 .wrapper {
   color: #fff;
@@ -79,8 +79,8 @@
 }
 
 .dropdown {
-  margin-left: 34px;
+  margin-left: 30px;
   background-color: $contentbg-base;
   border-radius: 6px;
-  max-width: 138px;
+  max-width: 189px;
 }

@@ -24,6 +24,7 @@ const BaseTemplate = forwardRef<HTMLDivElement, Props>((props, ref) => {
   const dispatch = useDispatch();
 
   const handleCloseButtonClick = useCallback(() => {
+    localStorage.setItem('onboarding_1', 'onboarding_1');
     if (onboardingStep === 999) {
       dispatch(globalUIActions.progressOnboarding({ onboardingStep: null }));
       document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();
