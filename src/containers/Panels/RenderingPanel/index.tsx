@@ -249,6 +249,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     },
     RPShortcutOptions,
   );
+  usePlaskShortcut(
+    ['control', 'p'],
+    (_key: any, event: any) => {
+      plaskEngine.toggleInspector();
+      event.preventDefault();
+    },
+    RPShortcutOptions,
+  );
   // useEffect(() => {
   //   const handleKeyDown = (event: KeyboardEvent) => {
   //     // shortcuts don't work while user is typing on input elements
