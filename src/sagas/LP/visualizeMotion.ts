@@ -131,7 +131,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       });
 
       const payload = {
-        endTimeIndex: footTrack.transformKeys.length,
+        endTimeIndex: footTrack!.transformKeys.length,
         currentTimeIndex: 0,
       };
 
@@ -161,9 +161,9 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         if (controller.limb.includes('Foot')) {
           plaskEngine.ikModule.setSelectedIk([controller]);
 
-          const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
+          const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
 
-          animationIngredient = animationIngredients[0];
+          //animationIngredient = animationIngredient;
 
           yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
