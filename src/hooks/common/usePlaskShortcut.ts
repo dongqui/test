@@ -52,7 +52,7 @@ export default function usePlaskShortcut(shortcutKeys: Array<string>, callback: 
 
       pressedKeys.current = [...new Set([...pressedKeys.current, pressedKey])];
       if (pressedKeys.current.join() === shortcutArray.join()) {
-        callback(shortcutKeys);
+        callback(shortcutKeys, keydownEvent);
         return;
       }
       return;
