@@ -23,7 +23,7 @@ import { selectionChanged } from './stateSync';
 import { setCurrentAnimationGroup } from 'actions/animatingControlsAction';
 import { Controller } from 'react-hook-form';
 import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
-import { ShortcutOption } from '../../../hooks/common/usePlaskShortcut';
+import { ShortcutOption } from 'hooks/common/usePlaskShortcut';
 
 const cx = classNames.bind(styles);
 
@@ -51,27 +51,6 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   const { onContextMenuOpen, onContextMenuClose } = useContextMenu();
 
   const renderingCanvas1 = useRef<HTMLCanvasElement>(null);
-
-  /**
-   * object to handle multi-key
-   */
-  const multiKeyController = useMemo(
-    () => ({
-      v: { pressed: false },
-      V: { pressed: false },
-      ㅍ: { pressed: false },
-      r: { pressed: false },
-      R: { pressed: false },
-      ㄱ: { pressed: false },
-      k: { pressed: false },
-      K: { pressed: false },
-      ㅏ: { pressed: false },
-      f: { pressed: false },
-      F: { pressed: false },
-      ㄹ: { pressed: false },
-    }),
-    [],
-  );
 
   /****************************************************************************
    * Initiate Babylon stuff.
@@ -180,7 +159,9 @@ const RenderingPanel: FunctionComponent<Props> = () => {
 
   const RPShortcutOptions: ShortcutOption = {
     repeatOnHold: false,
-    focus: this,
+    focus: {
+      target: renderingCanvas1.current,
+    },
   };
 
   /**
@@ -249,6 +230,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     },
     RPShortcutOptions,
   );
+
   usePlaskShortcut(
     ['control', 'p'],
     (_key: any, event: any) => {
@@ -426,78 +408,10 @@ const RenderingPanel: FunctionComponent<Props> = () => {
   usePlaskShortcut(
     ['k'],
     () => {
-      if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
-        dispatch(keyframeActions.editKeyframesSocket.request());
-      }
+      dispatch(keyframeActions.editKeyframesSocket.request());
     },
-    RPShortcutOptions,
+    { repeatOnHold: false },
   );
-  // useEffect(() => {
-  //   const handleKeyDown = (event: KeyboardEvent) => {
-  //     const target = event.target as Element;
-  //     if (target.tagName.toLowerCase() === 'input') {
-  //       return;
-  //     }
-
-  //     switch (event.key) {
-  //       case 'v':
-  //       case 'V':
-  //       case 'ㅍ': // v (viewport)
-  //         if (multiKeyController[event.key]) {
-  //           multiKeyController[event.key].pressed = true;
-  //         }
-  //         break;
-  //       case 'k':
-  //       case 'K':
-  //       case 'ㅏ': // insert
-  //         if (multiKeyController[event.key]) {
-  //           multiKeyController[event.key].pressed = true;
-  //         }
-  //         if (multiKeyController[event.key].pressed) {
-  //           // k with v not pressed
-  //           if (!multiKeyController.v.pressed && !multiKeyController.V.pressed && !multiKeyController.ㅍ.pressed) {
-  //             dispatch(keyframeActions.editKeyframesSocket.request());
-  //           }
-  //         }
-  //         break;
-  //       default: {
-  //         break;
-  //       }
-  //     }
-  //   };
-
-  //   const handleKeyUp = (event: KeyboardEvent) => {
-  //     const target = event.target as Element;
-  //     if (target.tagName.toLowerCase() === 'input') {
-  //       return;
-  //     }
-
-  //     switch (event.key) {
-  //       case 'v':
-  //       case 'V':
-  //       case 'ㅍ':
-  //       case 'k':
-  //       case 'K':
-  //       case 'ㅏ':
-  //         if (multiKeyController[event.key]) {
-  //           multiKeyController[event.key].pressed = false;
-  //         }
-  //         break;
-  //       default: {
-  //         break;
-  //       }
-  //     }
-  //   };
-
-  //   document.addEventListener('keydown', handleKeyDown);
-  //   document.addEventListener('keyup', handleKeyUp);
-
-  //   return () => {
-  //     document.removeEventListener('keydown', handleKeyDown);
-  //     document.removeEventListener('keyup', handleKeyUp);
-  //   };
-  // }, [dispatch, multiKeyController]);
-
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
    */
@@ -510,92 +424,56 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     }
   }, [dispatch, _selectedTargets]);
 
+  usePlaskShortcut(
+    ['w'],
+    () => {
+      const selectedTarget = _selectedTargets[0];
+      if (selectedTarget?.transformable.position) {
+        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+      }
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['e'],
+    () => {
+      const selectedTarget = _selectedTargets[0];
+      if (selectedTarget?.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
+        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
+      }
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['r'],
+    () => {
+      const selectedTarget = _selectedTargets[0];
+      if (selectedTarget?.transformable.scale) {
+        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
+      }
+    },
+    RPShortcutOptions,
+  );
+  usePlaskShortcut(
+    ['escape'],
+    () => {
+      dispatch(selectingDataActions.resetSelectedTargets());
+    },
+    RPShortcutOptions,
+  );
   /**
    * shortcuts related to the gizmoManager
    */
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // shortcuts don't work while user is type in input elements
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
+
+  usePlaskShortcut(
+    ['`'],
+    () => {
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget) {
-        if (selectedTarget?.type === 'ik_controller') {
-          plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-        }
-
-        switch (event.key) {
-          case 'w':
-          case 'W':
-          case 'ㅈ': {
-            if (selectedTarget.transformable.position) {
-              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
-            }
-            break;
-          }
-          case 'e':
-          case 'E':
-          case 'ㄷ': {
-            if (selectedTarget.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
-              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
-            }
-            break;
-          }
-          case 'r':
-          case 'R':
-          case 'ㄱ': {
-            if (selectedTarget.transformable.scale) {
-              plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
-            }
-            break;
-          }
-          case 'Escape': {
-            dispatch(selectingDataActions.resetSelectedTargets());
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [dispatch, _selectedTargets]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // input 입력 중에는 적용되지 않도록 수정
-      const target = event.target as Element;
-      if (target.tagName.toLowerCase() === 'input') {
-        return;
-      }
-
-      switch (event.key) {
-        case '`':
-        case '₩': {
-          plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
+      if (selectedTarget?.type !== 'ik_controller')
+        plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
+    },
+    RPShortcutOptions,
+  );
   /******************************************************************************
    * Related to RP's sub-containers
    * Including contextMenu and dropDown
@@ -774,6 +652,15 @@ const RenderingPanel: FunctionComponent<Props> = () => {
       };
     }
   }, [_screenList, _visualizedAssetIds, dispatch]);
+
+  useEffect(() => {
+    const selectedTarget = _selectedTargets[0];
+    if (selectedTarget) {
+      if (selectedTarget?.type === 'ik_controller') {
+        plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
+      }
+    }
+  }, [_selectedTargets]);
 
   const screenVisibilityItemList: ScreenVisivilityItem[] = useMemo(() => {
     const targetScreen = _screenList[0];
