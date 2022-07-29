@@ -45,6 +45,7 @@ export class IKModule extends Module {
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _fkControlledJoints: { ikNode: TransformNode; fkNode: TransformNode }[] = [];
+  private _fkPoseJoints: TransformNode[] = [];
   private _selectedIkControllers: Array<IKController> = [];
   private _ghostMeshes: Mesh[] = [];
   private _ghost = {
@@ -137,7 +138,6 @@ export class IKModule extends Module {
   public addIK(assetId: string, animationIngredient?: AnimationIngredient) {
     let result = null;
     if (!this._areIKControllersAlreadyAdded()) {
-      console.log('called');
       this._initializeControllers(assetId);
       result = this._generateIkPlaskTransformNodes(assetId);
     }
@@ -179,6 +179,7 @@ export class IKModule extends Module {
     }
     this.ikControllers.length = 0;
     this._fkControlledJoints.length = 0;
+    this._fkPoseJoints.length = 0;
 
     for (const mesh of this._ghostMeshes) {
       mesh.dispose();
@@ -315,6 +316,11 @@ export class IKModule extends Module {
         property: 'rotationQuaternion' as PlaskProperty,
         value: pickedIkCtrl.handle.rotationQuaternion!.asArray() as ArrayOfFourNumbers,
       },
+      {
+        targetId: pickedIkCtrl.handle.id,
+        property: 'poleAngle' as PlaskProperty,
+        value: pickedIkCtrl.poleAngle,
+      },
     );
     return targetDataList;
   }
@@ -413,17 +419,11 @@ export class IKModule extends Module {
     // Evaluate if a IK Controller is selected
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
-      selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition);
+      selectedIK.handle.setAbsolutePosition(selectedIK.fkInfluenceChain![0].absolutePosition.clone());
+      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone());
 
-      selectedIK.handle.rotationQuaternion?.copyFrom(selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion);
-
-      if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
-      }
-      selectedIK.adjustAlignment();
       selectedIK.adjustPoleAngleFromFK();
       selectedIK.update();
-      // selectedIK.controller.update();
     });
   }
 
@@ -442,52 +442,31 @@ export class IKModule extends Module {
    * Computes all the FK frames from the IK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeAllIKintoFK() {
-    // Evaluate if a IK Controller is selected
-    const animationIngredients: AnimationIngredient[] = [];
-    const impactedFK: PlaskTransformNode[] = [];
+  public bakeIKintoFK(bakeAll: boolean = false) {
+    const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
+    return this._IKtoFKAnimationIngredient(bakeTargetControllers);
+  }
 
-    // Stop render loop for the calculation time
-    this.plaskEngine.stopRenderLoop();
-
-    this._selectedIkControllers.forEach((selectedIK) => {
-      // Store current values of ik
-      const currentIKPosition = selectedIK.target.absolutePosition;
-      const currentBlend = selectedIK.blend;
-      const currentPoleAngle = selectedIK.poleAngle;
-
-      let targetAnimation: Nullable<AnimationIngredient> =
-        this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
-        null;
-      if (!targetAnimation) {
-        throw new Error('Could not bake, error while fetching animation ingredients.');
-      }
-      const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-      const layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
-      if (!layers[0]) {
-        throw new Error('Could not bake, no layer is selected.');
-      }
-      if (!selectedIK.fkInfluenceChain) {
-        throw new Error('No FK found for this IK.');
-      }
-
-      const fkPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.fkInfluenceChain![0].id && track.property === 'position');
-      const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
-      const blendTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'blend');
-      const poleAngleTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'poleAngle');
-
-      const startTimeIndex = this.plaskEngine.state.animatingControls.startTimeIndex;
-      const endTimeIndex = this.plaskEngine.state.animatingControls.endTimeIndex;
-
-      if (!ikPositionTrack || !blendTrack || !poleAngleTrack || !fkPositionTrack) {
-        throw new Error('Could not bake, no keyframes added.');
-      }
-
-      // Copy FK transformKeys because we don't want new values
-      const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
-      const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
-      animationGroupTemp.start();
-
+  private _IKtoFKAnimationIngredient(controllers?: IKController[], layerId?: string) {
+    const frameEdit = (
+      ikController: IKController,
+      fkPositionTrack: PlaskTrack,
+      ikPositionTrack: PlaskTrack,
+      blendTrack: PlaskTrack,
+      poleAngleTrack: PlaskTrack,
+      rotationTrack: PlaskTrack,
+      rotationQuaternionTrack: PlaskTrack,
+      currentIKPosition: Vector3,
+      currentIKRotationQuaternion: Quaternion,
+      currentBlend: number,
+      currentPoleAngle: number,
+      animationGroupTemp: AnimationGroup,
+      startTimeIndex: number,
+      endTimeIndex: number,
+      targetAnimationIn: AnimationIngredient,
+      targetLayerId: string,
+    ) => {
+      let targetAnimation = targetAnimationIn;
       for (let i = startTimeIndex; i <= endTimeIndex; i++) {
         if (!targetAnimation) {
           throw new Error('Bake error : animation ingredients could not be produced.');
@@ -499,68 +478,80 @@ export class IKModule extends Module {
 
         // And not to forget the normally ik-driven bones that also need to be copied
         for (let j = 0; j < 3; j++) {
-          selectedIK.targetInfluenceChain[j].position.copyFrom(selectedIK.fkInfluenceChain![j].position);
-          selectedIK.targetInfluenceChain[j].rotationQuaternion!.copyFrom(selectedIK.fkInfluenceChain![j].rotationQuaternion!);
-          selectedIK.targetInfluenceChain[j].computeWorldMatrix(true);
+          ikController.targetInfluenceChain[j].position.copyFrom(ikController.fkInfluenceChain![j].position.clone());
+          ikController.targetInfluenceChain[j].rotationQuaternion!.copyFrom(ikController.fkInfluenceChain![j].rotationQuaternion!.clone());
+          ikController.targetInfluenceChain[j].computeWorldMatrix(true);
         }
+
         fkPositionTrack.target.computeWorldMatrix(true);
 
         // We need to test if there are no keyframe, because getInterpolatedValue won't know what to return
         const positionValue = ikPositionTrack.transformKeys.length ? (getInterpolatedValue(ikPositionTrack.transformKeys, 'position', i) as Vector3) : currentIKPosition;
+        const rotationQuaternionValue = rotationQuaternionTrack.transformKeys.length
+          ? (getInterpolatedValue(rotationQuaternionTrack.transformKeys, 'rotationQuaternion', i) as Quaternion)
+          : currentIKRotationQuaternion;
         const blendValue = blendTrack.transformKeys.length ? (getInterpolatedValue(blendTrack.transformKeys, 'blend', i) as number) : currentBlend;
         const poleAngleValue = poleAngleTrack.transformKeys.length ? (getInterpolatedValue(poleAngleTrack.transformKeys, 'poleAngle', i) as number) : currentPoleAngle;
-        this.setFKtoIK([selectedIK]);
+        // this.setFKtoIK([selectedIK]);
 
         // Bones are not synced with transform nodes - its the other way around
         // Our method require bones to get transforms from transform nodes, so the right positions are used for the ik calculations down the line
         this.forceUpdateGhostSkeleton();
-        selectedIK.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, blendValue, poleAngleValue);
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(selectedIK));
+        ikController.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, rotationQuaternionValue, blendValue, poleAngleValue);
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
 
-      if (targetAnimation) {
-        animationIngredients.push(targetAnimation);
-        impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
-      }
-      // Restore current values
-      selectedIK.updateForValues(selectedIK.fkInfluenceChain[0].absolutePosition, currentIKPosition, currentBlend, currentPoleAngle);
+      return targetAnimation;
+    };
 
-      animationGroupTemp.goToFrame(0);
-      animationGroupTemp.stop();
-      animationGroupTemp.dispose();
-    });
-
-    // Resumes render loop
-    this.plaskEngine.startRenderLoop();
-
-    return { animationIngredients, impactedFK };
+    return this._IKBakeInternal(frameEdit, controllers, layerId);
   }
 
-  /**
-   * Computes all the IK frames from the FK animation tracks
-   * @returns the edited animationIngredients for each selected IK controller
-   */
-  public bakeAllFKintoIK() {
+  private _IKBakeInternal(
+    frameEdit: (
+      ikController: IKController,
+      fkPositionTrack: PlaskTrack,
+      ikPositionTrack: PlaskTrack,
+      blendTrack: PlaskTrack,
+      poleAngleTrack: PlaskTrack,
+      rotationTrack: PlaskTrack,
+      rotationQuaternionTrack: PlaskTrack,
+      currentIKPosition: Vector3,
+      currentIKRotationQuaternion: Quaternion,
+      currentBlend: number,
+      currentPoleAngle: number,
+      animationGroupTemp: AnimationGroup,
+      startTimeIndex: number,
+      endTimeIndex: number,
+      targetAnimationIn: AnimationIngredient,
+      targetLayerId: string,
+    ) => AnimationIngredient,
+    controllers?: IKController[],
+    layerId?: string,
+  ) {
     // Evaluate if a IK Controller is selected
-    let animationIngredient: Nullable<AnimationIngredient> = null;
+    const impactedFK: PlaskTransformNode[] = [];
     const impactedIK: PlaskTransformNode[] = [];
+
     // Stop render loop for the calculation time
     this.plaskEngine.stopRenderLoop();
+    let targetAnimation: Nullable<AnimationIngredient> =
+      this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
+      null;
 
-    this._selectedIkControllers.forEach((selectedIK) => {
+    const bakeTargetControllers = controllers || this.ikControllers;
+
+    bakeTargetControllers.forEach((selectedIK) => {
       // Store current values of ik
       const currentIKPosition = selectedIK.target.absolutePosition;
+      const currentIKRotationQuaternion = selectedIK.target.absoluteRotationQuaternion;
       const currentBlend = selectedIK.blend;
       const currentPoleAngle = selectedIK.poleAngle;
 
-      let targetAnimation: Nullable<AnimationIngredient> =
-        animationIngredient ||
-        this.plaskEngine.state.animationData.animationIngredients.find((anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId)) ||
-        null;
       if (!targetAnimation) {
         throw new Error('Could not bake, error while fetching animation ingredients.');
       }
-      const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
+      const targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
       const layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
       if (!layers[0]) {
         throw new Error('Could not bake, no layer is selected.');
@@ -568,10 +559,6 @@ export class IKModule extends Module {
       if (!selectedIK.fkInfluenceChain) {
         throw new Error('No FK found for this IK.');
       }
-      console.log('Baking Layers');
-      console.log(layers);
-
-      const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
 
       const fkPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.fkInfluenceChain![0].id && track.property === 'position');
       const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
@@ -587,47 +574,96 @@ export class IKModule extends Module {
         throw new Error('Could not bake, no keyframes added.');
       }
 
-      // Copy FK transformKeys because we don't want new values
-      const fkPositionTransformKeys = fkPositionTrack.transformKeys.slice();
+      const animationGroupTemp = this.plaskEngine.animationModule.createAnimationGroupFromIngredient(targetAnimation, this.plaskEngine.state.plaskProject.fps);
+      animationGroupTemp.start();
 
-      for (let i = startTimeIndex; i <= endTimeIndex; i++) {
-        if (!targetAnimation) {
-          throw new Error('Bake error : animation ingredients could not be produced.');
-        }
+      targetAnimation = frameEdit(
+        selectedIK,
+        fkPositionTrack,
+        ikPositionTrack,
+        blendTrack,
+        poleAngleTrack,
+        rotationTrack,
+        rotationQuaternionTrack,
+        currentIKPosition,
+        currentIKRotationQuaternion,
+        currentBlend,
+        currentPoleAngle,
+        animationGroupTemp,
+        startTimeIndex,
+        endTimeIndex,
+        targetAnimation,
+        targetLayerId,
+      );
 
-        animationGroupTemp.start();
-
-        animationGroupTemp.goToFrame(i);
-        // selectedIK.fkInfluenceChain![0].computeWorldMatrix(true);
-
-        // let position = selectedIK.fkInfluenceChain![0].absolutePosition.clone();
-        // let rotation = selectedIK.fkInfluenceChain![0].absoluteRotationQuaternion.clone();
-
-        // selectedIK.handle.setAbsolutePosition(position);
-        // selectedIK.handle.rotationQuaternion = rotation;
-        // if (selectedIK.fkInfluenceChain![0].name.includes('Hand')) {
-        //   selectedIK.handle.rotate(new Vector3(0, 0, 1), Math.PI / 2, Space.LOCAL);
-        // }
-        // selectedIK.controller.update();
-        this.setIKtoFK([selectedIK]);
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(selectedIK));
-        // selectedIK.handle.setAbsolutePosition(position);
-        // selectedIK.handle.rotationQuaternion = rotation;
-      }
+      impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
+      impactedIK.push(selectedIK.handle.getPlaskEntity());
 
       animationGroupTemp.goToFrame(0);
       animationGroupTemp.stop();
       animationGroupTemp.dispose();
 
-      if (targetAnimation) {
-        animationIngredient = targetAnimation;
-        impactedIK.push(selectedIK.handle.getPlaskEntity());
-      }
+      // Restore current values
+      selectedIK.updateForValues(selectedIK.fkInfluenceChain[0].absolutePosition, currentIKPosition, currentIKRotationQuaternion, currentBlend, currentPoleAngle);
     });
 
     // Resumes render loop
     this.plaskEngine.startRenderLoop();
-    return { animationIngredient, impactedIK };
+
+    return { animationIngredient: targetAnimation, impactedFK, impactedIK };
+  }
+
+  /**
+   * (FOR EXPORT) Computes all the FK frames from the IK animation tracks
+   * @returns the edited animationIngredients for each selected IK controller
+   * TODO : it seems we are only baking the active layer
+   */
+  public bakeIKintoFKExport() {
+    return this._IKtoFKAnimationIngredient();
+  }
+
+  /**
+   * Computes all the IK frames from the FK animation tracks
+   * @returns the edited animationIngredients for each selected IK controller
+   */
+  public bakeFKintoIK(bakeAll: boolean = false) {
+    const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
+
+    const edit = (
+      ikController: IKController,
+      fkPositionTrack: PlaskTrack,
+      ikPositionTrack: PlaskTrack,
+      blendTrack: PlaskTrack,
+      poleAngleTrack: PlaskTrack,
+      rotationTrack: PlaskTrack,
+      rotationQuaternionTrack: PlaskTrack,
+      currentIKPosition: Vector3,
+      currentIKRotationQuaternion: Quaternion,
+      currentBlend: number,
+      currentPoleAngle: number,
+      animationGroupTemp: AnimationGroup,
+      startTimeIndex: number,
+      endTimeIndex: number,
+      targetAnimationIn: AnimationIngredient,
+      targetLayerId: string,
+    ) => {
+      let targetAnimation = targetAnimationIn;
+      for (let i = startTimeIndex; i <= endTimeIndex; i++) {
+        if (!targetAnimation) {
+          throw new Error('Bake error : animation ingredients could not be produced.');
+        }
+
+        animationGroupTemp.goToFrame(i);
+        this._updateIKGhost();
+        this.forceUpdateGhostSkeleton();
+
+        this.setIKtoFK([ikController]);
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(ikController))!;
+      }
+      return targetAnimation;
+    };
+
+    return this._IKBakeInternal(edit, bakeTargetControllers);
   }
 
   /**
@@ -639,28 +675,6 @@ export class IKModule extends Module {
       mesh.visibility = value;
     }
   }
-
-  // public addPositionKF(position: Vector3, timeIndex: number, iKController?: IKController) {
-  //   const targetAnimation = this.plaskEngine.state.animationData.animationIngredients.find(
-  //     (anim) => anim.current && this.plaskEngine.state.plaskProject.visualizedAssetIds.includes(anim.assetId),
-  //   );
-  //   const targetLayerId = this.plaskEngine.state.trackList.selectedLayer;
-  //   //const targetCurrentTimeindex = this.plaskEngine.state.animatingControls.currentTimeIndex;
-  //   const targetCurrentTimeindex = timeIndex;
-
-  //   if (targetAnimation && iKController) {
-  //     //console.log("INI", IKController.handle.id);
-  //     const animationIngredients = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation.id, targetLayerId, targetCurrentTimeindex, [
-  //       {
-  //         targetId: iKController.handle.id,
-  //         property: 'position' as PlaskProperty,
-  //         value: position.asArray() as ArrayOfThreeNumbers,
-  //       },
-  //     ]);
-  //     return animationIngredients;
-  //   }
-  //   return null;
-  // }
 
   private _initializeControllers(assetId: string) {
     const scene = this.plaskEngine.scene;
@@ -697,9 +711,10 @@ export class IKModule extends Module {
       // ! Hard coded length of prefix
       // TODO : we need a better way to retrieve the origin transform node
       const originNodeName = node.name.substring(6);
-      const originTransform = scene.getTransformNodeByName(originNodeName);
+      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
       if (originTransform) {
         copyTransformFrom(originTransform, node);
+        node.id = `__plask_ghost_${originTransform.id}`;
       } else {
         console.warn('Could not find origin transform, ghost may have wrong posture ' + originNodeName);
       }
@@ -718,6 +733,11 @@ export class IKModule extends Module {
     }
 
     this._ghost.skeleton = clone.skeletons[0];
+    const bones = this._ghost.skeleton.bones;
+    clone.skeletons[0].id = '__plask_ghost_skeleton';
+    bones.forEach((bone) => {
+      bone.id = '__plask_ghost_' + bone.id;
+    });
     this.forceUpdateGhostSkeleton();
 
     if (!this._ghost.rootMesh || !this._ghost.skeleton) {
@@ -1030,7 +1050,8 @@ export class IKModule extends Module {
         {
           targetId: ikController.handle.id,
           property: 'poleAngle' as PlaskProperty,
-          value: poleAngleRotation,
+          // value: poleAngleRotation,
+          value: 0,
         },
         {
           targetId: ikController.handle.id,

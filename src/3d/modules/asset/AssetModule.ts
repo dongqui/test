@@ -16,7 +16,29 @@ import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
  */
 const EXPORT_OPTIONS = {
   shouldExportNode: (node: Node) => {
-    return !node.name.includes('joint') && !node.name.includes('ground') && !node.name.includes('scene') && !node.id.includes('joint');
+    if (
+      !node.name.includes('joint') &&
+      !node.name.includes('ground') &&
+      !node.name.includes('scene') &&
+      !node.id.includes('joint') &&
+      !node.id.includes('ik_ctrl') &&
+      !node.id.includes('__plask_ghost_') &&
+      !node.id.includes('skeletonViewer') &&
+      !node.id.includes('Light')
+    ) {
+      console.log(`Exporting id : ${node.id}, name : ${node.name}`);
+      console.log(`Has skeleton : ${!!(node as Mesh).skeleton}`);
+    }
+    return (
+      !node.name.includes('joint') &&
+      !node.name.includes('ground') &&
+      !node.name.includes('scene') &&
+      !node.id.includes('joint') &&
+      !node.id.includes('ik_ctrl') &&
+      !node.id.includes('__plask_ghost_') &&
+      !node.id.includes('skeletonViewer') &&
+      !node.id.includes('Light')
+    );
   },
 };
 
@@ -105,7 +127,19 @@ export class AssetModule extends Module {
    * @param name - file name
    */
   public async sceneToGlb(scene: Scene, name: string) {
-    return await GLTF2Export.GLBAsync(scene, name, EXPORT_OPTIONS);
+    // Fixes babylon exporter bug that adds the ghost skeleton even if the id is explictly excluded (resulting in invalid GLTF)
+    const ghostIkSkeletons = [];
+    for (let i = scene.skeletons.length - 1; i >= 0; i--) {
+      if (scene.skeletons[i].id.includes('__plask_ghost_')) {
+        ghostIkSkeletons.push(scene.skeletons.splice(i, 1)[0]);
+      }
+    }
+    const result = await GLTF2Export.GLBAsync(scene, name, EXPORT_OPTIONS);
+    for (const skeleton of ghostIkSkeletons) {
+      scene.skeletons.push(skeleton);
+    }
+
+    return result;
   }
 
   /**
