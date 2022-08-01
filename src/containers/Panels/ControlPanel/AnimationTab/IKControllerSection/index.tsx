@@ -176,7 +176,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: !isInfluencedChainSelected,
     },
     {
-      text: 'Bake IK controller in FK pose',
+      text: 'Bake IK into FK',
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
@@ -207,7 +207,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     },
     {
-      text: 'Bake the bone in IK pose',
+      text: 'Bake FK into IK',
 
       disabled: targetIKControllers.length === 0,
       onClick: () => {
@@ -294,7 +294,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}
-              type="button"
+              buttonType="default"
               disabled={!isAllActive || info.disabled}
               fullSize={true}
             />
@@ -311,7 +311,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
             onClick={handleSetupIK}
             className={cx('button')}
             text="Set Up IK"
-            color="default"
+            buttonType="default"
             disabled={!isAllActive || !mappingCompleted || targetIKControllers.length > 0}
             fullSize={true}
           />
