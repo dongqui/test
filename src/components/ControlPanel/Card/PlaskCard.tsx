@@ -13,10 +13,11 @@ type Title = 'normal' | 'toggle' | 'dropdown';
 interface Props {
   children?: ReactNode;
   isPowerOn?: boolean;
-  title?: string;
   type?: Title;
   activeStatus: boolean;
   className?: string;
+  title: ReactNode;
+  prepend?: ReactNode;
 
   toggleOptions?: {
     withSwitch?: boolean;
@@ -49,7 +50,7 @@ const PlaskCard: FunctionComponent<Props> = ({ children, className, type = 'norm
       {title && (
         <PlaskCardTitle
           type={type}
-          text={title}
+          title={title}
           isSpread={isSectionSpread}
           handleSpread={handleSectionSpread}
           activeStatus={activeStatus}
