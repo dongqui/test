@@ -1,16 +1,20 @@
-import { FunctionComponent, useCallback, useState, Fragment } from 'react';
+import { FunctionComponent, useCallback, useState, Fragment, ReactNode } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { upperFirst } from 'lodash';
 import Switch from 'react-switch';
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
+import { Typography } from 'components/Typography';
 
 const cx = classnames.bind(styles);
-
+type CardTitleType = 'normal' | 'toggle' | 'dropdown';
 interface Props {
-  text: string;
   isSpread: boolean;
   isPowerOn?: boolean;
+
+  prepend?: ReactNode;
+  title?: ReactNode;
+
   className?: string;
   type?: string;
 
@@ -29,7 +33,7 @@ interface Props {
 
 const PlaskCardTitle: FunctionComponent<Props> = ({
   type = 'normal',
-  text,
+  title,
   className,
   isPowerOn,
   isSpread,
@@ -55,7 +59,7 @@ const PlaskCardTitle: FunctionComponent<Props> = ({
     <div className={classes}>
       <button className={cx('toggle')} onClick={handleSpread}>
         <IconWrapper className={cx('arrowdown-icon', { active: isSpread })} icon={SvgPath.EmptyDownArrow} />
-        {text}
+        {title}
       </button>
       {
         {

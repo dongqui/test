@@ -24,6 +24,7 @@ import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { removeIK } from 'sagas/RP/ik/removeIK';
+import { Typography } from 'components/Typography';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -267,9 +268,29 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     ],
   };
+  const [tagToolTip, setTagToolTip] = useState(false);
 
   return (
-    <PlaskCard title="IK Controller" type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive}>
+    <PlaskCard
+      title={
+        <div className={cx('title-wrapper')}>
+          IK Controller
+          <div className={cx('tag')}>
+            <Typography className={cx('text')}>Beta</Typography>
+            <div className={cx('overlay')} onMouseEnter={() => setTagToolTip(true)} onMouseLeave={() => setTagToolTip(false)} />
+            {tagToolTip && (
+              <div className={cx('tooltip')}>
+                <div className={cx('arrow')} />
+                <Typography type="body">Currently in Beta and free!</Typography>
+              </div>
+            )}
+          </div>
+        </div>
+      }
+      type="dropdown"
+      dropdownOptions={dropdownOptions}
+      activeStatus={isAllActive}
+    >
       {plaskEngine.ikModule.ikControllers.length > 0 ? (
         <div className={cx('wrapper')}>
           {IKControllerData.map((info, idx) => (
