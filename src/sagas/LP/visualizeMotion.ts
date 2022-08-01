@@ -6,17 +6,19 @@ import * as api from 'api';
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import plaskEngine from '3d/PlaskEngine';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { goToSpecificPoses } from 'utils/RP';
-import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset } from 'types/common';
+import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset, PlaskTrack } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
+import { TimeIndex } from 'utils/TP';
 
 const clickJointChannel = channel();
 
@@ -121,6 +123,23 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     if (animationIngredient) {
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
       console.log(contactData);
+      let footTrack: PlaskTrack;
+      animationIngredient.layers[0].tracks.forEach((elem) => {
+        if (elem.name.match(/leftFoot/gi) && elem.property.match(/isContact/g)) {
+          footTrack = elem;
+        }
+      });
+
+      const payload = {
+        endTimeIndex: footTrack!.transformKeys.length,
+        currentTimeIndex: 0,
+      };
+
+      yield put(animatingControlsActions.blurEndInput(payload));
+      //yield take('animatingControls/BLUR_END_INPUT');
+
+      //yield take(TimeIndex.setEndTimeIndex(footTrack.transformKeys.length));
+
       //const contactData = [];
       if (contactData.length) {
         console.log('Auto add IK because foot locking is required.');
@@ -133,7 +152,27 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
+
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+
+      // Bake the bone in IK pose after Foot Locking compute
+      for (const controller of plaskEngine.ikModule.ikControllers) {
+        plaskEngine.ikModule.setSelectedIk([]);
+        if (controller.limb.includes('Foot')) {
+          plaskEngine.ikModule.setSelectedIk([controller]);
+
+          const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
+
+          //animationIngredient = animationIngredient;
+
+          yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+
+          // Set FK position to newly updated values
+          plaskEngine.ikModule.setFKtoIK();
+        }
+      }
+      // Release IK Controllers
+      yield put(removeIKAction(visualizedAssetIds[0]));
     }
 
     forceClickAnimationPlayAndStop(50);
