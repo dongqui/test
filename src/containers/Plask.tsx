@@ -15,6 +15,8 @@ import { RequestNodeResponse } from 'types/LP';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
+import * as keyframeActions from 'actions/keyframes';
 
 const cx = classNames.bind(styles);
 
@@ -34,12 +36,24 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     hidden: mode !== 'animationMode',
   });
 
+  /**
+   * shortcuts related to editing keyframes
+   */
+  usePlaskShortcut(
+    ['k'],
+    () => {
+      console.log('Keyframe Added');
+      dispatch(keyframeActions.editKeyframesSocket.request());
+    },
+    { repeatOnHold: false },
+  );
+
   const UBProps = {
     height: 36,
   };
 
   const handleChangeMode = useCallback(() => {
-    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode' }));
+    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode', videoURL: undefined }));
 
     if (mode === 'videoMode') {
       return false;

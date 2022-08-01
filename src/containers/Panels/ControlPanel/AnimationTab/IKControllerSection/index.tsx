@@ -176,15 +176,15 @@ const IKControllerSection: FunctionComponent<Props> = ({
       disabled: !isInfluencedChainSelected,
     },
     {
-      text: 'Bake IK controller in FK pose',
+      text: 'Bake IK into FK',
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
-          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Baking the IK controllers', message: 'This can take up to 3 minutes' }));
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeAllFKintoIK();
+            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeFKintoIK();
             if (animationIngredient) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
@@ -207,17 +207,17 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     },
     {
-      text: 'Bake the bone in IK pose',
+      text: 'Bake FK into IK',
 
       disabled: targetIKControllers.length === 0,
       onClick: () => {
         try {
-          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+          dispatch(globalUIActions.openModal('LoadingModal', { title: 'Baking the bones', message: 'This can take up to 3 minutes' }));
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredients, impactedFK } = plaskEngine.ikModule.bakeAllIKintoFK();
-            for (const animationIngredient of animationIngredients) {
+            const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
+            if (animationIngredient) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
 
@@ -241,19 +241,8 @@ const IKControllerSection: FunctionComponent<Props> = ({
   ];
 
   const handleSetupIK = useCallback(() => {
-    dispatch(
-      globalUIActions.openModal('ConfirmModal', {
-        title: 'Setup IK',
-        message: 'This action will create IK controllers',
-        confirmText: 'Confirm',
-        onConfirm: () => {
-          const assetId = _visualizedAssetIds[0];
-          dispatch(addIKAction(assetId));
-        },
-        cancelText: 'Cancel',
-        confirmButtonColor: 'primary',
-      }),
-    );
+    const assetId = _visualizedAssetIds[0];
+    dispatch(addIKAction(assetId));
   }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = {
@@ -305,7 +294,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}
-              type="button"
+              buttonType="default"
               disabled={!isAllActive || info.disabled}
               fullSize={true}
             />
@@ -322,7 +311,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
             onClick={handleSetupIK}
             className={cx('button')}
             text="Set Up IK"
-            color="default"
+            buttonType="default"
             disabled={!isAllActive || !mappingCompleted || targetIKControllers.length > 0}
             fullSize={true}
           />

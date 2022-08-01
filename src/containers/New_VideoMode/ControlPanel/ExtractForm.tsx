@@ -15,6 +15,8 @@ interface Props {
   doneVMOnBoarding: (step: number) => void;
 }
 
+const FOOT_LOCK_AVAILABLE = false;
+
 const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
   const selectOption = [
     {
@@ -31,9 +33,11 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
 
   const defaultSelectOptionIndex = 0;
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
+  const [trackingTooltip, setTrackingTooltip] = useState(false);
+  const [tPoseTooltip, setTPoseTooltip] = useState(false);
 
   useEffect(() => {
-    if (isMulti) {
+    if (isMulti && FOOT_LOCK_AVAILABLE) {
       fieldProps.control.unregister('footLock');
     }
   }, [fieldProps.control, isMulti]);
@@ -43,7 +47,16 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   return (
     <Fragment>
       <div className={cx('section-item')}>
-        <Typography>Model</Typography>
+        <div className={cx('tracking')}>
+          <Typography>Tracking</Typography>
+          <div className={cx('overlay')} onMouseEnter={() => setTrackingTooltip(true)} onMouseLeave={() => setTrackingTooltip(false)} />
+          {trackingTooltip && (
+            <div className={cx('tooltip')}>
+              <div className={cx('arrow')} />
+              <Typography type="body">Select either ‘Single’ or ‘Multi to extract one or more than one person’s motion from the video.</Typography>
+            </div>
+          )}
+        </div>
         <BaseField<Field.SwitchProps, string>
           onChange={(value) => {
             doneVMOnBoarding(3);
@@ -59,10 +72,10 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       </div>
       {isMulti && (
         <div className={cx('section-item', 'section-text')}>
-          <Typography className={cx('section-comments')}>We recommend videos with no more than 10 people.</Typography>
+          <Typography className={cx('section-comments')}>For optimized performance, we recommended your video have less than 10 people in it.</Typography>
         </div>
       )}
-      {!isMulti && (
+      {!isMulti && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
           <BaseField<Field.ToggleProps, boolean>
@@ -75,7 +88,16 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
         </div>
       )}
       <div className={cx('section-item')}>
-        <Typography>T-pose</Typography>
+        <div className={cx('t-pose')}>
+          <Typography>T-pose</Typography>
+          <div className={cx('overlay')} onMouseEnter={() => setTPoseTooltip(true)} onMouseLeave={() => setTPoseTooltip(false)} />
+          {tPoseTooltip && (
+            <div className={cx('tooltip')}>
+              <div className={cx('arrow')} />
+              <Typography type="body">Overwrite the first keyframe with the T-pose.</Typography>
+            </div>
+          )}
+        </div>
         <BaseField<Field.ToggleProps, boolean>
           onChange={() => doneVMOnBoarding(3)}
           control={fieldProps.control}
@@ -84,9 +106,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
           defaultValue={false}
         />
       </div>
-      <div className={cx('section-item', 'section-text')}>
-        <Typography className={cx('section-comments')}>In case of T-pose On, the first frame is extracted by changing to T-pose.</Typography>
-      </div>
+      <div style={{ height: '10px' }} />
       <div className={cx('section-item')}>
         <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused}>
           <Typography type="button">Extract</Typography>

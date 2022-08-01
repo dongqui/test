@@ -230,17 +230,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     },
     RPShortcutOptions,
   );
-  /**
-   * shortcuts related to editing keyframes
-   */
 
-  usePlaskShortcut(
-    ['k'],
-    () => {
-      dispatch(keyframeActions.editKeyframesSocket.request());
-    },
-    { repeatOnHold: false },
-  );
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
    */
@@ -257,7 +247,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     ['w'],
     () => {
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget.transformable.position) {
+      if (selectedTarget?.transformable.position) {
         plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.POSITION);
       }
     },
@@ -267,7 +257,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     ['e'],
     () => {
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
+      if (selectedTarget?.transformable.rotation.euler && selectedTarget.transformable.rotation.quaternion) {
         plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.ROTATION);
       }
     },
@@ -277,7 +267,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     ['r'],
     () => {
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget.transformable.scale) {
+      if (selectedTarget?.transformable.scale) {
         plaskEngine.gizmoModule.changeGizmoMode(GizmoMode.SCALE);
       }
     },
@@ -298,8 +288,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     ['`'],
     () => {
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget.type !== 'ik_controller')
-        plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
+      plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
     },
     RPShortcutOptions,
   );

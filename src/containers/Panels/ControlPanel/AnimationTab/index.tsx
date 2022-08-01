@@ -1,5 +1,4 @@
 import { Fragment, FunctionComponent } from 'react';
-import IKControllerSection from './IKControllerSection';
 import FilterSection from './FilterSection';
 import TransformSection from './TransformSection';
 import SelectionTrackerSection from './SelectionTrackerSection';
@@ -8,6 +7,7 @@ import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import IKControllerSection from './IKControllerSection/index';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -39,17 +39,17 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
           selectedTargets={_selectedTargets}
         />
       )}
-      {_selectedTargets.length > 0 && (
-        <FilterSection
-          isAllActive={isAllActive}
-          visualizedAssetIds={_visualizedAssetIds}
-          selectedTargets={_selectedTargets}
-          seletedLayer={_selectedLayer}
-          animationIngredients={_animationIngredients}
-          playState={_playState}
-          playDirection={_playDirection}
-        />
-      )}
+      {/*{_selectedTargets.length > 0 && (*/}
+      {/*  <FilterSection*/}
+      {/*    isAllActive={isAllActive}*/}
+      {/*    visualizedAssetIds={_visualizedAssetIds}*/}
+      {/*    selectedTargets={_selectedTargets}*/}
+      {/*    seletedLayer={_selectedLayer}*/}
+      {/*    animationIngredients={_animationIngredients}*/}
+      {/*    playState={_playState}*/}
+      {/*    playDirection={_playDirection}*/}
+      {/*  />*/}
+      {/*)}*/}
     </Fragment>
   );
 };
