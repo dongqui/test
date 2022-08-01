@@ -230,17 +230,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     },
     RPShortcutOptions,
   );
-  /**
-   * shortcuts related to editing keyframes
-   */
 
-  usePlaskShortcut(
-    ['k'],
-    () => {
-      dispatch(keyframeActions.editKeyframesSocket.request());
-    },
-    { repeatOnHold: false },
-  );
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)
    */
@@ -298,8 +288,7 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     ['`'],
     () => {
       const selectedTarget = _selectedTargets[0];
-      if (selectedTarget?.type !== 'ik_controller')
-        plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
+      plaskEngine.gizmoModule.changeGizmoSpace(plaskEngine.gizmoModule.currentGizmoSpace === GizmoSpace.LOCAL ? GizmoSpace.WORLD : GizmoSpace.LOCAL);
     },
     RPShortcutOptions,
   );
