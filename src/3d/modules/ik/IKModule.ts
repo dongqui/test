@@ -443,6 +443,7 @@ export class IKModule extends Module {
    * @returns the edited animationIngredients for each selected IK controller
    */
   public bakeIKintoFK(bakeAll: boolean = false) {
+    debugger;
     const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
     return this._IKtoFKAnimationIngredient(bakeTargetControllers);
   }

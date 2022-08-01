@@ -1,8 +1,9 @@
-import { useCallback, FunctionComponent } from 'react';
+import { useCallback, FunctionComponent, forwardRef } from 'react';
 import { DebouncedFunc } from 'lodash';
 
 import { useSelector } from 'reducers';
 import { PrefixInput } from 'components/Input';
+import { MutableRefObject } from 'react';
 
 interface Props {
   defaultValue: number;
@@ -11,8 +12,7 @@ interface Props {
   prefix: 'End' | 'Start';
 }
 
-const LoopInput: FunctionComponent<Props> = (props) => {
-  const { defaultValue, onBlurInput, onChangeInput, prefix } = props;
+const LoopInput = forwardRef<HTMLInputElement, Props>(({ defaultValue, onBlurInput, onChangeInput, prefix }, ref) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
 
   // start, end input에 Enter key 입력 동작
@@ -34,8 +34,10 @@ const LoopInput: FunctionComponent<Props> = (props) => {
       onKeyDown={handleInputKeyDown}
       prefix={prefix}
       disabled={_visualizedAssetIds.length === 0}
+      ref={ref}
     />
   );
-};
+});
+LoopInput.displayName = 'LoopInput';
 
 export default LoopInput;

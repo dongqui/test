@@ -136,11 +136,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       };
 
       yield put(animatingControlsActions.blurEndInput(payload));
-      //yield take('animatingControls/BLUR_END_INPUT');
 
-      //yield take(TimeIndex.setEndTimeIndex(footTrack.transformKeys.length));
-
-      //const contactData = [];
       if (contactData.length) {
         console.log('Auto add IK because foot locking is required.');
         yield call(addIK, addIKAction(asset.id, animationIngredient));
@@ -163,9 +159,9 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
           const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
 
-          //animationIngredient = animationIngredient;
-
-          yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+          if (animationIngredient) {
+            yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+          }
 
           // Set FK position to newly updated values
           plaskEngine.ikModule.setFKtoIK();
