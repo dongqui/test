@@ -2,6 +2,7 @@ import { Html } from 'components/Typography';
 import { IconButton } from 'components/Button';
 import { SvgPath } from 'components/Icon';
 import TooltipArrow from 'components/TooltipArrow';
+import { FilledButton } from 'components/Button';
 import { TooltipArrowPlacement } from 'types/common';
 
 import classnames from 'classnames/bind';
@@ -13,9 +14,9 @@ interface Props {
   className?: string;
   title: string;
   message: string;
-  confirmText?: string;
-  onConfirm?: () => void;
+  learnMoreLink?: string;
   onClose: () => void;
+  onCloseCallback?: () => void;
   postion: {
     left?: string;
     top?: string;
@@ -26,10 +27,10 @@ interface Props {
   tooltipArrowPlacement: TooltipArrowPlacement;
 }
 
-const GuideModal = ({ className, onClose, onConfirm, postion, title, message, confirmText = 'OK', tooltipArrowPlacement }: Props) => {
+const OnboardingModal = ({ className, onClose, onCloseCallback, postion, title, message, tooltipArrowPlacement }: Props) => {
   const handleCloseModal = () => {
     onClose();
-    onConfirm && onConfirm();
+    onCloseCallback && onCloseCallback();
   };
 
   return (
@@ -40,8 +41,11 @@ const GuideModal = ({ className, onClose, onConfirm, postion, title, message, co
         <IconButton onClick={handleCloseModal} type="ghost" icon={SvgPath['ModalClose']} />
       </header>
       <Html content={message} className={cx('content')} />
+      <footer>
+        <FilledButton buttonType="default">Learn More</FilledButton>
+      </footer>
     </div>
   );
 };
 
-export default GuideModal;
+export default OnboardingModal;

@@ -1,0 +1,51 @@
+@import "../common.scss";
+@import "styles/libraries/_responsive";
+@import "styles/libraries/_mixins";
+@import "styles/libraries/_colors";
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.container {
+  position: fixed;
+  border-radius: 10px;
+  border: 1px solid $outline;
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
+  min-width: 280px;
+  outline: 0;
+  background-color: $bg-elevated;
+  padding: 24px;
+  width: 394px;
+  z-index: 998;
+
+  .content {
+    margin-top: 22px;
+    margin-bottom: 4px;
+    font-weight: 300;
+    line-height: 150%;
+
+    b {
+      color: $secondary;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 150%;
+    }
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    svg {
+      margin: 4px 0 0 6px;
+    }
+
+    h3 {
+      margin: 0;
+      padding: 0;
+    }
+  }
+}

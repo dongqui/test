@@ -27,3 +27,5 @@ export const BONE_NAMES: RetargetSourceBoneType[] = [
   'leftHandIndex1',
   'rightHandIndex1',
 ];
+
+export const IK_CONTROLLER_EL_ID = 'ik-controller-container' as const;

@@ -1,6 +1,7 @@
 import { Dispatch } from 'redux';
 
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
+import { IK_CONTROLLER_EL_ID } from 'constants/';
 import { getTargetCoordinates } from 'utils/common';
 import * as commonActions from 'actions/Common/globalUI';
 
@@ -94,6 +95,36 @@ class PopupManager {
                 localStorage.setItem('onboarding_2', 'onboarding_2');
               },
               tooltipArrowPlacement: 'top-end',
+            },
+            '',
+            false,
+          ),
+        );
+      }
+    }
+  }
+
+  showIKOnboarding() {
+    console.log(this.dispatch);
+    if (this.dispatch) {
+      const targetElement = document.getElementById(IK_CONTROLLER_EL_ID);
+      const targetCoordinates = getTargetCoordinates(targetElement);
+      console.log(targetCoordinates?.leftTop);
+      if (targetCoordinates?.leftTop) {
+        this.dispatch(
+          commonActions.openModal(
+            'OnBoardingModal',
+            {
+              title: 'Set up IK',
+              message: 'Able to use <b>IK controller</b> For editing your animation.',
+              learnMoreLink: 'https://www.notion.so/plasticmask/User-guide-ac4bba1b75384c309e7a24e6542454ba#3c8552982dea49e2a1f22a92055d54b4',
+              postion: {
+                left: '12px',
+              },
+              tooltipArrowPlacement: 'right-start',
+              onCloseCallback: () => {
+                localStorage.setItem('onboarding_3', 'onboarding_3');
+              },
             },
             '',
             false,
