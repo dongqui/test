@@ -211,7 +211,7 @@ export class IKModule extends Module {
             ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
             layer.id,
           );
-  
+
           for (const track of newTracks) {
             if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
               console.log(`track ${track.name} already exists.`);
@@ -221,7 +221,7 @@ export class IKModule extends Module {
             }
           }
         }
-      }      
+      }
     });
 
     return newAnimationIngredient;
@@ -396,9 +396,9 @@ export class IKModule extends Module {
    * Sets the blend value for the current selected controller
    * @param value
    */
-  public setIKControllerBlend(value: number = 0) {
+  public setIKControllerBlend(value: number = 0, controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
-    this._selectedIkControllers.forEach((selectedIK) => {
+    (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.blend = value;
     });
   }
@@ -407,8 +407,8 @@ export class IKModule extends Module {
    * Sets the pole angle for the current selected controller
    * @param value
    */
-  public setIKControllerPoleAngle(value: number = 0) {
-    this._selectedIkControllers.forEach((selectedIK) => {
+  public setIKControllerPoleAngle(value: number = 0, controllers?: IKController[]) {
+    (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.poleAngle = value;
     });
   }
@@ -443,8 +443,8 @@ export class IKModule extends Module {
    * Computes all the FK frames from the IK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeIKintoFK(bakeAll: boolean = false) {
-    const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
+  public bakeIKintoFK(controllers?: IKController[]) {
+    const bakeTargetControllers = controllers ? controllers : this._selectedIkControllers;
     return this._IKtoFKAnimationIngredient(bakeTargetControllers);
   }
 
@@ -627,8 +627,8 @@ export class IKModule extends Module {
    * Computes all the IK frames from the FK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeFKintoIK(bakeAll: boolean = false) {
-    const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
+  public bakeFKintoIK(controllers?: IKController[]) {
+    const bakeTargetControllers = controllers ? controllers : this._selectedIkControllers;
 
     const edit = (
       ikController: IKController,
