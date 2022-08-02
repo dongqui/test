@@ -203,24 +203,25 @@ export class IKModule extends Module {
     }
 
     const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
-      const layer = draft.layers.find((layer) => layer.name.startsWith('baseLayer')) || draft.layers[0];
-      for (const controller of this.ikControllers) {
-        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
-          draft.name,
-          [controller.handle],
-          ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
-          layer.id,
-        );
-
-        for (const track of newTracks) {
-          if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
-            console.log(`track ${track.name} already exists.`);
-          } else {
-            layer.tracks.push(castDraft(track));
-            // console.log(`track ${track.name} created`);
+      for (const layer of draft.layers) {
+        for (const controller of this.ikControllers) {
+          const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
+            draft.name,
+            [controller.handle],
+            ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
+            layer.id,
+          );
+  
+          for (const track of newTracks) {
+            if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
+              console.log(`track ${track.name} already exists.`);
+            } else {
+              layer.tracks.push(castDraft(track));
+              // console.log(`track ${track.name} created`);
+            }
           }
         }
-      }
+      }      
     });
 
     return newAnimationIngredient;
