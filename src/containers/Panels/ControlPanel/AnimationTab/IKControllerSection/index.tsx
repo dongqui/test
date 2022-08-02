@@ -114,9 +114,10 @@ const IKControllerSection: FunctionComponent<Props> = ({
   }, [targetIKControllers]);
 
   useEffect(() => {
-    setTimeout(() => {
-      popupManager.showIKOnboarding();
-    }, 1000);
+    popupManager.showIKOnboarding();
+    return () => {
+      popupManager.closeOnboarding();
+    };
   }, []);
 
   const IKControllerData = [
@@ -305,6 +306,10 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const handleSetupIK = useCallback(() => {
     const assetId = _visualizedAssetIds[0];
     dispatch(addIKAction(assetId));
+
+    if (!popupManager.isIKOnboardingDone) {
+      popupManager.doneIKOnboarding();
+    }
   }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = {

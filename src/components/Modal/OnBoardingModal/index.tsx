@@ -32,7 +32,6 @@ const OnboardingModal = ({ className, onClose, onCloseCallback, postion, title, 
     onClose();
     onCloseCallback && onCloseCallback();
   };
-
   return (
     <div className={cx('container', className)} style={postion}>
       <TooltipArrow placement={tooltipArrowPlacement} />

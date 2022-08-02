@@ -10,6 +10,8 @@ class PopupManager {
   isOnboardingDone: boolean;
   isNewFeatureModalDone: boolean;
   isVMOnboardingDone: boolean;
+  isIKOnboardingDone: boolean;
+
   proceedGenerator: Generator<void> | null;
   dispatch: Dispatch | null;
 
@@ -17,6 +19,7 @@ class PopupManager {
     this.isOnboardingDone = !!localStorage.getItem('onboarding_1');
     this.isNewFeatureModalDone = localStorage.getItem('notification') === '1';
     this.isVMOnboardingDone = !!localStorage.getItem('onboarding_2');
+    this.isIKOnboardingDone = !!localStorage.getItem('onboarding_3');
 
     this.proceedGenerator = null;
     this.dispatch = null;
@@ -60,15 +63,19 @@ class PopupManager {
   showNewFeatureModal() {
     if (this.dispatch) {
       this.dispatch(
-        commonActions.openModal('NotificationModal', {
-          message: 'Check out the newly updated features.',
-          title: 'New Feature!',
-          closeCallback: () => {
-            this.next();
-            // key value change rule: '1' -> '2'
-            localStorage.setItem('notification', '1');
+        commonActions.openModal(
+          'NotificationModal',
+          {
+            message: 'Check out the newly updated features.',
+            title: 'New Feature!',
+            closeCallback: () => {
+              this.next();
+              // key value change rule: '1' -> '2'
+              localStorage.setItem('notification', '1');
+            },
           },
-        }),
+          'onboarding',
+        ),
       );
     }
   }
@@ -96,7 +103,7 @@ class PopupManager {
               },
               tooltipArrowPlacement: 'top-end',
             },
-            '',
+            'onboarding',
             false,
           ),
         );
@@ -105,12 +112,14 @@ class PopupManager {
   }
 
   showIKOnboarding() {
-    console.log(this.dispatch);
-    if (this.dispatch) {
+    if (this.isIKOnboardingDone) {
+      return;
+    }
+
+    setTimeout(() => {
       const targetElement = document.getElementById(IK_CONTROLLER_EL_ID);
       const targetCoordinates = getTargetCoordinates(targetElement);
-      console.log(targetCoordinates?.leftTop);
-      if (targetCoordinates?.leftTop) {
+      if (targetCoordinates?.leftTop && this.dispatch) {
         this.dispatch(
           commonActions.openModal(
             'OnBoardingModal',
@@ -119,18 +128,31 @@ class PopupManager {
               message: 'Able to use <b>IK controller</b> For editing your animation.',
               learnMoreLink: 'https://www.notion.so/plasticmask/User-guide-ac4bba1b75384c309e7a24e6542454ba#3c8552982dea49e2a1f22a92055d54b4',
               postion: {
-                left: '12px',
+                left: `${targetCoordinates?.leftTop?.x - 412}px`,
+                top: `${targetCoordinates?.leftTop?.y}px`,
               },
               tooltipArrowPlacement: 'right-start',
               onCloseCallback: () => {
-                localStorage.setItem('onboarding_3', 'onboarding_3');
+                this.doneIKOnboarding();
               },
             },
-            '',
+            'onboarding',
             false,
           ),
         );
       }
+    }, 1000);
+  }
+
+  doneIKOnboarding() {
+    localStorage.setItem('onboarding_3', 'onboarding_3');
+    this.isIKOnboardingDone = true;
+    this.closeOnboarding();
+  }
+
+  closeOnboarding() {
+    if (this.dispatch) {
+      this.dispatch(commonActions.closeModal('onboarding'));
     }
   }
 }
