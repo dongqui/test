@@ -230,6 +230,14 @@ const RenderingPanel: FunctionComponent<Props> = () => {
     },
     RPShortcutOptions,
   );
+  usePlaskShortcut(
+    ['control', 'p'],
+    (_key: any, event: any) => {
+      plaskEngine.toggleInspector();
+      event.preventDefault();
+    },
+    RPShortcutOptions,
+  );
 
   /**
    * select property tracks in TimelinePanel(TP) according to the selected targets in RenderingPanel(RP)

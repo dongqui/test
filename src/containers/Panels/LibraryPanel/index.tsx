@@ -17,6 +17,7 @@ import plaskEngine from '3d/PlaskEngine';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import TagManager from 'react-gtm-module';
 
 const cx = classNames.bind(styles);
 
@@ -38,6 +39,12 @@ const LibraryPanel: FunctionComponent = () => {
       });
 
       if (hasMoreThanOneVideo) {
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'lp-file-drop',
+            type: 'etc',
+          },
+        });
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
@@ -46,6 +53,12 @@ const LibraryPanel: FunctionComponent = () => {
           }),
         );
       } else if (isInvalidFileFormat) {
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'lp-file-drop',
+            type: 'etc',
+          },
+        });
         dispatch(
           globalUIActions.openModal('_AlertModal', {
             message: IMPORT_ERROR_INVALID_FORMAT,

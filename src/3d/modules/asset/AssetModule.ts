@@ -225,6 +225,7 @@ export class AssetModule extends Module {
     const targetAsset = this.assetList.find((asset) => asset.id === assetId);
     const sphereHandles = this._sphereHandles.filter((object) => object.id.includes(assetId));
     const targetControllers = this.selectableObjects.filter((object) => object.id.includes(assetId) && object.type === 'controller');
+
     if (targetAsset) {
       this.screenList
         .map((screen) => screen.scene)
@@ -237,6 +238,7 @@ export class AssetModule extends Module {
             }
           }
         });
+      this.plaskEngine.visibilityLayers.skeletonViewer?.dispose();
     }
   }
 

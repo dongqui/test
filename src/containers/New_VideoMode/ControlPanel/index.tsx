@@ -17,6 +17,7 @@ import ExtractForm from './ExtractForm';
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
 import TooltipArrow from 'components/TooltipArrow';
+import TagManager from 'react-gtm-module';
 
 const cx = classNames.bind(styles);
 
@@ -133,6 +134,12 @@ const ControlPanel = ({
   }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
   const handleCancel = useCallback(() => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'export-motion-cancel',
+      },
+    });
+
     setIsOpenLoadingModal(false);
     setIsOpenExtractModal(false);
     cancelTokenSource.current && cancelTokenSource.current();
@@ -156,6 +163,12 @@ const ControlPanel = ({
   }, []);
 
   const handleSubmitModal = async () => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'export-motion',
+      },
+    });
+
     if (videoRef.current) {
       if (endValue - startValue > 300) {
         setIsOpenExceptionModal({
@@ -198,6 +211,12 @@ const ControlPanel = ({
             url: `/library/get/${sceneId}/library`,
           })
             .then((response) => {
+              TagManager.dataLayer({
+                dataLayer: {
+                  event: 'export-motion-success',
+                },
+              });
+
               setIsOpenLoadingModal(false);
               onUnmount();
               dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
@@ -210,6 +229,11 @@ const ControlPanel = ({
               };
             })
             .catch((error) => {
+              setIsOpenExceptionModal({
+                isOpen: true,
+                case: 'Others',
+              });
+
               return {
                 loaded: false,
                 data: [],
@@ -245,6 +269,17 @@ const ControlPanel = ({
         });
     }
   };
+
+  useEffect(() => {
+    if (isOpenExceptionModal.isOpen && isOpenExceptionModal.case !== undefined) {
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'error',
+          type: isOpenExceptionModal.case,
+        },
+      });
+    }
+  }, [isOpenExceptionModal]);
 
   return (
     <div className={cx('wrapper')} onMouseEnter={() => setCPModified(false)}>
