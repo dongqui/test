@@ -119,19 +119,33 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
     // Foot locking
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+    // Hips original Z level evaluation
+    let hipsZOriginal: number;
+    animationIngredient!.layers[0].tracks.forEach((elem) => {
+      if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
+        hipsZOriginal = elem.target.position._z;
+      }
+    });
 
     if (animationIngredient) {
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-      console.log(contactData);
-      let footTrack: PlaskTrack;
+      //console.log(contactData);
+
+      // Hips Z level adjust
+      let hipsTrack: PlaskTrack;
       animationIngredient.layers[0].tracks.forEach((elem) => {
-        if (elem.name.match(/leftFoot/gi) && elem.property.match(/isContact/g)) {
-          footTrack = elem;
+        if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
+          hipsTrack = elem;
         }
       });
 
+      hipsTrack!.transformKeys.forEach((elem) => {
+        elem.value._z = hipsZOriginal;
+      });
+
+      // Animation End Index adjust
       const payload = {
-        endTimeIndex: footTrack!.transformKeys.length,
+        endTimeIndex: hipsTrack!.transformKeys.length,
         currentTimeIndex: 0,
       };
 

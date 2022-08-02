@@ -16,6 +16,7 @@ import {
   Space,
   Scene,
   Quaternion,
+  Scalar,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
@@ -884,7 +885,7 @@ export class IKModule extends Module {
       }
 
       const adjustedCurve: Vector3[] = [];
-      let blendFrames = 5; // Defines the frames quantity before and after the Foot Locking position to blend
+      let blendFrames = 10; // Defines the frames quantity before and after the Foot Locking position to blend
       if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
         const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
 
@@ -1055,9 +1056,7 @@ export class IKModule extends Module {
         } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
           blendQty = -1 / blendFrames;
         }
-        blendValue = blendValue + blendQty;
-        if (blendValue < 0) blendValue = 0;
-        else if (blendValue > 1) blendValue = 1;
+        blendValue = Scalar.Clamp(blendValue + blendQty, 0, 1);
 
         const targetDataList = [
           {
