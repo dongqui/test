@@ -14,6 +14,7 @@ import {
   Vector3,
   VertexData,
   Scalar,
+  Epsilon,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { addMetadata } from 'utils/RP/metadata';
@@ -250,12 +251,33 @@ export class IKController {
     this.handle = this._createHandle(this.limb, params.assetId, params.controllerSize);
 
     // ikControllerHandle.rotationQuaternion = Quaternion.FromLookDirectionLH(params.upVector.cross(params.upVector), params.upVector);
-    // TODO : make that generic (for now really bone dependent) - use retargetmap
-    this.handle.rotationQuaternion = params.limb.includes('Hand')
-      ? Quaternion.FromLookDirectionLH(Vector3.Up(), Vector3.Right())
-      : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
+    // TODO : compute handle rotation from lookat between last bone and previous bone
+    const bonePos = params.transformNode.absolutePosition;
+    const parentBonePos = (params.transformNode.parent as TransformNode).absolutePosition;
+    const dir = bonePos.subtract(parentBonePos).normalize();
+    let up = Vector3.Cross(Vector3.UpReadOnly, dir);
+    up = up.length() < Epsilon ? Vector3.Right() : up.normalize();
+
+    // this.handle.rotationQuaternion = params.limb.includes('Hand')
+    //   ? Quaternion.FromLookDirectionLH(Vector3.Up(), Vector3.Right())
+    //   : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
+    const quat = Quaternion.FromLookDirectionLH(up, dir); // BJS' Torus "looks" upward, thus we reverse the axis
+    const mat = TmpVectors.Matrix[0];
+    quat.toRotationMatrix(mat);
+
+    // Multiply by opposite of current rotationQuaternion to cancel out (we set handle's rotation to bone's absolute rotation)
+    const boneQuat = params.transformNode.absoluteRotationQuaternion;
+    const boneMat = TmpVectors.Matrix[1];
+    boneQuat.toRotationMatrix(boneMat);
+    boneMat.invert();
+
+    // Multiply both transforms
+    mat.multiplyToRef(boneMat, mat);
+    this.handle.rotationQuaternion = Quaternion.FromRotationMatrix(mat);
+
     this.handle.computeWorldMatrix(true);
     this.handle.bakeCurrentTransformIntoVertices();
+    // Initiali
 
     // Selection outline size
     addMetadata('outlineSize', 0.015, this.handle);

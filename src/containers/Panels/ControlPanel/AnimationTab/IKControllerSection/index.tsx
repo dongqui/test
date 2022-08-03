@@ -24,6 +24,7 @@ import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { removeIK } from 'sagas/RP/ik/removeIK';
+import { Typography } from 'components/Typography';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -124,11 +125,24 @@ const IKControllerSection: FunctionComponent<Props> = ({
       setCurrentValue: setBlendValue,
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
-        plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value));
+        let controllers: IKController[] = targetIKControllers;
+
+        if (!targetIKControllers.length) {
+          _selectedTargets.forEach((target) => {
+            const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+            controllers = _temp.map((e, i) => e ?? controllers[i]);
+          });
+
+          controllers = controllers.filter((e) => e !== undefined);
+        }
+        console.log(controllers);
+        plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);
       },
       onChangeEnd: useCallback((inputValue: number) => {
         setBlendValue(inputValue);
       }, []),
+
+      active: isInfluencedChainSelected,
     },
     {
       text: 'Pole Angle',
@@ -139,52 +153,85 @@ const IKControllerSection: FunctionComponent<Props> = ({
       setCurrentValue: setPoleAngleValue,
       decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
-        // setPoleAngleValue(parseFloat(event.target.value));
-        plaskEngine.ikModule.setIKControllerPoleAngle(Tools.ToRadians(parseFloat(event.target.value)));
+        let controllers: IKController[] = targetIKControllers;
+
+        if (!targetIKControllers.length) {
+          _selectedTargets.forEach((target) => {
+            const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+            controllers = _temp.map((e, i) => e ?? controllers[i]);
+          });
+
+          controllers = controllers.filter((e) => e !== undefined);
+        }
+        plaskEngine.ikModule.setIKControllerPoleAngle(Tools.ToRadians(parseFloat(event.target.value)), controllers);
       },
       onChangeEnd: useCallback((inputValue: number) => {
         setPoleAngleValue(inputValue);
       }, []),
+
+      active: ikValidation,
     },
   ];
 
   const IKControllerButtons = [
     {
       text: 'Set IK Pose to FK',
-      disabled: targetIKControllers.length === 0,
+      disabled: !isInfluencedChainSelected,
       onClick: () => {
-        plaskEngine.ikModule.setIKtoFK();
-        plaskEngine.ikModule.setIKControllerBlend(1);
-        setBlendValue(1);
+        let controllers: IKController[] = targetIKControllers;
+
+        if (!targetIKControllers.length) {
+          _selectedTargets.forEach((target) => {
+            const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+            controllers = _temp.map((e, i) => e ?? controllers[i]);
+          });
+
+          controllers = controllers.filter((e) => e !== undefined);
+        }
+        if (controllers.length > 0) {
+          plaskEngine.ikModule.setIKtoFK(controllers);
+          plaskEngine.ikModule.setIKControllerBlend(1);
+          setBlendValue(1);
+        }
       },
     },
     {
       text: 'Set FK Pose to IK',
       onClick: () => {
-        if (targetIKControllers.length > 0) {
-          plaskEngine.ikModule.setFKtoIK();
-        } else {
-          let controllers: IKController[] = [];
+        let controllers: IKController[] = targetIKControllers;
+
+        if (!targetIKControllers.length) {
           _selectedTargets.forEach((target) => {
             const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
             controllers = _temp.map((e, i) => e ?? controllers[i]);
           });
+
           controllers = controllers.filter((e) => e !== undefined);
-          if (controllers.length > 0) plaskEngine.ikModule.setFKtoIK(controllers);
         }
+        if (controllers.length > 0) plaskEngine.ikModule.setFKtoIK(controllers);
       },
       disabled: !isInfluencedChainSelected,
     },
     {
-      text: 'Bake IK controller in FK pose',
-      disabled: targetIKControllers.length === 0,
+      text: 'Bake IK into FK',
+      disabled: !isInfluencedChainSelected,
       onClick: () => {
         try {
           dispatch(globalUIActions.openModal('LoadingModal', { title: 'Baking the IK controllers', message: 'This can take up to 3 minutes' }));
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeFKintoIK();
+            let controllers: IKController[] = targetIKControllers;
+
+            if (!targetIKControllers.length) {
+              _selectedTargets.forEach((target) => {
+                const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+                controllers = _temp.map((e, i) => e ?? controllers[i]);
+              });
+
+              controllers = controllers.filter((e) => e !== undefined);
+            }
+            const { animationIngredient, impactedIK } = plaskEngine.ikModule.bakeFKintoIK(controllers);
             if (animationIngredient) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
@@ -207,16 +254,26 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     },
     {
-      text: 'Bake the bone in IK pose',
+      text: 'Bake FK into IK',
 
-      disabled: targetIKControllers.length === 0,
+      disabled: !isInfluencedChainSelected,
       onClick: () => {
         try {
           dispatch(globalUIActions.openModal('LoadingModal', { title: 'Baking the bones', message: 'This can take up to 3 minutes' }));
 
           // TODO Need to Fix
           setTimeout(() => {
-            const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK();
+            let controllers: IKController[] = targetIKControllers;
+
+            if (!targetIKControllers.length) {
+              _selectedTargets.forEach((target) => {
+                const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+                controllers = _temp.map((e, i) => e ?? controllers[i]);
+              });
+
+              controllers = controllers.filter((e) => e !== undefined);
+            }
+            const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFK(controllers);
             if (animationIngredient) {
               dispatch(editAnimationIngredient({ animationIngredient }));
             }
@@ -267,9 +324,31 @@ const IKControllerSection: FunctionComponent<Props> = ({
       },
     ],
   };
+  const [tagToolTip, setTagToolTip] = useState(false);
 
   return (
-    <PlaskCard title="IK Controller" type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive}>
+    <PlaskCard
+      title={
+        <div className={cx('title-wrapper')}>
+          IK Controller
+          <div className={cx('tag')}>
+            <Typography className={cx('text')}>Beta</Typography>
+            <div className={cx('overlay')} onMouseEnter={() => setTagToolTip(true)} onMouseLeave={() => setTagToolTip(false)} />
+            {tagToolTip && (
+              <div className={cx('tooltip')}>
+                <div className={cx('arrow')} />
+                <Typography type="body">
+                  All items related to the IK controller cannot be saved yet. Please export your result before leaving here. Or you can simply bake IK keyframes to the FK.
+                </Typography>
+              </div>
+            )}
+          </div>
+        </div>
+      }
+      type="dropdown"
+      dropdownOptions={dropdownOptions}
+      activeStatus={isAllActive}
+    >
       {plaskEngine.ikModule.ikControllers.length > 0 ? (
         <div className={cx('wrapper')}>
           {IKControllerData.map((info, idx) => (
@@ -282,7 +361,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               showProgress={info.showProgress}
               currentValue={info.currentValue}
               decimalDigit={info.decimalDigit}
-              activeStatus={isAllActive && ikValidation && targetIKControllers.length > 0}
+              activeStatus={isAllActive && info.active}
               handleChange={info.handleChange}
               onChangeEnd={info.onChangeEnd}
             />
@@ -294,7 +373,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}
-              type="button"
+              buttonType="default"
               disabled={!isAllActive || info.disabled}
               fullSize={true}
             />
@@ -311,7 +390,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
             onClick={handleSetupIK}
             className={cx('button')}
             text="Set Up IK"
-            color="default"
+            buttonType="default"
             disabled={!isAllActive || !mappingCompleted || targetIKControllers.length > 0}
             fullSize={true}
           />
