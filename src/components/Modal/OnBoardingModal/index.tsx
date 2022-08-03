@@ -27,10 +27,14 @@ interface Props {
   tooltipArrowPlacement: TooltipArrowPlacement;
 }
 
-const OnboardingModal = ({ className, onClose, onCloseCallback, postion, title, message, tooltipArrowPlacement }: Props) => {
+const OnboardingModal = ({ className, onClose, onCloseCallback, learnMoreLink, postion, title, message, tooltipArrowPlacement }: Props) => {
   const handleCloseModal = () => {
     onClose();
     onCloseCallback && onCloseCallback();
+  };
+
+  const handleClickLearnMore = () => {
+    learnMoreLink;
   };
   return (
     <div className={cx('container', className)} style={postion}>
@@ -41,7 +45,13 @@ const OnboardingModal = ({ className, onClose, onCloseCallback, postion, title, 
       </header>
       <Html content={message} className={cx('content')} />
       <footer>
-        <FilledButton buttonType="default">Learn More</FilledButton>
+        {learnMoreLink && (
+          <FilledButton buttonType="default">
+            <a href="https://knowledge.plask.ai/documentation#animation" target="_blank" rel="noreferrer" className={cx('learn-more')}>
+              Learn More
+            </a>
+          </FilledButton>
+        )}
       </footer>
     </div>
   );
