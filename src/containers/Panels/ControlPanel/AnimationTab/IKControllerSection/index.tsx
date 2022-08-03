@@ -339,7 +339,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
   return (
     <PlaskCard
       title={
-        <div className={cx('title-wrapper')} id={IK_CONTROLLER_EL_ID}>
+        <div className={cx('title-wrapper')}>
           IK Controller
           <div className={cx('tag')}>
             <Typography className={cx('text')}>Beta</Typography>
@@ -358,6 +358,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       type="dropdown"
       dropdownOptions={dropdownOptions}
       activeStatus={isAllActive}
+      id={IK_CONTROLLER_EL_ID}
     >
       {plaskEngine.ikModule.ikControllers.length > 0 ? (
         <div className={cx('wrapper')}>
