@@ -4,7 +4,7 @@ import { Nullable, SkeletonViewer } from '@babylonjs/core';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { setBoneVisibility, setGizmoVisibility, setIKControllerVisibility, setMeshVisibility } from 'actions/screenDataAction';
 
-export class VisibilityLayersModule extends Module {
+export class SkeletonViewerModule extends Module {
   // TODO : skeleton viewer probably doesn't belong here, we should add a skeletonViewer module
   // OR merge GizmoModule and VisibilityLayersModule under a big "OverlaysModule" that would include
   // all interactable 3D components that are not part of the final 3D render
