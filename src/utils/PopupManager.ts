@@ -126,7 +126,7 @@ class PopupManager {
             {
               title: 'Set up IK',
               message: 'Able to use <b>IK controller</b> For editing your animation.',
-              learnMoreLink: 'https://www.notion.so/plasticmask/User-guide-ac4bba1b75384c309e7a24e6542454ba#3c8552982dea49e2a1f22a92055d54b4',
+              learnMoreLink: 'https://knowledge.plask.ai/how-can-you-set-up-an-ik-controller-on-your-3d-model',
               postion: {
                 left: `${targetCoordinates?.leftTop?.x - 412}px`,
                 top: `${targetCoordinates?.leftTop?.y}px`,

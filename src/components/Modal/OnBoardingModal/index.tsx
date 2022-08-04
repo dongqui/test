@@ -47,7 +47,7 @@ const OnboardingModal = ({ className, onClose, onCloseCallback, learnMoreLink, p
       <footer>
         {learnMoreLink && (
           <FilledButton buttonType="default">
-            <a href="https://knowledge.plask.ai/documentation#animation" target="_blank" rel="noreferrer" className={cx('learn-more')}>
+            <a href={learnMoreLink} target="_blank" rel="noreferrer" className={cx('learn-more')}>
               Learn More
             </a>
           </FilledButton>
