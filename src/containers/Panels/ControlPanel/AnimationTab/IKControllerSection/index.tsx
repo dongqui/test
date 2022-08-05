@@ -141,7 +141,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
           controllers = controllers.filter((e) => e !== undefined);
         }
-        console.log(controllers);
         plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);
       },
       onChangeEnd: useCallback((inputValue: number) => {

@@ -14,6 +14,21 @@ export const DEFAULT_SKELETON_VIEWER_OPTION = {
     midStepFactor: 0.05,
   },
 };
+export const IK_SKELETON_VIEWER_OPTION = {
+  pauseAnimations: true,
+  returnToRest: false,
+  computeBonesUsingShaders: true,
+  useAllBones: true, // error with false
+  // NEED TO FIX THE CODE
+  displayMode: SkeletonViewer.DISPLAY_LINES,
+  displayOptions: {
+    sphereBaseSize: 0.01,
+    sphereScaleUnit: 15,
+    sphereFactor: 0.9,
+    midStep: 0.25,
+    midStepFactor: 0.05,
+  },
+};
 
 //////////////////// new ////////////////////
 
