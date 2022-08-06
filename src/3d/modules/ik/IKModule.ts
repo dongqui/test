@@ -598,8 +598,13 @@ export class IKModule extends Module {
         targetLayerId,
       );
 
-      impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
-      impactedIK.push(selectedIK.handle.getPlaskEntity());
+      try {
+        impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
+        impactedIK.push(selectedIK.handle.getPlaskEntity());
+      } catch (e) {
+        // In case entities are still not added (bake on import - foot locking), impacted node are still not in the state
+        // getPlaskEntity will fail
+      }
 
       animationGroupTemp.goToFrame(0);
       animationGroupTemp.stop();
