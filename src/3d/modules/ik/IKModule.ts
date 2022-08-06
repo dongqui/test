@@ -204,21 +204,22 @@ export class IKModule extends Module {
     }
 
     const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
-      const layer = draft.layers.find((layer) => layer.name.startsWith('baseLayer')) || draft.layers[0];
-      for (const controller of this.ikControllers) {
-        const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
-          draft.name,
-          [controller.handle],
-          ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
-          layer.id,
-        );
+      for (const layer of draft.layers) {
+        for (const controller of this.ikControllers) {
+          const newTracks = this.plaskEngine.animationModule.createTracksForProperties(
+            draft.name,
+            [controller.handle],
+            ['blend', 'poleAngle', 'position', 'rotation', 'rotationQuaternion'],
+            layer.id,
+          );
 
-        for (const track of newTracks) {
-          if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
-            console.log(`track ${track.name} already exists.`);
-          } else {
-            layer.tracks.push(castDraft(track));
-            // console.log(`track ${track.name} created`);
+          for (const track of newTracks) {
+            if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
+              console.log(`track ${track.name} already exists.`);
+            } else {
+              layer.tracks.push(castDraft(track));
+              // console.log(`track ${track.name} created`);
+            }
           }
         }
       }
@@ -396,9 +397,9 @@ export class IKModule extends Module {
    * Sets the blend value for the current selected controller
    * @param value
    */
-  public setIKControllerBlend(value: number = 0) {
+  public setIKControllerBlend(value: number = 0, controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
-    this._selectedIkControllers.forEach((selectedIK) => {
+    (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.blend = value;
     });
   }
@@ -407,8 +408,8 @@ export class IKModule extends Module {
    * Sets the pole angle for the current selected controller
    * @param value
    */
-  public setIKControllerPoleAngle(value: number = 0) {
-    this._selectedIkControllers.forEach((selectedIK) => {
+  public setIKControllerPoleAngle(value: number = 0, controllers?: IKController[]) {
+    (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       selectedIK.poleAngle = value;
     });
   }
@@ -443,9 +444,8 @@ export class IKModule extends Module {
    * Computes all the FK frames from the IK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeIKintoFK(bakeAll: boolean = false) {
-    debugger;
-    const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
+  public bakeIKintoFK(controllers?: IKController[]) {
+    const bakeTargetControllers = controllers ? controllers : this._selectedIkControllers;
     return this._IKtoFKAnimationIngredient(bakeTargetControllers);
   }
 
@@ -628,8 +628,8 @@ export class IKModule extends Module {
    * Computes all the IK frames from the FK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeFKintoIK(bakeAll: boolean = false) {
-    const bakeTargetControllers = bakeAll ? this.ikControllers : this._selectedIkControllers;
+  public bakeFKintoIK(controllers?: IKController[]) {
+    const bakeTargetControllers = controllers ? controllers : this._selectedIkControllers;
 
     const edit = (
       ikController: IKController,
