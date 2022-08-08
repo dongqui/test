@@ -7,6 +7,7 @@ import { IconButton } from 'components/Button';
 import { SvgPath } from 'components/Icon';
 import { Switch } from 'components/Input';
 import Dropdown from 'new_components/Dropdown';
+import UserInfo from './UserInfo/UserInfo';
 
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
@@ -103,6 +104,7 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
           className={cx('mode-switch')}
           value={mode === 'videoMode' ? 'VM' : mode === 'animationMode' ? 'EM' : ''}
         />
+        <UserInfo />
       </div>
     </div>
   );
