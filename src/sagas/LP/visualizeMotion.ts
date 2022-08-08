@@ -13,12 +13,13 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import plaskEngine from '3d/PlaskEngine';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { goToSpecificPoses } from 'utils/RP';
-import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset, PlaskTrack } from 'types/common';
+import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset, PlaskTrack, PlaskAxis } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
-import { TimeIndex } from 'utils/TP';
+import { VectorTransformKey } from 'types/common';
+import { Scalar } from '@babylonjs/core';
 
 const clickJointChannel = channel();
 
@@ -119,6 +120,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
     // Foot locking
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+
     // Hips original Z level evaluation
     let hipsZOriginal: number;
     animationIngredient!.layers[0].tracks.forEach((elem) => {
@@ -129,19 +131,46 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
     if (animationIngredient) {
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-      //console.log(contactData);
+      //console.log(contactData, animationIngredient);
 
       // Hips Z level adjust
       let hipsTrack: PlaskTrack;
+      let leftFootTrack: PlaskTrack;
+      let rightFootTrack: PlaskTrack;
       animationIngredient.layers[0].tracks.forEach((elem) => {
         if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
           hipsTrack = elem;
         }
+
+        if (elem.name.match(/leftFoot/gi) && elem.property.match(/isContact/g)) {
+          leftFootTrack = elem;
+        }
+
+        if (elem.name.match(/rightFoot/gi) && elem.property.match(/isContact/g)) {
+          rightFootTrack = elem;
+        }
       });
 
-      hipsTrack!.transformKeys.forEach((elem) => {
-        elem.value._z = hipsZOriginal;
-      });
+      let noContactPts: number = 0; // sum of no contact points to trying to evaluate Jumping
+      let lowPositionPts: number = 0; // sum of low position points trying to evaluate Sitting
+      for (let i = 0; i < hipsTrack!.transformKeys.length; i++) {
+        if (leftFootTrack!.transformKeys[i].value == 0 && rightFootTrack!.transformKeys[i].value == 0) noContactPts += 1;
+        else noContactPts = 0;
+
+        if (hipsTrack!.transformKeys[i + 1] && Math.abs(hipsTrack!.transformKeys[i].value._z * 0.9) > Math.abs(hipsTrack!.transformKeys[i + 1].value._z)) lowPositionPts += 1;
+        else lowPositionPts = 0;
+
+        if (noContactPts > 0) {
+          hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / noContactPts);
+          console.log('Jump ', noContactPts, hipsTrack!.transformKeys[i].value._z);
+        } else if (lowPositionPts > 0) {
+          hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / lowPositionPts);
+          console.log('Sit ', lowPositionPts, hipsTrack!.transformKeys[i].value._z);
+        } else {
+          hipsTrack!.transformKeys[i].value._z = hipsZOriginal!;
+          console.log('Fixed ', hipsTrack!.transformKeys[i].value._z);
+        }
+      }
 
       // Animation End Index adjust
       const payload = {
