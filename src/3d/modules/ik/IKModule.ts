@@ -27,7 +27,7 @@ import { IKController } from './IKController';
 import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient, PlaskTrack } from 'types/common';
 import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 import produce, { castDraft } from 'immer';
-import { WritableDraft } from 'immer/dist/internal';
+import { current, WritableDraft } from 'immer/dist/internal';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -863,7 +863,29 @@ export class IKModule extends Module {
 
       const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion; blendIn: boolean; blendOut: boolean }[] = [];
 
-      for (const key of transformKeys) {
+      // Direct method (look ahead up to MAX_FRAMES_LOOKAHEAD frames)
+      const DIRECT_METHOD_FOOTLOCKING = true;
+      let totalFramesToContact = transformKeys[0].value === 1 ? 0 : -1;
+      let currentFramesToContact = -1;
+      let totalFramesFromNoContact = -1;
+      let currentFramesFromNoContact = -1;
+      let currentBlend = 0;
+      let targetPoleAngle = 0;
+      let targetIKPosition = Vector3.Zero();
+      let targetIKQuaternion = Quaternion.Identity();
+      const extractPoseAtFrame = (frameIndex: number) => {
+        animationGroup.goToFrame(frameIndex);
+        ikController.fkInfluenceChain![0].computeWorldMatrix(true);
+        return {
+          position: ikController.fkInfluenceChain![0].absolutePosition,
+          quaternion: ikController.fkInfluenceChain![0].absoluteRotationQuaternion,
+          poleAngle: 0,
+        };
+      };
+      const MAX_FRAMES_LOOKAHEAD = 5;
+
+      for (let i = 0; i < transformKeys.length; i++) {
+        const key = transformKeys[i];
         const frameIndex = key.frame;
         animationGroup.goToFrame(frameIndex);
         ikController.fkInfluenceChain![0].computeWorldMatrix(true);
@@ -883,10 +905,94 @@ export class IKModule extends Module {
           lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
         }
 
+        if (DIRECT_METHOD_FOOTLOCKING) {
+          for (let j = 0; j < MAX_FRAMES_LOOKAHEAD; j++) {
+            if (totalFramesToContact === -1 && i + j < transformKeys.length && transformKeys[i + j].value === 1) {
+              // We are not currently in contact, we are first looking for the next contact
+              // The next contact is in j frames
+              totalFramesToContact = j;
+              currentFramesToContact = j;
+              ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + j].frame));
+              break;
+            } else if (totalFramesToContact === 0 && i + j < transformKeys.length && transformKeys[i + j].value === 0) {
+              // We are currently in contact and we detected an end of contact in j frames
+              totalFramesFromNoContact = j;
+              currentFramesFromNoContact = j;
+              if (j === 0) {
+                // If we are already out of contact, no ramp
+                totalFramesToContact = -1;
+              }
+              ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + j].frame));
+              break;
+            }
+          }
+
+          if (totalFramesToContact > 0) {
+            // We are ramping up to a contact
+            currentBlend = 1 - currentFramesToContact / totalFramesToContact;
+            if (currentFramesToContact === 0) {
+              // We're done with this contact ramp
+              totalFramesToContact = 0;
+              totalFramesFromNoContact = -1;
+            }
+            currentFramesToContact--;
+          } else if (totalFramesFromNoContact > 0) {
+            // We are ramping off from a contact
+            currentBlend = currentFramesFromNoContact / totalFramesFromNoContact;
+            if (currentFramesFromNoContact === 0) {
+              // We're done with this off contact ramp
+              totalFramesFromNoContact = 0;
+              totalFramesToContact = -1;
+            }
+            currentFramesFromNoContact--;
+          } else if (totalFramesToContact === 0) {
+            // We are in contact, set blend to flat 1
+            currentBlend = 1;
+          } else {
+            // We are out of contact, set blend to 0
+            currentBlend = 0;
+          }
+          // Insert keyframe if blend > 0
+          if (currentBlend >= 0) {
+            const targetDataList = [
+              {
+                targetId: ikController.handle.id,
+                property: 'position' as PlaskProperty,
+                value: targetIKPosition.asArray() as ArrayOfThreeNumbers,
+              },
+              {
+                targetId: ikController.handle.id,
+                property: 'poleAngle' as PlaskProperty,
+                value: 0,
+              },
+              {
+                targetId: ikController.handle.id,
+                property: 'blend' as PlaskProperty,
+                value: currentBlend,
+              },
+              {
+                targetId: ikController.handle.id,
+                property: 'rotationQuaternion' as PlaskProperty,
+                value: targetIKQuaternion.asArray() as ArrayOfFourNumbers,
+              },
+            ];
+            targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
+            if (!targetAnimation) {
+              throw new Error('Could not bake, error while fetching animation ingredients.');
+            }
+          }
+        }
+
         if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
           //if (position.y < groundLevelY) groundLevelY = position.y;
           origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion, blendIn: false, blendOut: false });
         }
+      }
+
+      if (DIRECT_METHOD_FOOTLOCKING) {
+        animationGroup.goToFrame(0);
+        animationGroup.stop();
+        return targetAnimation;
       }
 
       const adjustedCurve: Vector3[] = [];
