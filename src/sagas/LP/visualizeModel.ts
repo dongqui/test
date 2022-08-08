@@ -16,6 +16,7 @@ import plaskEngine from '3d/PlaskEngine';
 import * as api from 'api';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
+import { removeIK } from 'sagas/RP/ik/removeIK';
 
 const clickJointChannel = channel();
 
@@ -112,11 +113,27 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
           const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
           //const contactData = [];
           if (contactData.length) {
-            console.log('Auto add IK because foot locking is required.');
+            console.log('Contact data detected, using inverse kinematics to lock the feet...');
             yield call(addIK, addIKAction(asset.id, animationIngredient));
             // Update after adding IK tracks
-            animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId)!;
+            animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
             animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+            yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+            // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
+            for (const controller of plaskEngine.ikModule.ikControllers) {
+              if (controller.limb.includes('Foot')) {
+                plaskEngine.ikModule.setSelectedIk([controller]);
+
+                const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
+                animationIngredient = bakeResult.animationIngredient || animationIngredient;
+                yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+
+                // Set FK position to newly updated values
+                plaskEngine.ikModule.setFKtoIK();
+              }
+            }
+            // Release IK Controllers
+            yield call(removeIK, removeIKAction(asset.id));
           } else if (plaskEngine.ikModule.isEnabled) {
             // IK was enabled before, so we need to add tracks for this new ingredient
             yield call(addIK, addIKAction(asset.id, animationIngredient));

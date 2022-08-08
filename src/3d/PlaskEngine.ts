@@ -259,7 +259,8 @@ export class PlaskEngine {
    * @returns
    */
   public getEntity(entityId: string): PlaskEntity {
-    return this._entityStore.getEntity(entityId);
+    // TODO : remove entitystore, and let redux handle plaskEntities (return only an ID)
+    return this._entityStore.getEntity(entityId) || this.state.selectingData.present.selectableObjects.find((entity) => entity.entityId === entityId);
   }
 
   /**
@@ -268,7 +269,9 @@ export class PlaskEngine {
    * @returns
    */
   public getEntitiesByPredicate(predicate: (entity: PlaskEntity) => boolean): PlaskEntity[] {
-    return this._entityStore.getEntitiesByPredicate(predicate);
+    // TODO : remove entitystore, and let redux handle plaskEntities (return only an ID)
+    const entityStoreResult = this._entityStore.getEntitiesByPredicate(predicate);
+    return entityStoreResult.length ? entityStoreResult : this.state.selectingData.present.selectableObjects.filter((entity) => predicate(entity));
   }
 
   /**
