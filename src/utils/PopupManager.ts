@@ -31,17 +31,15 @@ class PopupManager {
   }
 
   *proceedAnimationpagePopup() {
-    yield this.showEmergencyNotification();
-
-    // if (!this.isNewFeatureModalDone) {
-    //   yield this.showNewFeatureModal();
-    // }
+    if (!this.isNewFeatureModalDone) {
+      yield this.showNewFeatureModal();
+    }
     if (!this.isOnboardingDone) {
       yield this.showOnboalding();
     }
-    // if (!this.isVMOnboardingDone) {
-    //   yield this.showVmOnboarding();
-    // }
+    if (!this.isVMOnboardingDone) {
+      yield this.showVmOnboarding();
+    }
   }
 
   showOnboalding() {
