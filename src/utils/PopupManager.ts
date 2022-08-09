@@ -31,15 +31,17 @@ class PopupManager {
   }
 
   *proceedAnimationpagePopup() {
-    if (!this.isNewFeatureModalDone) {
-      yield this.showNewFeatureModal();
-    }
+    yield this.showEmergencyNotification();
+
+    // if (!this.isNewFeatureModalDone) {
+    //   yield this.showNewFeatureModal();
+    // }
     if (!this.isOnboardingDone) {
       yield this.showOnboalding();
     }
-    if (!this.isVMOnboardingDone) {
-      yield this.showVmOnboarding();
-    }
+    // if (!this.isVMOnboardingDone) {
+    //   yield this.showVmOnboarding();
+    // }
   }
 
   showOnboalding() {
@@ -100,6 +102,25 @@ class PopupManager {
           ),
         );
       }
+    }
+  }
+
+  showEmergencyNotification() {
+    if (this.dispatch) {
+      this.dispatch(
+        commonActions.openModal('EmergencyModal', {
+          message: `<p>
+          Our motion capture server is down due to technical difficulties.
+          <br />
+          You can only use the animation editing feature at the moment. <br />
+          Sorry for the inconvenience.
+        </p>`,
+          title: 'Emergency Notice',
+          closeCallback: () => {
+            this.next();
+          },
+        }),
+      );
     }
   }
 }
