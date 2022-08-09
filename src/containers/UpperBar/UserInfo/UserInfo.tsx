@@ -1,15 +1,32 @@
 import React, { useRef, useState } from 'react';
 
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+
 import { Avata, TooltipArrow, IconWrapper, SvgPath, FilledButton } from 'components';
+import * as userActions from 'actions/User';
+import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
 import styles from './UserInfo.module.scss';
 
 const cx = classNames.bind(styles);
 
+function getUserNameInitial(name: string) {
+  // handle name issue
+  return name[0];
+}
+
 function UserInfo() {
   const [openUserInfo, setOpenUserInfo] = useState(false);
   const avataRef = useRef<HTMLDivElement>(null);
+  const { name } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(userActions.getUserAsync.request());
+    dispatch(userActions.getUserUsagaInfoAsync.request());
+  }, [dispatch]);
 
   function handleClickAvata(e: React.MouseEvent) {
     setOpenUserInfo(!openUserInfo);
@@ -17,11 +34,11 @@ function UserInfo() {
 
   return (
     <div className={cx('container')}>
-      <Avata userNameInitial="K" onClick={handleClickAvata} ref={avataRef} />
+      <Avata userNameInitial={getUserNameInitial(name)} onClick={handleClickAvata} ref={avataRef} />
 
       {openUserInfo && (
         <div className={cx('modal')}>
-          <header>Bumi</header>
+          <header>{name}</header>
           <section className={cx('content')}>
             <h6>Freemium overview</h6>
             <section className={cx('usage-overview')}>

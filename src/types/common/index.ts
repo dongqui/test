@@ -297,3 +297,38 @@ export type TooltipArrowPlacement =
   | 'right-start'
   | 'right-middle'
   | 'right-end';
+
+export type UserResponse = {
+  uid: string;
+  email: string;
+  password: string;
+  encKey: string;
+  country: string;
+  jobs: string;
+  name: string;
+  isEmailVerified: boolean;
+  isMarketingChecked: boolean;
+  isPrivacyChecked: boolean;
+  isDeleted: boolean;
+};
+
+export type UserUsageInfoReponse = {
+  planName: string;
+  upcomingInvoice: number;
+  payment: {
+    type: string;
+    nextPaymentDate: string;
+  };
+  credits: {
+    remaining: number;
+    expiredDate: string;
+  };
+  storage: {
+    usageSize: number;
+    limitSize: number;
+  };
+  stipe: {
+    paymentMethodUrl: string;
+    billingInvoiceUrl: string;
+  };
+};

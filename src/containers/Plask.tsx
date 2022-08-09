@@ -8,7 +8,6 @@ import AnimationMode from './AnimationMode';
 import VideoMode from './New_VideoMode';
 
 import popupManager from 'utils/PopupManager';
-import { tokenManager } from 'api/requestApi';
 import * as socketActions from 'actions/Common/socket';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import { RequestNodeResponse } from 'types/LP';
@@ -63,7 +62,6 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
   useEffect(() => {
     // is here the best place to connect socket?
     function initProjectAuth() {
-      tokenManager.set(token);
       dispatch(lpActions.setSceneId(sceneId));
       dispatch(socketActions.connectSocket.request({ sceneId, token }));
       dispatch(lpActions.initNodes(data));

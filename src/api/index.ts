@@ -8,3 +8,5 @@ export { postMotion as postMotion } from './LP';
 export { addMocapByJson as addMocapByJson } from './LP';
 export { getAnimation as getAnimation } from './LP';
 export { getMocapData as getMocapData } from './LP';
+export { getUser as getUser } from './User';
+export { getUserUsageInfo as getUserUsageInfo } from './User';

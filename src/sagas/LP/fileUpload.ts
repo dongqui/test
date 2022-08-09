@@ -2,10 +2,7 @@ import { put, SagaReturnType, take } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
-import { ONBOARDING_ID } from 'containers/Onboarding/id';
-import { getTargetCoordinates } from 'utils/common';
 import TagManager from 'react-gtm-module';
 
 const confirmSwitchModeChannel = channel();
