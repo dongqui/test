@@ -25,7 +25,7 @@ export default function* addAssetsAndAnimationIngredients(action: ReturnType<typ
     return;
   }
 
-  modelNode.modelUrl = '/models/Knight.glb';
+  //modelNode.modelUrl = '/models/Knight.glb';
   const assetContainer: BABYLON.AssetContainer = yield call([BABYLON.SceneLoader, BABYLON.SceneLoader.LoadAssetContainerAsync], modelNode.modelUrl || '', '', baseScene);
   const { meshes, geometries, skeletons, transformNodes, animationGroups } = assetContainer;
   animationGroups.forEach((animationGroup, idx) => {

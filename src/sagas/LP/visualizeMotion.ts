@@ -181,7 +181,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
       // yield put(animatingControlsActions.blurEndInput(payload));
 
-      if (contactData.length) {
+      if (false && contactData.length) {
         console.log('Contact data detected, using inverse kinematics to lock the feet...');
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         // Update after adding IK tracks

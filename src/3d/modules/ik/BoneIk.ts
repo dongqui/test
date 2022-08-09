@@ -171,9 +171,7 @@ export class BoneIk {
     this._updateLinkedTransformRotation(this._bone1, this.bone1Quat);
 
     // Lock rotation of last bone of the chain
-    //this._bone2.setRotationQuaternion(this.target.absoluteRotationQuaternion, Space.WORLD, this._tNode);
-    let elem = this._bone1._linkedTransformNode;
-    this._bone2.setRotationQuaternion(elem!.absoluteRotationQuaternion, Space.WORLD, this._tNode);
+    this._bone2.setRotationQuaternion(this.target.absoluteRotationQuaternion, Space.WORLD, this._tNode);
     this._updateLinkedTransformRotation(this._bone2, this.bone2Quat);
   }
 
