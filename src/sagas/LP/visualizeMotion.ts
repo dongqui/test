@@ -134,52 +134,52 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
       //console.log(contactData, animationIngredient);
 
-      // Hips Z level adjust
-      let hipsTrack: PlaskTrack;
-      let leftFootTrack: PlaskTrack;
-      let rightFootTrack: PlaskTrack;
-      animationIngredient.layers[0].tracks.forEach((elem) => {
-        if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
-          hipsTrack = elem;
-        }
+      // // Hips Z level adjust
+      // let hipsTrack: PlaskTrack;
+      // let leftFootTrack: PlaskTrack;
+      // let rightFootTrack: PlaskTrack;
+      // animationIngredient.layers[0].tracks.forEach((elem) => {
+      //   if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
+      //     hipsTrack = elem;
+      //   }
 
-        if (elem.name.match(/leftFoot/gi) && elem.property.match(/isContact/g)) {
-          leftFootTrack = elem;
-        }
+      //   if (elem.name.match(/leftFoot/gi) && elem.property.match(/isContact/g)) {
+      //     leftFootTrack = elem;
+      //   }
 
-        if (elem.name.match(/rightFoot/gi) && elem.property.match(/isContact/g)) {
-          rightFootTrack = elem;
-        }
-      });
+      //   if (elem.name.match(/rightFoot/gi) && elem.property.match(/isContact/g)) {
+      //     rightFootTrack = elem;
+      //   }
+      // });
 
-      let noContactPts: number = 0; // sum of no contact points to trying to evaluate Jumping
-      let lowPositionPts: number = 0; // sum of low position points trying to evaluate Sitting
-      for (let i = 0; i < hipsTrack!.transformKeys.length; i++) {
-        if (leftFootTrack!.transformKeys[i].value == 0 && rightFootTrack!.transformKeys[i].value == 0) noContactPts += 1;
-        else noContactPts = 0;
+      // let noContactPts: number = 0; // sum of no contact points to trying to evaluate Jumping
+      // let lowPositionPts: number = 0; // sum of low position points trying to evaluate Sitting
+      // for (let i = 0; i < hipsTrack!.transformKeys.length; i++) {
+      //   if (leftFootTrack!.transformKeys[i].value == 0 && rightFootTrack!.transformKeys[i].value == 0) noContactPts += 1;
+      //   else noContactPts = 0;
 
-        if (hipsTrack!.transformKeys[i + 1] && Math.abs(hipsTrack!.transformKeys[i].value._z * 0.9) > Math.abs(hipsTrack!.transformKeys[i + 1].value._z)) lowPositionPts += 1;
-        else lowPositionPts = 0;
+      //   if (hipsTrack!.transformKeys[i + 1] && Math.abs(hipsTrack!.transformKeys[i].value._z * 0.9) > Math.abs(hipsTrack!.transformKeys[i + 1].value._z)) lowPositionPts += 1;
+      //   else lowPositionPts = 0;
 
-        if (noContactPts > 0) {
-          hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / noContactPts);
-          console.log('Jump ', noContactPts, hipsTrack!.transformKeys[i].value._z);
-        } else if (lowPositionPts > 0) {
-          hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / lowPositionPts);
-          console.log('Sit ', lowPositionPts, hipsTrack!.transformKeys[i].value._z);
-        } else {
-          hipsTrack!.transformKeys[i].value._z = hipsZOriginal!;
-          console.log('Fixed ', hipsTrack!.transformKeys[i].value._z);
-        }
-      }
+      //   if (noContactPts > 0) {
+      //     hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / noContactPts);
+      //     console.log('Jump ', noContactPts, hipsTrack!.transformKeys[i].value._z);
+      //   } else if (lowPositionPts > 0) {
+      //     hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / lowPositionPts);
+      //     console.log('Sit ', lowPositionPts, hipsTrack!.transformKeys[i].value._z);
+      //   } else {
+      //     hipsTrack!.transformKeys[i].value._z = hipsZOriginal!;
+      //     console.log('Fixed ', hipsTrack!.transformKeys[i].value._z);
+      //   }
+      // }
 
-      // Animation End Index adjust
-      const payload = {
-        endTimeIndex: hipsTrack!.transformKeys.length,
-        currentTimeIndex: 0,
-      };
+      // // Animation End Index adjust
+      // const payload = {
+      //   endTimeIndex: hipsTrack!.transformKeys.length,
+      //   currentTimeIndex: 0,
+      // };
 
-      yield put(animatingControlsActions.blurEndInput(payload));
+      // yield put(animatingControlsActions.blurEndInput(payload));
 
       if (contactData.length) {
         console.log('Contact data detected, using inverse kinematics to lock the feet...');
@@ -189,20 +189,20 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
         yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
         // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
-        // for (const controller of plaskEngine.ikModule.ikControllers) {
-        //   if (controller.limb.includes('Foot')) {
-        //     plaskEngine.ikModule.setSelectedIk([controller]);
+        for (const controller of plaskEngine.ikModule.ikControllers) {
+          if (controller.limb.includes('Foot')) {
+            plaskEngine.ikModule.setSelectedIk([controller]);
 
-        //     const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
-        //     animationIngredient = bakeResult.animationIngredient || animationIngredient;
-        //     yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+            const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
+            animationIngredient = bakeResult.animationIngredient || animationIngredient;
+            yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
-        //     // Set FK position to newly updated values
-        //     plaskEngine.ikModule.setFKtoIK();
-        //   }
-        // }
+            // Set FK position to newly updated values
+            plaskEngine.ikModule.setFKtoIK();
+          }
+        }
         // Release IK Controllers
-        // yield call(removeIK, removeIKAction(asset.id));
+        yield call(removeIK, removeIKAction(asset.id));
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));

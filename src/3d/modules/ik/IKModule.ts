@@ -830,6 +830,9 @@ export class IKModule extends Module {
 
   public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
     let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+    if (!transformKeys.length) {
+      return;
+    }
     // Evaluate if Toe Base
     if (boneName.includes('Toe')) {
       targetAnimation = this.adjustToeBase(boneName, animationIngredient);
@@ -841,6 +844,7 @@ export class IKModule extends Module {
         console.warn('Foot locking not supported for ' + boneName);
         return null;
       }
+
       const targetLayerId = animationIngredient.layers[0].id;
 
       const targetLayer = animationIngredient.layers[0];
@@ -877,12 +881,14 @@ export class IKModule extends Module {
         animationGroup.goToFrame(frameIndex);
         ikController.fkInfluenceChain![0].computeWorldMatrix(true);
         return {
-          position: ikController.fkInfluenceChain![0].absolutePosition,
-          quaternion: ikController.fkInfluenceChain![0].absoluteRotationQuaternion,
+          position: ikController.fkInfluenceChain![0].absolutePosition.clone(),
+          quaternion: ikController.fkInfluenceChain![0].absoluteRotationQuaternion.clone(),
           poleAngle: 0,
         };
       };
-      const MAX_FRAMES_LOOKAHEAD = 5;
+      ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
+
+      const MAX_FRAMES_LOOKAHEAD = 6;
 
       for (let i = 0; i < transformKeys.length; i++) {
         const key = transformKeys[i];
@@ -907,14 +913,19 @@ export class IKModule extends Module {
 
         if (DIRECT_METHOD_FOOTLOCKING) {
           for (let j = 0; j < MAX_FRAMES_LOOKAHEAD; j++) {
-            if (totalFramesToContact === -1 && i + j < transformKeys.length && transformKeys[i + j].value === 1) {
+            if (totalFramesToContact === -1 && totalFramesFromNoContact === 0 && i + j < transformKeys.length && transformKeys[i + j].value === 1) {
               // We are not currently in contact, we are first looking for the next contact
               // The next contact is in j frames
               totalFramesToContact = j;
               currentFramesToContact = j;
+              if (j === 0) {
+                // If we are already out of contact, no ramp
+                totalFramesFromNoContact = -1;
+              }
               ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + j].frame));
+
               break;
-            } else if (totalFramesToContact === 0 && i + j < transformKeys.length && transformKeys[i + j].value === 0) {
+            } else if (totalFramesFromNoContact === -1 && totalFramesToContact === 0 && i + j < transformKeys.length && transformKeys[i + j].value === 0) {
               // We are currently in contact and we detected an end of contact in j frames
               totalFramesFromNoContact = j;
               currentFramesFromNoContact = j;
@@ -922,29 +933,28 @@ export class IKModule extends Module {
                 // If we are already out of contact, no ramp
                 totalFramesToContact = -1;
               }
-              ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + j].frame));
               break;
             }
           }
 
-          if (totalFramesToContact > 0) {
+          if (currentFramesToContact > 0) {
             // We are ramping up to a contact
             currentBlend = 1 - currentFramesToContact / totalFramesToContact;
+            currentFramesToContact--;
             if (currentFramesToContact === 0) {
               // We're done with this contact ramp
               totalFramesToContact = 0;
               totalFramesFromNoContact = -1;
             }
-            currentFramesToContact--;
-          } else if (totalFramesFromNoContact > 0) {
+          } else if (currentFramesFromNoContact > 0) {
             // We are ramping off from a contact
             currentBlend = currentFramesFromNoContact / totalFramesFromNoContact;
+            currentFramesFromNoContact--;
             if (currentFramesFromNoContact === 0) {
               // We're done with this off contact ramp
               totalFramesFromNoContact = 0;
               totalFramesToContact = -1;
             }
-            currentFramesFromNoContact--;
           } else if (totalFramesToContact === 0) {
             // We are in contact, set blend to flat 1
             currentBlend = 1;
