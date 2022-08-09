@@ -87,22 +87,20 @@ const ControlPanel = ({
   }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
-    popupManager.showEmergencyNotification();
-    // if (endValue - startValue >= 300) {
-    //   dispatch(
-    //     globalUIActions.openModal('_AlertModal', {
-    //       title: 'Import Failed',
-    //       message: 'Videos longer than 5 minutes are difficult to apply. Cut it within 5 minutes and try again.',
-    //     }),
-    //   );
-    // } else {
-    //   doneVMOnBoarding(4);
-    //   setValueFormData({
-    //     ...data,
-    //   });
-
-    // setIsOpenExtractModal(true);
-    // }
+    if (endValue - startValue >= 300) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          title: 'Import Failed',
+          message: 'Videos longer than 5 minutes are difficult to apply. Cut it within 5 minutes and try again.',
+        }),
+      );
+    } else {
+      doneVMOnBoarding(4);
+      setValueFormData({
+        ...data,
+      });
+      setIsOpenExtractModal(true);
+    }
   };
 
   const handleChangeName = useCallback(
