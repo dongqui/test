@@ -13,6 +13,7 @@ import { BaseInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Overlay } from 'components/Overlay';
 import ExtractForm from './ExtractForm';
+import popupManager from 'utils/PopupManager';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -87,21 +88,22 @@ const ControlPanel = ({
   }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
-    if (endValue - startValue >= 300) {
-      dispatch(
-        globalUIActions.openModal('_AlertModal', {
-          title: 'Import Failed',
-          message: 'Videos longer than 5 minutes are difficult to apply. Cut it within 5 minutes and try again.',
-        }),
-      );
-    } else {
-      doneVMOnBoarding(4);
-      setValueFormData({
-        ...data,
-      });
+    popupManager.showEmergencyNotification();
+    // if (endValue - startValue >= 300) {
+    //   dispatch(
+    //     globalUIActions.openModal('_AlertModal', {
+    //       title: 'Import Failed',
+    //       message: 'Videos longer than 5 minutes are difficult to apply. Cut it within 5 minutes and try again.',
+    //     }),
+    //   );
+    // } else {
+    //   doneVMOnBoarding(4);
+    //   setValueFormData({
+    //     ...data,
+    //   });
 
-      setIsOpenExtractModal(true);
-    }
+    // setIsOpenExtractModal(true);
+    // }
   };
 
   const handleChangeName = useCallback(

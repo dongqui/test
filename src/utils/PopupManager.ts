@@ -35,6 +35,8 @@ class PopupManager {
   }
 
   *proceedAnimationpagePopup() {
+    yield this.showEmergencyNotification();
+
     if (!this.isNewFeatureModalDone) {
       yield this.showNewFeatureModal();
     }
@@ -153,6 +155,25 @@ class PopupManager {
   closeOnboarding() {
     if (this.dispatch) {
       this.dispatch(commonActions.closeModal('onboarding'));
+    }
+  }
+
+  async showEmergencyNotification() {
+    if (this.dispatch) {
+      this.dispatch(
+        commonActions.openModal('EmergencyModal', {
+          message: `<p>
+          Our motion capture server is down due to technical difficulties.
+          <br />
+          You can only use the animation editing feature at the moment. <br />
+          Sorry for the inconvenience.
+        </p>`,
+          title: 'Emergency Notice',
+          closeCallback: () => {
+            this.next();
+          },
+        }),
+      );
     }
   }
 }

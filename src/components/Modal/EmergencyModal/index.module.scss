@@ -1,0 +1,50 @@
+@import "styles/libraries/colors";
+@import "styles/libraries/typography";
+
+.container {
+  width: 64rem;
+  background-color: var(--grey010);
+  border-radius: 10px;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 6.4rem;
+  padding: 2rem;
+
+  h3 {
+    font: $modal-title;
+    color: $content-high;
+  }
+
+  svg {
+    // temporal code - we should handle this IconButton componen
+    padding-top: 4px;
+  }
+}
+
+.body {
+  width: 640px;
+  height: 360px;
+  background-color: $bg-elevated;
+  padding: 40px;
+  text-align: center;
+  img {
+    margin: 0 auto;
+  }
+  p {
+    color: $content-active;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 150%;
+  }
+}
+
+.footer {
+  padding: 1.6rem 2rem;  
+  display: flex;
+  justify-content: end;
+}
