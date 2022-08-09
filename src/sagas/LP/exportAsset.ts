@@ -23,7 +23,8 @@ async function getAllAnimationIngredients(animationIngredients: AnimationIngredi
         const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
         const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
 
-        return plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+        const { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+        return animationIngredient;
       }
     }),
   );

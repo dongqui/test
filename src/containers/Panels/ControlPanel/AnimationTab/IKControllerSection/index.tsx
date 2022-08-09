@@ -1,30 +1,29 @@
-import { ChangeEvent, Dispatch, FocusEvent, Fragment, FunctionComponent, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { isNull } from 'lodash';
-import { put } from 'redux-saga/effects';
 
 import { StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
-import AnimationInputWrapper from '../AnimationInputWrapper';
-import { Nullable, PlaskRetargetMap, PlaskTrack, PlaskLayer, AnimationIngredient } from 'types/common';
-import { forceClickAnimationPauseAndPlay } from 'utils/common';
-
+import { PlaskRetargetMap, AnimationIngredient } from 'types/common';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import plaskEngine from '3d/PlaskEngine';
 import * as globalUIActions from 'actions/Common/globalUI';
 import { PlaskCard } from 'components/ControlPanel/Card';
-
-import classNames from 'classnames/bind';
-import styles from './index.module.scss';
 import { editAnimationIngredient } from 'actions/animationDataAction';
 import { changeSelectedTargets } from 'actions/trackList';
 import { readMetadata } from 'utils/RP/metadata';
-import { addEntity, addSelectableObjects, defaultMultiSelect, removeEntity, removeSelectableObjects } from 'actions/selectingDataAction';
+import { defaultMultiSelect } from 'actions/selectingDataAction';
 import { IKController } from '3d/modules/ik/IKController';
 import { Tools } from '@babylonjs/core';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { removeIK } from 'sagas/RP/ik/removeIK';
 import { Typography } from 'components/Typography';
+import { IK_CONTROLLER_EL_ID } from 'constants/';
+import popupManager from 'utils/PopupManager';
+
+import classNames from 'classnames/bind';
+import styles from './index.module.scss';
+
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -113,6 +112,13 @@ const IKControllerSection: FunctionComponent<Props> = ({
       };
     }
   }, [targetIKControllers]);
+
+  useEffect(() => {
+    popupManager.showIKOnboarding();
+    return () => {
+      popupManager.closeOnboarding();
+    };
+  }, []);
 
   const IKControllerData = [
     {
@@ -300,6 +306,10 @@ const IKControllerSection: FunctionComponent<Props> = ({
   const handleSetupIK = useCallback(() => {
     const assetId = _visualizedAssetIds[0];
     dispatch(addIKAction(assetId));
+
+    if (!popupManager.isIKOnboardingDone) {
+      popupManager.doneIKOnboarding();
+    }
   }, [dispatch, _visualizedAssetIds]);
 
   const dropdownOptions = {
@@ -348,6 +358,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
       type="dropdown"
       dropdownOptions={dropdownOptions}
       activeStatus={isAllActive}
+      id={IK_CONTROLLER_EL_ID}
     >
       {plaskEngine.ikModule.ikControllers.length > 0 ? (
         <div className={cx('wrapper')}>
