@@ -27,9 +27,8 @@ import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMa
 import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 import produce, { castDraft } from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
-import { SkeletonViewer } from '@babylonjs/core';
-import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
-import { IK_SKELETON_VIEWER_OPTION } from '../../../utils/const';
+import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
+import { IK_SKELETON_VIEWER_OPTION } from 'utils/const';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -57,7 +56,7 @@ export class IKModule extends Module {
   };
 
   // TODO Could seperate code
-  private _ikSkeletonViewer: Nullable<SkeletonViewer> = null;
+  private _ikSkeletonViewer: Nullable<PlaskSkeletonViewer> = null;
   public get ikSkeletonViewer() {
     return this._ikSkeletonViewer;
   }
@@ -198,6 +197,9 @@ export class IKModule extends Module {
     if (this._ikSkeletonViewer) {
       this._ikSkeletonViewer.dispose();
     }
+
+    // Make FK Asset visible
+    this.plaskEngine.assetModule.setVisibility(1);
     this._enabled = false;
     return ptns;
   }
@@ -410,7 +412,14 @@ export class IKModule extends Module {
    */
   public setIKControllerBlend(value: number = 0, controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
+    const target = ['leftHand', 'rightHand', 'leftFoot', 'rightFoot'];
+
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
+      target.map((t) => {
+        if (selectedIK.target.id.includes(t)) {
+          this._ikSkeletonViewer?.blendLimb(t, value);
+        }
+      });
       selectedIK.blend = value;
     });
   }
@@ -837,7 +846,7 @@ export class IKModule extends Module {
     if (this._ikSkeletonViewer) {
       this._ikSkeletonViewer.dispose();
     }
-    const skeletonViewer = new SkeletonViewer(this._result.skeleton, this._resultMeshes[0], scene, true, this._resultMeshes[0].renderingGroupId, IK_SKELETON_VIEWER_OPTION);
+    const skeletonViewer = new PlaskSkeletonViewer(this._result.skeleton, this._resultMeshes[0], scene, false, this._resultMeshes[0].renderingGroupId, IK_SKELETON_VIEWER_OPTION);
     this._ikSkeletonViewer = skeletonViewer;
 
     this._addPickBehavior();
