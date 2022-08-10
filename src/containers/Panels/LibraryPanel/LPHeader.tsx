@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback } from 'react';
+import { FunctionComponent, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import * as globalUIActions from 'actions/Common/globalUI';
@@ -17,6 +17,10 @@ interface Props {
 
 const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: true }));
+  }, []);
 
   // file import 버튼 클릭
   const handleFileImportButtonClick = useCallback(() => {
