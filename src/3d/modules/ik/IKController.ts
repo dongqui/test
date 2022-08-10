@@ -98,13 +98,13 @@ export class IKController {
    * The pole angle
    */
   public set poleAngle(value: number) {
-    this.controller.poleAngle = value;
+    this.ikController.poleAngle = value;
     this.resultController.poleAngle = value;
     this.onPoleAngleUpdatedObservable.notifyObservers();
   }
 
   public get poleAngle() {
-    return this.controller.poleAngle;
+    return this.ikController.poleAngle;
   }
 
   /**
@@ -115,9 +115,9 @@ export class IKController {
   /**
    * IK controller for IK target (where the handle stands)
    */
-  public controller: BoneIk;
+  public ikController: BoneIk;
   /**
-   * IK controller for user defined target (where the handle stands)
+   * IK controller for user defined Result target (where the handle stands)
    */
   public resultController: BoneIk;
   /**
@@ -138,10 +138,6 @@ export class IKController {
    * All transformNodes influenced by the IK controller for FK
    */
   public fkInfluenceChain?: [TransformNode, TransformNode, TransformNode];
-  /**
-   * All transformNodes influenced by the IK controller for Result
-   */
-  public resultInfluenceChain?: [TransformNode, TransformNode, TransformNode];
 
   /**
    * Should the IK controller be locked to the FK position
@@ -176,8 +172,8 @@ export class IKController {
       this.fkInfluenceChain![i].computeWorldMatrix(true);
     }
     this.poleAngle = 0;
-    this.controller.target.computeWorldMatrix(true);
-    this.controller.update();
+    this.ikController.target.computeWorldMatrix(true);
+    this.ikController.update();
     for (let i = 0; i < this.targetInfluenceChain.length; i++) {
       this.targetInfluenceChain![i].computeWorldMatrix(true);
     }
@@ -208,34 +204,34 @@ export class IKController {
     this.poleAngle = angle;
 
     // const rotMatFK = this.fkInfluenceChain[2].getWorldMatrix().getRotationMatrix();
-    // const rotMatIK = this.controller.getRotationMatrix();
+    // const rotMatIK = this.ikController.getRotationMatrix();
 
     // const poleRotationMatrix = rotMatIK.clone().invert().multiply(rotMatFK);
     // const q = Quaternion.FromRotationMatrix(poleRotationMatrix);
     // const angle = 2 * Math.acos(Scalar.Clamp(q.w, -1, 1));
     // const axis = TmpVectors.Vector3[0].set(q.x, q.y, q.z);
-    // const toTarget = this.controller.target.absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition);
+    // const toTarget = this.ikController.target.absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition);
     // this.poleAngle = angle * Math.sign(Vector3.Dot(toTarget, axis));
   }
 
   public update() {
     // Blend only if we have a FK target
-    if (this.fkInfluenceChain && this.resultInfluenceChain) {
+    if (this.fkInfluenceChain) {
       if (this.lockToFk) {
         this.handle.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
       }
-      this.controller.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
-      this.controller.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
-      this.controller.bone2Quat = this.fkInfluenceChain[0].rotationQuaternion!;
+      this.ikController.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
+      this.ikController.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
+      this.ikController.bone2Quat = this.fkInfluenceChain[0].rotationQuaternion!;
 
       this.resultController.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
       this.resultController.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
       this.resultController.bone2Quat = this.fkInfluenceChain[0].rotationQuaternion!;
       this.resultController.blend = this.blend;
-      this.controller.blend = 1;
+      this.ikController.blend = 1;
     }
 
-    this.controller.update();
+    this.ikController.update();
     this.resultController.update();
   }
 
@@ -252,7 +248,7 @@ export class IKController {
     this.handle.rotationQuaternion?.copyFrom(ikRotationQuaternion);
     this.poleAngle = poleAngle;
     this.target.computeWorldMatrix(true);
-    this.controller.update();
+    this.ikController.update();
     this.resultController.update();
   }
 
@@ -343,21 +339,9 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
-    // IK controllers for FK (for blending)
-    if (params.resultBone && params.resultTransformNode && params.resultBody) {
-      const tnIk = params.resultTransformNode;
-      const tn1Ik = tnIk?.parent as TransformNode;
-      const tn2Ik = tn1Ik?.parent as TransformNode;
 
-      if (!tnIk || !tn1Ik || !tn2Ik || !((params.resultBone as any)._parent as Bone)) {
-        throw new Error("Couldn't initialize RESULT : the transform node chain is broken.");
-      }
-
-      this.resultInfluenceChain = [tnIk, tn1Ik, tn2Ik];
-    }
-
-    this.controller = new BoneIk(params.ikBody, params.ikBone, this.target, defaultUpVector);
-    this.controller.initializeFromPose();
+    this.ikController = new BoneIk(params.ikBody, params.ikBone, this.target, defaultUpVector);
+    this.ikController.initializeFromPose();
 
     this.resultController = new BoneIk(params.resultBody, params.resultBone, this.target, defaultUpVector);
     this.resultController.initializeFromPose();

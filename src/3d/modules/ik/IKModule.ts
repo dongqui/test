@@ -16,6 +16,7 @@ import {
   Space,
   Scene,
   Quaternion,
+  InstantiatedEntries,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
@@ -196,7 +197,6 @@ export class IKModule extends Module {
       ptns.push(controller.handle.getPlaskEntity());
       controller.dispose();
     }
-
     this.ikControllers.length = 0;
     this._fkControlledJoints.length = 0;
     this._fkPoseJoints.length = 0;
@@ -743,95 +743,9 @@ export class IKModule extends Module {
     container.transformNodes = asset.transformNodes;
 
     const resultClone = container.instantiateModelsToScene((name: string) => `result_${name}`);
+    this._initializeClone(scene, resultClone, 'result');
     const ikClone = container.instantiateModelsToScene((name: string) => `ik_${name}`);
-    const _resultTraverse = (node: TransformNode) => {
-      // Find the root node
-      if (node.name === 'result___root__') {
-        this._result.rootMesh = node as Mesh;
-      }
-
-      // Remove any skeletonViewer
-      if (node.name.startsWith('result_skeletonViewer')) {
-        node.dispose();
-        return;
-      }
-
-      // Copy the current transform of cloned skeleton nodes
-      // ! Hard coded length of prefix
-      // TODO : we need a better way to retrieve the origin transform node
-      const originNodeName = node.name.substring(6);
-      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
-      if (originTransform) {
-        copyTransformFrom(originTransform, node);
-        node.id = `__plask_result_${originTransform.id}`;
-      } else {
-        console.warn('Could not find origin transform, result may have wrong posture ' + originNodeName);
-      }
-
-      // List all meshes
-      if (node.getClassName() === 'Mesh') {
-        this._resultMeshes.push(node as Mesh);
-      }
-
-      for (const child of node.getChildren()) {
-        _resultTraverse(child as TransformNode);
-      }
-    };
-    for (const rootNode of resultClone.rootNodes) {
-      _resultTraverse(rootNode);
-    }
-
-    const _ikTraverse = (node: TransformNode) => {
-      // Find the root node
-      if (node.name === 'ik___root__') {
-        this._ik.rootMesh = node as Mesh;
-      }
-
-      // Remove any skeletonViewer
-      if (node.name.startsWith('ik_skeletonViewer')) {
-        node.dispose();
-        return;
-      }
-
-      // Copy the current transform of cloned skeleton nodes
-      // ! Hard coded length of prefix
-      // TODO : we need a better way to retrieve the origin transform node
-      const originNodeName = node.name.substring(6);
-      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
-      if (originTransform) {
-        copyTransformFrom(originTransform, node);
-        node.id = `__plask_ik_${originTransform.id}`;
-      } else {
-        console.warn('Could not find origin transform, ik may have wrong posture ' + originNodeName);
-      }
-
-      // List all meshes
-      if (node.getClassName() === 'Mesh') {
-        this._ikMeshes.push(node as Mesh);
-      }
-
-      for (const child of node.getChildren()) {
-        _ikTraverse(child as TransformNode);
-      }
-    };
-    for (const rootNode of ikClone.rootNodes) {
-      _ikTraverse(rootNode);
-    }
-
-    this._result.skeleton = resultClone.skeletons[0];
-    this._ik.skeleton = ikClone.skeletons[0];
-
-    const resultBones = this._result.skeleton.bones;
-    resultClone.skeletons[0].id = '__plask_result_skeleton';
-    resultBones.forEach((bone) => {
-      bone.id = '__plask_result_' + bone.id;
-    });
-
-    const ikBones = this._ik.skeleton.bones;
-    ikClone.skeletons[0].id = '__plask_ik_skeleton';
-    ikBones.forEach((bone) => {
-      bone.id = '__plask_ik_' + bone.id;
-    });
+    this._initializeClone(scene, ikClone, 'ik');
 
     this.forceUpdateResultSkeleton();
 
@@ -841,8 +755,9 @@ export class IKModule extends Module {
 
     // Make FK Asset invisible
     this.plaskEngine.assetModule.setVisibility(0);
-    this.setVisibility(0, 'ik');
+
     // Make Result Asset visible
+    this.setVisibility(0, 'ik');
     this.setVisibility(1, 'result');
 
     // TODO : retrieve skeleton and body more cleanly
@@ -929,8 +844,80 @@ export class IKModule extends Module {
 
     this._addPickBehavior();
   }
+  // TODO
+  private _initializeClone(scene: Scene, clone: InstantiatedEntries, type: 'ik' | 'result') {
+    const _cloneTraverse = (node: TransformNode, type: 'ik' | 'result') => {
+      // Find the root node
+      if (node.name === `${type}___root__`) {
+        switch (type) {
+          case 'ik':
+            this._ik.rootMesh = node as Mesh;
+            break;
 
-  private _initializeClone(type: 'ik' | 'result') {}
+          case 'result':
+            this._result.rootMesh = node as Mesh;
+            break;
+        }
+      }
+
+      // Remove any skeletonViewer
+      if (node.name.startsWith(`${type}_skeletonViewer`)) {
+        node.dispose();
+        return;
+      }
+
+      // Copy the current transform of cloned skeleton nodes
+      // ! Hard coded length of prefix
+      // TODO : we need a better way to retrieve the origin transform node
+      const originNodeName = node.name.substring(6);
+      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
+      if (originTransform) {
+        copyTransformFrom(originTransform, node);
+        node.id = `__plask_${type}_${originTransform.id}`;
+      } else {
+        console.warn('Could not find origin transform, result may have wrong posture ' + originNodeName);
+      }
+
+      // List all meshes
+      if (node.getClassName() === 'Mesh') {
+        switch (type) {
+          case 'ik':
+            this._ikMeshes.push(node as Mesh);
+            break;
+
+          case 'result':
+            this._resultMeshes.push(node as Mesh);
+            break;
+        }
+      }
+
+      for (const child of node.getChildren()) {
+        _cloneTraverse(child as TransformNode, type);
+      }
+    };
+    for (const rootNode of clone.rootNodes) {
+      _cloneTraverse(rootNode, type);
+    }
+
+    switch (type) {
+      case 'ik':
+        this._ik.skeleton = clone.skeletons[0];
+        const ikBones = this._ik.skeleton.bones;
+        clone.skeletons[0].id = '__plask_ik_skeleton';
+        ikBones.forEach((bone) => {
+          bone.id = '__plask_ik_' + bone.id;
+        });
+        break;
+      case 'result':
+        this._result.skeleton = clone.skeletons[0];
+        const resultBones = this._result.skeleton.bones;
+        clone.skeletons[0].id = '__plask_result_skeleton';
+        resultBones.forEach((bone) => {
+          bone.id = '__plask_result_' + bone.id;
+        });
+        break;
+    }
+  }
 
   public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
     // Create/find an IK controller for this bone
