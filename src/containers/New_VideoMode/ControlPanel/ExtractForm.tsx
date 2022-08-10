@@ -1,11 +1,16 @@
 import { FocusEvent, Fragment, useCallback, useEffect, useState } from 'react';
+
 import { Typography } from 'components/Typography';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
 import { BaseField } from 'components/Form';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 import classNames from 'classnames/bind';
 import styles from './ExtractForm.module.scss';
+import { user } from 'reducers/User';
 
 const cx = classNames.bind(styles);
 
@@ -35,6 +40,8 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
   const [trackingTooltip, setTrackingTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
+  const userState = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (isMulti && FOOT_LOCK_AVAILABLE) {
@@ -44,6 +51,17 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
 
   const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
 
+  function handleChangeMultiSwitch(value: string | boolean) {
+    if (userState.planName) {
+      dispatch(
+        globalUIActions.openModal('ProFeaturesModal', {
+          hadFreeTrial: userState.hadFreeTrial,
+        }),
+      );
+    }
+    doneVMOnBoarding(3);
+    setIsMulti(selectOption.find((option) => option.key === value)!.value);
+  }
   return (
     <Fragment>
       <div className={cx('section-item')}>
@@ -58,10 +76,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
           )}
         </div>
         <BaseField<Field.SwitchProps, string>
-          onChange={(value) => {
-            doneVMOnBoarding(3);
-            setIsMulti(selectOption.find((option) => option.key === value)!.value);
-          }}
+          onChange={handleChangeMultiSwitch}
           className={cx('switch')}
           options={selectOption}
           control={fieldProps.control}
