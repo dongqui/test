@@ -49,10 +49,8 @@ const ConfirmModal: FunctionComponent<Props> = ({
           <Html content={message} />
         </div>
         <div className={cx('buttons')}>
-          <OutlineButton onClick={onClickCancel} fullSize>
-            {cancelText}
-          </OutlineButton>
-          <FilledButton onClick={onClickConfirm} buttonType={confirmButtonColor} fullSize dataCy="modal-confirm">
+          <OutlineButton onClick={onClickCancel}>{cancelText}</OutlineButton>
+          <FilledButton onClick={onClickConfirm} buttonType={confirmButtonColor} dataCy="modal-confirm">
             {confirmText}
           </FilledButton>
         </div>

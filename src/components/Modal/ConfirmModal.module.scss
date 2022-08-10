@@ -1,6 +1,19 @@
 @import "./common.scss";
+@import "styles/libraries/_typography";
+@import "styles/libraries/_colors";
 
 .buttons {
   display: flex;
   gap: 6px;
+  justify-content: flex-end;
+}
+
+.content {
+  font: $modal-body;
+  color: $content-medium;
+  line-height: 2.1rem;
+}
+
+.inner {
+  width: 34rem;
 }

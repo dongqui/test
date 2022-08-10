@@ -266,7 +266,7 @@ export type SelectingData = {
   allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
-export type ButtonColor = 'default' | 'primary' | 'negative' | 'temp-purple';
+export type ButtonColor = 'default' | 'primary' | 'negative' | 'temp-purple' | 'temp-purple-2';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
 
@@ -310,6 +310,7 @@ export type UserResponse = {
   isMarketingChecked: boolean;
   isPrivacyChecked: boolean;
   isDeleted: boolean;
+  hadFreeTrial: boolean;
 };
 
 export type UserUsageInfoReponse = {
