@@ -8,7 +8,12 @@ import * as api from 'api';
 function* handleGetUser() {
   try {
     const user: UserResponse = yield call(api.getUser);
-    yield put(userActions.getUserAsync.success(user.name));
+    yield put(
+      userActions.getUserAsync.success({
+        name: user.name,
+        hadFreeTrial: user.hadFreeTrial,
+      }),
+    );
   } catch (e) {}
 }
 

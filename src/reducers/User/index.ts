@@ -4,6 +4,7 @@ import * as userActions from 'actions/User';
 
 interface State {
   name: string;
+  hadFreeTrial: boolean;
   planName: string;
   credits: {
     remaining: number;
@@ -20,13 +21,15 @@ const defaultState: State = {
   planName: '',
   credits: null,
   storage: null,
+  hadFreeTrial: false,
 };
 
 export const user = (state = defaultState, action: ActionType<typeof userActions>) => {
   switch (action.type) {
     case getType(userActions.getUserAsync.success): {
       return Object.assign({}, state, {
-        name: action.payload,
+        name: action.payload.name,
+        hadFreeTrial: action.payload.hadFreeTrial,
       });
     }
     case getType(userActions.getUserUsagaInfoAsync.success): {
@@ -36,6 +39,7 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
         storage: action.payload.storage,
       });
     }
+
     default: {
       return state;
     }
