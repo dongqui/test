@@ -28,6 +28,10 @@ export const IK_SKELETON_VIEWER_OPTION = {
   },
 };
 
+export const RESULT_SKELETON_VIEWER_OPTION = {
+  displayMode: PlaskSkeletonViewer.DISPLAY_SPURS,
+};
+
 //////////////////// new ////////////////////
 
 // default values for filterFunction params(beta, minCutoff)

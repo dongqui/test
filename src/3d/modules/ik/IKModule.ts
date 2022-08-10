@@ -28,7 +28,7 @@ import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 import produce, { castDraft } from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
-import { IK_SKELETON_VIEWER_OPTION } from 'utils/const';
+import { IK_SKELETON_VIEWER_OPTION, RESULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -50,7 +50,12 @@ export class IKModule extends Module {
   private _fkPoseJoints: TransformNode[] = [];
   private _selectedIkControllers: Array<IKController> = [];
   private _resultMeshes: Mesh[] = [];
+  private _ikMeshes: Mesh[] = [];
   private _result = {
+    skeleton: null as Nullable<Skeleton>,
+    rootMesh: null as Nullable<Mesh>,
+  };
+  private _ik = {
     skeleton: null as Nullable<Skeleton>,
     rootMesh: null as Nullable<Mesh>,
   };
@@ -66,7 +71,7 @@ export class IKModule extends Module {
     return this._enabled;
   }
 
-  public forceUpdateGhostSkeleton() {
+  public forceUpdateResultSkeleton() {
     if (this._result.skeleton) {
       for (const bone of this._result.skeleton.bones) {
         bone.setAbsolutePosition(bone.getTransformNode()!.absolutePosition);
@@ -107,10 +112,10 @@ export class IKModule extends Module {
     }
     // Copy FK position for IK result, only for joints
     // that are not forced by IK
-    this._updateIKGhost();
+    this._updateIKResult();
   }
 
-  private _updateIKGhost() {
+  private _updateIKResult() {
     for (const { ikNode, fkNode } of this._fkControlledJoints) {
       copyTransformFrom(ikNode, fkNode);
     }
@@ -177,14 +182,21 @@ export class IKModule extends Module {
   public removeIK() {
     this._result.skeleton?.dispose();
     this._result.rootMesh?.dispose();
+
     this._result.skeleton = null;
     this._result.rootMesh = null;
+
+    this._ik.skeleton?.dispose();
+    this._ik.rootMesh?.dispose();
+    this._ik.skeleton = null;
+    this._ik.rootMesh = null;
 
     const ptns = [];
     for (const controller of this.ikControllers) {
       ptns.push(controller.handle.getPlaskEntity());
       controller.dispose();
     }
+
     this.ikControllers.length = 0;
     this._fkControlledJoints.length = 0;
     this._fkPoseJoints.length = 0;
@@ -193,6 +205,11 @@ export class IKModule extends Module {
       mesh.dispose();
     }
     this._resultMeshes.length = 0;
+
+    for (const mesh of this._ikMeshes) {
+      mesh.dispose();
+    }
+    this._ikMeshes.length = 0;
 
     if (this._ikSkeletonViewer) {
       this._ikSkeletonViewer.dispose();
@@ -496,7 +513,7 @@ export class IKModule extends Module {
         animationGroupTemp.goToFrame(i);
 
         // We need to update the ik result positions (used in ik controller calculations), from the FK animation
-        this._updateIKGhost();
+        this._updateIKResult();
 
         // And not to forget the normally ik-driven bones that also need to be copied
         for (let j = 0; j < 3; j++) {
@@ -518,7 +535,7 @@ export class IKModule extends Module {
 
         // Bones are not synced with transform nodes - its the other way around
         // Our method require bones to get transforms from transform nodes, so the right positions are used for the ik calculations down the line
-        this.forceUpdateGhostSkeleton();
+        this.forceUpdateResultSkeleton();
         ikController.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, rotationQuaternionValue, blendValue, poleAngleValue);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
@@ -676,8 +693,8 @@ export class IKModule extends Module {
         }
 
         animationGroupTemp.goToFrame(i);
-        this._updateIKGhost();
-        this.forceUpdateGhostSkeleton();
+        this._updateIKResult();
+        this.forceUpdateResultSkeleton();
 
         this.setIKtoFK([ikController]);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(ikController))!;
@@ -692,9 +709,18 @@ export class IKModule extends Module {
    * Sets the visibility of the current asset
    * @param value
    */
-  public setVisibility(value: number) {
-    for (const mesh of this._resultMeshes) {
-      mesh.visibility = value;
+  public setVisibility(value: number, target: 'result' | 'ik') {
+    switch (target) {
+      case 'ik':
+        for (const mesh of this._ikMeshes) {
+          mesh.visibility = 0;
+        }
+        break;
+      case 'result':
+        for (const mesh of this._resultMeshes) {
+          mesh.visibility = value;
+        }
+        break;
     }
   }
 
@@ -716,8 +742,9 @@ export class IKModule extends Module {
     container.skeletons[0].bones = asset.bones;
     container.transformNodes = asset.transformNodes;
 
-    const clone = container.instantiateModelsToScene((name: string) => `result_${name}`);
-    const _traverse = (node: TransformNode) => {
+    const resultClone = container.instantiateModelsToScene((name: string) => `result_${name}`);
+    const ikClone = container.instantiateModelsToScene((name: string) => `ik_${name}`);
+    const _resultTraverse = (node: TransformNode) => {
       // Find the root node
       if (node.name === 'result___root__') {
         this._result.rootMesh = node as Mesh;
@@ -747,30 +774,76 @@ export class IKModule extends Module {
       }
 
       for (const child of node.getChildren()) {
-        _traverse(child as TransformNode);
+        _resultTraverse(child as TransformNode);
       }
     };
-    for (const rootNode of clone.rootNodes) {
-      _traverse(rootNode);
+    for (const rootNode of resultClone.rootNodes) {
+      _resultTraverse(rootNode);
     }
 
-    this._result.skeleton = clone.skeletons[0];
-    const bones = this._result.skeleton.bones;
-    clone.skeletons[0].id = '__plask_result_skeleton';
-    bones.forEach((bone) => {
+    const _ikTraverse = (node: TransformNode) => {
+      // Find the root node
+      if (node.name === 'ik___root__') {
+        this._ik.rootMesh = node as Mesh;
+      }
+
+      // Remove any skeletonViewer
+      if (node.name.startsWith('ik_skeletonViewer')) {
+        node.dispose();
+        return;
+      }
+
+      // Copy the current transform of cloned skeleton nodes
+      // ! Hard coded length of prefix
+      // TODO : we need a better way to retrieve the origin transform node
+      const originNodeName = node.name.substring(6);
+      const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
+      if (originTransform) {
+        copyTransformFrom(originTransform, node);
+        node.id = `__plask_ik_${originTransform.id}`;
+      } else {
+        console.warn('Could not find origin transform, ik may have wrong posture ' + originNodeName);
+      }
+
+      // List all meshes
+      if (node.getClassName() === 'Mesh') {
+        this._ikMeshes.push(node as Mesh);
+      }
+
+      for (const child of node.getChildren()) {
+        _ikTraverse(child as TransformNode);
+      }
+    };
+    for (const rootNode of ikClone.rootNodes) {
+      _ikTraverse(rootNode);
+    }
+
+    this._result.skeleton = resultClone.skeletons[0];
+    this._ik.skeleton = ikClone.skeletons[0];
+
+    const resultBones = this._result.skeleton.bones;
+    resultClone.skeletons[0].id = '__plask_result_skeleton';
+    resultBones.forEach((bone) => {
       bone.id = '__plask_result_' + bone.id;
     });
 
-    this.forceUpdateGhostSkeleton();
+    const ikBones = this._ik.skeleton.bones;
+    ikClone.skeletons[0].id = '__plask_ik_skeleton';
+    ikBones.forEach((bone) => {
+      bone.id = '__plask_ik_' + bone.id;
+    });
 
-    if (!this._result.rootMesh || !this._result.skeleton) {
+    this.forceUpdateResultSkeleton();
+
+    if (!this._result.rootMesh || !this._result.skeleton || !this._ik.skeleton || !this._ik.rootMesh) {
       throw new Error('Cloning error while creating IK controllers');
     }
 
     // Make FK Asset invisible
     this.plaskEngine.assetModule.setVisibility(0);
+    this.setVisibility(0, 'ik');
     // Make Result Asset visible
-    this.setVisibility(1);
+    this.setVisibility(1, 'result');
 
     // TODO : retrieve skeleton and body more cleanly
     const body = scene.getMeshByName('__root__') as Mesh; // store body mesh
@@ -811,12 +884,16 @@ export class IKModule extends Module {
         return;
       }
 
-      const ikBone = this._result.skeleton!.bones[skeleton.bones.indexOf(bone)];
+      const ikBone = this._ik.skeleton!.bones[skeleton.bones.indexOf(bone)];
+      const resultBone = this._result.skeleton!.bones[skeleton.bones.indexOf(bone)];
       const ikController = new IKController(
         {
-          body: this._result.rootMesh!,
-          bone: ikBone,
-          transformNode: ikBone.getTransformNode()!,
+          resultBody: this._result.rootMesh!,
+          resultBone: resultBone,
+          resultTransformNode: resultBone.getTransformNode()!,
+          ikBone: ikBone,
+          ikBody: this._ik.rootMesh!,
+          ikTransformNode: ikBone.getTransformNode()!,
           fkBody: body,
           fkBone: bone,
           fkTransformNode: transformNode,
@@ -830,10 +907,10 @@ export class IKModule extends Module {
       ikDrivenTransformNodes = ikDrivenTransformNodes.concat(ikController.fkInfluenceChain!);
     });
 
-    clone.rootNodes.forEach((node: TransformNode) => {
+    ikClone.rootNodes.forEach((node: TransformNode) => {
       const allNodes = [node].concat(node.getDescendants());
       for (const node of allNodes) {
-        const fkNode = scene.getNodeByName(node.name.substring(7)) as TransformNode;
+        const fkNode = scene.getNodeByName(node.name.substring(3)) as TransformNode;
         if (!fkNode) {
           throw new Error('Cloning error.');
         }
@@ -846,11 +923,14 @@ export class IKModule extends Module {
     if (this._ikSkeletonViewer) {
       this._ikSkeletonViewer.dispose();
     }
-    const skeletonViewer = new PlaskSkeletonViewer(this._result.skeleton, this._resultMeshes[0], scene, false, this._resultMeshes[0].renderingGroupId, IK_SKELETON_VIEWER_OPTION);
-    this._ikSkeletonViewer = skeletonViewer;
+
+    const ikSkeletonViewer = new PlaskSkeletonViewer(this._ik.skeleton, this._ikMeshes[0], scene, false, this._ikMeshes[0].renderingGroupId, IK_SKELETON_VIEWER_OPTION);
+    this._ikSkeletonViewer = ikSkeletonViewer;
 
     this._addPickBehavior();
   }
+
+  private _initializeClone(type: 'ik' | 'result') {}
 
   public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
     // Create/find an IK controller for this bone

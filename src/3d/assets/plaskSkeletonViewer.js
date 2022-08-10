@@ -295,6 +295,18 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     enumerable: false,
     configurable: true,
   });
+  Object.defineProperty(PlaskSkeletonViewer.prototype, '_debugSpurs', {
+    /** Gets the debugSpurs */
+    get: function () {
+      return this._debugSpurs;
+    },
+    /** Sets the debugSpurs */
+    set: function (value) {
+      this._debugSpurs = value;
+    },
+    enumerable: false,
+    configurable: true,
+  });
   Object.defineProperty(PlaskSkeletonViewer.prototype, 'displayMode', {
     /** Gets the displayMode */
     get: function () {
@@ -554,6 +566,10 @@ var PlaskSkeletonViewer = /** @class */ (function () {
           spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
           spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
           spur.convertToFlatShadedMesh();
+
+          const material = new StandardMaterial(this_1._scene);
+          material.diffuseColor = new Color3(0, 1, 1);
+          spur.material = material;
           spurs.push(spur);
         });
         if (spursOnly) return;
@@ -600,17 +616,13 @@ var PlaskSkeletonViewer = /** @class */ (function () {
         sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));
         meshes.push(sphere);
       }
-      this.debugMesh = Mesh.MergeMeshes(meshes.concat(spurs), true, true);
-      if (this.debugMesh) {
-        this.debugMesh.renderingGroupId = this.renderingGroupId;
-        this.debugMesh.skeleton = this.skeleton;
-        this.debugMesh.parent = this.mesh;
-        this.debugMesh.computeBonesUsingShaders = (_c = this.options.computeBonesUsingShaders) !== null && _c !== void 0 ? _c : true;
-        // this.debugMesh.alwaysSelectAsActiveMesh = true;
-
-        const material = new StandardMaterial(this_1._scene);
-        material.diffuseColor = new Color3(1, 1, 1);
-        this.debugMesh.material = material;
+      this._debugMesh = Mesh.MergeMeshes(meshes.concat(spurs), true, true, undefined, undefined, true);
+      if (this._debugMesh) {
+        this._debugMesh.renderingGroupId = this.renderingGroupId;
+        this._debugMesh.skeleton = this.skeleton;
+        this._debugMesh.parent = this.mesh._effectiveMesh;
+        this._debugMesh.computeBonesUsingShaders = (_c = this.options.computeBonesUsingShaders) !== null && _c !== void 0 ? _c : true;
+        this._debugMesh.alwaysSelectAsActiveMesh = false;
       }
       var light = this.utilityLayer._getSharedGizmoLight();
       light.intensity = 0.7;
@@ -627,7 +639,7 @@ var PlaskSkeletonViewer = /** @class */ (function () {
    * @param limb Target Limb to change alpha
    */
   PlaskSkeletonViewer.prototype.blendLimb = function (limb, value) {
-    console.log(limb);
+    console.log(`${limb} blend: ${value}`);
     this.debugMesh.material.alpha = value;
   };
 

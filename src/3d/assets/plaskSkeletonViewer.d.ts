@@ -58,6 +58,8 @@ export declare class PlaskSkeletonViewer {
   private _debugLines;
   /** The SkeletonViewers Mesh. */
   private _debugMesh;
+  /** The SkeletonViewers Spurs. */
+  private _debugSpurs;
   /** The local axes Meshes. */
   private _localAxes;
   /** If SkeletonViewer is enabled. */
