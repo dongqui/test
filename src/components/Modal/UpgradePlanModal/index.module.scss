@@ -66,6 +66,11 @@
       svg {
         stroke: #8851f6;
       }
+
+      ul {
+        margin-top: 3rem;
+        color: $content-medium;
+      }
     }
   }
 }
@@ -77,7 +82,7 @@
     color: $content-active;
     font-weight: 600;
     font-size: 2rem;
-    line-height: 2.4rem;
+    line-height: 2.5rem;
   }
 
   span {
@@ -95,4 +100,14 @@
   font-size: 1.1rem;
   color: #9f80ff;
   padding: 0.4rem;
+}
+
+.billing-cycle-switch {
+  margin-top: 1.6rem;
+}
+
+.discount {
+  color: #9f80ff;
+  font-weight: 500;
+  margin-left: 0.8rem;
 }

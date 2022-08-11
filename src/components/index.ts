@@ -6,3 +6,4 @@ export { FilledButton as FilledButton } from './Button';
 export { OutlineButton as OutlineButton } from './Button';
 export { IconButton as IconButton } from './Button';
 export { default as BaseModal } from './Modal/BaseModal';
+export { Switch as Switch } from './Input';
