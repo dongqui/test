@@ -1,6 +1,4 @@
-import React, { useRef, useState } from 'react';
-
-import { useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Avata, TooltipArrow, IconWrapper, SvgPath, FilledButton } from 'components';
@@ -29,8 +27,20 @@ function UserInfo() {
   }, [dispatch]);
 
   function handleClickAvata(e: React.MouseEvent) {
+    e.stopPropagation();
     setOpenUserInfo(!openUserInfo);
   }
+
+  useEffect(() => {
+    const closeUserInfo = () => {
+      setOpenUserInfo(false);
+    };
+
+    window.addEventListener('click', closeUserInfo);
+    return () => {
+      window.removeEventListener('click', closeUserInfo);
+    };
+  }, []);
 
   return (
     <div className={cx('container')}>
