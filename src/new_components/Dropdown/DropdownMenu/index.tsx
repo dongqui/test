@@ -15,7 +15,7 @@ interface Props {
 }
 
 const DropdownMenu: FunctionComponent<Props> = (props) => {
-  const { autoClose, children, onClose } = props;
+  const { autoClose = true, children, onClose } = props;
 
   const dropdownMenuRef = useRef<HTMLUListElement>(null);
   const [_, dispatch] = useContext(DropdownContext);

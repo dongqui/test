@@ -1,4 +1,4 @@
-import { useCallback, useContext, FunctionComponent } from 'react';
+import { useCallback, useContext, ReactChildren, ReactChild } from 'react';
 
 import { DropdownContext } from '../DropdownProvider';
 
@@ -12,12 +12,11 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 interface Props {
+  children: ReactChildren | ReactChild;
   onClose?: (params?: any) => void;
 }
 
-const DropdownHeader: FunctionComponent<Props> = (props) => {
-  const { children, onClose } = props;
-
+const DropdownHeader = ({ children, onClose }: Props) => {
   const [{ isOpenMenu }, dispatch] = useContext(DropdownContext);
 
   // 드랍다운 헤더 클릭
@@ -28,15 +27,7 @@ const DropdownHeader: FunctionComponent<Props> = (props) => {
     }
   }, [isOpenMenu, dispatch, onClose]);
 
-  return (
-    <ExpandButton
-      className={cx('expand-button', { active: isOpenMenu })}
-      content={SvgPath.Support}
-      type="default"
-      id={ONBOARDING_ID.HELP_BUTTON}
-      onClick={handleClickDropdownHeader}
-    />
-  );
+  return <div onClick={handleClickDropdownHeader}>{children}</div>;
 };
 
 export default DropdownHeader;

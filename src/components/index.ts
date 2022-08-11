@@ -5,5 +5,7 @@ export { SvgPath as SvgPath } from './Icon/index';
 export { FilledButton as FilledButton } from './Button';
 export { OutlineButton as OutlineButton } from './Button';
 export { IconButton as IconButton } from './Button';
+export { ExpandButton as ExpandButton } from './Button';
 export { default as BaseModal } from './Modal/BaseModal';
 export { Switch as Switch } from './Input';
+export { default as Dropdown } from 'new_components/Dropdown';
