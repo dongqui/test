@@ -12,8 +12,19 @@
   font: $modal-body;
   color: $content-medium;
   line-height: 2.1rem;
+  margin-top: 2.2rem;
 }
 
 .inner {
   width: 34rem;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      margin: 0;
+    }
+  }
 }
