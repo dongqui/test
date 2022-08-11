@@ -1,5 +1,4 @@
 import { FunctionComponent, useCallback } from 'react';
-import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 
 import { RootState, useSelector } from 'reducers';
@@ -7,11 +6,12 @@ import * as commonActions from 'actions/Common/globalUI';
 import { SvgPath } from 'components/Icon';
 import { Switch } from 'components/Input';
 import UserInfo from './UserInfo/UserInfo';
-import MainLogoDropDown from './DropDown/MainLogoDropDown';
+import MainLogoDropDown from './DropDown/MainLogoDropdown';
+import SupportDropdown from './DropDown/SupportDropdown';
+import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 import classNames from 'classnames/bind';
 import styles from './UpperBar.module.scss';
-import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
 const cx = classNames.bind(styles);
 
@@ -74,6 +74,7 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
           className={cx('mode-switch')}
           value={mode === 'videoMode' ? 'VM' : mode === 'animationMode' ? 'EM' : ''}
         />
+        <SupportDropdown />
         <UserInfo />
       </div>
     </div>
