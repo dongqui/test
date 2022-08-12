@@ -6,9 +6,11 @@ interface State {
   name: string;
   hadFreeTrial: boolean;
   planName: string;
+  planType: 'freemium' | 'pro_active' | 'pro_trialing';
   credits: {
     remaining: number;
-    expiredDate: Date;
+    nextChargeCredit: number;
+    nextChargeDate: string;
   } | null;
   storage: {
     usageSize: number;
@@ -19,6 +21,7 @@ interface State {
 const defaultState: State = {
   name: '',
   planName: '',
+  planType: 'freemium',
   credits: null,
   storage: null,
   hadFreeTrial: false,
@@ -34,6 +37,7 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
     }
     case getType(userActions.getUserUsagaInfoAsync.success): {
       return Object.assign({}, state, {
+        planType: action.payload.planType,
         planName: action.payload.planName,
         credits: action.payload.credits,
         storage: action.payload.storage,

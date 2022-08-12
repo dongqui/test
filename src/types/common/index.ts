@@ -314,6 +314,7 @@ export type UserResponse = {
 };
 
 export type UserUsageInfoReponse = {
+  planType: string;
   planName: string;
   upcomingInvoice: number;
   payment: {
@@ -322,7 +323,8 @@ export type UserUsageInfoReponse = {
   };
   credits: {
     remaining: number;
-    expiredDate: string;
+    nextChargeCredit: number;
+    nextChargeDate: string;
   };
   storage: {
     usageSize: number;

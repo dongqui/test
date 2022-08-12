@@ -34,6 +34,8 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
 
   const confirmText = hadFreeTrial ? 'Upgrade' : 'Start free';
   const monthlyCost = billingCycle === 'Monthly' ? 140 : 50;
+
+  async function upgrade() {}
   return (
     <BaseModal className="dark">
       <div className={cx('container')}>
@@ -111,7 +113,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               </li>
             </ul>
             <footer>
-              <FilledButton fullSize buttonType="temp-purple-2">
+              <FilledButton onClick={upgrade} fullSize buttonType="temp-purple-2">
                 {confirmText}
               </FilledButton>
             </footer>

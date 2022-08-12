@@ -20,9 +20,9 @@ function* handleGetUser() {
 function* handleGetUserUsageInfo() {
   try {
     const usageInfo: UserUsageInfoReponse = yield call(api.getUserUsageInfo);
-    console.log(usageInfo);
     yield put(
       userActions.getUserUsagaInfoAsync.success({
+        planType: usageInfo.planType,
         planName: usageInfo.planName,
         credits: usageInfo.credits,
         storage: usageInfo.storage,

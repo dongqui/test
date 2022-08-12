@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { Avata, TooltipArrow, IconWrapper, SvgPath, FilledButton } from 'components';
 import * as userActions from 'actions/User';
 import { useSelector } from 'reducers';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 import classNames from 'classnames/bind';
 import styles from './UserInfo.module.scss';
@@ -15,10 +16,15 @@ function getUserNameInitial(name: string) {
   return name[0];
 }
 
+function storageFormat(bytes: number) {
+  const GB = 1073741824;
+  return (bytes / GB).toFixed(2).replace('.00', '') + 'GB';
+}
+
 function UserInfo() {
   const [openUserInfo, setOpenUserInfo] = useState(false);
   const avataRef = useRef<HTMLDivElement>(null);
-  const { name } = useSelector((state) => state.user);
+  const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -26,8 +32,7 @@ function UserInfo() {
     dispatch(userActions.getUserUsagaInfoAsync.request());
   }, [dispatch]);
 
-  function handleClickAvata(e: React.MouseEvent) {
-    e.stopPropagation();
+  function handleClickAvata() {
     setOpenUserInfo(!openUserInfo);
   }
 
@@ -42,29 +47,42 @@ function UserInfo() {
     };
   }, []);
 
+  function hanldeClickUpgrade() {
+    dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
+  }
+
+  const usedStorageSize = storageFormat(user.storage?.usageSize || 0);
+  const limitStorageSize = storageFormat(user.storage?.limitSize || 0);
+  const isStorageLimitExceed = (user.storage?.limitSize || 0) < (user.storage?.usageSize || 0);
+  const isFreemium = user.planType === 'freemium';
   return (
-    <div className={cx('container')}>
-      <Avata userNameInitial={getUserNameInitial(name)} onClick={handleClickAvata} ref={avataRef} />
+    <div className={cx('container')} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+      <Avata userNameInitial={getUserNameInitial(user.name)} onClick={handleClickAvata} ref={avataRef} />
 
       {openUserInfo && (
         <div className={cx('modal')}>
-          <header>{name}</header>
+          <header>{user.name}</header>
           <section className={cx('content')}>
-            <h6>Freemium overview</h6>
+            <h6>{user.planName} overview</h6>
             <section className={cx('usage-overview')}>
               <IconWrapper icon={SvgPath.Credit} />
-              <span className={cx('usage-overview-content')}>312 credits left</span>
+              <span className={cx('usage-overview-content')}>{user.credits?.remaining.toLocaleString()} credits left</span>
             </section>
             <section className={cx('usage-overview')}>
               <IconWrapper icon={SvgPath.Storage} />
-              <span className={cx('usage-overview-content')}>1 GB of 10GB used</span>
+              <span className={cx('usage-overview-content', { exceed: isStorageLimitExceed })}>
+                {usedStorageSize} of {limitStorageSize} used
+              </span>
             </section>
           </section>
-          <footer>
-            <FilledButton buttonType="temp-purple" fullSize>
-              upgrade
-            </FilledButton>
-          </footer>
+
+          {isFreemium && (
+            <footer>
+              <FilledButton onClick={hanldeClickUpgrade} buttonType="temp-purple" fullSize>
+                upgrade
+              </FilledButton>
+            </footer>
+          )}
           <TooltipArrow placement="top-end" backgroundColor="dark" />
         </div>
       )}

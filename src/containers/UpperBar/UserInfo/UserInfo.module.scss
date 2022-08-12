@@ -43,6 +43,10 @@
         color: $content-active;
         font: $body-default;
       }
+
+      .exceed {
+        color: var(--red060);
+      }
     }
   }
 
