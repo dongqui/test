@@ -646,7 +646,7 @@ var PlaskSkeletonViewer = /** @class */ (function () {
    */
   PlaskSkeletonViewer.prototype.blendBone = function (bone, value) {
     this._submeshes.map((mesh, idx) => {
-      if (mesh.id.includes(bone)) {
+      if (mesh.name.toLowerCase().includes(bone.toLowerCase())) {
         this._debugMesh.subMeshes[idx].getMaterial().alpha = value;
       }
     });

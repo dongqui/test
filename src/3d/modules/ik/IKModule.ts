@@ -219,6 +219,11 @@ export class IKModule extends Module {
 
     // Make FK Asset visible
     this.plaskEngine.assetModule.setVisibility(1);
+
+    ['leftHand', 'rightHand', 'leftFoot', 'rightFoot'].map((t) => {
+      this.plaskEngine.visibilityLayers.blendSkeletonViewerLimbAlpha(1, t);
+    });
+
     this._enabled = false;
     return ptns;
   }
