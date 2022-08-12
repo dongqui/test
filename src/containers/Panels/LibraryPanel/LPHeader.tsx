@@ -18,10 +18,6 @@ interface Props {
 const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: true }));
-  }, []);
-
   // file import 버튼 클릭
   const handleFileImportButtonClick = useCallback(() => {
     dispatch(
