@@ -3,13 +3,14 @@ import { PlaskEngine } from '3d/PlaskEngine';
 import { Nullable, SkeletonViewer } from '@babylonjs/core';
 import { DEFAULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { setBoneVisibility, setGizmoVisibility, setIKControllerVisibility, setMeshVisibility } from 'actions/screenDataAction';
+import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
 
 export class VisibilityLayersModule extends Module {
   // TODO : skeleton viewer probably doesn't belong here, we should add a skeletonViewer module
   // OR merge GizmoModule and VisibilityLayersModule under a big "OverlaysModule" that would include
   // all interactable 3D components that are not part of the final 3D render
   // (We can still split the code in several files to separate gizmo interaction and visibility)
-  private _skeletonViewer: Nullable<SkeletonViewer> = null;
+  private _skeletonViewer: Nullable<PlaskSkeletonViewer> = null;
   public get skeletonViewer() {
     return this._skeletonViewer;
   }
@@ -41,9 +42,10 @@ export class VisibilityLayersModule extends Module {
     const visualizedAsset = this._getVisualizedAsset();
     if (visualizedAsset) {
       const { skeleton, meshes } = visualizedAsset;
-      const skeletonViewer = new SkeletonViewer(skeleton, meshes[0], this.plaskEngine.scene, true, meshes[0].renderingGroupId, DEFAULT_SKELETON_VIEWER_OPTION);
+      const skeletonViewer = new PlaskSkeletonViewer(skeleton, meshes[0], this.plaskEngine.scene, true, meshes[0].renderingGroupId, undefined, DEFAULT_SKELETON_VIEWER_OPTION);
       skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
       skeletonViewer.isEnabled = this.visibilityOptions.isBoneVisible;
+      console.log(skeletonViewer);
       this._skeletonViewer = skeletonViewer;
     }
   }
@@ -94,6 +96,33 @@ export class VisibilityLayersModule extends Module {
       case 'IK Controllers':
         this.plaskEngine.dispatch(setIKControllerVisibility({ screenId: this.plaskEngine.currentScreenId, value: !this.visibilityOptions.isIKControllerVisible }));
 
+        break;
+    }
+  }
+
+  /**
+   * Sets the blend value for the current selected controller
+   * @param value
+   */
+  public blendSkeletonViewerLimbAlpha(value: number = 0, limbType: 'leftHand' | 'rightHand' | 'leftFoot' | 'rightFoot' | string) {
+    switch (limbType) {
+      case 'leftHand':
+        this._skeletonViewer?.blendBone('leftHand', value);
+        this._skeletonViewer?.blendBone('leftForeArm', value);
+        break;
+      case 'rightHand':
+        this._skeletonViewer?.blendBone('rightHand', value);
+        this._skeletonViewer?.blendBone('rightForeArm', value);
+        break;
+      case 'leftFoot':
+        this._skeletonViewer?.blendBone('leftFoot', value);
+        this._skeletonViewer?.blendBone('leftLeg', value);
+        this._skeletonViewer?.blendBone('leftToeBase', value);
+        break;
+      case 'rightFoot':
+        this._skeletonViewer?.blendBone('rightFoot', value);
+        this._skeletonViewer?.blendBone('rightLeg', value);
+        this._skeletonViewer?.blendBone('rightToeBase', value);
         break;
     }
   }

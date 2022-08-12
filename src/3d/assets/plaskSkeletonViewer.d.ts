@@ -7,6 +7,7 @@ import { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { UtilityLayerRenderer } from '@babylonjs/core/Rendering/utilityLayerRenderer';
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions } from './ISkeletonViewer';
+import { Material } from '@babylonjs/core';
 /**
  * Class used to render a debug view of a given skeleton
  * @see http://www.babylonjs-playground.com/#1BZJVJ#8
@@ -107,6 +108,7 @@ export declare class PlaskSkeletonViewer {
     autoUpdateBonesMatrices?: boolean,
     /** defines the rendering group id to use with the viewer */
     renderingGroupId?: number,
+    material?: Material,
     /** is the options for the viewer */
     options?: Partial<ISkeletonViewerOptions>,
   );

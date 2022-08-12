@@ -36,6 +36,7 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     autoUpdateBonesMatrices,
     /** defines the rendering group id to use with the viewer */
     renderingGroupId,
+    material,
     /** is the options for the viewer */
     options,
   ) {
@@ -50,13 +51,14 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     }
     var _a, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
     this.skeleton = skeleton;
+
     this.mesh = mesh;
     this.autoUpdateBonesMatrices = autoUpdateBonesMatrices;
     this.renderingGroupId = renderingGroupId;
     this.options = options;
     /** Gets or sets the color used to render the skeleton */
     this.color = Color3.White();
-    this.material = null;
+    this.material = material;
     /** Array of the points of the skeleton fo the line view. */
     this._debugLines = new Array();
     /** The local axes Meshes. */
@@ -568,9 +570,10 @@ var PlaskSkeletonViewer = /** @class */ (function () {
           spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
           spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
           spur.convertToFlatShadedMesh();
+
           const mat = new StandardMaterial(this_1.scene);
-          mat.diffuseColor = new Color3(0, 1, 1);
-          spur.material = mat;
+          mat.diffuseColor = new Color3(1, 1, 1);
+          spur.material = this_1.material ? this_1.material.clone() : mat;
           spurs.push(spur);
         });
         this_1._spurs = spurs;

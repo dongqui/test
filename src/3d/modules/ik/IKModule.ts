@@ -17,6 +17,7 @@ import {
   Scene,
   Quaternion,
   InstantiatedEntries,
+  StandardMaterial,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
@@ -153,6 +154,7 @@ export class IKModule extends Module {
     let result = null;
     if (!this._areIKControllersAlreadyAdded()) {
       this._initializeControllers(assetId);
+      this.setIKControllerBlend(1, this.ikControllers);
       result = this._generateIkPlaskTransformNodes(assetId);
     }
     const newAnimationIngredient = this.addIKTracks(assetId, animationIngredient);
@@ -452,6 +454,8 @@ export class IKModule extends Module {
           this._ikSkeletonViewer?.blendBone('rightToeBase', value);
           break;
       }
+      this.plaskEngine.visibilityLayers.blendSkeletonViewerLimbAlpha(1 - value, targetLimb);
+
       selectedIK.blend = value;
     });
   }
@@ -836,7 +840,6 @@ export class IKModule extends Module {
       this.ikControllers.push(ikController);
       ikDrivenTransformNodes = ikDrivenTransformNodes.concat(ikController.fkInfluenceChain!);
     });
-
     ikClone.rootNodes.forEach((node: TransformNode) => {
       const allNodes = [node].concat(node.getDescendants());
       for (const node of allNodes) {
@@ -853,8 +856,9 @@ export class IKModule extends Module {
     if (this._ikSkeletonViewer) {
       this._ikSkeletonViewer.dispose();
     }
-
-    const ikSkeletonViewer = new PlaskSkeletonViewer(this._ik.skeleton, this._ikMeshes[0], scene, false, this._ikMeshes[0].renderingGroupId, IK_SKELETON_VIEWER_OPTION);
+    const mat = new StandardMaterial('', scene);
+    mat.diffuseColor = new Color3(0, 1, 1);
+    const ikSkeletonViewer = new PlaskSkeletonViewer(this._ik.skeleton, this._ikMeshes[0], scene, false, this._ikMeshes[0].renderingGroupId, mat, IK_SKELETON_VIEWER_OPTION);
     this._ikSkeletonViewer = ikSkeletonViewer;
 
     this._addPickBehavior();
@@ -875,12 +879,16 @@ export class IKModule extends Module {
         }
       }
 
+      // // Remove any skeletonViewer
+      // if (node.name.startsWith(`${type}_skeletonViewer`)) {
+      //   node.dispose();
+      //   return;
+      // }
       // Remove any skeletonViewer
-      if (node.name.startsWith(`${type}_skeletonViewer`)) {
+      if (node.name.includes(`_skeletonViewer`)) {
         node.dispose();
         return;
       }
-
       // Copy the current transform of cloned skeleton nodes
       // ! Hard coded length of prefix
       // TODO : we need a better way to retrieve the origin transform node
