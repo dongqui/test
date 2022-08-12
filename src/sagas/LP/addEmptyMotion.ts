@@ -10,6 +10,7 @@ import plaskEngine from '3d/PlaskEngine';
 import { RequestNodeResponse } from 'types/LP';
 import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
+import * as userActions from 'actions/User';
 
 export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeActions.addEmptyMotionAsync.request>) {
   const { plaskProject, lpNode }: RootState = yield select();
@@ -56,4 +57,5 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
   forceClickAnimationPlayAndStop();
 
   yield put({ type: 'ADDED_EMPTY_MOTION' });
+  yield put(userActions.getUserUsagaInfoAsync.request());
 }

@@ -20,6 +20,7 @@ import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
 import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
+import * as userActions from 'actions/User';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
@@ -115,6 +116,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
         }),
       );
     }
+    yield put(userActions.getUserUsagaInfoAsync.request());
   } catch (e) {
     const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(

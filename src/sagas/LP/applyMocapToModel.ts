@@ -17,6 +17,7 @@ import { RequestNodeResponse } from 'types/LP';
 import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
 import { ServerAnimationLayer, ServerAnimation, MocapDataResponse, ServerAnimationResponse } from 'types/common';
+import * as userActions from 'actions/User';
 
 const handleConfirmOnError = channel();
 
@@ -118,5 +119,6 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     forceClickAnimationPlayAndStop();
   }
 
+  yield put(userActions.getUserUsagaInfoAsync.request());
   yield put(globalUIActions.closeModal('LoadingModal'));
 }
