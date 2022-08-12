@@ -49,12 +49,12 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
   const UBOption = [
     {
       key: 'EM',
-      label: SvgPath.TrackMode,
+      label: 'Editing',
       value: 'EM',
     },
     {
       key: 'VM',
-      label: SvgPath.Camera,
+      label: 'MoCap',
       value: 'VM',
     },
   ];
@@ -64,7 +64,7 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
       <div className={cx('left-upper')}>
         <MainLogoDropDown />
       </div>
-      <div className={cx('right-upper')}>
+      <div className={cx('middle-upper')}>
         <Switch
           id={ONBOARDING_ID.VIDEO_MODE}
           options={UBOption}
@@ -74,6 +74,8 @@ const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
           className={cx('mode-switch')}
           value={mode === 'videoMode' ? 'VM' : mode === 'animationMode' ? 'EM' : ''}
         />
+      </div>
+      <div className={cx('right-upper')}>
         <SupportDropdown />
         <UserInfo />
       </div>
