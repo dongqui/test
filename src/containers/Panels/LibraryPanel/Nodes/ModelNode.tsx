@@ -16,6 +16,7 @@ const ModelNode = ({ node }: Props) => {
   const { id, assetId, extension, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
+  const user = useSelector((state) => state.user);
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!assetId) return;
@@ -33,6 +34,41 @@ const ModelNode = ({ node }: Props) => {
       return;
     }
     e.stopPropagation();
+
+    const isStorageLimitExceed = (user.storage?.limitSize || 0) < (user.storage?.usageSize || 0);
+    if (isStorageLimitExceed) {
+      if (user.planType === 'freemium') {
+        dispatch(
+          globalUIActions.openModal(
+            'ConfirmModal',
+            {
+              title: 'Need more storage?',
+              message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. You can get more storage with a Mocap Pro plan.',
+              confirmText: 'Upgrade',
+              onConfirm: () => {
+                dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
+              },
+            },
+            'upgrade',
+            false,
+          ),
+        );
+      } else {
+        dispatch(
+          globalUIActions.openModal(
+            'AlertModal',
+            {
+              title: 'Out of storage',
+              message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
+              confirmText: 'Okay',
+            },
+            'upgrade',
+            false,
+          ),
+        );
+      }
+      return;
+    }
     dispatch(
       lpNodeActions.applyMocapToModel.request({
         nodeId: id,

@@ -5,6 +5,7 @@ import axios, { Canceler } from 'axios';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
 import * as lpActions from 'actions/LP/lpNodeAction';
+import * as userActions from 'actions/User';
 import requestApi from 'api/requestApi';
 import { FilledButton, OutlineButton } from 'components/Button';
 import { Typography } from 'components/Typography';
@@ -16,6 +17,7 @@ import { Overlay } from 'components/Overlay';
 import ExtractForm from './ExtractForm';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'reducers';
+import { dateFormat } from 'utils/common';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -69,7 +71,7 @@ const ControlPanel = ({
   setIsOpenLoadingModal,
 }: Props) => {
   const dispatch = useDispatch();
-  const userState = useSelector((state) => state.user);
+  const user = useSelector((state) => state.user);
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
   const [valueName, setValueName] = useState('Extracted motion');
@@ -88,17 +90,6 @@ const ControlPanel = ({
   }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
-    const creditEceed = userState.credits?.remaining;
-    // console.log(duration);
-    dispatch(
-      globalUIActions.openModal('ConfirmModal', {
-        title: 'Need more credits?',
-        message: '34 credits will be required on this. To resume, get more credits with a Mocap Pro plan.',
-        onConfirm: () => {},
-        confirmText: 'Upgrade',
-      }),
-    );
-    return;
     if (endValue - startValue >= 300) {
       dispatch(
         globalUIActions.openModal('_AlertModal', {
@@ -111,7 +102,6 @@ const ControlPanel = ({
       setValueFormData({
         ...data,
       });
-
       setIsOpenExtractModal(true);
     }
   };
@@ -175,11 +165,74 @@ const ControlPanel = ({
   }, []);
 
   const handleSubmitModal = async () => {
+    setIsOpenExtractModal(false);
+
     TagManager.dataLayer({
       dataLayer: {
         event: 'export-motion',
       },
     });
+
+    const creditExceed = user.credits?.remaining;
+    const storageExceed = (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0);
+
+    if (creditExceed) {
+      if (user.planType === 'freemium') {
+        dispatch(
+          globalUIActions.openModal('ConfirmModal', {
+            title: 'Need more credits?',
+            message: '34 credits will be required on this. To resume, get more credits with a Mocap Pro plan.',
+            onConfirm: () => {
+              dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
+            },
+            confirmText: 'Upgrade',
+          }),
+        );
+      } else {
+        dispatch(
+          globalUIActions.openModal('AlertModal', {
+            title: 'Out of credits',
+            message: `34 credits will be required on this. Mocap Pro plan will be renewed with ${user.credits?.nextChargeCredit} credits on ${dateFormat(
+              user.credits?.nextChargeDate || '',
+            )}.`,
+            confirmText: 'Okay',
+          }),
+        );
+      }
+      return;
+    } else if (storageExceed) {
+      if (user.planType === 'freemium') {
+        dispatch(
+          globalUIActions.openModal(
+            'ConfirmModal',
+            {
+              title: 'Need more storage?',
+              message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. You can get more storage with a Mocap Pro plan.',
+              confirmText: 'Upgrade',
+              onConfirm: () => {
+                dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
+              },
+            },
+            'upgrade',
+            false,
+          ),
+        );
+      } else {
+        dispatch(
+          globalUIActions.openModal(
+            'AlertModal',
+            {
+              title: 'Out of storage',
+              message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
+              confirmText: 'Okay',
+            },
+            'upgrade',
+            false,
+          ),
+        );
+      }
+      return;
+    }
 
     if (videoRef.current) {
       if (endValue - startValue > 300) {
@@ -203,7 +256,6 @@ const ControlPanel = ({
       formData.append('isFootLock', valueFormData.footLock ? 'true' : 'false');
       formData.append('isTPose', valueFormData.tPose ? 'true' : 'false');
 
-      setIsOpenExtractModal(false);
       setIsOpenLoadingModal(true);
 
       await requestApi({
@@ -233,7 +285,7 @@ const ControlPanel = ({
               onUnmount();
               dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
               dispatch(lpActions.initNodes(response.data));
-
+              dispatch(userActions.getUserUsagaInfoAsync.request());
               return {
                 loaded: true,
                 error: null,

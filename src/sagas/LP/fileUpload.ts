@@ -1,10 +1,8 @@
-import { put, SagaReturnType, take, select } from 'redux-saga/effects';
+import { put, SagaReturnType, take } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 
-import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import * as globalUIActions from 'actions/Common/globalUI';
 import TagManager from 'react-gtm-module';
 
 const confirmSwitchModeChannel = channel();
@@ -18,42 +16,6 @@ export function* watchConfirmSwitchCModelhannel() {
 }
 export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
   const files = action.payload;
-  const totalFileSize = files?.reduce((sum, file) => sum + file.size, 0);
-  const { user }: RootState = yield select();
-  const isLimitSizeOver = (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0) + totalFileSize;
-  if (true || isLimitSizeOver) {
-    if (!user.planName) {
-      yield put(
-        globalUIActions.openModal(
-          'AlertModal',
-          {
-            title: 'Out of storage',
-            message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
-            confirmText: 'Okay',
-          },
-          'upgrade',
-          false,
-        ),
-      );
-    } else {
-      yield put(
-        globalUIActions.openModal(
-          'ConfirmModal',
-          {
-            title: 'Need more storage?',
-            message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. You can get more storage with a Mocap Pro plan.',
-            confirmText: 'Upgrade',
-            onConfirm: () => {
-              // alert('업그럽글');
-            },
-          },
-          'upgrade',
-          false,
-        ),
-      );
-    }
-    return;
-  }
 
   files.sort((a, b) => {
     if (a.type.includes('json')) {
