@@ -151,9 +151,9 @@ export declare class PlaskSkeletonViewer {
   changeDisplayOptions(option: string, value: number): void;
   /** Release associated resources */
 
-  /** Blend the limb alpha of the skeleton viewer
-   * @param limb Target Limb to change alpha
+  /** Blend the bone alpha of the skeleton viewer
+   * @param bone Target bone to change alpha
    */
-  blendLimb(limb: 'leftHand' | 'rightHand' | 'leftFoot' | 'rightFoot' | string, value: number): void;
+  blendBone(bone: string, value: number): void;
   dispose(): void;
 }

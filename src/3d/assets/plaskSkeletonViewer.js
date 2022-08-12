@@ -56,6 +56,7 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     this.options = options;
     /** Gets or sets the color used to render the skeleton */
     this.color = Color3.White();
+    this.material = null;
     /** Array of the points of the skeleton fo the line view. */
     this._debugLines = new Array();
     /** The local axes Meshes. */
@@ -66,6 +67,7 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     this._obs = null;
     this._scene = scene;
     this._ready = false;
+    this._submeshes = [];
     //Defaults
     options.pauseAnimations = (_a = options.pauseAnimations) !== null && _a !== void 0 ? _a : true;
     options.returnToRest = (_c = options.returnToRest) !== null && _c !== void 0 ? _c : false;
@@ -566,12 +568,12 @@ var PlaskSkeletonViewer = /** @class */ (function () {
           spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
           spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
           spur.convertToFlatShadedMesh();
-
-          const material = new StandardMaterial(this_1._scene);
-          material.diffuseColor = new Color3(0, 1, 1);
-          spur.material = material;
+          const mat = new StandardMaterial(this_1.scene);
+          mat.diffuseColor = new Color3(0, 1, 1);
+          spur.material = mat;
           spurs.push(spur);
         });
+        this_1._spurs = spurs;
         if (spursOnly) return;
         var sphereBaseSize = displayOptions_1.sphereBaseSize || 0.2;
         var sphere = CreateSphere(
@@ -616,7 +618,8 @@ var PlaskSkeletonViewer = /** @class */ (function () {
         sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));
         meshes.push(sphere);
       }
-      this._debugMesh = Mesh.MergeMeshes(meshes.concat(spurs), true, true, undefined, undefined, true);
+      this._submeshes = meshes.concat(spurs);
+      this._debugMesh = Mesh.MergeMeshes(this._submeshes, true, true, undefined, true, true);
       if (this._debugMesh) {
         this._debugMesh.renderingGroupId = this.renderingGroupId;
         this._debugMesh.skeleton = this.skeleton;
@@ -635,12 +638,15 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     }
   };
 
-  /** Blend the limb alpha of the skeleton viewer
-   * @param limb Target Limb to change alpha
+  /** Blend the bone alpha of the skeleton viewer
+   * @param bone Target bone to change alpha
    */
-  PlaskSkeletonViewer.prototype.blendLimb = function (limb, value) {
-    console.log(`${limb} blend: ${value}`);
-    this.debugMesh.material.alpha = value;
+  PlaskSkeletonViewer.prototype.blendBone = function (bone, value) {
+    this._submeshes.map((mesh, idx) => {
+      if (mesh.id.includes(bone)) {
+        this._debugMesh.subMeshes[idx].getMaterial().alpha = value;
+      }
+    });
   };
 
   PlaskSkeletonViewer.prototype._buildLocalAxes = function () {

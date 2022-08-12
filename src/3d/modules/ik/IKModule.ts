@@ -429,14 +429,29 @@ export class IKModule extends Module {
    */
   public setIKControllerBlend(value: number = 0, controllers?: IKController[]) {
     // Evaluate if a IK Controller is selected
-    const target = ['leftHand', 'rightHand', 'leftFoot', 'rightFoot'];
-
+    const limbTypes = ['leftHand', 'rightHand', 'leftFoot', 'rightFoot'];
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
-      target.map((t) => {
-        if (selectedIK.target.id.includes(t)) {
-          this._ikSkeletonViewer?.blendLimb(t, value);
-        }
-      });
+      const targetLimb = limbTypes.filter((type) => selectedIK.target.id.includes(type))[0];
+      switch (targetLimb) {
+        case 'leftHand':
+          this._ikSkeletonViewer?.blendBone('leftHand', value);
+          this._ikSkeletonViewer?.blendBone('leftForeArm', value);
+          break;
+        case 'rightHand':
+          this._ikSkeletonViewer?.blendBone('rightHand', value);
+          this._ikSkeletonViewer?.blendBone('rightForeArm', value);
+          break;
+        case 'leftFoot':
+          this._ikSkeletonViewer?.blendBone('leftFoot', value);
+          this._ikSkeletonViewer?.blendBone('leftLeg', value);
+          this._ikSkeletonViewer?.blendBone('leftToeBase', value);
+          break;
+        case 'rightFoot':
+          this._ikSkeletonViewer?.blendBone('rightFoot', value);
+          this._ikSkeletonViewer?.blendBone('rightLeg', value);
+          this._ikSkeletonViewer?.blendBone('rightToeBase', value);
+          break;
+      }
       selectedIK.blend = value;
     });
   }

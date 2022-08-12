@@ -258,6 +258,7 @@ export class IKController {
   public dispose() {
     this.target.dispose();
     this.handle.dispose();
+
     this.onBlendUpdatedObservable.clear();
     this.onPoleAngleUpdatedObservable.clear();
   }
