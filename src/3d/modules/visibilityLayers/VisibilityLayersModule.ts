@@ -100,6 +100,25 @@ export class VisibilityLayersModule extends Module {
     }
   }
 
+  private _setTargetJointAlpha(target: string, value: number) {
+    const targetBoneVisibility = this.visibilityOptions.isBoneVisible;
+    const visualizedBoneAsset = this._getVisualizedAsset();
+    if (visualizedBoneAsset) {
+      const { id: assetId, meshes, skeleton } = visualizedBoneAsset;
+      const selectableObjects = this.plaskEngine.state.selectingData.present.selectableObjects;
+      const transformNodes = selectableObjects
+        .filter((object) => object.type === 'joint' && object.id.includes(assetId) && object.id.includes(target))
+        .map((entity) => entity.reference);
+      transformNodes.forEach((transformNode) => {
+        const joint = this.plaskEngine.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
+        if (joint) {
+          if (joint.material) {
+            joint.material.alpha = value;
+          }
+        }
+      });
+    }
+  }
   /**
    * Sets the blend value for the current selected controller
    * @param value
@@ -109,20 +128,31 @@ export class VisibilityLayersModule extends Module {
       case 'leftHand':
         this._skeletonViewer?.blendBone('leftHand', value);
         this._skeletonViewer?.blendBone('leftForeArm', value);
+        this._setTargetJointAlpha('leftHand', value);
+        this._setTargetJointAlpha('leftForeArm', value);
+
         break;
       case 'rightHand':
         this._skeletonViewer?.blendBone('rightHand', value);
         this._skeletonViewer?.blendBone('rightForeArm', value);
+        this._setTargetJointAlpha('rightHand', value);
+        this._setTargetJointAlpha('rightForeArm', value);
         break;
       case 'leftFoot':
         this._skeletonViewer?.blendBone('leftFoot', value);
         this._skeletonViewer?.blendBone('leftLeg', value);
         this._skeletonViewer?.blendBone('leftToeBase', value);
+        this._setTargetJointAlpha('leftFoot', value);
+        this._setTargetJointAlpha('leftLeg', value);
+        this._setTargetJointAlpha('leftToeBase', value);
         break;
       case 'rightFoot':
         this._skeletonViewer?.blendBone('rightFoot', value);
         this._skeletonViewer?.blendBone('rightLeg', value);
         this._skeletonViewer?.blendBone('rightToeBase', value);
+        this._setTargetJointAlpha('rightFoot', value);
+        this._setTargetJointAlpha('rightLeg', value);
+        this._setTargetJointAlpha('rightToeBase', value);
         break;
     }
   }

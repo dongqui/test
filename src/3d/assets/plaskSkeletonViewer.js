@@ -487,6 +487,11 @@ var PlaskSkeletonViewer = /** @class */ (function () {
       this._debugMesh = null;
       this.ready = false;
     }
+
+    if (this._submeshes) {
+      this._submeshes.map((mesh) => mesh.dispose());
+      this._submeshes = [];
+    }
     this._ready = false;
     var utilityLayerScene = (_a = this.utilityLayer) === null || _a === void 0 ? void 0 : _a.utilityLayerScene;
     var bones = this.skeleton.bones;
@@ -645,9 +650,9 @@ var PlaskSkeletonViewer = /** @class */ (function () {
    * @param bone Target bone to change alpha
    */
   PlaskSkeletonViewer.prototype.blendBone = function (bone, value) {
-    this._submeshes.map((mesh, idx) => {
+    this._submeshes?.map((mesh, idx) => {
       if (mesh.name.toLowerCase().includes(bone.toLowerCase())) {
-        this._debugMesh.subMeshes[idx].getMaterial().alpha = value;
+        if (this._debugMesh) this._debugMesh.subMeshes[idx].getMaterial().alpha = value;
       }
     });
   };
@@ -747,6 +752,11 @@ var PlaskSkeletonViewer = /** @class */ (function () {
         this._debugMesh = null;
         this.ready = false;
       }
+
+      if (this._submeshes) {
+        this._submeshes.map((mesh) => mesh.dispose());
+        this._submeshes = [];
+      }
       this.displayMode = mode;
       this.update();
       this._bindObs();
@@ -777,6 +787,11 @@ var PlaskSkeletonViewer = /** @class */ (function () {
       this._debugMesh = null;
       this.ready = false;
     }
+
+    if (this._submeshes) {
+      this._submeshes.map((mesh) => mesh.dispose());
+      this._submeshes = [];
+    }
     this.update();
     this._bindObs();
     this.isEnabled = wasEnabled;
@@ -787,6 +802,10 @@ var PlaskSkeletonViewer = /** @class */ (function () {
     if (this._debugMesh) {
       this._debugMesh.dispose();
       this._debugMesh = null;
+    }
+    if (this._submeshes) {
+      this._submeshes.map((mesh) => mesh.dispose());
+      this._submeshes = [];
     }
     if (this._utilityLayer) {
       this._utilityLayer.dispose();
