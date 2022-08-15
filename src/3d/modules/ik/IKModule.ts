@@ -866,6 +866,18 @@ export class IKModule extends Module {
     const ikSkeletonViewer = new PlaskSkeletonViewer(this._ik.skeleton, this._ikMeshes[0], scene, false, this._ikMeshes[0].renderingGroupId, mat, IK_SKELETON_VIEWER_OPTION);
     this._ikSkeletonViewer = ikSkeletonViewer;
 
+    this._ik.skeleton.bones.forEach((bone) => {
+      if (
+        !bone.name.toLowerCase().includes('Hand') ||
+        !bone.name.toLowerCase().includes('ForeArm') ||
+        !bone.name.toLowerCase().includes('Foot') ||
+        !bone.name.toLowerCase().includes('Leg') ||
+        !bone.name.toLowerCase().includes('ToeBase')
+      ) {
+        this._ikSkeletonViewer?.blendBone(bone.name.toLowerCase(), 0);
+      }
+    });
+
     this._addPickBehavior();
   }
   // TODO
