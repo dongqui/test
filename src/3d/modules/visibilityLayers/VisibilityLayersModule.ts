@@ -107,7 +107,7 @@ export class VisibilityLayersModule extends Module {
       const { id: assetId, meshes, skeleton } = visualizedBoneAsset;
       const selectableObjects = this.plaskEngine.state.selectingData.present.selectableObjects;
       const transformNodes = selectableObjects
-        .filter((object) => object.type === 'joint' && object.id.includes(assetId) && object.id.includes(target))
+        .filter((object) => object.type === 'joint' && object.id.includes(assetId) && object.id.toLowerCase().includes(target.toLowerCase()))
         .map((entity) => entity.reference);
       transformNodes.forEach((transformNode) => {
         const joint = this.plaskEngine.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
