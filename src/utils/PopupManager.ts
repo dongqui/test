@@ -4,6 +4,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { IK_CONTROLLER_EL_ID } from 'constants/';
 import { getTargetCoordinates } from 'utils/common';
 import * as commonActions from 'actions/Common/globalUI';
+import { checkErrorNotice } from 'api';
 
 // Ref: https://www.figma.com/file/cjE07P97OvCTwOIornDmbK/Plask-Master-Design?node-id=2821%3A18043
 class PopupManager {
@@ -12,7 +13,7 @@ class PopupManager {
   isVMOnboardingDone: boolean;
   isIKOnboardingDone: boolean;
 
-  proceedGenerator: Generator<void> | null;
+  proceedGenerator: Generator<void | Promise<void>> | null;
   dispatch: Dispatch | null;
 
   constructor() {
@@ -35,7 +36,7 @@ class PopupManager {
   }
 
   *proceedAnimationpagePopup() {
-    yield this.showEmergencyNotification();
+    yield this.showEmergencyNotificationIfExsist();
 
     if (!this.isNewFeatureModalDone) {
       yield this.showNewFeatureModal();
@@ -158,22 +159,22 @@ class PopupManager {
     }
   }
 
-  async showEmergencyNotification() {
+  async showEmergencyNotificationIfExsist() {
     if (this.dispatch) {
-      this.dispatch(
-        commonActions.openModal('EmergencyModal', {
-          message: `<p>
-          Our motion capture server is down due to technical difficulties.
-          <br />
-          You can only use the animation editing feature at the moment. <br />
-          Sorry for the inconvenience.
-        </p>`,
-          title: 'Emergency Notice',
-          closeCallback: () => {
-            this.next();
-          },
-        }),
-      );
+      const errorNotice = await checkErrorNotice();
+      if (errorNotice) {
+        this.dispatch(
+          commonActions.openModal('EmergencyModal', {
+            message: `<p>${errorNotice.contents}</p>`,
+            title: errorNotice.title,
+            closeCallback: () => {
+              this.next();
+            },
+          }),
+        );
+      } else {
+        this.next();
+      }
     }
   }
 }
