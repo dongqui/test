@@ -15,7 +15,7 @@ interface Props {
   doneVMOnBoarding: (step: number) => void;
 }
 
-const FOOT_LOCK_AVAILABLE = false;
+const FOOT_LOCK_AVAILABLE = true;
 
 const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
   const selectOption = [
