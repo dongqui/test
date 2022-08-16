@@ -119,6 +119,6 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     forceClickAnimationPlayAndStop();
   }
 
-  yield put(userActions.getUserUsagaInfoAsync.request());
+  yield put(userActions.getUserStorageInfoAsync.request());
   yield put(globalUIActions.closeModal('LoadingModal'));
 }

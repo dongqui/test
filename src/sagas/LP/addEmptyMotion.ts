@@ -57,5 +57,5 @@ export default function* handleAddEmptyMotion(action: ReturnType<typeof lpNodeAc
   forceClickAnimationPlayAndStop();
 
   yield put({ type: 'ADDED_EMPTY_MOTION' });
-  yield put(userActions.getUserUsagaInfoAsync.request());
+  yield put(userActions.getUserStorageInfoAsync.request());
 }

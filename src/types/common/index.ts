@@ -313,7 +313,7 @@ export type UserResponse = {
   hadFreeTrial: boolean;
 };
 
-export type UserUsageInfoReponse = {
+export type UserUsageInfoResponse = {
   planType: string;
   planName: string;
   upcomingInvoice: number;
@@ -335,3 +335,8 @@ export type UserUsageInfoReponse = {
     billingInvoiceUrl: string;
   };
 };
+
+export interface UserCreditInfoResponse {
+  remainingCredit: number;
+  totalCredit: number;
+}

@@ -173,7 +173,8 @@ const ControlPanel = ({
       },
     });
 
-    const creditExceed = user.credits?.remaining;
+    // TODO: calculate credit
+    const creditExceed = !user.credits?.remaining;
     const storageExceed = (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0);
 
     if (creditExceed) {
@@ -285,7 +286,8 @@ const ControlPanel = ({
               onUnmount();
               dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
               dispatch(lpActions.initNodes(response.data));
-              dispatch(userActions.getUserUsagaInfoAsync.request());
+              dispatch(userActions.getUserCreditInfoAsync.request());
+              dispatch(userActions.getUserStorageInfoAsync.request());
               return {
                 loaded: true,
                 error: null,

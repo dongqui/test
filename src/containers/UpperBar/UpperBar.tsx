@@ -6,7 +6,7 @@ import * as commonActions from 'actions/Common/globalUI';
 import { SvgPath } from 'components/Icon';
 import { Switch } from 'components/Input';
 import UserInfo from './UserInfo/UserInfo';
-import MainLogoDropDown from './DropDown/MainLogoDropdown';
+import MainLogoDropDown from './DropDown/MainLogoDropDown';
 import SupportDropdown from './DropDown/SupportDropdown';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 

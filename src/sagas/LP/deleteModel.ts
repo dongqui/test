@@ -29,6 +29,6 @@ export default function* handleDeleteModel(action: ReturnType<typeof lpNodeActio
   yield put(plaskProjectActions.removeAsset({ assetId }));
   yield put(animationDataActions.removeAsset({ assetId }));
   yield put(selectingDataActions.unrenderAsset({ assetId }));
-  yield put(userActions.getUserUsagaInfoAsync.request());
+  yield put(userActions.getUserStorageInfoAsync.request());
   forceClickAnimationPlayAndStop();
 }

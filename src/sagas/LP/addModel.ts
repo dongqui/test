@@ -116,7 +116,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
         }),
       );
     }
-    yield put(userActions.getUserUsagaInfoAsync.request());
+    yield put(userActions.getUserStorageInfoAsync.request());
   } catch (e) {
     const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
     yield put(

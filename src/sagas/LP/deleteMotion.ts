@@ -36,5 +36,5 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
     forceClickAnimationPlayAndStop();
   }
 
-  yield put(userActions.getUserUsagaInfoAsync.request());
+  yield put(userActions.getUserStorageInfoAsync.request());
 }

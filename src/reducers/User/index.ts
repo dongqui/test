@@ -43,6 +43,19 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
         storage: action.payload.storage,
       });
     }
+    case getType(userActions.getUserCreditInfoAsync.success): {
+      return Object.assign({}, state, {
+        credits: {
+          ...state.credits,
+          remaining: action.payload.remainingCredit,
+        },
+      });
+    }
+    case getType(userActions.getUserStorageInfoAsync.success): {
+      return Object.assign({}, state, {
+        storage: action.payload,
+      });
+    }
 
     default: {
       return state;
