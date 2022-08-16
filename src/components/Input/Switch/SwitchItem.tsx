@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface Props {
   option: {
     key: string;
-    value: string | number;
+    value: string | number | boolean;
     label: string | FunctionComponent;
   };
   selected: boolean;
@@ -43,7 +43,7 @@ const SwitchItem = ({ option, selected, onClick, disabled }: Props) => {
       ) : (
         <IconWrapper icon={label} className={cx('btn-padding')} />
       )}
-      <input type="radio" value={value} defaultChecked={selected} />
+      <input type="radio" value={value.toString()} defaultChecked={selected} />
     </div>
   );
 };

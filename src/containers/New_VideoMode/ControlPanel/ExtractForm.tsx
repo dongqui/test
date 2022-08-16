@@ -20,7 +20,7 @@ interface Props {
   doneVMOnBoarding: (step: number) => void;
 }
 
-const FOOT_LOCK_AVAILABLE = false;
+const FOOT_LOCK_AVAILABLE = true;
 
 const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
   const selectOption = [
@@ -37,30 +37,35 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   ];
 
   const defaultSelectOptionIndex = 0;
-  const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
+  const [multiOption, setMultiOption] = useState(selectOption[defaultSelectOptionIndex]);
   const [trackingTooltip, setTrackingTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
   const userState = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isMulti && FOOT_LOCK_AVAILABLE) {
+    if (multiOption.value && FOOT_LOCK_AVAILABLE) {
       fieldProps.control.unregister('footLock');
     }
-  }, [fieldProps.control, isMulti]);
+  }, [fieldProps.control, multiOption.value]);
 
   const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
 
-  function handleChangeMultiSwitch(value: string | boolean) {
-    if (userState.planName) {
+  function handleChangeMultiSwitch(key: string) {
+    if (userState.planType !== 'freemium') {
       dispatch(
         globalUIActions.openModal('ProFeaturesModal', {
           hadFreeTrial: userState.hadFreeTrial,
         }),
       );
+      setMultiOption(selectOption[defaultSelectOptionIndex]);
+    } else {
+      const option = selectOption.find((option) => option.key === key);
+      if (option) {
+        setMultiOption(option);
+      }
     }
     doneVMOnBoarding(3);
-    setIsMulti(selectOption.find((option) => option.key === value)!.value);
   }
   return (
     <Fragment>
@@ -75,22 +80,14 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             </div>
           )}
         </div>
-        <BaseField<Field.SwitchProps, string>
-          onChange={handleChangeMultiSwitch}
-          className={cx('switch')}
-          options={selectOption}
-          control={fieldProps.control}
-          render={(props) => <Switch {...props} />}
-          defaultValue={selectOption[defaultSelectOptionIndex].key}
-          name="model"
-        />
+        <Switch className={cx('switch')} value={multiOption.key} options={selectOption} defaultValue={multiOption.key} onChange={handleChangeMultiSwitch} />
       </div>
-      {isMulti && (
+      {multiOption.value && (
         <div className={cx('section-item', 'section-text')}>
           <Typography className={cx('section-comments')}>For optimized performance, we recommended your video have less than 10 people in it.</Typography>
         </div>
       )}
-      {!isMulti && FOOT_LOCK_AVAILABLE && (
+      {!multiOption.value && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
           <BaseField<Field.ToggleProps, boolean>

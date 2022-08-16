@@ -1,4 +1,6 @@
 import { BaseModal, FilledButton, OutlineButton, IconButton, SvgPath, IconWrapper } from 'components';
+import { useDispatch } from 'react-redux';
+import * as globalUIActions from 'actions/Common/globalUI';
 
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -11,7 +13,12 @@ interface Props {
 }
 
 const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
-  const onClickConfirm = () => {};
+  const dispatch = useDispatch();
+
+  const onClickConfirm = () => {
+    dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial }));
+    onClose();
+  };
 
   const confirmText = hadFreeTrial ? 'Upgrade' : 'Start free';
   return (
