@@ -251,8 +251,13 @@ export class IKModule extends Module {
           );
 
           for (const track of newTracks) {
-            if (layer.tracks.find((layerTrack) => layerTrack.name === track.name)) {
-              console.log(`track ${track.name} already exists.`);
+            let targetTrack = layer.tracks.find((layerTrack) => layerTrack.name === track.name);
+            if (targetTrack) {
+              if (!targetTrack.target) {
+                targetTrack.target = castDraft(track.target);
+              } else {
+                console.log(`track ${track.name} already exists.`);
+              }
             } else {
               layer.tracks.push(castDraft(track));
               // console.log(`track ${track.name} created`);
@@ -909,7 +914,8 @@ export class IKModule extends Module {
       // Copy the current transform of cloned skeleton nodes
       // ! Hard coded length of prefix
       // TODO : we need a better way to retrieve the origin transform node
-      const originNodeName = node.name.substring(6);
+      // const originNodeName = node.name.substring(6);
+      const originNodeName = type === 'ik' ? node.name.substring(3) : node.name.substring(7);
       const originTransform = scene.getNodeByName(originNodeName) as TransformNode;
       if (originTransform) {
         copyTransformFrom(originTransform, node);
