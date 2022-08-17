@@ -193,16 +193,16 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
           if (controller.limb.includes('Foot')) {
             plaskEngine.ikModule.setSelectedIk([controller]);
 
-            // const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
-            // animationIngredient = bakeResult.animationIngredient || animationIngredient;
-            // yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+            const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
+            animationIngredient = bakeResult.animationIngredient || animationIngredient;
+            yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
             // Set FK position to newly updated values
-            // plaskEngine.ikModule.setFKtoIK();
+            plaskEngine.ikModule.setFKtoIK();
           }
         }
         // Release IK Controllers
-        // yield call(removeIK, removeIKAction(asset.id));
+        yield call(removeIK, removeIKAction(asset.id));
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));
