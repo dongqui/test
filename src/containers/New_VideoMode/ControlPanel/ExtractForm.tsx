@@ -38,6 +38,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
 
   const defaultSelectOptionIndex = 0;
   const [multiOption, setMultiOption] = useState(selectOption[defaultSelectOptionIndex]);
+  const [footLock, setFootLock] = useState(false);
   const [trackingTooltip, setTrackingTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
   const userState = useSelector((state) => state.user);
@@ -52,7 +53,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
 
   function handleChangeMultiSwitch(key: string) {
-    if (userState.planType !== 'freemium') {
+    if (userState.planType === 'freemium') {
       dispatch(
         globalUIActions.openModal('ProFeaturesModal', {
           hadFreeTrial: userState.hadFreeTrial,
@@ -64,6 +65,20 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       if (option) {
         setMultiOption(option);
       }
+    }
+    doneVMOnBoarding(3);
+  }
+
+  function handleClickFootLock() {
+    if (userState.planType === 'freemium') {
+      dispatch(
+        globalUIActions.openModal('ProFeaturesModal', {
+          hadFreeTrial: userState.hadFreeTrial,
+        }),
+      );
+      setFootLock(false);
+    } else {
+      setFootLock(!footLock);
     }
     doneVMOnBoarding(3);
   }
@@ -90,13 +105,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       {!multiOption.value && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
-          <BaseField<Field.ToggleProps, boolean>
-            onChange={() => doneVMOnBoarding(3)}
-            control={fieldProps.control}
-            name="footLock"
-            render={(props) => <Toggle {...props} />}
-            defaultValue={false}
-          />
+          <Toggle onChange={handleClickFootLock} value={footLock} defaultValue={false} />
         </div>
       )}
       <div className={cx('section-item')}>
