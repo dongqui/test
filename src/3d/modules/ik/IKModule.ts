@@ -828,8 +828,24 @@ export class IKModule extends Module {
     this._addPickBehavior();
   }
 
-  public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
+  public computeFootLocking(boneName: string, readonlyTransformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
     let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+    const cloneTransformKeys = (transformKeys: IAnimationKey[]) => {
+      // The purpose of this function is to give a writable copy of transform keys
+      // So we can apply filters, without altering the read-only state object
+      const result: IAnimationKey[] = [];
+      for (const key of transformKeys) {
+        result.push({
+          value: key.value,
+          frame: key.frame,
+        });
+      }
+
+      return result;
+    };
+    const transformKeys = cloneTransformKeys(readonlyTransformKeys);
+    const frameIKPosition: Vector3[] = [];
+
     if (!transformKeys.length) {
       return;
     }
@@ -844,12 +860,13 @@ export class IKModule extends Module {
 
     const targetLayerId = animationIngredient.layers[0].id;
 
-    const targetLayer = animationIngredient.layers[0];
+    let targetLayer = animationIngredient.layers[0];
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
 
     if (!targetTrack) {
       targetAnimation = this.addIKTracks(animationIngredient.assetId, animationIngredient);
-      targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+      targetLayer = targetAnimation.layers[0];
+      targetTrack = targetLayer?.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
       if (!targetTrack) {
         throw new Error('Error : IK tracks could not be created for foot locking');
       }
@@ -858,12 +875,16 @@ export class IKModule extends Module {
     // Add an animation track for position
     animationGroup.start();
 
-    // Direct method (look ahead up to MAX_FRAMES_LOOKAHEAD frames)
+    // Direct method (look ahead up to INTERPOLATION_FRAMES frames)
     let contactIncoming = false;
     let currentBlend = 0;
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
+    const INTERPOLATION_FRAMES = (window as any).lookahead || 3;
+
+    const averageLockedPositions = () => {};
+
     const extractPoseAtFrame = (frameIndex: number) => {
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
@@ -873,31 +894,116 @@ export class IKModule extends Module {
         poleAngle: 0,
       };
     };
-    ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
 
-    const MAX_FRAMES_LOOKAHEAD = (window as any).lookahead || 5;
+    const filterKeys = () => {
+      // We apply 2 filters in this function :
+      // Low pass filter contact data (we want to remove short contact/out of contact periods)
+      // And averaging filter in contact periods
+      let j = 0;
+      // Contact filter
+      while (j < transformKeys.length) {
+        let currentPhase = transformKeys[j].value;
+        for (let i = j + 1; i < transformKeys.length; i++) {
+          if (i === transformKeys.length - 1) {
+            // End of the list, we are done
+            j = transformKeys.length;
+            break;
+          }
+          if (transformKeys[i].value !== currentPhase) {
+            if (i - j < INTERPOLATION_FRAMES * 2) {
+              // The locking / unlocking phase is too short, flip the status to ignore this phase
+              for (let k = j; k < i; k++) {
+                transformKeys[k].value = 1 - transformKeys[k].value;
+              }
+              // Continue this phase as an opposite phase
+              currentPhase = 1 - currentPhase;
+            } else {
+              // This phase was long enough, we can proceed to the next one
+              j = i;
+              break;
+            }
+          }
+        }
+      }
+      // Averaging filter
+      // TODO : debug
+      return;
+      j = 0;
+      let iKPositions = [];
+      while (j < transformKeys.length) {
+        let currentPhase = transformKeys[j].value;
+        if (!currentPhase) {
+          j++;
+          continue;
+        }
+        let i = 0;
+        let targetPosition = new Vector3();
+        while (i < transformKeys.length && transformKeys[i].value) {
+          targetPosition.addInPlace(extractPoseAtFrame(transformKeys[i].frame).position);
+          i++;
+        }
+        const factor = i - j;
+        if (factor > 0) {
+          targetPosition.scaleInPlace(1 / factor);
+        }
+        iKPositions.push(targetPosition);
+        j = i;
+      }
+      // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
+      let currentIKIndex = 0;
+      j = 0;
+      while (j < transformKeys.length) {
+        let currentStatus = transformKeys[j].value;
+        let i = j;
+        while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
+          frameIKPosition.push(iKPositions[currentIKIndex]);
+          i++;
+        }
+        // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
+        let postInterpolation = 0;
+        while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
+          frameIKPosition.push(iKPositions[currentIKIndex]);
+          i++;
+          postInterpolation++;
+        }
+        currentIKIndex++;
+        j = i;
+      }
+    };
+    filterKeys();
+    if (frameIKPosition.length !== transformKeys.length) {
+      // Something went wrong in the algorithm
+      debugger;
+    }
+
+    ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
 
     for (let i = 0; i < transformKeys.length; i++) {
       const key = transformKeys[i];
 
-      if (!contactIncoming && i + MAX_FRAMES_LOOKAHEAD < transformKeys.length && transformKeys[i + MAX_FRAMES_LOOKAHEAD].value === 1) {
-        // The first contact frame is in MAX_FRAMES_LOOKAHEAD
+      if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
+        // The first contact frame is in INTERPOLATION_FRAMES
         contactIncoming = true;
         // Use this position frow now on in this interpolation
-        ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + MAX_FRAMES_LOOKAHEAD].frame));
-      } else if (contactIncoming && i + MAX_FRAMES_LOOKAHEAD < transformKeys.length && transformKeys[i + MAX_FRAMES_LOOKAHEAD].value === 0) {
+        ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
+      } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
         // We were interpolating towards, or even in contact until now, we can release the constraint
         contactIncoming = false;
       }
 
-      let factor = transformKeys[Math.min(transformKeys.length - 1, i + MAX_FRAMES_LOOKAHEAD)].value ? 1 : 0;
+      // ! R&D Try : extract the toe rotation every frame, no matter the lock status
+      ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));
+      // Also try this IK pos averaging
+      // targetIKPosition = frameIKPosition[i];
+
+      let factor = transformKeys[Math.min(transformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
       if (factor === 0 && transformKeys[i].value === 0) {
         // There is no contact ahead anymore, remove blend with inertia
         factor = -1;
       }
 
       const interpolationStrength = (window as any).interpolation || 0.6;
-      currentBlend = Scalar.Clamp(currentBlend + (factor / MAX_FRAMES_LOOKAHEAD) * interpolationStrength, 0, 1);
+      currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
 
       // Insert keyframe if blend > 0
       if (currentBlend >= 0) {
@@ -932,6 +1038,7 @@ export class IKModule extends Module {
 
     animationGroup.goToFrame(0);
     animationGroup.stop();
+
     return targetAnimation;
   }
 }
