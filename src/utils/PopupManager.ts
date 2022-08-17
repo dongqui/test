@@ -162,7 +162,7 @@ class PopupManager {
   async showEmergencyNotificationIfExsist() {
     if (this.dispatch) {
       const errorNotice = await checkErrorNotice();
-      if (errorNotice) {
+      if (errorNotice.title || errorNotice.contents) {
         this.dispatch(
           commonActions.openModal('EmergencyModal', {
             message: `<p>${errorNotice.contents}</p>`,
