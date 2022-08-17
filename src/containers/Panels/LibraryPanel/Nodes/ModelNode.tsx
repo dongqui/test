@@ -1,12 +1,12 @@
+import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useSelector } from 'reducers';
 
+import { useSelector } from 'reducers';
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
-import React from 'react';
-import plaskEngine from '3d/PlaskEngine';
+import PlanManager from 'utils/PlanManager';
 
 interface Props {
   node: LP.Node;
@@ -16,6 +16,7 @@ const ModelNode = ({ node }: Props) => {
   const { id, assetId, extension, childNodeIds } = node;
   const dispatch = useDispatch();
   const { draggedNode } = useSelector((state) => state.lpNode);
+  const user = useSelector((state) => state.user);
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!assetId) return;
@@ -33,6 +34,11 @@ const ModelNode = ({ node }: Props) => {
       return;
     }
     e.stopPropagation();
+
+    if (PlanManager.isStorageExceeded(user)) {
+      PlanManager.openStorageExceededModal(user);
+      return;
+    }
     dispatch(
       lpNodeActions.applyMocapToModel.request({
         nodeId: id,

@@ -1,8 +1,13 @@
 import { FocusEvent, Fragment, useCallback, useEffect, useState } from 'react';
+
 import { Typography } from 'components/Typography';
 import { Switch, Toggle } from 'components/Input';
 import { FilledButton } from 'components/Button';
 import { BaseField } from 'components/Form';
+import { useSelector } from 'reducers';
+import { useDispatch } from 'react-redux';
+import * as globalUIActions from 'actions/Common/globalUI';
+import PlanManager from 'utils/PlanManager';
 
 import classNames from 'classnames/bind';
 import styles from './ExtractForm.module.scss';
@@ -32,18 +37,43 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   ];
 
   const defaultSelectOptionIndex = 0;
-  const [isMulti, setIsMulti] = useState(selectOption[defaultSelectOptionIndex].value);
+  const [multiOption, setMultiOption] = useState(selectOption[defaultSelectOptionIndex]);
+  const [footLock, setFootLock] = useState(false);
   const [trackingTooltip, setTrackingTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
+  const userState = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isMulti && FOOT_LOCK_AVAILABLE) {
+    if (multiOption.value && FOOT_LOCK_AVAILABLE) {
       fieldProps.control.unregister('footLock');
     }
-  }, [fieldProps.control, isMulti]);
+  }, [fieldProps.control, multiOption.value]);
 
   const blurFocused = useCallback((e: FocusEvent<HTMLButtonElement>) => e.target.blur(), []);
 
+  function handleChangeMultiSwitch(key: string) {
+    if (userState.planType === 'freemium') {
+      PlanManager.openProFeaturesNotAllowedModal(userState);
+      setMultiOption(selectOption[defaultSelectOptionIndex]);
+    } else {
+      const option = selectOption.find((option) => option.key === key);
+      if (option) {
+        setMultiOption(option);
+      }
+    }
+    doneVMOnBoarding(3);
+  }
+
+  function handleClickFootLock() {
+    if (userState.planType === 'freemium') {
+      PlanManager.openProFeaturesNotAllowedModal(userState);
+      setFootLock(false);
+    } else {
+      setFootLock(!footLock);
+    }
+    doneVMOnBoarding(3);
+  }
   return (
     <Fragment>
       <div className={cx('section-item')}>
@@ -57,34 +87,17 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             </div>
           )}
         </div>
-        <BaseField<Field.SwitchProps, string>
-          onChange={(value) => {
-            doneVMOnBoarding(3);
-            setIsMulti(selectOption.find((option) => option.key === value)!.value);
-          }}
-          className={cx('switch')}
-          options={selectOption}
-          control={fieldProps.control}
-          render={(props) => <Switch {...props} />}
-          defaultValue={selectOption[defaultSelectOptionIndex].key}
-          name="model"
-        />
+        <Switch className={cx('switch')} value={multiOption.key} options={selectOption} defaultValue={multiOption.key} onChange={handleChangeMultiSwitch} />
       </div>
-      {isMulti && (
+      {multiOption.value && (
         <div className={cx('section-item', 'section-text')}>
           <Typography className={cx('section-comments')}>For optimized performance, we recommended your video have less than 10 people in it.</Typography>
         </div>
       )}
-      {!isMulti && FOOT_LOCK_AVAILABLE && (
+      {!multiOption.value && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
-          <BaseField<Field.ToggleProps, boolean>
-            onChange={() => doneVMOnBoarding(3)}
-            control={fieldProps.control}
-            name="footLock"
-            render={(props) => <Toggle {...props} />}
-            defaultValue={false}
-          />
+          <Toggle onChange={handleClickFootLock} value={footLock} defaultValue={false} />
         </div>
       )}
       <div className={cx('section-item')}>

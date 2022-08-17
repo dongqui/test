@@ -1,4 +1,4 @@
-import { useCallback, ChangeEvent, FocusEvent } from 'react';
+import { useCallback, ChangeEvent, FocusEvent, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { debounce } from 'lodash';
 
@@ -74,11 +74,23 @@ const Loop = () => {
     [_startTimeIndex, _playState, _playDirection, _endTimeIndex, _currentTimeIndex, handleEndInputChange, dispatch],
   );
 
+  // When changing values from the app
+  const startRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (startRef.current) {
+      startRef.current.value = _startTimeIndex.toString();
+    }
+    if (endRef.current) {
+      endRef.current.value = _endTimeIndex.toString();
+    }
+  }, [_startTimeIndex, _endTimeIndex, dispatch]);
+
   return (
     <div className={cx('loop')}>
       <p>Loop</p>
-      <LoopInput defaultValue={0} onBlurInput={handleStartInputBlur} onChangeInput={handleStartInputChange} prefix="Start" />
-      <LoopInput defaultValue={500} onBlurInput={handleEndInputBlur} onChangeInput={handleEndInputChange} prefix="End" />
+      <LoopInput ref={startRef} defaultValue={0} onBlurInput={handleStartInputBlur} onChangeInput={handleStartInputChange} prefix="Start" />
+      <LoopInput ref={endRef} defaultValue={500} onBlurInput={handleEndInputBlur} onChangeInput={handleEndInputChange} prefix="End" />
     </div>
   );
 };

@@ -11,13 +11,25 @@
     border-width: 0 6px 8px 6.5px;
     border-radius: 2px;
   }
+}
 
+.default {
   &::before {
     border-color: $outline transparent;
   }
 
   &::after {
     border-color: $bg-elevated transparent;
+  }
+}
+
+.dark {
+  &::before {
+    border-color: $outline transparent;
+  }
+
+  &::after {
+    border-color: var(--grey010)transparent;
   }
 }
 

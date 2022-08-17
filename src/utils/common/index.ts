@@ -12,3 +12,4 @@ export { default as convertToRadian } from './convertToRadian';
 export { default as cloneItemsWithProps } from './cloneItemsWithProps';
 export { default as stateDiff } from './stateDiff';
 export { default as getTargetCoordinates } from './getTargetCoordinates';
+export { default as dateFormat } from './dateFormat';

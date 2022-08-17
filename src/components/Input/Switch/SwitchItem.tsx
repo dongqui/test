@@ -1,5 +1,5 @@
 import { FunctionComponent, memo, useCallback } from 'react';
-import { Typography } from 'components/Typography';
+import { Typography, Html } from 'components/Typography';
 
 import classNames from 'classnames/bind';
 import styles from './SwitchItem.module.scss';
@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface Props {
   option: {
     key: string;
-    value: string | number;
+    value: string | number | boolean;
     label: string | FunctionComponent;
   };
   selected: boolean;
@@ -29,20 +29,21 @@ const SwitchItem = ({ option, selected, onClick, disabled }: Props) => {
       {/*for hover text above select-effect*/}
       {typeof label === 'string' ? (
         <span className={cx('btn-text')}>
-          <Typography>{label}</Typography>
+          <Html content={label} />
         </span>
       ) : (
         <IconWrapper icon={label} className={cx('btn-icon')} />
       )}
+
       {/*for keep div size behind the select-effect due to overlayed text*/}
       {typeof label === 'string' ? (
         <span className={cx('padding')}>
-          <Typography>{label}</Typography>
+          <Html content={label} />
         </span>
       ) : (
         <IconWrapper icon={label} className={cx('btn-padding')} />
       )}
-      <input type="radio" value={value} defaultChecked={selected} />
+      <input type="radio" value={value.toString()} defaultChecked={selected} />
     </div>
   );
 };

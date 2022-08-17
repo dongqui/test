@@ -266,7 +266,7 @@ export type SelectingData = {
   allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
-export type ButtonColor = 'default' | 'primary' | 'negative';
+export type ButtonColor = 'default' | 'primary' | 'negative' | 'temp-purple' | 'temp-purple-2';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
 
@@ -297,3 +297,46 @@ export type TooltipArrowPlacement =
   | 'right-start'
   | 'right-middle'
   | 'right-end';
+
+export type UserResponse = {
+  uid: string;
+  email: string;
+  password: string;
+  encKey: string;
+  country: string;
+  jobs: string;
+  name: string;
+  isEmailVerified: boolean;
+  isMarketingChecked: boolean;
+  isPrivacyChecked: boolean;
+  isDeleted: boolean;
+  hadFreeTrial: boolean;
+};
+
+export type UserUsageInfoResponse = {
+  planType: string;
+  planName: string;
+  upcomingInvoice: number;
+  payment: {
+    type: string;
+    nextPaymentDate: string;
+  };
+  credits: {
+    remaining: number;
+    nextChargeCredit: number;
+    nextChargeDate: string;
+  };
+  storage: {
+    usageSize: number;
+    limitSize: number;
+  };
+  stipe: {
+    paymentMethodUrl: string;
+    billingInvoiceUrl: string;
+  };
+};
+
+export interface UserCreditInfoResponse {
+  remainingCredit: number;
+  totalCredit: number;
+}

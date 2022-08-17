@@ -227,12 +227,12 @@ export class IKController {
    * @param poleAngle Pole angle
    */
   public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, ikRotationQuaternion: Quaternion, blend: number, poleAngle: number) {
-    Vector3.LerpToRef(fkOriginalAbsolutePosition, ikAbsolutePosition, blend, TmpVectors.Vector3[0]);
     this.handle.position.copyFrom(ikAbsolutePosition);
     this.handle.rotationQuaternion?.copyFrom(ikRotationQuaternion);
     this.poleAngle = poleAngle;
+    this.blend = blend;
     this.target.computeWorldMatrix(true);
-    this.controller.update();
+    this.update();
   }
 
   /**
