@@ -1,10 +1,10 @@
 export const ONBOARDING_ID = {
-  IMPORT_FILE: 'onboarding-import-file-id' as const,
-  VIDEO_MODE: 'onboarding-video-mode-id' as const,
-  APPLY_MOTION: 'onboarding-apply-motion-id' as const,
-  PROPERTY_SET: 'onboarding-property-set-id' as const,
-  EDIT_KEYFRAME: 'onboarding-edit-keyframe-id' as const,
-  EXPORT_FILE: 'onboarding-export-file-id' as const,
-  RESET: 'onboarding-reset-id' as const,
-  HELP_BUTTON: 'help-button' as const,
+  IMPORT_FILE: 'onboarding-import-file-id',
+  VIDEO_MODE: 'onboarding-video-mode-id',
+  APPLY_MOTION: 'onboarding-apply-motion-id',
+  PROPERTY_SET: 'onboarding-property-set-id',
+  EDIT_KEYFRAME: 'onboarding-edit-keyframe-id',
+  EXPORT_FILE: 'onboarding-export-file-id',
+  RESET: 'onboarding-reset-id',
+  HELP_BUTTON: 'help-button',
 };

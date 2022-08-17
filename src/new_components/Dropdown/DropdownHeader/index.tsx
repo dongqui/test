@@ -11,9 +11,10 @@ interface Props {
   children: ReactChildren | ReactChild;
   onClose?: (params?: any) => void;
   className?: string;
+  id?: string;
 }
 
-const DropdownHeader = ({ children, onClose, className }: Props) => {
+const DropdownHeader = ({ children, onClose, className, id }: Props) => {
   const [{ isOpenMenu }, dispatch] = useContext(DropdownContext);
 
   // 드랍다운 헤더 클릭
@@ -25,7 +26,7 @@ const DropdownHeader = ({ children, onClose, className }: Props) => {
   }, [isOpenMenu, dispatch, onClose]);
 
   return (
-    <div onClick={handleClickDropdownHeader} className={cx(className)}>
+    <div onClick={handleClickDropdownHeader} className={cx(className)} id={id}>
       {children}
     </div>
   );

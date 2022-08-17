@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface Props {
   disabled?: boolean;
   menuItem: string;
-  onClick: (menuItem: any) => void;
+  onClick?: (menuItem: any) => void;
 }
 
 const DropdownItem: FunctionComponent<Props> = (props) => {
@@ -26,7 +26,7 @@ const DropdownItem: FunctionComponent<Props> = (props) => {
         const anchorTag = eventTarget.firstChild as HTMLAnchorElement;
         anchorTag.click();
       } else {
-        onClick(menuItem);
+        onClick && onClick(menuItem);
       }
     },
     [menuItem, onClick],
