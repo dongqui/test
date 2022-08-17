@@ -8,3 +8,4 @@ export { default as _AlertModal } from 'components/Modal/_AlertModal';
 export { default as NotificationModal } from 'components/Modal/NotificationModal';
 export { default as GuideModal } from 'components/Modal/GuideModal';
 export { default as OnBoardingModal } from 'components/Modal/OnBoardingModal';
+export { default as EmergencyModal } from 'components/Modal/EmergencyModal';
