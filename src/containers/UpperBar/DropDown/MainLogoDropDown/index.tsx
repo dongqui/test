@@ -1,5 +1,7 @@
 import { Dropdown, SvgPath, ExpandButton } from 'components';
 
+import HelpMenus from '../Common/HelpMenus';
+
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 
@@ -18,30 +20,7 @@ const MainLogoDropDown = () => {
           Go to dashboard
         </Dropdown.Item>
         <Dropdown.Submenu label="Help & Feddback" classNames={cx('main-logo-sub-menu')}>
-          <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
-            Help center
-          </Dropdown.Item>
-          <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
-            YouTube tutorials
-          </Dropdown.Item>
-
-          <Dropdown.Divider />
-
-          <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
-            Keyboard shortcuts
-          </Dropdown.Item>
-          <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
-            Reset onboarding
-          </Dropdown.Item>
-
-          <Dropdown.Divider />
-
-          <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
-            Submit feedback (ticket)
-          </Dropdown.Item>
-          <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
-            Contact support
-          </Dropdown.Item>
+          <HelpMenus />
         </Dropdown.Submenu>
         <Dropdown.Item menuItem="Onboarding" onClick={handleSelectGoToDashboard}>
           Go to homepage
