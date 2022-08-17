@@ -10,7 +10,6 @@ import * as globalUIActions from 'actions/Common/globalUI';
 
 import classNames from 'classnames/bind';
 import styles from './ExtractForm.module.scss';
-import { user } from 'reducers/User';
 
 const cx = classNames.bind(styles);
 
