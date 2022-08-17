@@ -554,7 +554,11 @@ export class IKModule extends Module {
         throw new Error('Could not bake, error while fetching animation ingredients.');
       }
       const targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
-      const layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
+      let layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
+      if (!layers.length) {
+        // Id not found, defaulting to first layer
+        layers = targetAnimation.layers;
+      }
       if (!layers[0]) {
         throw new Error('Could not bake, no layer is selected.');
       }
@@ -881,7 +885,7 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = (window as any).lookahead || 3;
+    const INTERPOLATION_FRAMES = (window as any).lookahead || 6;
 
     const averageLockedPositions = () => {};
 
@@ -927,7 +931,6 @@ export class IKModule extends Module {
       }
       // Averaging filter
       // TODO : debug
-      return;
       j = 0;
       let iKPositions = [];
       while (j < transformKeys.length) {
@@ -936,7 +939,7 @@ export class IKModule extends Module {
           j++;
           continue;
         }
-        let i = 0;
+        let i = j;
         let targetPosition = new Vector3();
         while (i < transformKeys.length && transformKeys[i].value) {
           targetPosition.addInPlace(extractPoseAtFrame(transformKeys[i].frame).position);
@@ -960,21 +963,28 @@ export class IKModule extends Module {
           i++;
         }
         // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
-        let postInterpolation = 0;
-        while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
-          frameIKPosition.push(iKPositions[currentIKIndex]);
-          i++;
-          postInterpolation++;
+        if (currentStatus) {
+          let postInterpolation = 0;
+          while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
+            if (!iKPositions[currentIKIndex]) {
+              debugger;
+            }
+            frameIKPosition.push(iKPositions[currentIKIndex]);
+            i++;
+            postInterpolation++;
+          }
+          // Clamp necessary if the last phase is no contact
+          currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
         }
-        currentIKIndex++;
         j = i;
+      }
+
+      if (frameIKPosition.length !== transformKeys.length) {
+        // Something went wrong in the algorithm
+        debugger;
       }
     };
     filterKeys();
-    if (frameIKPosition.length !== transformKeys.length) {
-      // Something went wrong in the algorithm
-      debugger;
-    }
 
     ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
 
@@ -994,7 +1004,7 @@ export class IKModule extends Module {
       // ! R&D Try : extract the toe rotation every frame, no matter the lock status
       ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));
       // Also try this IK pos averaging
-      // targetIKPosition = frameIKPosition[i];
+      targetIKPosition = frameIKPosition[i];
 
       let factor = transformKeys[Math.min(transformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
       if (factor === 0 && transformKeys[i].value === 0) {
@@ -1002,7 +1012,7 @@ export class IKModule extends Module {
         factor = -1;
       }
 
-      const interpolationStrength = (window as any).interpolation || 0.6;
+      const interpolationStrength = (window as any).interpolation || 0.8;
       currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
 
       // Insert keyframe if blend > 0
