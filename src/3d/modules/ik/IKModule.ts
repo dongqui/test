@@ -158,7 +158,6 @@ export class IKModule extends Module {
       result = this._generateIkPlaskTransformNodes(assetId);
     }
     const newAnimationIngredient = this.addIKTracks(assetId, animationIngredient);
-
     // Set initial IK position to FK
     this.setIKtoFK(this.ikControllers);
     this._enabled = true;
@@ -175,7 +174,6 @@ export class IKModule extends Module {
         return true;
       }
     }
-
     return false;
   }
 
@@ -253,11 +251,7 @@ export class IKModule extends Module {
           for (const track of newTracks) {
             let targetTrack = layer.tracks.find((layerTrack) => layerTrack.name === track.name);
             if (targetTrack) {
-              if (!targetTrack.target) {
-                targetTrack.target = castDraft(track.target);
-              } else {
-                console.log(`track ${track.name} already exists.`);
-              }
+              targetTrack.target = castDraft(track.target);
             } else {
               layer.tracks.push(castDraft(track));
               // console.log(`track ${track.name} created`);

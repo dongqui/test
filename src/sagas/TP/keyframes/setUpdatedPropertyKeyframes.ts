@@ -12,14 +12,15 @@ function getSelectedLayer(state: RootState) {
 }
 
 function* setUpdatedTransformKeys(propertyKeyframes: ClusteredKeyframe[], timeDiff: number) {
-  const result: UpdatedTransformKey[] = [];
+  let result: UpdatedTransformKey[] = [];
   propertyKeyframes.forEach((group) => {
     const { trackId, keyframes } = group;
     keyframes.forEach((keyframe) => {
       const { time, value } = keyframe;
-      if (value) result.push({ trackId, from: time, to: timeDiff + time, value });
+      if (value != null || value != undefined) result.push({ trackId, from: time, to: timeDiff + time, value });
     });
   });
+  console.log(result);
   return result;
 }
 
@@ -27,6 +28,7 @@ function* setUpdatedPropertyKeyframes(propertyKeyframes: ClusteredKeyframe[], ti
   const animationIngredientId = getAnimationIngredientId(yield select());
   const selectedLayer = getSelectedLayer(yield select());
   const transformKeys: UpdatedTransformKey[] = yield setUpdatedTransformKeys(propertyKeyframes, timeDiff);
+
   const updatePropertyKeyframes: UpdatedPropertyKeyframes = { animationIngredientId, layerId: selectedLayer, transformKeys };
   return updatePropertyKeyframes;
 }

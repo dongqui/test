@@ -738,7 +738,6 @@ export class AnimationModule extends Module {
               useFilter ? this.filterQuaternion(track.transformKeys, track.filterMinCutoff, track.filterBeta) : track.transformKeys,
             );
           } else if (propertyFormat === Animation.ANIMATIONTYPE_FLOAT) {
-            console.log(track.targetId);
             transformKeysListForTargetId[track.targetId].transformKeysMap[track.property]!.push(track.transformKeys);
           }
         });
@@ -817,7 +816,6 @@ export class AnimationModule extends Module {
     const totalTransformKeys = zipWith(...linearInterpolatedTransformKeysList, (...transformKeys) => {
       let value: Vector3 | number | Quaternion;
 
-      console.log(property);
       switch (property) {
         case 'position':
           value = this._getPositionSum(transformKeys.map((key) => key.value));
