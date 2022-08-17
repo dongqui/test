@@ -1,21 +1,26 @@
 import { Dispatch } from 'redux';
 
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
+import { IK_CONTROLLER_EL_ID } from 'constants/';
 import { getTargetCoordinates } from 'utils/common';
 import * as commonActions from 'actions/Common/globalUI';
+import { checkErrorNotice } from 'api';
 
 // Ref: https://www.figma.com/file/cjE07P97OvCTwOIornDmbK/Plask-Master-Design?node-id=2821%3A18043
 class PopupManager {
   isOnboardingDone: boolean;
   isNewFeatureModalDone: boolean;
   isVMOnboardingDone: boolean;
-  proceedGenerator: Generator<void> | null;
+  isIKOnboardingDone: boolean;
+
+  proceedGenerator: Generator<void | Promise<void>> | null;
   dispatch: Dispatch | null;
 
   constructor() {
     this.isOnboardingDone = !!localStorage.getItem('onboarding_1');
     this.isNewFeatureModalDone = localStorage.getItem('notification') === '1';
     this.isVMOnboardingDone = !!localStorage.getItem('onboarding_2');
+    this.isIKOnboardingDone = !!localStorage.getItem('onboarding_3');
 
     this.proceedGenerator = null;
     this.dispatch = null;
@@ -31,6 +36,8 @@ class PopupManager {
   }
 
   *proceedAnimationpagePopup() {
+    yield this.showEmergencyNotificationIfExsist();
+
     if (!this.isNewFeatureModalDone) {
       yield this.showNewFeatureModal();
     }
@@ -59,15 +66,19 @@ class PopupManager {
   showNewFeatureModal() {
     if (this.dispatch) {
       this.dispatch(
-        commonActions.openModal('NotificationModal', {
-          message: 'Check out the newly updated features.',
-          title: 'New Feature!',
-          closeCallback: () => {
-            this.next();
-            // key value change rule: '1' -> '2'
-            localStorage.setItem('notification', '1');
+        commonActions.openModal(
+          'NotificationModal',
+          {
+            message: 'Check out the newly updated features.',
+            title: 'New Feature!',
+            closeCallback: () => {
+              this.next();
+              // key value change rule: '1' -> '2'
+              localStorage.setItem('notification', '1');
+            },
           },
-        }),
+          'onboarding',
+        ),
       );
     }
   }
@@ -95,10 +106,74 @@ class PopupManager {
               },
               tooltipArrowPlacement: 'top-end',
             },
-            '',
+            'onboarding',
             false,
           ),
         );
+      }
+    }
+  }
+
+  showIKOnboarding() {
+    if (this.isIKOnboardingDone) {
+      return;
+    }
+
+    setTimeout(() => {
+      const targetElement = document.getElementById(IK_CONTROLLER_EL_ID);
+      const targetCoordinates = getTargetCoordinates(targetElement);
+      if (targetCoordinates?.leftTop && this.dispatch) {
+        this.dispatch(
+          commonActions.openModal(
+            'OnBoardingModal',
+            {
+              title: 'Set up IK',
+              message: 'Able to use <b>IK controller</b> For editing your animation.',
+              learnMoreLink: 'https://knowledge.plask.ai/how-can-you-set-up-an-ik-controller-on-your-3d-model',
+              postion: {
+                left: `${targetCoordinates?.leftTop?.x - 412}px`,
+                top: `${targetCoordinates?.leftTop?.y}px`,
+              },
+              tooltipArrowPlacement: 'right-start',
+              onCloseCallback: () => {
+                this.doneIKOnboarding();
+              },
+            },
+            'onboarding',
+            false,
+          ),
+        );
+      }
+    }, 1000);
+  }
+
+  doneIKOnboarding() {
+    localStorage.setItem('onboarding_3', 'onboarding_3');
+    this.isIKOnboardingDone = true;
+    this.closeOnboarding();
+  }
+
+  closeOnboarding() {
+    if (this.dispatch) {
+      this.dispatch(commonActions.closeModal('onboarding'));
+    }
+  }
+
+  async showEmergencyNotificationIfExsist() {
+    if (this.dispatch) {
+      const errorNotice = await checkErrorNotice();
+      if (errorNotice.title || errorNotice.contents) {
+        this.dispatch(
+          commonActions.openModal('EmergencyModal', {
+            message: `<p>${errorNotice.contents}</p>`,
+            title: errorNotice.title,
+            closeCallback: () => {
+              this.next();
+            },
+          }),
+        );
+      } else {
+        this.next();
       }
     }
   }

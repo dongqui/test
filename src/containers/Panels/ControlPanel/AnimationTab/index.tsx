@@ -7,6 +7,7 @@ import { useSelector } from 'reducers';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import IKControllerSection from './IKControllerSection/index';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -28,16 +29,27 @@ const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
 
       {_selectedTargets.length > 0 && <TransformSection isAllActive={isAllActive} selectableObjects={_selectableObjects} selectedTargets={_selectedTargets} />}
       {_selectedTargets.length > 0 && (
-        <FilterSection
+        <IKControllerSection
           isAllActive={isAllActive}
           visualizedAssetIds={_visualizedAssetIds}
-          selectedTargets={_selectedTargets}
+          retargetMaps={_retargetMaps}
           seletedLayer={_selectedLayer}
           animationIngredients={_animationIngredients}
-          playState={_playState}
-          playDirection={_playDirection}
+          selectableObjects={_selectableObjects}
+          selectedTargets={_selectedTargets}
         />
       )}
+      {/*{_selectedTargets.length > 0 && (*/}
+      {/*  <FilterSection*/}
+      {/*    isAllActive={isAllActive}*/}
+      {/*    visualizedAssetIds={_visualizedAssetIds}*/}
+      {/*    selectedTargets={_selectedTargets}*/}
+      {/*    seletedLayer={_selectedLayer}*/}
+      {/*    animationIngredients={_animationIngredients}*/}
+      {/*    playState={_playState}*/}
+      {/*    playDirection={_playDirection}*/}
+      {/*  />*/}
+      {/*)}*/}
     </Fragment>
   );
 };

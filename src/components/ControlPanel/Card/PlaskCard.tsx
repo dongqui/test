@@ -11,12 +11,14 @@ const cx = classnames.bind(styles);
 type Title = 'normal' | 'toggle' | 'dropdown';
 
 interface Props {
+  id?: string;
   children?: ReactNode;
   isPowerOn?: boolean;
-  title?: string;
   type?: Title;
   activeStatus: boolean;
   className?: string;
+  title: ReactNode;
+  prepend?: ReactNode;
 
   toggleOptions?: {
     withSwitch?: boolean;
@@ -31,7 +33,7 @@ interface Props {
   };
 }
 
-const PlaskCard: FunctionComponent<Props> = ({ children, className, type = 'normal', title, isPowerOn = true, activeStatus, toggleOptions, dropdownOptions }) => {
+const PlaskCard: FunctionComponent<Props> = ({ id, children, className, type = 'normal', title, isPowerOn = true, activeStatus, toggleOptions, dropdownOptions }) => {
   const [isSectionSpread, setIsSectionSpread] = useState<boolean>(isPowerOn);
 
   // callback to spread/fold transform section
@@ -45,11 +47,11 @@ const PlaskCard: FunctionComponent<Props> = ({ children, className, type = 'norm
   const classes = cx('section', className, { able: activeStatus });
 
   return (
-    <section className={classes}>
+    <section className={classes} id={id}>
       {title && (
         <PlaskCardTitle
           type={type}
-          text={title}
+          title={title}
           isSpread={isSectionSpread}
           handleSpread={handleSectionSpread}
           activeStatus={activeStatus}

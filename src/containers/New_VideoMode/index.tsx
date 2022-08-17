@@ -24,6 +24,7 @@ import ControlPanel from './ControlPanel';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { Overlay } from 'components/Overlay';
+import TagManager from 'react-gtm-module';
 
 const cx = classNames.bind(styles);
 
@@ -94,6 +95,15 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
 
     localStorage.setItem(VM_ON_BOARDING_KEY, Number(OnBoardingMask | KEY).toString());
+  }, []);
+
+  useEffect(() => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'change-mode',
+        mode: 'VM',
+      },
+    });
   }, []);
 
   const boxProps = useMemo(

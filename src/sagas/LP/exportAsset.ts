@@ -23,7 +23,8 @@ async function getAllAnimationIngredients(animationIngredients: AnimationIngredi
         const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
         const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
 
-        return plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+        const { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
+        return animationIngredient;
       }
     }),
   );
@@ -35,7 +36,7 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
   const { visibilityOptions } = screenData;
   const { nodes } = lpNode;
   const { screenList, fps, assetList } = plaskProject;
-  const { animationIngredients, retargetMaps } = animationData;
+  const { retargetMaps } = animationData;
   const { parentId, type, assetId, nodeName, motion, format } = action.payload;
 
   const baseScreen = screenList[0];
@@ -50,8 +51,14 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
       const asset = find(assetList, { id: assetId });
       const targetMotion = find(nodes, { id: motion });
       const animationIds = targetMotion ? [targetMotion.animationId!] : nodes.filter((node) => node.assetId === assetId && node.type === 'MOTION').map((node) => node.animationId!);
-      const ingredients: AnimationIngredient[] = yield call(getAllAnimationIngredients, animationIngredients, animationIds, asset!);
 
+      // TODO: Room for improvement, Make Loading Modal work
+      const { animationIngredient, impactedFK } = plaskEngine.ikModule.bakeIKintoFKExport();
+      if (!animationIngredient) {
+        throw new Error('could not bake IK track');
+      }
+
+      const ingredients: AnimationIngredient[] = yield call(getAllAnimationIngredients, [animationIngredient], animationIds, asset!);
       ingredients.forEach((animationIngredient) => {
         const animationGroup = plaskEngine.animationModule.createAnimationGroupFromIngredient(animationIngredient, fps);
       });
@@ -74,13 +81,13 @@ export default function* handleExportAsset(action: ReturnType<typeof lpNodeActio
 
       try {
         const fbxUrl: string = yield call(convertModel, lpNode.sceneId, file, format);
-        console.log(fbxUrl);
         const link = document.createElement('a');
         link.href = fbxUrl;
         link.download = resultName;
         link.click();
         yield put(globalUIActions.closeModal());
       } catch (e) {
+        console.log(e);
         yield put(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
