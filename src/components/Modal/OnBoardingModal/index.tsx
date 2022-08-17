@@ -33,9 +33,6 @@ const OnboardingModal = ({ className, onClose, onCloseCallback, learnMoreLink, p
     onCloseCallback && onCloseCallback();
   };
 
-  const handleClickLearnMore = () => {
-    learnMoreLink;
-  };
   return (
     <div className={cx('container', className)} style={postion}>
       <TooltipArrow placement={tooltipArrowPlacement} />

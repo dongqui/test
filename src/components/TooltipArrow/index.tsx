@@ -15,12 +15,13 @@ interface Props {
    * xxx-end: 말풍선 꼬리 기준으로 좌측 부분, 상단 부분이 긴 말풍선
    */
   placement: TooltipArrowPlacement;
+
+  // TODO: 색상 이름 정하기
+  backgroundColor?: 'default' | 'dark';
 }
 
-const Arrow: FunctionComponent<Props> = (props) => {
-  const { placement } = props;
-
-  return <div className={cx('arrow', placement)} />;
+const Arrow: FunctionComponent<Props> = ({ placement, backgroundColor = 'default' }) => {
+  return <div className={cx('arrow', placement, backgroundColor)} />;
 };
 
 export default Arrow;

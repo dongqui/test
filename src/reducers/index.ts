@@ -11,6 +11,7 @@ import { modeSelection } from './modeSelection';
 import { keyframes } from './keyframes';
 import { trackList } from './trackList';
 import { globalUI } from './Common/globalUI';
+import { user } from './User/';
 
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   keyframes,
   trackList,
   globalUI,
+  user,
 });
 
 // type 적용된 useSelector
