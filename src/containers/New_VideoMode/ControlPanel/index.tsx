@@ -13,6 +13,7 @@ import { BaseInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Overlay } from 'components/Overlay';
 import ExtractForm from './ExtractForm';
+import popupManager from 'utils/PopupManager';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -99,7 +100,6 @@ const ControlPanel = ({
       setValueFormData({
         ...data,
       });
-
       setIsOpenExtractModal(true);
     }
   };
