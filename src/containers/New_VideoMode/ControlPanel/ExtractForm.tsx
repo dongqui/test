@@ -7,6 +7,7 @@ import { BaseField } from 'components/Form';
 import { useSelector } from 'reducers';
 import { useDispatch } from 'react-redux';
 import * as globalUIActions from 'actions/Common/globalUI';
+import PlanManager from 'utils/PlanManager';
 
 import classNames from 'classnames/bind';
 import styles from './ExtractForm.module.scss';
@@ -53,11 +54,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
 
   function handleChangeMultiSwitch(key: string) {
     if (userState.planType === 'freemium') {
-      dispatch(
-        globalUIActions.openModal('ProFeaturesModal', {
-          hadFreeTrial: userState.hadFreeTrial,
-        }),
-      );
+      PlanManager.openProFeaturesNotAllowedModal(userState);
       setMultiOption(selectOption[defaultSelectOptionIndex]);
     } else {
       const option = selectOption.find((option) => option.key === key);
@@ -70,11 +67,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
 
   function handleClickFootLock() {
     if (userState.planType === 'freemium') {
-      dispatch(
-        globalUIActions.openModal('ProFeaturesModal', {
-          hadFreeTrial: userState.hadFreeTrial,
-        }),
-      );
+      PlanManager.openProFeaturesNotAllowedModal(userState);
       setFootLock(false);
     } else {
       setFootLock(!footLock);

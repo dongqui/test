@@ -18,6 +18,7 @@ import ExtractForm from './ExtractForm';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'reducers';
 import PlanManager from 'utils/PlanManager';
+import * as errors from 'errors';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -267,7 +268,13 @@ const ControlPanel = ({
               isOpen: true,
               case: 'Condition',
             });
-          } else if (statusCode === 408) {
+          } else if (statusCode === errors.TOOL_PAYMENT_NOT_ALLOWED_FUNCTION) {
+            PlanManager.openProFeaturesNotAllowedModal(user);
+          } else if (statusCode === error.TOOL_PAYMENT_MAXIMUM_SIZE) {
+            PlanManager.openStorageExceededModal(user);
+          } else if (statusCode === error.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
+            PlanManager.openCreditExceededModal(user, duration);
+          } else if (statusCode === error.INVALID_MOCAP_VIDEO_DURATION) {
             setIsOpenExceptionModal({
               isOpen: true,
               case: 'Timeout',

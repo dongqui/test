@@ -105,6 +105,16 @@ class PlanManager {
       );
     }
   }
+
+  openProFeaturesNotAllowedModal(user: User) {
+    if (this.dispatch) {
+      this.dispatch(
+        globalUIActions.openModal('ProFeaturesModal', {
+          hadFreeTrial: user.hadFreeTrial,
+        }),
+      );
+    }
+  }
 }
 
 export default new PlanManager();
