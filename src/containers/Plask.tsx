@@ -8,6 +8,7 @@ import AnimationMode from './AnimationMode';
 import VideoMode from './New_VideoMode';
 
 import popupManager from 'utils/PopupManager';
+import planManager from 'utils/PlanManager';
 import * as socketActions from 'actions/Common/socket';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import { RequestNodeResponse } from 'types/LP';
@@ -68,6 +69,7 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     }
 
     initProjectAuth();
+    planManager.init(dispatch);
     popupManager.init(dispatch);
     popupManager.next();
   }, [dispatch, sceneId, token, data]);

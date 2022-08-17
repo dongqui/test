@@ -17,8 +17,7 @@ import { Overlay } from 'components/Overlay';
 import ExtractForm from './ExtractForm';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'reducers';
-import { dateFormat } from 'utils/common';
-import popupManager from 'utils/PopupManager';
+import PlanManager from 'utils/PlanManager';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -174,65 +173,11 @@ const ControlPanel = ({
       },
     });
 
-    // TODO: calculate credit
-    const creditExceed = !user.credits?.remaining;
-    const storageExceed = (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0);
-
-    if (creditExceed) {
-      if (user.planType === 'freemium') {
-        dispatch(
-          globalUIActions.openModal('ConfirmModal', {
-            title: 'Need more credits?',
-            message: '34 credits will be required on this. To resume, get more credits with a Mocap Pro plan.',
-            onConfirm: () => {
-              dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
-            },
-            confirmText: 'Upgrade',
-          }),
-        );
-      } else {
-        dispatch(
-          globalUIActions.openModal('AlertModal', {
-            title: 'Out of credits',
-            message: `34 credits will be required on this. Mocap Pro plan will be renewed with ${user.credits?.nextChargeCredit} credits on ${dateFormat(
-              user.credits?.nextChargeDate || '',
-            )}.`,
-            confirmText: 'Okay',
-          }),
-        );
-      }
+    if (PlanManager.isCreditExceeded(user, duration)) {
+      PlanManager.openCreditExceededModal(user, duration);
       return;
-    } else if (storageExceed) {
-      if (user.planType === 'freemium') {
-        dispatch(
-          globalUIActions.openModal(
-            'ConfirmModal',
-            {
-              title: 'Need more storage?',
-              message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. You can get more storage with a Mocap Pro plan.',
-              confirmText: 'Upgrade',
-              onConfirm: () => {
-                dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
-              },
-            },
-            'upgrade',
-            false,
-          ),
-        );
-      } else {
-        dispatch(
-          globalUIActions.openModal(
-            'AlertModal',
-            {
-              title: 'Out of storage',
-              message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
-              confirmText: 'Okay',
-            },
-            'upgrade',
-            false,
-          ),
-        );
-      }
+    } else if (PlanManager.isStorageExceeded(user)) {
+      PlanManager.openStorageExceededModal(user);
       return;
     }
 

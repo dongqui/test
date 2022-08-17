@@ -13,10 +13,11 @@ import Box from 'components/Layout/Box';
 import LPHeader from './LPHeader';
 import LPControlbar from './LPControlbar';
 import LPBody from './LPBody';
+import TagManager from 'react-gtm-module';
+import PlanManager from 'utils/PlanManager';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import TagManager from 'react-gtm-module';
 
 const cx = classNames.bind(styles);
 
@@ -38,39 +39,8 @@ const LibraryPanel: FunctionComponent = () => {
     );
 
     const totalFileSize = files?.reduce((sum, file) => sum + file.size, 0);
-    const isLimitSizeOver = (_user.storage?.limitSize || 0) <= (_user.storage?.usageSize || 0) + totalFileSize;
-
-    if (isLimitSizeOver) {
-      if (_user.planType === 'freemium') {
-        dispatch(
-          globalUIActions.openModal(
-            'ConfirmModal',
-            {
-              title: 'Need more storage?',
-              message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. You can get more storage with a Mocap Pro plan.',
-              confirmText: 'Upgrade',
-              onConfirm: () => {
-                dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: _user.hadFreeTrial }));
-              },
-            },
-            'upgrade',
-            false,
-          ),
-        );
-      } else {
-        dispatch(
-          globalUIActions.openModal(
-            'AlertModal',
-            {
-              title: 'Out of storage',
-              message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
-              confirmText: 'Okay',
-            },
-            'upgrade',
-            false,
-          ),
-        );
-      }
+    if (PlanManager.isStorageExceeded(_user, totalFileSize)) {
+      PlanManager.openStorageExceededModal(_user);
     } else if (hasMoreThanOneVideo) {
       TagManager.dataLayer({
         dataLayer: {

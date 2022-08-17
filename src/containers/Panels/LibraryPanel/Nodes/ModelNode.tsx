@@ -1,12 +1,12 @@
+import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useSelector } from 'reducers';
 
+import { useSelector } from 'reducers';
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import BaseNode from './BaseNode';
-import React from 'react';
-import plaskEngine from '3d/PlaskEngine';
+import PlanManager from 'utils/PlanManager';
 
 interface Props {
   node: LP.Node;
@@ -35,38 +35,8 @@ const ModelNode = ({ node }: Props) => {
     }
     e.stopPropagation();
 
-    const isStorageLimitExceed = (user.storage?.limitSize || 0) < (user.storage?.usageSize || 0);
-    if (isStorageLimitExceed) {
-      if (user.planType === 'freemium') {
-        dispatch(
-          globalUIActions.openModal(
-            'ConfirmModal',
-            {
-              title: 'Need more storage?',
-              message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. You can get more storage with a Mocap Pro plan.',
-              confirmText: 'Upgrade',
-              onConfirm: () => {
-                dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
-              },
-            },
-            'upgrade',
-            false,
-          ),
-        );
-      } else {
-        dispatch(
-          globalUIActions.openModal(
-            'AlertModal',
-            {
-              title: 'Out of storage',
-              message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
-              confirmText: 'Okay',
-            },
-            'upgrade',
-            false,
-          ),
-        );
-      }
+    if (PlanManager.isStorageExceeded(user)) {
+      PlanManager.openStorageExceededModal(user);
       return;
     }
     dispatch(
