@@ -105,6 +105,8 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         // This only sets state.visualizedAssetIds
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
 
+        plaskEngine.assetModule.setVisibility(1);
+
         // Foot locking
         let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId);
 
