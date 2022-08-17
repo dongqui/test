@@ -10,3 +10,4 @@ export { default as GuideModal } from 'components/Modal/GuideModal';
 export { default as OnBoardingModal } from 'components/Modal/OnBoardingModal';
 export { default as ProFeaturesModal } from 'components/Modal/ProFeaturesModal';
 export { default as UpgradePlanModal } from 'components/Modal/UpgradePlanModal';
+export { default as EmergencyModal } from 'components/Modal/EmergencyModal';

@@ -18,6 +18,7 @@ import ExtractForm from './ExtractForm';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'reducers';
 import { dateFormat } from 'utils/common';
+import popupManager from 'utils/PopupManager';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';

@@ -4,6 +4,7 @@ import { ONBOARDING_ID } from 'containers/Onboarding/id';
 import { IK_CONTROLLER_EL_ID } from 'constants/';
 import { getTargetCoordinates } from 'utils/common';
 import * as commonActions from 'actions/Common/globalUI';
+import { checkErrorNotice } from 'api';
 
 // Ref: https://www.figma.com/file/cjE07P97OvCTwOIornDmbK/Plask-Master-Design?node-id=2821%3A18043
 class PopupManager {
@@ -12,7 +13,7 @@ class PopupManager {
   isVMOnboardingDone: boolean;
   isIKOnboardingDone: boolean;
 
-  proceedGenerator: Generator<void> | null;
+  proceedGenerator: Generator<void | Promise<void>> | null;
   dispatch: Dispatch | null;
 
   constructor() {
@@ -35,6 +36,8 @@ class PopupManager {
   }
 
   *proceedAnimationpagePopup() {
+    yield this.showEmergencyNotificationIfExsist();
+
     if (!this.isNewFeatureModalDone) {
       yield this.showNewFeatureModal();
     }
@@ -126,7 +129,7 @@ class PopupManager {
             {
               title: 'Set up IK',
               message: 'Able to use <b>IK controller</b> For editing your animation.',
-              learnMoreLink: 'https://www.notion.so/plasticmask/User-guide-ac4bba1b75384c309e7a24e6542454ba#3c8552982dea49e2a1f22a92055d54b4',
+              learnMoreLink: 'https://knowledge.plask.ai/how-can-you-set-up-an-ik-controller-on-your-3d-model',
               postion: {
                 left: `${targetCoordinates?.leftTop?.x - 412}px`,
                 top: `${targetCoordinates?.leftTop?.y}px`,
@@ -153,6 +156,25 @@ class PopupManager {
   closeOnboarding() {
     if (this.dispatch) {
       this.dispatch(commonActions.closeModal('onboarding'));
+    }
+  }
+
+  async showEmergencyNotificationIfExsist() {
+    if (this.dispatch) {
+      const errorNotice = await checkErrorNotice();
+      if (errorNotice.title || errorNotice.contents) {
+        this.dispatch(
+          commonActions.openModal('EmergencyModal', {
+            message: `<p>${errorNotice.contents}</p>`,
+            title: errorNotice.title,
+            closeCallback: () => {
+              this.next();
+            },
+          }),
+        );
+      } else {
+        this.next();
+      }
     }
   }
 }

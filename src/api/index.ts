@@ -12,3 +12,4 @@ export { getUser as getUser } from './User';
 export { getUserUsageInfo as getUserUsageInfo } from './User';
 export { getUserStorageInfo as getUserStorageInfo } from './User';
 export { getUserCreditInfo as getUserCreditInfo } from './User';
+export { default as checkErrorNotice } from './checkErrorNotice';
