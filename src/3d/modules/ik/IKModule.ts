@@ -29,7 +29,6 @@ import { IKController } from './IKController';
 import { ArrayOfThreeNumbers, ArrayOfFourNumbers, PlaskProperty, PlaskRetargetMap, GizmoMode, GizmoSpace, AnimationIngredient, PlaskTrack } from 'types/common';
 import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 import produce, { castDraft } from 'immer';
-import { WritableDraft } from 'immer/dist/internal';
 import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
 import { IK_SKELETON_VIEWER_OPTION, RESULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { current, WritableDraft } from 'immer/dist/internal';
