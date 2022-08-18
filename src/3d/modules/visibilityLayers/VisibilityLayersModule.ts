@@ -112,6 +112,13 @@ export class VisibilityLayersModule extends Module {
       transformNodes.forEach((transformNode) => {
         const joint = this.plaskEngine.scene.getMeshById(transformNode.id.replace('transformNode', 'joint'));
         if (joint) {
+          if (value > 0) {
+            joint.isPickable = true;
+            joint.isVisible = true;
+          } else {
+            joint.isPickable = false;
+            joint.isVisible = false;
+          }
           if (joint.material) {
             joint.material.alpha = value;
           }
