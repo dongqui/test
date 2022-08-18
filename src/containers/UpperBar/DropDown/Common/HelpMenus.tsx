@@ -21,7 +21,7 @@ export default function HelpMenus() {
         </a>
       </Dropdown.Item>
       <Dropdown.Item menuItem="Onboarding">
-        <a href="www.youtube.com/watch?v=pzpbS5G71MU&list=PLvYxc99tMa7WKnQJETPKB_5niLXB2nGb5" rel="noopener noreferrer" target="_blank">
+        <a href="https://www.youtube.com/watch?v=pzpbS5G71MU&list=PLvYxc99tMa7WKnQJETPKB_5niLXB2nGb5" rel="noopener noreferrer" target="_blank">
           YouTube tutorials
         </a>
       </Dropdown.Item>
