@@ -49,6 +49,7 @@ export class IKModule extends Module {
   private _selectionChangeObserver: ReturnType<SelectorModule['onSelectionChangeObservable']['add']> = null;
   private _activeTransformNodes: TransformNode[] = [];
   private _fkControlledJoints: { ikNode: TransformNode; fkNode: TransformNode }[] = [];
+  private _ikControlledJoints: { resultNode: TransformNode; fkNode: TransformNode }[] = [];
   private _fkPoseJoints: TransformNode[] = [];
   private _selectedIkControllers: Array<IKController> = [];
   private _resultMeshes: Mesh[] = [];
@@ -120,6 +121,9 @@ export class IKModule extends Module {
   private _updateIKResult() {
     for (const { ikNode, fkNode } of this._fkControlledJoints) {
       copyTransformFrom(ikNode, fkNode);
+    }
+    for (const { resultNode, fkNode } of this._ikControlledJoints) {
+      copyTransformFrom(resultNode, fkNode);
     }
   }
 
@@ -199,6 +203,7 @@ export class IKModule extends Module {
     }
     this.ikControllers.length = 0;
     this._fkControlledJoints.length = 0;
+    this._ikControlledJoints.length = 0;
     this._fkPoseJoints.length = 0;
 
     for (const mesh of this._resultMeshes) {
@@ -844,6 +849,21 @@ export class IKModule extends Module {
       this.ikControllers.push(ikController);
       ikDrivenTransformNodes = ikDrivenTransformNodes.concat(ikController.fkInfluenceChain!);
     });
+
+    // TODO Can combine two controlled joints(_ikControlledJoints & _fkControlledJoints) into one
+    resultClone.rootNodes.forEach((node: TransformNode) => {
+      const allNodes = [node].concat(node.getDescendants());
+      for (const node of allNodes) {
+        const fkNode = scene.getNodeByName(node.name.substring(7)) as TransformNode;
+        if (!fkNode) {
+          throw new Error('Cloning error.');
+        }
+        if (!ikDrivenTransformNodes.includes(fkNode)) {
+          this._ikControlledJoints.push({ resultNode: node, fkNode });
+        }
+      }
+    });
+
     ikClone.rootNodes.forEach((node: TransformNode) => {
       const allNodes = [node].concat(node.getDescendants());
       for (const node of allNodes) {

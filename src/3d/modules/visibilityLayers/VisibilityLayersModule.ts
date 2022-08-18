@@ -45,7 +45,7 @@ export class VisibilityLayersModule extends Module {
       const skeletonViewer = new PlaskSkeletonViewer(skeleton, meshes[0], this.plaskEngine.scene, true, meshes[0].renderingGroupId, undefined, DEFAULT_SKELETON_VIEWER_OPTION);
       skeletonViewer.mesh.id = `${visualizedAsset.id}//skeletonViewer`;
       skeletonViewer.isEnabled = this.visibilityOptions.isBoneVisible;
-      console.log(skeletonViewer);
+
       this._skeletonViewer = skeletonViewer;
     }
   }
