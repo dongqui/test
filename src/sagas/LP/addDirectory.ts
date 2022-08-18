@@ -8,6 +8,8 @@ import { convertServerResponseToNode } from 'utils/LP/converters';
 import { RequestNodeResponse, CreateFolderOrMocapBodyData } from 'types/LP';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as api from 'api';
+import { TOOL_PAYMENT_MAXIMUM_SIZE } from 'errors';
+import PlanManager from 'utils/PlanManager';
 
 function generateFolderName(nodes: LP.Node[], nodeId: string) {
   const currentPathNodeName = nodes
@@ -29,7 +31,7 @@ function generateFolderName(nodes: LP.Node[], nodeId: string) {
 }
 
 export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActions.addDirectoryAsync.request>) {
-  const { lpNode }: RootState = yield select();
+  const { lpNode, user }: RootState = yield select();
   const { nodeId } = action.payload;
 
   try {
@@ -51,7 +53,10 @@ export default function* handleAddDirectory(action: ReturnType<typeof lpNodeActi
     });
 
     yield put(lpNodeActions.addDirectoryAsync.success({ nodes, newDirectory: directoryNode }));
-  } catch (e) {
+  } catch (e: any) {
+    if (e.statusCode === TOOL_PAYMENT_MAXIMUM_SIZE) {
+      PlanManager.openStorageExceededModal(user);
+    }
     // yield put(lpNodeActions.addDirectoryAsync.failure(e));
   }
 }

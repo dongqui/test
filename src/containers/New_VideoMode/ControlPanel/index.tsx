@@ -1,9 +1,11 @@
 import { RefObject, useState, useCallback, useRef, ChangeEvent, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import axios, { Canceler } from 'axios';
+
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
 import * as lpActions from 'actions/LP/lpNodeAction';
+import * as userActions from 'actions/User';
 import requestApi from 'api/requestApi';
 import { FilledButton, OutlineButton } from 'components/Button';
 import { Typography } from 'components/Typography';
@@ -13,11 +15,13 @@ import { BaseInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Overlay } from 'components/Overlay';
 import ExtractForm from './ExtractForm';
+import TagManager from 'react-gtm-module';
+import { useSelector } from 'reducers';
+import PlanManager from 'utils/PlanManager';
+import * as errors from 'errors';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
-import TooltipArrow from 'components/TooltipArrow';
-import TagManager from 'react-gtm-module';
 
 const cx = classNames.bind(styles);
 
@@ -68,7 +72,7 @@ const ControlPanel = ({
   setIsOpenLoadingModal,
 }: Props) => {
   const dispatch = useDispatch();
-
+  const user = useSelector((state) => state.user);
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
   const [valueName, setValueName] = useState('Extracted motion');
@@ -99,7 +103,6 @@ const ControlPanel = ({
       setValueFormData({
         ...data,
       });
-
       setIsOpenExtractModal(true);
     }
   };
@@ -163,11 +166,21 @@ const ControlPanel = ({
   }, []);
 
   const handleSubmitModal = async () => {
+    setIsOpenExtractModal(false);
+
     TagManager.dataLayer({
       dataLayer: {
         event: 'export-motion',
       },
     });
+
+    if (PlanManager.isCreditExceeded(user, duration)) {
+      PlanManager.openCreditExceededModal(user, duration);
+      return;
+    } else if (PlanManager.isStorageExceeded(user)) {
+      PlanManager.openStorageExceededModal(user);
+      return;
+    }
 
     if (videoRef.current) {
       if (endValue - startValue > 300) {
@@ -191,7 +204,6 @@ const ControlPanel = ({
       formData.append('isFootLock', valueFormData.footLock ? 'true' : 'false');
       formData.append('isTPose', valueFormData.tPose ? 'true' : 'false');
 
-      setIsOpenExtractModal(false);
       setIsOpenLoadingModal(true);
 
       await requestApi({
@@ -221,7 +233,8 @@ const ControlPanel = ({
               onUnmount();
               dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
               dispatch(lpActions.initNodes(response.data));
-
+              dispatch(userActions.getUserCreditInfoAsync.request());
+              dispatch(userActions.getUserStorageInfoAsync.request());
               return {
                 loaded: true,
                 error: null,
@@ -255,7 +268,13 @@ const ControlPanel = ({
               isOpen: true,
               case: 'Condition',
             });
-          } else if (statusCode === 408) {
+          } else if (statusCode === errors.TOOL_PAYMENT_NOT_ALLOWED_FUNCTION) {
+            PlanManager.openProFeaturesNotAllowedModal(user);
+          } else if (statusCode === error.TOOL_PAYMENT_MAXIMUM_SIZE) {
+            PlanManager.openStorageExceededModal(user);
+          } else if (statusCode === error.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
+            PlanManager.openCreditExceededModal(user, duration);
+          } else if (statusCode === error.INVALID_MOCAP_VIDEO_DURATION) {
             setIsOpenExceptionModal({
               isOpen: true,
               case: 'Timeout',

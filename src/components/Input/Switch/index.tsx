@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 // Since it is input component, it has value and label separately.
 interface Option {
   key: string;
-  value: string | number;
+  value: string | number | boolean;
   label: string | FunctionComponent;
 }
 
@@ -34,10 +34,7 @@ const Switch = ({ defaultValue, disabled = false, fullSize = false, options, typ
     (key: string) => {
       // active when press another button and not disabled
       if (selectedKey !== key && !disabled) {
-        const ret = onChange(key);
-        if (ret !== false) {
-          setSelectedKey(key);
-        }
+        onChange(key);
       }
     },
     [selectedKey, disabled, onChange],

@@ -18,6 +18,7 @@ import {
   Quaternion,
   InstantiatedEntries,
   StandardMaterial,
+  Scalar,
 } from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Module } from '../Module';
@@ -31,6 +32,7 @@ import produce, { castDraft } from 'immer';
 import { WritableDraft } from 'immer/dist/internal';
 import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
 import { IK_SKELETON_VIEWER_OPTION, RESULT_SKELETON_VIEWER_OPTION } from 'utils/const';
+import { current, WritableDraft } from 'immer/dist/internal';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -619,7 +621,11 @@ export class IKModule extends Module {
         throw new Error('Could not bake, error while fetching animation ingredients.');
       }
       const targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
-      const layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
+      let layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
+      if (!layers.length) {
+        // Id not found, defaulting to first layer
+        layers = targetAnimation.layers;
+      }
       if (!layers[0]) {
         throw new Error('Could not bake, no layer is selected.');
       }
@@ -663,8 +669,13 @@ export class IKModule extends Module {
         targetLayerId,
       );
 
-      impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
-      impactedIK.push(selectedIK.handle.getPlaskEntity());
+      try {
+        impactedFK.push(selectedIK.fkInfluenceChain[0].getPlaskEntity(), selectedIK.fkInfluenceChain[1].getPlaskEntity(), selectedIK.fkInfluenceChain[2].getPlaskEntity());
+        impactedIK.push(selectedIK.handle.getPlaskEntity());
+      } catch (e) {
+        // In case entities are still not added (bake on import - foot locking), impacted node are still not in the state
+        // getPlaskEntity will fail
+      }
 
       animationGroupTemp.goToFrame(0);
       animationGroupTemp.stop();
@@ -979,25 +990,45 @@ export class IKModule extends Module {
     }
   }
 
-  public computeFootLocking(boneName: string, transformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
+  public computeFootLocking(boneName: string, readonlyTransformKeys: IAnimationKey[], animationGroup: AnimationGroup, animationIngredient: AnimationIngredient) {
+    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+    const cloneTransformKeys = (transformKeys: IAnimationKey[]) => {
+      // The purpose of this function is to give a writable copy of transform keys
+      // So we can apply filters, without altering the read-only state object
+      const result: IAnimationKey[] = [];
+      for (const key of transformKeys) {
+        result.push({
+          value: key.value,
+          frame: key.frame,
+        });
+      }
+
+      return result;
+    };
+    const transformKeys = cloneTransformKeys(readonlyTransformKeys);
+    const frameIKPosition: Vector3[] = [];
+
+    if (!transformKeys.length) {
+      return;
+    }
+
     // Create/find an IK controller for this bone
     const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === boneName);
-
-    if (boneName.includes('Toe')) this.adjustToeBase(boneName, animationIngredient);
 
     if (!ikController) {
       console.warn('Foot locking not supported for ' + boneName);
       return null;
     }
-    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
+
     const targetLayerId = animationIngredient.layers[0].id;
 
-    const targetLayer = animationIngredient.layers[0];
+    let targetLayer = animationIngredient.layers[0];
     let targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
 
     if (!targetTrack) {
       targetAnimation = this.addIKTracks(animationIngredient.assetId, animationIngredient);
-      targetTrack = targetLayer!.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
+      targetLayer = targetAnimation.layers[0];
+      targetTrack = targetLayer?.tracks.find((track) => track.targetId === ikController.handle.id && track.property === 'position');
       if (!targetTrack) {
         throw new Error('Error : IK tracks could not be created for foot locking');
       }
@@ -1005,261 +1036,176 @@ export class IKModule extends Module {
 
     // Add an animation track for position
     animationGroup.start();
-    let lastUnlockedPosition = null;
-    let lastUnlockedPoleAngle = null;
-    let groundLevelY = 100;
-    let lastUnlockedFootQuaternion = null;
 
-    const origPoints: { contact: number; position: Vector3; rotation: number; quaternion: Quaternion; blendIn: boolean; blendOut: boolean }[] = [];
+    // Direct method (look ahead up to INTERPOLATION_FRAMES frames)
+    let contactIncoming = false;
+    let currentBlend = 0;
+    let targetPoleAngle = 0;
+    let targetIKPosition = Vector3.Zero();
+    let targetIKQuaternion = Quaternion.Identity();
+    const INTERPOLATION_FRAMES = (window as any).lookahead || 6;
 
-    for (const key of transformKeys) {
-      const frameIndex = key.frame;
+    const averageLockedPositions = () => {};
+
+    const extractPoseAtFrame = (frameIndex: number) => {
       animationGroup.goToFrame(frameIndex);
       ikController.fkInfluenceChain![0].computeWorldMatrix(true);
-      let position = ikController.fkInfluenceChain![0].absolutePosition.clone();
-      //let rotation = -ikController.fkInfluenceChain![2].absoluteRotationQuaternion.toEulerAngles().y;
-      // Lots of assumptions here, but basically we are taking the hip left/right to hip center as a normal for the pole angle
-      let direction = (ikController.fkInfluenceChain![2].parent as Mesh).absolutePosition.subtract(ikController.fkInfluenceChain![2].absolutePosition).normalize();
-      const factor = ikController.limb === 'leftFoot' ? -1 : 1;
-      const rotation = Math.atan2(factor * direction.z, factor * direction.x);
-      if (key.value === 0 || !lastUnlockedPosition) {
-        lastUnlockedPosition = position;
-      }
-      if (key.value === 0 || lastUnlockedPoleAngle === null) {
-        lastUnlockedPoleAngle = rotation;
-      }
-      if (key.value === 0 || lastUnlockedFootQuaternion === null) {
-        lastUnlockedFootQuaternion = ikController.fkInfluenceChain![0].rotationQuaternion!.clone();
-      }
+      return {
+        position: ikController.fkInfluenceChain![0].absolutePosition.clone(),
+        quaternion: ikController.fkInfluenceChain![0].absoluteRotationQuaternion.clone(),
+        poleAngle: 0,
+      };
+    };
 
-      if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
-        if (position.y < groundLevelY) groundLevelY = position.y;
-        origPoints.push({ contact: key.value, position: position, rotation: rotation, quaternion: lastUnlockedFootQuaternion, blendIn: false, blendOut: false });
-      }
-    }
-
-    const adjustedCurve: Vector3[] = [];
-    const blendFrames = 5;
-    if (ikController.limb === 'leftFoot' || ikController.limb === 'rightFoot') {
-      const origCurve: Vector3[] = []; // just to visualize the ORIGINAL path
-
-      const contactPoints: Vector3[] = [];
-      const centerPoints: { qty: number; point: Vector3; index: number; used: boolean }[] = [];
-      const noContactPoints: Vector3[] = [];
-      const adjustedPoints: Vector3[] = [];
-
-      let pointsQty: number = 0;
-      let reduceValue = 3; // less than 3 => closer to original (maintain the "slide" effect)
-
-      // Generate the NEW ADJUSTED PATH
-      function setAdjustedCurve(scene: Scene, value?: Vector3) {
-        if (value) {
-          adjustedPoints.push(value);
-        }
-
-        const finalCurve = Curve3.CreateCatmullRomSpline(adjustedPoints, Math.floor(pointsQty / adjustedPoints.length));
-
-        // To visualize the ADJUSTED PATH
-        const finalCurveLine = MeshBuilder.CreateLines('adjusted', { points: finalCurve.getPoints() }, scene);
-        finalCurveLine.color = new Color3(0, 0.6, 1);
-
-        if (!centerPoints[centerPoints.length - 2].used) {
-          for (let i = 0; i < centerPoints[centerPoints.length - 2].qty; i++) {
-            adjustedCurve.push(centerPoints[centerPoints.length - 2].point);
+    const filterKeys = () => {
+      // We apply 2 filters in this function :
+      // Low pass filter contact data (we want to remove short contact/out of contact periods)
+      // And averaging filter in contact periods
+      let j = 0;
+      // Contact filter
+      while (j < transformKeys.length) {
+        let currentPhase = transformKeys[j].value;
+        for (let i = j + 1; i < transformKeys.length; i++) {
+          if (i === transformKeys.length - 1) {
+            // End of the list, we are done
+            j = transformKeys.length;
+            break;
           }
-          centerPoints[centerPoints.length - 2].used = true;
-        }
-        finalCurve.getPoints().forEach((point) => {
-          adjustedCurve.push(point);
-        });
-        if (!centerPoints[centerPoints.length - 1].used) {
-          let diff = Math.floor(centerPoints[centerPoints.length - 1].qty / 2) + adjustedCurve.length - centerPoints[centerPoints.length - 1].index;
-          for (let i = 0; i < centerPoints[centerPoints.length - 1].qty - diff; i++) {
-            adjustedCurve.push(centerPoints[centerPoints.length - 1].point);
-          }
-          centerPoints[centerPoints.length - 1].used = true;
-        }
-
-        adjustedPoints.length = 0;
-        noContactPoints.length = 0;
-        pointsQty = 0;
-
-        adjustedPoints.push(centerPoints[centerPoints.length - 1].point);
-      }
-
-      origPoints.forEach((value, index, array) => {
-        origCurve.push(value.position); // To visualize the ORIGINAL path
-
-        // Evaluate CONTACT
-        if (value.contact === 1) {
-          // Store CONTACT points
-          contactPoints.push(value.position);
-
-          // Evaluate END OF CONTACTS or END OF POINTS
-          if ((array[index + 1] && array[index + 1].contact === 0) || index === array.length - 1) {
-            // To prevent "false positive" result
-            if (contactPoints.length > 1) {
-              // Storing BlendIn index
-              if (array[index - contactPoints.length - blendFrames]) array[index - contactPoints.length - blendFrames].blendIn = true;
-              // Storing BlendOut index
-              if (array[index + blendFrames]) array[index + blendFrames].blendOut = true;
-              // Calculate CENTER POINT of CONTACTS
-              const min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-              const max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-              contactPoints.forEach((vec) => {
-                min.x = Math.min(min.x, vec.x);
-                min.y = Math.min(min.y, vec.y);
-                min.z = Math.min(min.z, vec.z);
-                max.x = Math.max(max.x, vec.x);
-                max.y = Math.max(max.y, vec.y);
-                max.z = Math.max(max.z, vec.z);
-              });
-              const result = max.add(min).scale(0.5);
-              result.y = groundLevelY;
-              pointsQty++;
-              // Store contact points QUANTITY, CENTER POINT, CENTER POINT INDEX and a BOOLEAN to prevent reuse
-              centerPoints.push({
-                qty: contactPoints.length,
-                point: result,
-                index: index - contactPoints.length + Math.floor(contactPoints.length / 2),
-                used: false,
-              });
-              // Evaluate if there are NO CONTACT points stored
-              if (noContactPoints.length > 0) {
-                setAdjustedCurve(this.plaskEngine.scene, result);
-              } else {
-                adjustedPoints.push(result);
+          if (transformKeys[i].value !== currentPhase) {
+            if (i - j < INTERPOLATION_FRAMES * 2) {
+              // The locking / unlocking phase is too short, flip the status to ignore this phase
+              for (let k = j; k < i; k++) {
+                transformKeys[k].value = 1 - transformKeys[k].value;
               }
+              // Continue this phase as an opposite phase
+              currentPhase = 1 - currentPhase;
             } else {
-              noContactPoints.push(value.position);
-              pointsQty++;
-            }
-            contactPoints.length = 0;
-          }
-        } else {
-          // Store NO CONTACT Points
-          noContactPoints.push(value.position);
-          pointsQty++;
-
-          // Evaluate END OF NO CONTACTS or END OF POINTS
-          if ((array[index + 1] && array[index + 1].contact === 1 && array[index + 2] && array[index + 2].contact !== 0) || index === array.length - 1) {
-            // Evaluate FALSE CONTACTS
-            // Trying to optimize the PATH to reduce the "slide" effect
-            let reducedPoints: Vector3[] = [];
-            if (index === array.length - 1) {
-              // Evaluate if last point
-              reducedPoints = noContactPoints.slice(reduceValue);
-              reduceValue = 1;
-            } else {
-              reducedPoints = noContactPoints.slice(reduceValue, noContactPoints.length - reduceValue);
-            }
-
-            // Reducing the PATH to adjust/curve it with CatmullRomSpline
-            for (let i = 0; i < reducedPoints.length; i += reduceValue) {
-              adjustedPoints.push(reducedPoints[i]);
-            }
-
-            // Evaluate if last point
-            if (index === array.length - 1) {
-              setAdjustedCurve(this.plaskEngine.scene);
+              // This phase was long enough, we can proceed to the next one
+              j = i;
+              break;
             }
           }
         }
-      });
-      // To visualize the ORIGINAL PATH
-      const origCurveLine = MeshBuilder.CreateLines('original', { points: origCurve }, this.plaskEngine.scene);
-      origCurveLine.color = new Color3(1, 0.6, 0);
-
-      //console.log(origPoints);
-    }
-
-    let frameIndex = 0;
-    let poleAngleRotation = 0;
-    let toeQuaternion: Quaternion = new Quaternion();
-    let blendValue = 0;
-    let blendQty = 0;
-    for (const point of adjustedCurve) {
-      if (origPoints[frameIndex].rotation) {
-        poleAngleRotation = origPoints[frameIndex].rotation;
-        toeQuaternion = origPoints[frameIndex].quaternion;
+      }
+      // Averaging filter
+      // TODO : debug
+      j = 0;
+      let iKPositions = [];
+      while (j < transformKeys.length) {
+        let currentPhase = transformKeys[j].value;
+        if (!currentPhase) {
+          j++;
+          continue;
+        }
+        let i = j;
+        let targetPosition = new Vector3();
+        while (i < transformKeys.length && transformKeys[i].value) {
+          targetPosition.addInPlace(extractPoseAtFrame(transformKeys[i].frame).position);
+          i++;
+        }
+        const factor = i - j;
+        if (factor > 0) {
+          targetPosition.scaleInPlace(1 / factor);
+        }
+        iKPositions.push(targetPosition);
+        j = i;
+      }
+      // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
+      let currentIKIndex = 0;
+      j = 0;
+      while (j < transformKeys.length) {
+        let currentStatus = transformKeys[j].value;
+        let i = j;
+        while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
+          frameIKPosition.push(iKPositions[currentIKIndex]);
+          i++;
+        }
+        // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
+        if (currentStatus) {
+          let postInterpolation = 0;
+          while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
+            if (!iKPositions[currentIKIndex]) {
+              debugger;
+            }
+            frameIKPosition.push(iKPositions[currentIKIndex]);
+            i++;
+            postInterpolation++;
+          }
+          // Clamp necessary if the last phase is no contact
+          currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
+        }
+        j = i;
       }
 
-      // Blend adjust
-      if (origPoints[frameIndex] && origPoints[frameIndex].contact == 1 && blendQty == 0) {
-        blendValue = 1;
+      if (frameIKPosition.length !== transformKeys.length) {
+        // Something went wrong in the algorithm
+        debugger;
       }
-      if (origPoints[frameIndex] && origPoints[frameIndex].blendIn) {
-        blendQty = 1 / blendFrames;
-      } else if (origPoints[frameIndex + blendFrames] && origPoints[frameIndex + blendFrames].blendOut) {
-        blendQty = -1 / blendFrames;
-      }
-      blendValue = blendValue + blendQty;
-      if (blendValue < 0) blendValue = 0;
-      else if (blendValue > 1) blendValue = 1;
+    };
+    filterKeys();
 
-      const targetDataList = [
-        {
-          targetId: ikController.handle.id,
-          property: 'position' as PlaskProperty,
-          //value: lastUnlockedPosition.asArray() as ArrayOfThreeNumbers,
-          value: point.asArray() as ArrayOfThreeNumbers,
-          // value: point,
-        },
-        {
-          targetId: ikController.handle.id,
-          property: 'poleAngle' as PlaskProperty,
-          // value: poleAngleRotation,
-          value: 0,
-        },
-        {
-          targetId: ikController.handle.id,
-          property: 'blend' as PlaskProperty,
-          //value: key.value,
-          value: blendValue,
-        },
-        // Toe locking - for now always locked
-        // {
-        //   targetId: boneName,
-        //   property: 'rotationQuaternion' as PlaskProperty,
-        //   value: toeQuaternion.asArray() as ArrayOfFourNumbers,
-        // },
-      ];
-      targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, frameIndex, targetDataList);
-      frameIndex++;
-      if (!targetAnimation) {
-        throw new Error('Could not bake, error while fetching animation ingredients.');
+    ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
+
+    for (let i = 0; i < transformKeys.length; i++) {
+      const key = transformKeys[i];
+
+      if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
+        // The first contact frame is in INTERPOLATION_FRAMES
+        contactIncoming = true;
+        // Use this position frow now on in this interpolation
+        ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
+      } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
+        // We were interpolating towards, or even in contact until now, we can release the constraint
+        contactIncoming = false;
+      }
+
+      // ! R&D Try : extract the toe rotation every frame, no matter the lock status
+      ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));
+      // Also try this IK pos averaging
+      targetIKPosition = frameIKPosition[i];
+
+      let factor = transformKeys[Math.min(transformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
+      if (factor === 0 && transformKeys[i].value === 0) {
+        // There is no contact ahead anymore, remove blend with inertia
+        factor = -1;
+      }
+
+      const interpolationStrength = (window as any).interpolation || 0.8;
+      currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
+
+      // Insert keyframe if blend > 0
+      if (currentBlend >= 0) {
+        const targetDataList = [
+          {
+            targetId: ikController.handle.id,
+            property: 'position' as PlaskProperty,
+            value: targetIKPosition.asArray() as ArrayOfThreeNumbers,
+          },
+          {
+            targetId: ikController.handle.id,
+            property: 'poleAngle' as PlaskProperty,
+            value: 0,
+          },
+          {
+            targetId: ikController.handle.id,
+            property: 'blend' as PlaskProperty,
+            value: currentBlend,
+          },
+          {
+            targetId: ikController.handle.id,
+            property: 'rotationQuaternion' as PlaskProperty,
+            value: targetIKQuaternion.asArray() as ArrayOfFourNumbers,
+          },
+        ];
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, transformKeys[i].frame, targetDataList);
+        if (!targetAnimation) {
+          throw new Error('Could not bake, error while fetching animation ingredients.');
+        }
       }
     }
 
     animationGroup.goToFrame(0);
     animationGroup.stop();
-
-    return targetAnimation;
-  }
-
-  public adjustToeBase(boneName: string, animationIngredient: AnimationIngredient) {
-    let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
-    const targetLayerId = animationIngredient.layers[0].id;
-    const targetLayer = animationIngredient.layers[0];
-    let targetTrack = targetLayer!.tracks.find((track) => track.targetId === boneName && track.property === 'isContact');
-    const toeQuaternion = new Quaternion(-0.25, 0, 0, 0.96);
-
-    if (targetTrack) {
-      for (const key of targetTrack.transformKeys) {
-        //console.log(key);
-        if (key.value === 0) {
-          const targetDataList = [
-            // Toe locking - for now just one angle
-            {
-              targetId: boneName,
-              property: 'rotationQuaternion' as PlaskProperty,
-              value: toeQuaternion.asArray() as ArrayOfFourNumbers,
-            },
-          ];
-          targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, key.frame, targetDataList);
-        }
-      }
-    }
 
     return targetAnimation;
   }

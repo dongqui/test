@@ -3,6 +3,8 @@ import { FunctionComponent, memo } from 'react';
 import { RequestNodeResponse } from 'types/LP';
 import { ResizeProvider } from 'contexts/LS/ResizeContext';
 import { Authentication } from 'containers/Error';
+import { tokenManager } from 'api/requestApi';
+
 import Plask from './Plask';
 
 interface Props {
@@ -22,6 +24,8 @@ const Index: FunctionComponent<Props> = ({ browserType, error, token, sceneId, d
   if (error) {
     return <Authentication statusCode={error.statusCode} message={error.message} />;
   }
+
+  tokenManager.set(token);
 
   return (
     <main>

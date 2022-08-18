@@ -649,7 +649,7 @@ export class AnimationModule extends Module {
     layers.forEach((layer) => {
       if (layer.isIncluded) {
         layer.tracks.forEach((track) => {
-          if (track.property === 'isContact') {
+          if (track.property === 'isContact' && track.transformKeys.length) {
             contactData.push({ boneName: track.targetId, transformKeys: track.transformKeys });
           }
         });

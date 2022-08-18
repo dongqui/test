@@ -9,6 +9,8 @@ import { MocapJson } from 'types/common';
 import { BONE_NAMES, TRACK_DATA_PROPERTY } from 'constants/index';
 import * as api from 'api';
 import { convertServerResponseToNode } from 'utils/LP/converters';
+import { TOOL_PAYMENT_MAXIMUM_SIZE } from 'errors';
+import PlanManager from 'utils/PlanManager';
 
 const readJsonChannel = channel();
 
@@ -21,7 +23,7 @@ export function* watchReadJsonChannel() {
 }
 
 export default function* importMocapJson(action: ReturnType<typeof lpNodeActions.importMocapJson>) {
-  const { lpNode }: RootState = yield select();
+  const { lpNode, user }: RootState = yield select();
   const mocapJsonFile = action.payload;
 
   const reader = new FileReader();
@@ -38,18 +40,21 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         });
         const mocap = convertServerResponseToNode(reponseNode);
         readJsonChannel.put(lpNodeActions.addNodes([mocap]));
-      } catch (e) {
-        console.log(e);
-        readJsonChannel.put(
-          globalUIActions.openModal('_AlertModal', {
-            message: 'Please check the structure of the json file.',
-            title: 'Import failed',
-            footerButtonText: 'Learn More',
-            onClickFooterButton: function () {
-              window.open('https://plasticmask.notion.site/Plask-JSON-structure-2e9e24b944b64de38029b59b38f0a5ef', '_blank');
-            },
-          }),
-        );
+      } catch (e: any) {
+        if (e.statusCode === TOOL_PAYMENT_MAXIMUM_SIZE) {
+          PlanManager.openStorageExceededModal(user);
+        } else {
+          readJsonChannel.put(
+            globalUIActions.openModal('_AlertModal', {
+              message: 'Please check the structure of the json file.',
+              title: 'Import failed',
+              footerButtonText: 'Learn More',
+              onClickFooterButton: function () {
+                window.open('https://plasticmask.notion.site/Plask-JSON-structure-2e9e24b944b64de38029b59b38f0a5ef', '_blank');
+              },
+            }),
+          );
+        }
       }
     }
   };
