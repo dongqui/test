@@ -25,20 +25,6 @@ type HelpDropdownItem = 'Onboarding' | 'Tutorial' | 'Help center' | 'Contact us'
 const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
   const dispatch = useDispatch();
   const { mode } = useSelector((state: RootState) => state.modeSelection);
-  const onboardingStep = useSelector((state: RootState) => state.globalUI.onboardingStep);
-
-  const handleSelectDropdown = useCallback(
-    (menuItem: HelpDropdownItem) => {
-      if (menuItem === 'Onboarding') {
-        dispatch(commonActions.progressOnboarding({ onboardingStep: 0 }));
-      }
-    },
-    [dispatch],
-  );
-
-  const handleDropdownClose = useCallback(() => {
-    dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
-  }, [dispatch]);
 
   const handleChangeSwitchMode = useCallback(() => {
     dispatch(commonActions.closeModal('GuideModal'));
