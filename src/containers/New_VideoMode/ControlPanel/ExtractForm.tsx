@@ -87,7 +87,17 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             </div>
           )}
         </div>
-        <Switch className={cx('switch')} value={multiOption.key} options={selectOption} defaultValue={multiOption.key} onChange={handleChangeMultiSwitch} />
+
+        <BaseField<React.ComponentProps<typeof Switch>, string>
+          className={cx('switch')}
+          onChange={handleChangeMultiSwitch}
+          control={fieldProps.control}
+          name="model"
+          value={multiOption.key}
+          options={selectOption}
+          defaultValue={multiOption.key}
+          render={(props) => <Switch {...props} />}
+        />
       </div>
       {multiOption.value && (
         <div className={cx('section-item', 'section-text')}>
@@ -97,7 +107,14 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       {!multiOption.value && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <Typography>Foot lock</Typography>
-          <Toggle onChange={handleClickFootLock} value={footLock} defaultValue={false} />
+          <BaseField<React.ComponentProps<typeof Toggle>, boolean>
+            onChange={handleClickFootLock}
+            control={fieldProps.control}
+            name="footLock"
+            render={(props) => <Toggle {...props} />}
+            defaultValue={false}
+            value={footLock}
+          />
         </div>
       )}
       <div className={cx('section-item')}>
