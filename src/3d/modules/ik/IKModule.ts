@@ -880,14 +880,87 @@ export class IKModule extends Module {
     animationGroup.start();
 
     // Direct method (look ahead up to INTERPOLATION_FRAMES frames)
-    let contactIncoming = false;
     let currentBlend = 0;
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
     const INTERPOLATION_FRAMES = (window as any).lookahead || 6;
 
-    const averageLockedPositions = () => {};
+    let groundCorrectionEachFrame: number[] = [];
+    const fixHipPosition = (frameIkPosition: Vector3[]) => {
+      const Y_MARGIN = 0; // Approx world units between the heel and the ground (Y axis)
+      let j = 0;
+      while (j < transformKeys.length) {
+        if (transformKeys[j].value) {
+          // In contact, ground position is hard set
+          groundCorrectionEachFrame.push(-frameIKPosition[j].y + Y_MARGIN);
+          j++;
+          continue;
+        }
+
+        // Out of contact, we interpolate ground till the next contact
+        let i = j;
+        let initialGroundCorrection = groundCorrectionEachFrame.length ? groundCorrectionEachFrame[groundCorrectionEachFrame.length - 1] : null;
+        while (i < transformKeys.length && !transformKeys[i].value) {
+          i++;
+        }
+        let nbFramesOutOfContact = i - j;
+        let endGroundCorrection = null;
+        if (i < transformKeys.length) {
+          endGroundCorrection = -frameIKPosition[i].y + Y_MARGIN;
+        }
+
+        for (let k = j; k < i; k++) {
+          let value;
+          if (initialGroundCorrection === null) {
+            value = endGroundCorrection || 0;
+          } else if (endGroundCorrection === null) {
+            value = initialGroundCorrection;
+          } else {
+            value = Scalar.Lerp(initialGroundCorrection, endGroundCorrection, (k - j) / nbFramesOutOfContact);
+          }
+          groundCorrectionEachFrame.push(value);
+        }
+
+        j = i;
+      }
+
+      // Finding hip Bone
+      const retargetMap = this.getRetargetMap(ikController.assetId);
+      if (!retargetMap) {
+        console.warn('Cannot find retarget map');
+        return;
+      }
+      const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes('hips'));
+      if (!retargetValue) {
+        console.warn('Cannot find hip bone');
+        return;
+      }
+      const transformNodeId = retargetValue.targetTransformNodeId;
+      if (!transformNodeId) {
+        console.warn('Retargeting not completed for hip');
+        return;
+      }
+      // Fixing hip bone
+      let targetLayer = animationIngredient.layers[0];
+      let targetTrack = targetLayer!.tracks.find((track) => track.targetId === transformNodeId && track.property === 'position');
+      if (!targetTrack) {
+        console.warn('Could not find hip track for hip correction');
+        return;
+      }
+      for (let i = 0; i < targetTrack.transformKeys.length; i++) {
+        const positionCorrected = (targetTrack.transformKeys[i].value as Vector3).clone();
+        positionCorrected.y += groundCorrectionEachFrame[i];
+        const targetDataList = [
+          {
+            targetId: transformNodeId,
+            property: 'position' as PlaskProperty,
+            value: positionCorrected.asArray() as ArrayOfThreeNumbers,
+          },
+        ];
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, transformKeys[i].frame, targetDataList);
+      }
+    };
 
     const extractPoseAtFrame = (frameIndex: number) => {
       animationGroup.goToFrame(frameIndex);
@@ -930,7 +1003,6 @@ export class IKModule extends Module {
         }
       }
       // Averaging filter
-      // TODO : debug
       j = 0;
       let iKPositions = [];
       while (j < transformKeys.length) {
@@ -985,21 +1057,25 @@ export class IKModule extends Module {
       }
     };
     filterKeys();
-
+    if (boneName.includes('rightFoot')) {
+      // Maybe averaging both foot is more accurate ? for now right foot only will do
+      fixHipPosition(frameIKPosition);
+    }
+    console.log(targetAnimation);
     ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
 
     for (let i = 0; i < transformKeys.length; i++) {
-      const key = transformKeys[i];
+      // const key = transformKeys[i];
 
-      if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
-        // The first contact frame is in INTERPOLATION_FRAMES
-        contactIncoming = true;
-        // Use this position frow now on in this interpolation
-        ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
-      } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
-        // We were interpolating towards, or even in contact until now, we can release the constraint
-        contactIncoming = false;
-      }
+      // if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
+      //   // The first contact frame is in INTERPOLATION_FRAMES
+      //   contactIncoming = true;
+      //   // Use this position frow now on in this interpolation
+      //   ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
+      // } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
+      //   // We were interpolating towards, or even in contact until now, we can release the constraint
+      //   contactIncoming = false;
+      // }
 
       // ! R&D Try : extract the toe rotation every frame, no matter the lock status
       ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));
