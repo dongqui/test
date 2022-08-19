@@ -22,7 +22,7 @@ const EXPORT_OPTIONS = {
       !node.name.includes('scene') &&
       !node.id.includes('joint') &&
       !node.id.includes('ik_ctrl') &&
-      !node.id.includes('__plask_ghost_') &&
+      !node.id.includes('__plask_result_') &&
       !node.id.includes('skeletonViewer') &&
       !node.id.includes('Light')
     ) {
@@ -35,7 +35,7 @@ const EXPORT_OPTIONS = {
       !node.name.includes('scene') &&
       !node.id.includes('joint') &&
       !node.id.includes('ik_ctrl') &&
-      !node.id.includes('__plask_ghost_') &&
+      !node.id.includes('__plask_result_') &&
       !node.id.includes('skeletonViewer') &&
       !node.id.includes('Light')
     );
@@ -127,15 +127,15 @@ export class AssetModule extends Module {
    * @param name - file name
    */
   public async sceneToGlb(scene: Scene, name: string) {
-    // Fixes babylon exporter bug that adds the ghost skeleton even if the id is explictly excluded (resulting in invalid GLTF)
-    const ghostIkSkeletons = [];
+    // Fixes babylon exporter bug that adds the result skeleton even if the id is explictly excluded (resulting in invalid GLTF)
+    const resultIkSkeletons = [];
     for (let i = scene.skeletons.length - 1; i >= 0; i--) {
-      if (scene.skeletons[i].id.includes('__plask_ghost_')) {
-        ghostIkSkeletons.push(scene.skeletons.splice(i, 1)[0]);
+      if (scene.skeletons[i].id.includes('__plask_result_')) {
+        resultIkSkeletons.push(scene.skeletons.splice(i, 1)[0]);
       }
     }
     const result = await GLTF2Export.GLBAsync(scene, name, EXPORT_OPTIONS);
-    for (const skeleton of ghostIkSkeletons) {
+    for (const skeleton of resultIkSkeletons) {
       scene.skeletons.push(skeleton);
     }
 

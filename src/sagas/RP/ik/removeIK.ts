@@ -9,11 +9,12 @@ export function* removeIK(action: ReturnType<typeof removeIKAction>) {
   const state: RootState = yield select();
   const { assetId } = action.payload;
 
-  let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
-  if (animationIngredient) {
-    animationIngredient = plaskEngine.ikModule.removeIkAnimationData(plaskEngine.animationModule.getCurrentAnimationIngredient(assetId)!);
-    yield put(editAnimationIngredient({ animationIngredient }));
-  }
+  // TODO NEED TO "REFACTOR" API
+  // let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
+  // if (animationIngredient) {
+  //   animationIngredient = plaskEngine.ikModule.removeIkAnimationData(plaskEngine.animationModule.getCurrentAnimationIngredient(assetId)!);
+  //   yield put(editAnimationIngredient({ animationIngredient }));
+  // }
 
   const plaskTransformNodes = plaskEngine.ikModule.removeIK();
   // If no plaskTransformNodes are returned, it means the controllers were already added
