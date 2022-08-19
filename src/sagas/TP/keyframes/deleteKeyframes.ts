@@ -44,6 +44,7 @@ function* handleDeleteKeyFramesRequest(action: ReturnType<typeof keyframesAction
           if (isUndefined(targetTrack) || (targetTrack && targetTrack.id !== trackId)) {
             targetTrack = targetLayer.tracks.find((track) => track.id === trackId); // targetTrack 업데이트
           }
+
           if (targetTrack) {
             // from key 삭제
             targetTrack.transformKeys = targetTrack.transformKeys.filter((transformKey) => transformKey.frame !== targetTransformKey.from);
@@ -60,6 +61,7 @@ function* handleDeleteKeyFramesRequest(action: ReturnType<typeof keyframesAction
         });
       }
     });
+    console.log(newAnimationIngredient);
     yield put(animationDataActions.editAnimationIngredient({ animationIngredient: newAnimationIngredient }));
     const _targetTransformKeys = [...targetTransformKeys];
     for (const transformkey of targetTransformKeys) {
@@ -67,6 +69,8 @@ function* handleDeleteKeyFramesRequest(action: ReturnType<typeof keyframesAction
         _targetTransformKeys.push({ ...transformkey, trackId: transformkey.trackId.replace('//rotation', '//rotationQuaternion') });
       }
     }
+
+    console.log(_targetTransformKeys);
 
     const deletedTracks: { trackId: string; deletedIndexes: number[] }[] = [];
     for (const transformKey of _targetTransformKeys) {

@@ -748,11 +748,14 @@ export class AnimationModule extends Module {
       let propertyName: PlaskProperty;
       for (propertyName in transformKeysMap) {
         const totalTransformKeys = this.getTotalTransformKeys(transformKeysMap[propertyName]!, propertyName);
-        const newAnimation = new Animation(`${target.name}|${propertyName}`, propertyName, fps, PlaskPropertyFormat[propertyName], Animation.ANIMATIONLOOPMODE_CYCLE);
-        newAnimation.setKeys(totalTransformKeys);
 
-        if (newAnimation.getKeys().length > 0) {
-          newAnimationGroup.addTargetedAnimation(newAnimation, target);
+        if (target) {
+          const newAnimation = new Animation(`${target.name}|${propertyName}`, propertyName, fps, PlaskPropertyFormat[propertyName], Animation.ANIMATIONLOOPMODE_CYCLE);
+          newAnimation.setKeys(totalTransformKeys);
+
+          if (newAnimation.getKeys().length > 0) {
+            newAnimationGroup.addTargetedAnimation(newAnimation, target);
+          }
         }
       }
     });
@@ -812,14 +815,28 @@ export class AnimationModule extends Module {
     // Sums all layers (each transformKeys in transformKeysList) for each frame
     const totalTransformKeys = zipWith(...linearInterpolatedTransformKeysList, (...transformKeys) => {
       let value: Vector3 | number | Quaternion;
-      if (property === 'position') {
-        value = this._getPositionSum(transformKeys.map((key) => key.value));
-      } else if (property === 'rotationQuaternion') {
-        value = this._getRotationQuaternionSum(transformKeys.map((key) => key.value));
-      } else if (property === 'scaling') {
-        value = this._getScalingSum(transformKeys.map((key) => key.value));
-      } else {
-        value = this._combine(transformKeys.map((key) => key.value));
+
+      switch (property) {
+        case 'position':
+          value = this._getPositionSum(transformKeys.map((key) => key.value));
+          break;
+
+        case 'rotationQuaternion':
+          value = this._getRotationQuaternionSum(transformKeys.map((key) => key.value));
+          break;
+        case 'scaling':
+          value = this._getScalingSum(transformKeys.map((key) => key.value));
+          break;
+
+        // case 'blend':
+        //   break;
+
+        // case 'poleAngle':
+        //   break;
+
+        default:
+          value = this._combine(transformKeys.map((key) => key.value));
+          break;
       }
 
       return {
