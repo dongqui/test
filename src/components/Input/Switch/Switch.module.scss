@@ -9,10 +9,9 @@
   background-color: $contentbg-base;
   user-select: none;
   justify-content: space-around;
-
   border-radius: 6px;
   height: 24px;
-  width: 100px;
+  width: 128px;
 
   &.fullsize {
     width: 100%;
@@ -37,5 +36,4 @@
   &.disabled {
     background-color: $outline-border;
   }
-
 }
