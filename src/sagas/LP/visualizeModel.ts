@@ -121,7 +121,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
             animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
             yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
-            console.log('CALLED MODEL');
             // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
             for (const controller of plaskEngine.ikModule.ikControllers) {
               if (controller.limb.toLowerCase().includes('foot')) {

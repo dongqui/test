@@ -138,6 +138,10 @@ export class IKController {
    * All transformNodes influenced by the IK controller for FK
    */
   public fkInfluenceChain?: [TransformNode, TransformNode, TransformNode];
+  /**
+   * All transformNodes influenced by the IK controller for FK
+   */
+  public resultInfluenceChain?: [TransformNode, TransformNode, TransformNode];
 
   /**
    * Should the IK controller be locked to the FK position
@@ -248,8 +252,7 @@ export class IKController {
     this.poleAngle = poleAngle;
     this.blend = blend;
 
-    this.ikController.update();
-    this.resultController.update();
+    this.update();
   }
 
   /**
@@ -339,6 +342,19 @@ export class IKController {
       }
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
+    }
+
+    // IK controllers for FK (for blending)
+    if (params.resultBone && params.resultTransformNode && params.resultBody) {
+      const tnIk = params.resultTransformNode;
+      const tn1Ik = tnIk?.parent as TransformNode;
+      const tn2Ik = tn1Ik?.parent as TransformNode;
+
+      if (!tnIk || !tn1Ik || !tn2Ik || !((params.resultBone as any)._parent as Bone)) {
+        throw new Error("Couldn't initialize IK : the transform node chain is broken.");
+      }
+
+      this.resultInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
 
     this.ikController = new BoneIk(params.ikBody, params.ikBone, this.target, defaultUpVector);

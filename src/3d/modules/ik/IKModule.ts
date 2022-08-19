@@ -83,6 +83,13 @@ export class IKModule extends Module {
       }
       this._ik.skeleton.computeAbsoluteTransforms();
     }
+    if (this._result.skeleton) {
+      for (const bone of this._result.skeleton.bones) {
+        bone.setAbsolutePosition(bone.getTransformNode()!.absolutePosition);
+        bone.setRotationQuaternion(bone.getTransformNode()!.absoluteRotationQuaternion, Space.WORLD);
+      }
+      this._result.skeleton.computeAbsoluteTransforms();
+    }
   }
 
   /**
@@ -294,56 +301,57 @@ export class IKModule extends Module {
 
   private _getKeyframeDataForController(pickedIkCtrl: IKController) {
     const targetDataList = [];
-    targetDataList.push(
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![0].id,
-        property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.ikInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![0].id,
-        property: 'position' as PlaskProperty,
-        value: pickedIkCtrl.ikInfluenceChain[0].position.asArray() as ArrayOfThreeNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![0].id,
-        property: 'scaling' as PlaskProperty,
-        //value: pickedIkCtrl.fkTarget!.absoluteScaling.asArray() as ArrayOfThreeNumbers
-        value: [1, 1, 1] as ArrayOfThreeNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![1].id,
-        property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.ikInfluenceChain[1].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![1].id,
-        property: 'position' as PlaskProperty,
-        value: pickedIkCtrl.ikInfluenceChain[1].position.asArray() as ArrayOfThreeNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![1].id,
-        property: 'scaling' as PlaskProperty,
-        //value: pickedIkCtrl.fkInfluenceChain[1].absoluteScaling.asArray() as ArrayOfThreeNumbers
-        value: [1, 1, 1] as ArrayOfThreeNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![2].id,
-        property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.ikInfluenceChain[2].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![2].id,
-        property: 'position' as PlaskProperty,
-        value: pickedIkCtrl.ikInfluenceChain[2].position.asArray() as ArrayOfThreeNumbers,
-      },
-      {
-        targetId: pickedIkCtrl.fkInfluenceChain![2].id,
-        property: 'scaling' as PlaskProperty,
-        //value: pickedIkCtrl.fkInfluenceChain![2].absoluteScaling.asArray() as ArrayOfThreeNumbers
-        value: [1, 1, 1] as ArrayOfThreeNumbers,
-      },
-    );
+    if (pickedIkCtrl.resultInfluenceChain)
+      targetDataList.push(
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![0].id,
+          property: 'rotationQuaternion' as PlaskProperty,
+          value: pickedIkCtrl.resultInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![0].id,
+          property: 'position' as PlaskProperty,
+          value: pickedIkCtrl.resultInfluenceChain[0].position.asArray() as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![0].id,
+          property: 'scaling' as PlaskProperty,
+          //value: pickedIkCtrl.fkTarget!.absoluteScaling.asArray() as ArrayOfThreeNumbers
+          value: [1, 1, 1] as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![1].id,
+          property: 'rotationQuaternion' as PlaskProperty,
+          value: pickedIkCtrl.resultInfluenceChain[1].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![1].id,
+          property: 'position' as PlaskProperty,
+          value: pickedIkCtrl.resultInfluenceChain[1].position.asArray() as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![1].id,
+          property: 'scaling' as PlaskProperty,
+          //value: pickedIkCtrl.fkInfluenceChain[1].absoluteScaling.asArray() as ArrayOfThreeNumbers
+          value: [1, 1, 1] as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![2].id,
+          property: 'rotationQuaternion' as PlaskProperty,
+          value: pickedIkCtrl.resultInfluenceChain[2].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![2].id,
+          property: 'position' as PlaskProperty,
+          value: pickedIkCtrl.resultInfluenceChain[2].position.asArray() as ArrayOfThreeNumbers,
+        },
+        {
+          targetId: pickedIkCtrl.fkInfluenceChain![2].id,
+          property: 'scaling' as PlaskProperty,
+          //value: pickedIkCtrl.fkInfluenceChain![2].absoluteScaling.asArray() as ArrayOfThreeNumbers
+          value: [1, 1, 1] as ArrayOfThreeNumbers,
+        },
+      );
     return targetDataList;
   }
 

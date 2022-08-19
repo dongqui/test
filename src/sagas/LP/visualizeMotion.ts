@@ -189,7 +189,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
         yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
         // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
-        console.log('CALLED MOTION');
         for (const controller of plaskEngine.ikModule.ikControllers) {
           if (controller.limb.toLowerCase().includes('foot')) {
             plaskEngine.ikModule.setSelectedIk([controller]);
