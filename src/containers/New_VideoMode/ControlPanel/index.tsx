@@ -270,11 +270,11 @@ const ControlPanel = ({
             });
           } else if (statusCode === errors.TOOL_PAYMENT_NOT_ALLOWED_FUNCTION) {
             PlanManager.openProFeaturesNotAllowedModal(user);
-          } else if (statusCode === error.TOOL_PAYMENT_MAXIMUM_SIZE) {
+          } else if (statusCode === errors.TOOL_PAYMENT_MAXIMUM_SIZE) {
             PlanManager.openStorageExceededModal(user);
-          } else if (statusCode === error.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
+          } else if (statusCode === errors.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
             PlanManager.openCreditExceededModal(user, duration);
-          } else if (statusCode === error.INVALID_MOCAP_VIDEO_DURATION) {
+          } else if (statusCode === errors.INVALID_MOCAP_VIDEO_DURATION) {
             setIsOpenExceptionModal({
               isOpen: true,
               case: 'Timeout',
