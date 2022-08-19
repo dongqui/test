@@ -133,7 +133,7 @@ export class IKController {
   /**
    * All transformNodes influenced by the target IK controller
    */
-  public targetInfluenceChain: [TransformNode, TransformNode, TransformNode];
+  public ikInfluenceChain: [TransformNode, TransformNode, TransformNode];
   /**
    * All transformNodes influenced by the IK controller for FK
    */
@@ -174,8 +174,8 @@ export class IKController {
     this.poleAngle = 0;
     this.ikController.target.computeWorldMatrix(true);
     this.ikController.update();
-    for (let i = 0; i < this.targetInfluenceChain.length; i++) {
-      this.targetInfluenceChain![i].computeWorldMatrix(true);
+    for (let i = 0; i < this.ikInfluenceChain.length; i++) {
+      this.ikInfluenceChain![i].computeWorldMatrix(true);
     }
 
     const targetDirection = this.fkInfluenceChain![0].absolutePosition.subtract(this.fkInfluenceChain![2].absolutePosition).normalize();
@@ -187,8 +187,8 @@ export class IKController {
     }
     const upVector = Vector3.Cross(targetDirection, bendAxis).normalize();
 
-    const targetDirectionIK = this.targetInfluenceChain![0].absolutePosition.subtract(this.targetInfluenceChain![2].absolutePosition).normalize();
-    const halfDirectionIK = this.targetInfluenceChain![1].absolutePosition.subtract(this.targetInfluenceChain![2].absolutePosition).normalize();
+    const targetDirectionIK = this.ikInfluenceChain![0].absolutePosition.subtract(this.ikInfluenceChain![2].absolutePosition).normalize();
+    const halfDirectionIK = this.ikInfluenceChain![1].absolutePosition.subtract(this.ikInfluenceChain![2].absolutePosition).normalize();
     const bendAxisIK = Vector3.Cross(targetDirectionIK, halfDirectionIK);
     const upVectorIK = Vector3.Cross(targetDirectionIK, bendAxisIK).normalize();
     const cos = Vector3.Dot(upVector, upVectorIK);
@@ -247,8 +247,9 @@ export class IKController {
     this.handle.rotationQuaternion?.copyFrom(ikRotationQuaternion);
     this.poleAngle = poleAngle;
     this.blend = blend;
-    this.target.computeWorldMatrix(true);
-    this.update();
+
+    this.ikController.update();
+    this.resultController.update();
   }
 
   /**
@@ -312,7 +313,7 @@ export class IKController {
     if (!tnIk || !tn1Ik || !tn2Ik || !((params.ikBone as any)._parent as Bone)) {
       throw new Error("Couldn't initialize IK : the transform node chain is broken.");
     }
-    this.targetInfluenceChain = [tnIk, tn1Ik, tn2Ik];
+    this.ikInfluenceChain = [tnIk, tn1Ik, tn2Ik];
 
     // Creating IK Controllers
     let defaultUpVector = new Vector3();

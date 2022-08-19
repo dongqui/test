@@ -75,13 +75,13 @@ export class IKModule extends Module {
     return this._enabled;
   }
 
-  public forceUpdateResultSkeleton() {
-    if (this._result.skeleton) {
-      for (const bone of this._result.skeleton.bones) {
+  public forceUpdateIKSkeleton() {
+    if (this._ik.skeleton) {
+      for (const bone of this._ik.skeleton.bones) {
         bone.setAbsolutePosition(bone.getTransformNode()!.absolutePosition);
         bone.setRotationQuaternion(bone.getTransformNode()!.absoluteRotationQuaternion, Space.WORLD);
       }
-      this._result.skeleton.computeAbsoluteTransforms();
+      this._ik.skeleton.computeAbsoluteTransforms();
     }
   }
 
@@ -298,12 +298,12 @@ export class IKModule extends Module {
       {
         targetId: pickedIkCtrl.fkInfluenceChain![0].id,
         property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        value: pickedIkCtrl.ikInfluenceChain[0].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
       },
       {
         targetId: pickedIkCtrl.fkInfluenceChain![0].id,
         property: 'position' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[0].position.asArray() as ArrayOfThreeNumbers,
+        value: pickedIkCtrl.ikInfluenceChain[0].position.asArray() as ArrayOfThreeNumbers,
       },
       {
         targetId: pickedIkCtrl.fkInfluenceChain![0].id,
@@ -314,12 +314,12 @@ export class IKModule extends Module {
       {
         targetId: pickedIkCtrl.fkInfluenceChain![1].id,
         property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[1].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        value: pickedIkCtrl.ikInfluenceChain[1].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
       },
       {
         targetId: pickedIkCtrl.fkInfluenceChain![1].id,
         property: 'position' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[1].position.asArray() as ArrayOfThreeNumbers,
+        value: pickedIkCtrl.ikInfluenceChain[1].position.asArray() as ArrayOfThreeNumbers,
       },
       {
         targetId: pickedIkCtrl.fkInfluenceChain![1].id,
@@ -330,12 +330,12 @@ export class IKModule extends Module {
       {
         targetId: pickedIkCtrl.fkInfluenceChain![2].id,
         property: 'rotationQuaternion' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[2].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
+        value: pickedIkCtrl.ikInfluenceChain[2].rotationQuaternion!.asArray() as ArrayOfFourNumbers,
       },
       {
         targetId: pickedIkCtrl.fkInfluenceChain![2].id,
         property: 'position' as PlaskProperty,
-        value: pickedIkCtrl.targetInfluenceChain[2].position.asArray() as ArrayOfThreeNumbers,
+        value: pickedIkCtrl.ikInfluenceChain[2].position.asArray() as ArrayOfThreeNumbers,
       },
       {
         targetId: pickedIkCtrl.fkInfluenceChain![2].id,
@@ -501,7 +501,7 @@ export class IKModule extends Module {
   public setFKtoIK(controllers?: IKController[]): void {
     (controllers || this._selectedIkControllers).forEach((selectedIK) => {
       for (let i = 0; i < 3; i++) {
-        selectedIK.fkInfluenceChain![i].rotationQuaternion!.copyFrom(selectedIK.targetInfluenceChain[i].rotationQuaternion!);
+        selectedIK.fkInfluenceChain![i].rotationQuaternion!.copyFrom(selectedIK.ikInfluenceChain[i].rotationQuaternion!);
       }
     });
   }
@@ -546,9 +546,9 @@ export class IKModule extends Module {
 
         // And not to forget the normally ik-driven bones that also need to be copied
         for (let j = 0; j < 3; j++) {
-          ikController.targetInfluenceChain[j].position.copyFrom(ikController.fkInfluenceChain![j].position.clone());
-          ikController.targetInfluenceChain[j].rotationQuaternion!.copyFrom(ikController.fkInfluenceChain![j].rotationQuaternion!.clone());
-          ikController.targetInfluenceChain[j].computeWorldMatrix(true);
+          ikController.ikInfluenceChain[j].position.copyFrom(ikController.fkInfluenceChain![j].position.clone());
+          ikController.ikInfluenceChain[j].rotationQuaternion!.copyFrom(ikController.fkInfluenceChain![j].rotationQuaternion!.clone());
+          ikController.ikInfluenceChain[j].computeWorldMatrix(true);
         }
 
         fkPositionTrack.target.computeWorldMatrix(true);
@@ -564,7 +564,7 @@ export class IKModule extends Module {
 
         // Bones are not synced with transform nodes - its the other way around
         // Our method require bones to get transforms from transform nodes, so the right positions are used for the ik calculations down the line
-        this.forceUpdateResultSkeleton();
+        this.forceUpdateIKSkeleton();
         ikController.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, rotationQuaternionValue, blendValue, poleAngleValue);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
@@ -732,7 +732,7 @@ export class IKModule extends Module {
 
         animationGroupTemp.goToFrame(i);
         this._updateIKResult();
-        this.forceUpdateResultSkeleton();
+        this.forceUpdateIKSkeleton();
 
         this.setIKtoFK([ikController]);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(ikController))!;
@@ -785,7 +785,7 @@ export class IKModule extends Module {
     const ikClone = container.instantiateModelsToScene((name: string) => `ik_${name}`);
     this._initializeClone(scene, ikClone, 'ik');
 
-    this.forceUpdateResultSkeleton();
+    this.forceUpdateIKSkeleton();
 
     if (!this._result.rootMesh || !this._result.skeleton || !this._ik.skeleton || !this._ik.rootMesh) {
       throw new Error('Cloning error while creating IK controllers');
