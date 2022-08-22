@@ -18,6 +18,10 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
       return Object.assign({}, state, {
         name: action.payload.name,
         hadFreeTrial: action.payload.hadFreeTrial,
+        planType: action.payload.planType,
+        planName: action.payload.planName,
+        credits: action.payload.credits,
+        storage: action.payload.storage,
       });
     }
     case getType(userActions.getUserUsagaInfoAsync.success): {
