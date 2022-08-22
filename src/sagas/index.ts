@@ -5,7 +5,8 @@ import LPSaga from './LP';
 import CPSaga from './CP';
 import UserSaga from './User';
 import socketSaga from './socket.saga';
+import initAppSaga from './initializeApp';
 
 export default function* rootSaga() {
-  yield all([TP(), RPSaga(), LPSaga(), socketSaga(), CPSaga(), UserSaga()]);
+  yield all([TP(), RPSaga(), LPSaga(), socketSaga(), CPSaga(), UserSaga(), initAppSaga()]);
 }

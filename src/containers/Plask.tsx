@@ -1,22 +1,21 @@
 import { FunctionComponent, Fragment, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+
 import { useSelector } from 'reducers';
 import { changeMode } from 'actions/modeSelection';
 import { Box } from 'components/Layout';
 import { UpperBar } from 'containers/UpperBar';
 import AnimationMode from './AnimationMode';
 import VideoMode from './New_VideoMode';
-
+import { RequestNodeResponse } from 'types/LP';
+import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
+import * as keyframeActions from 'actions/keyframes';
+import { initializeAppAsync } from 'actions/initializeApp';
 import popupManager from 'utils/PopupManager';
 import planManager from 'utils/PlanManager';
-import * as socketActions from 'actions/Common/socket';
-import * as lpActions from 'actions/LP/lpNodeAction';
-import { RequestNodeResponse } from 'types/LP';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
-import * as keyframeActions from 'actions/keyframes';
 
 const cx = classNames.bind(styles);
 
@@ -61,17 +60,17 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
   }, [dispatch, mode]);
 
   useEffect(() => {
-    // is here the best place to connect socket?
-    function initProjectAuth() {
-      dispatch(lpActions.setSceneId(sceneId));
-      dispatch(socketActions.connectSocket.request({ sceneId, token }));
-      dispatch(lpActions.initNodes(data));
-    }
-
-    initProjectAuth();
     planManager.init(dispatch);
     popupManager.init(dispatch);
-    popupManager.next();
+
+    dispatch(
+      initializeAppAsync.request({
+        sceneId,
+        token,
+        nodes: data,
+        dispatch,
+      }),
+    );
   }, [dispatch, sceneId, token, data]);
 
   return (
