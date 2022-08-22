@@ -175,6 +175,10 @@ export class BoneIk {
     this._updateLinkedTransformRotation(this._bone2, this.bone2Quat);
   }
 
+  //public angleLock() {
+  //this._bone2.setRotationQuaternion
+  //}
+
   /**
    * Initialize bone frames from a pose.
    * For better results, the bone chain should already be slightly bent so

@@ -46,7 +46,7 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
   );
 
   const UBProps = {
-    height: 36,
+    height: 48,
   };
 
   const handleChangeMode = useCallback(() => {

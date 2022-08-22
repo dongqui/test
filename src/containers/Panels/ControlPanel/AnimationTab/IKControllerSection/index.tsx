@@ -92,11 +92,19 @@ const IKControllerSection: FunctionComponent<Props> = ({
     setPoleAngleValue(0);
     setBlendValue(1);
     setIkValidation(false);
+    let controllers: IKController[] = targetIKControllers;
 
+    if (!targetIKControllers.length) {
+      _selectedTargets.forEach((target) => {
+        const _temp = plaskEngine.ikModule.getControllerByInfluencedChain(target);
+        controllers = _temp.map((e, i) => e ?? controllers[i]);
+      });
+      controllers = controllers.filter((e) => e !== undefined);
+    }
     // Use only first control target to display active values
-    if (targetIKControllers[0]) {
+    if (controllers.length) {
       setIkValidation(true);
-      const controller = targetIKControllers[0];
+      const controller = controllers[0];
       setBlendValue(controller.blend);
       setPoleAngleValue(Tools.ToDegrees(controller.poleAngle));
 
@@ -111,7 +119,7 @@ const IKControllerSection: FunctionComponent<Props> = ({
         controller.onPoleAngleUpdatedObservable.remove(poleAngleObserver);
       };
     }
-  }, [targetIKControllers]);
+  }, [targetIKControllers, _selectedTargets]);
 
   useEffect(() => {
     popupManager.showIKOnboarding();
@@ -141,7 +149,6 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
           controllers = controllers.filter((e) => e !== undefined);
         }
-        console.log(controllers);
         plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);
       },
       onChangeEnd: useCallback((inputValue: number) => {

@@ -38,7 +38,7 @@ class PlanManager {
       return;
     }
 
-    if (user.planType !== 'freemium') {
+    if (user.planType === 'freemium') {
       this.dispatch(
         globalUIActions.openModal(
           'ConfirmModal',

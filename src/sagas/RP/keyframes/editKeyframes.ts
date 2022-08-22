@@ -147,36 +147,53 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
         return;
       }
 
+      const putData = {
+        layerId: _selectedLayer,
+        tracks: tracks
+          .filter((track) => track.property !== 'isContact')
+          .map((track) => {
+            const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
+
+            let value;
+
+            switch (track.property) {
+              case 'rotationQuaternion':
+                value = { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
+                break;
+
+              case 'position':
+                value = { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
+                break;
+
+              case 'rotation':
+                value = { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
+                break;
+
+              default:
+                value = transformKey.value;
+                break;
+            }
+            return {
+              id: track.id,
+              targetId: track.targetId,
+              filterBeta: track.filterBeta,
+              filterMinCutoff: track.filterMinCutoff,
+              name: track.name,
+              property: track.property,
+              transformKeysMap: [
+                {
+                  frameIndex: transformKey?.frame,
+                  property: track.property,
+                  transformKey: value,
+                },
+              ],
+            };
+          }),
+      };
       yield put(
         keyframesActions.editKeyframesSocket.send({
           type: 'put-frames',
-          data: {
-            layerId: _selectedLayer,
-            tracks: tracks
-              .filter((track) => track.property !== 'isContact')
-              .map((track) => {
-                const transformKey = track.transformKeys.find((key) => key.frame === _currentFrameIndex)!;
-
-                return {
-                  id: track.id,
-                  targetId: track.targetId,
-                  filterBeta: track.filterBeta,
-                  filterMinCutoff: track.filterMinCutoff,
-                  name: track.name,
-                  property: track.property,
-                  transformKeysMap: [
-                    {
-                      frameIndex: transformKey?.frame,
-                      property: track.property,
-                      transformKey:
-                        track.property === 'rotationQuaternion'
-                          ? { w: transformKey.value.w, x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z }
-                          : { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z },
-                    },
-                  ],
-                };
-              }),
-          },
+          data: putData,
         }),
       );
 
