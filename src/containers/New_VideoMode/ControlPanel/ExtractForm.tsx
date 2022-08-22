@@ -42,7 +42,6 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   const [trackingTooltip, setTrackingTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
   const userState = useSelector((state) => state.user);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     if (multiOption.value && FOOT_LOCK_AVAILABLE) {

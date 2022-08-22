@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { BaseModal, FilledButton, IconButton, SvgPath, IconWrapper, Switch } from 'components';
+import * as userActions from 'actions/User';
 
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -13,11 +15,8 @@ interface Props {
 }
 
 const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
+  const dispatch = useDispatch();
   const [billingCycle, setbillingCycle] = useState('Yearly');
-
-  const handleChangeSwitch = (value: string) => {
-    setbillingCycle(value);
-  };
 
   const billingCycleOption = [
     {
@@ -35,7 +34,14 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
   const confirmText = hadFreeTrial ? 'Upgrade' : 'Start free';
   const monthlyCost = billingCycle === 'Monthly' ? 140 : 50;
 
-  async function upgrade() {}
+  const upgrade = () => {
+    dispatch(userActions.upgradePlanAsync.request(billingCycle === 'Monthly'));
+    onClose();
+  };
+
+  const handleChangeSwitch = (value: string) => {
+    setbillingCycle(value);
+  };
   return (
     <BaseModal className="dark">
       <div className={cx('container')}>

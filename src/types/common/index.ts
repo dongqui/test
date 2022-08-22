@@ -1,6 +1,8 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { AbstractMesh, Animation, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
+import { RequestNodeResponse } from 'types/LP';
+import { Dispatch } from 'redux';
 
 export enum GizmoMode {
   POSITION,
@@ -314,7 +316,7 @@ export type UserResponse = {
 };
 
 export type UserUsageInfoResponse = {
-  planType: string;
+  planType: 'freemium' | 'pro_active' | 'pro_trialing';
   planName: string;
   upcomingInvoice: number;
   payment: {
@@ -339,4 +341,20 @@ export type UserUsageInfoResponse = {
 export interface UserCreditInfoResponse {
   remainingCredit: number;
   totalCredit: number;
+}
+
+export interface UserState {
+  name: string;
+  hadFreeTrial: boolean;
+  planName: string;
+  planType: UserUsageInfoResponse['planType'];
+  credits: UserUsageInfoResponse['credits'] | null;
+  storage: UserUsageInfoResponse['storage'] | null;
+}
+
+export interface InitAppRequest {
+  sceneId: string;
+  token: string;
+  nodes: RequestNodeResponse[];
+  dispatch: Dispatch;
 }

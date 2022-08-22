@@ -1,24 +1,9 @@
 import { ActionType, getType } from 'typesafe-actions';
 
+import { UserState } from 'types/common';
 import * as userActions from 'actions/User';
 
-interface State {
-  name: string;
-  hadFreeTrial: boolean;
-  planName: string;
-  planType: 'freemium' | 'pro_active' | 'pro_trialing';
-  credits: {
-    remaining: number;
-    nextChargeCredit: number;
-    nextChargeDate: string;
-  } | null;
-  storage: {
-    usageSize: number;
-    limitSize: number;
-  } | null;
-}
-
-const defaultState: State = {
+const defaultState: UserState = {
   name: '',
   planName: '',
   planType: 'freemium',
