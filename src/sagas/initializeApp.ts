@@ -16,6 +16,8 @@ function* handleInitializeApp(action: ReturnType<typeof initializeAppAsync.reque
   yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, 'userUsage'));
 
   const { sceneId, token, nodes, dispatch } = action.payload;
+  planManager.init(dispatch);
+  popupManager.init(dispatch);
 
   yield put(lpActions.setSceneId(sceneId));
   yield put(socketActions.connectSocket.request({ sceneId, token }));

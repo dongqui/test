@@ -11,8 +11,6 @@ import { RequestNodeResponse } from 'types/LP';
 import usePlaskShortcut from 'hooks/common/usePlaskShortcut';
 import * as keyframeActions from 'actions/keyframes';
 import { initializeAppAsync } from 'actions/initializeApp';
-import popupManager from 'utils/PopupManager';
-import planManager from 'utils/PlanManager';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -60,9 +58,6 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
   }, [dispatch, mode]);
 
   useEffect(() => {
-    planManager.init(dispatch);
-    popupManager.init(dispatch);
-
     dispatch(
       initializeAppAsync.request({
         sceneId,
