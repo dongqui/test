@@ -13,9 +13,10 @@ const ResetOnboarding = () => {
     const helpButton = document.getElementById(ONBOARDING_ID.HELP_BUTTON);
     const targetCoordinates = getTargetCoordinates(helpButton);
     helpButton?.click();
+
     if (tooltipRef.current && targetCoordinates) {
-      const { rightBottom } = targetCoordinates;
-      tooltipRef.current.style.cssText = `top:${rightBottom.y}px; left:${rightBottom.x + 100}px;`;
+      const { leftBottom } = targetCoordinates;
+      tooltipRef.current.style.cssText = `top:${leftBottom.y + 100}px; left:${leftBottom.x - 580}px;`;
     }
   }, [tooltipRef]);
 
@@ -26,7 +27,7 @@ const ResetOnboarding = () => {
         <p>
           You can watch onboarding <span> again</span> at any time here.
         </p>
-        <Arrow placement="left-start" />
+        <Arrow placement="right-start" />
       </div>
     </BaseTemplate>
   );

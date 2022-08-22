@@ -36,25 +36,6 @@
 .middle-upper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-
-  & > .reset-icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    background-color: #353739;
-
-    &:hover {
-      background-color: #484c4f;
-    }
-
-    & > svg {
-      width: 24px;
-      color: #d3d3d3;
-      cursor: pointer;
-    }
-  }
 }
 
 .right-upper {
@@ -64,6 +45,7 @@
   justify-content: flex-end;
   padding: 4px 16px;
   background-color: inherit;
+  gap: 2.4rem;
 
   .mode-switch {
     width: 52px;

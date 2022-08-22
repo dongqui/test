@@ -8,6 +8,7 @@ import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as animationDataActions from 'actions/animationDataAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
+import * as userActions from 'actions/User';
 import plaskEngine from '3d/PlaskEngine';
 
 export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActions.deleteMotion>) {
@@ -34,4 +35,6 @@ export default function* handleDeleteMotion(action: ReturnType<typeof lpNodeActi
     yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
     forceClickAnimationPlayAndStop();
   }
+
+  yield put(userActions.getUserStorageInfoAsync.request());
 }

@@ -1,1 +1,26 @@
+@import "styles/libraries/_typography";
+@import "styles/libraries/_colors";
 @import "./common.scss";
+
+.container {
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      font: $modal-title;
+      margin: 0;
+    }
+  }
+
+  footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .content {
+    margin-top: 2.2rem;
+    max-width: 32rem;
+  }
+}

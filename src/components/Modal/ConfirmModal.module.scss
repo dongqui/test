@@ -1,6 +1,30 @@
 @import "./common.scss";
+@import "styles/libraries/_typography";
+@import "styles/libraries/_colors";
 
 .buttons {
   display: flex;
   gap: 6px;
+  justify-content: flex-end;
+}
+
+.content {
+  font: $modal-body;
+  color: $content-medium;
+  line-height: 2.1rem;
+  margin-top: 2.2rem;
+}
+
+.inner {
+  width: 34rem;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      margin: 0;
+    }
+  }
 }

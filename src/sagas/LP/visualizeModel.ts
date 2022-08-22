@@ -106,6 +106,8 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         // This only sets state.visualizedAssetIds
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
 
+        plaskEngine.assetModule.setVisibility(1);
+
         // Foot locking
         let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId);
 
@@ -121,7 +123,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
             // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
             for (const controller of plaskEngine.ikModule.ikControllers) {
-              if (controller.limb.includes('Foot')) {
+              if (controller.limb.toLowerCase().includes('foot')) {
                 plaskEngine.ikModule.setSelectedIk([controller]);
 
                 const bakeResult = plaskEngine.ikModule.bakeIKintoFK();

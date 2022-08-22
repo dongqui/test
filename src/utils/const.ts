@@ -1,3 +1,4 @@
+import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
 import { SkeletonViewer } from '@babylonjs/core';
 
 export const DEFAULT_SKELETON_VIEWER_OPTION = {
@@ -13,6 +14,22 @@ export const DEFAULT_SKELETON_VIEWER_OPTION = {
     midStep: 0.25,
     midStepFactor: 0.05,
   },
+};
+export const IK_SKELETON_VIEWER_OPTION = {
+  pauseAnimations: false,
+  returnToRest: false,
+  computeBonesUsingShaders: true,
+  useAllBones: true, // error with false
+  // NEED TO FIX THE CODE
+  displayMode: PlaskSkeletonViewer.DISPLAY_SPURS,
+  displayOptions: {
+    midStep: 0.25,
+    midStepFactor: 0.05,
+  },
+};
+
+export const RESULT_SKELETON_VIEWER_OPTION = {
+  displayMode: PlaskSkeletonViewer.DISPLAY_SPURS,
 };
 
 //////////////////// new ////////////////////

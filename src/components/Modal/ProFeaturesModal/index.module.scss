@@ -1,0 +1,56 @@
+@import "../common.scss";
+@import "styles/libraries/_typography";
+@import "styles/libraries/_colors";
+
+.buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.container {
+  header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .content {
+    background: $bg-elevated;
+    border-radius: 1rem;
+    padding: 1.6rem;
+    width: 32rem;
+
+    h6 {
+      color: $content-active;
+      font-size: var(--font-size-14);
+      font-weight: 500;
+    }
+
+    ul {
+      margin-top: 1.6rem;
+
+      li {
+        display: flex;
+        margin-top: 0.5rem;
+
+        /* TODO: component to handle svg */
+        svg {
+          stroke: #8851f6;
+        }
+      }
+    }
+
+    &-text {
+      font-size: var(--font-size-12);
+      font-weight: 300;
+      line-height: 1.5rem;
+      color: $content-medium;
+      margin-left: 0.8rem;
+
+      strong {
+        font-weight: 500;
+        color: #9f80ff;
+      }
+    }
+  }
+}
