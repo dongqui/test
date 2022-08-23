@@ -10,6 +10,7 @@ const defaultState: UserState = {
   credits: null,
   storage: null,
   hadFreeTrial: false,
+  usageInfoLoading: false,
 };
 
 export const user = (state = defaultState, action: ActionType<typeof userActions>) => {
@@ -43,6 +44,12 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
     case getType(userActions.getUserStorageInfoAsync.success): {
       return Object.assign({}, state, {
         storage: action.payload,
+      });
+    }
+
+    case getType(userActions.setUsageInfoLoading): {
+      return Object.assign({}, state, {
+        usageInfoLoading: action.payload,
       });
     }
 

@@ -8,6 +8,7 @@ import * as api from 'api';
 
 function* handleGetUserUsageInfo() {
   try {
+    yield put(userActions.setUsageInfoLoading(true));
     const usageInfo: UserUsageInfoResponse = yield call(api.getUserUsageInfo);
     yield put(
       userActions.getUserUsagaInfoAsync.success({
@@ -17,8 +18,11 @@ function* handleGetUserUsageInfo() {
         storage: usageInfo.storage,
       }),
     );
+
+    yield put(globalUIActions.closeModal('UpgradePlanModal'));
   } catch (e) {
   } finally {
+    yield put(userActions.setUsageInfoLoading(true));
   }
 }
 
@@ -41,20 +45,10 @@ function* handleGetUserStorageInfo() {
   }
 }
 
-function* handleUpgrdaePlan(action: ReturnType<typeof userActions.upgradePlanAsync.request>) {
-  try {
-    const stripeURL: string = yield call(api.createStripeSession, action.payload);
-    window.open(`/payment?stripeURL=${stripeURL}`, '_blank');
-  } catch (e) {
-  } finally {
-  }
-}
-
 export default function* userSaga() {
   yield all([
     takeLatest(getType(userActions.getUserUsagaInfoAsync.request), handleGetUserUsageInfo),
     takeLatest(getType(userActions.getUserStorageInfoAsync.request), handleGetUserStorageInfo),
     takeLatest(getType(userActions.getUserCreditInfoAsync.request), handleGetUserCreditInfo),
-    takeLatest(getType(userActions.upgradePlanAsync.request), handleUpgrdaePlan),
   ]);
 }

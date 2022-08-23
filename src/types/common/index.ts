@@ -350,6 +350,7 @@ export interface UserState {
   planType: UserUsageInfoResponse['planType'];
   credits: UserUsageInfoResponse['credits'] | null;
   storage: UserUsageInfoResponse['storage'] | null;
+  usageInfoLoading: boolean;
 }
 
 export interface InitAppRequest {
