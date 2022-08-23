@@ -63,6 +63,10 @@ export default function Success({ token }: PageProps) {
     }
   }
 
+  if (!global?.opener) {
+    return null;
+  }
+
   return <div className={cx('container')}>{renderPage()}</div>;
 }
 
