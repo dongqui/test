@@ -69,7 +69,7 @@ import CameraPause from '../../../public/images/CameraPause.svg';
 import CameraStop from '../../../public/images/CameraStop.svg';
 import Storage from './svg/Storage.svg';
 import Credit from './svg/Credit.svg';
-import WarningTriangle from './New_Svg/WarningTriangle.svg';
+import WarningTriangle from './svg/WarningTriangle.svg';
 
 type Icon =
   | 'ModalClose'

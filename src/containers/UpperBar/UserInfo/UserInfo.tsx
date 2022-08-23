@@ -21,6 +21,13 @@ function storageFormat(bytes: number) {
   return (bytes / GB).toFixed(2).replace('.00', '') + 'GB';
 }
 
+function userPlanFormat(planName: string) {
+  if (planName === 'Motion Capture Pro') {
+    return 'MoCap pro';
+  }
+  return planName;
+}
+
 function UserInfo() {
   const [openUserInfo, setOpenUserInfo] = useState(false);
   const avataRef = useRef<HTMLDivElement>(null);
@@ -32,8 +39,10 @@ function UserInfo() {
   }
 
   useEffect(() => {
-    const closeUserInfo = () => {
-      setOpenUserInfo(false);
+    const closeUserInfo = (e: MouseEvent) => {
+      if (e.target !== avataRef.current) {
+        setOpenUserInfo(false);
+      }
     };
 
     window.addEventListener('click', closeUserInfo);
@@ -48,24 +57,24 @@ function UserInfo() {
 
   const usedStorageSize = storageFormat(user.storage?.usageSize || 0);
   const limitStorageSize = storageFormat(user.storage?.limitSize || 0);
-  const isStorageLimitExceed = (user.storage?.limitSize || 0) < (user.storage?.usageSize || 0);
+  const isStorageFullyUsed = (user.storage?.limitSize || 0) * 0.95 < (user.storage?.usageSize || 0);
   const isFreemium = user.planType === 'freemium';
   return (
-    <div className={cx('container')} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+    <div className={cx('container')}>
       <Avata userNameInitial={getUserNameInitial(user.name)} onClick={handleClickAvata} ref={avataRef} />
 
       {openUserInfo && (
         <div className={cx('modal')}>
           <header>{user.name}</header>
           <section className={cx('content')}>
-            <h6>{user.planName} overview</h6>
+            <h6>{userPlanFormat(user.planName)} overview</h6>
             <section className={cx('usage-overview')}>
               <IconWrapper icon={SvgPath.Credit} />
               <span className={cx('usage-overview-content')}>{user.credits?.remaining.toLocaleString()} credits left</span>
             </section>
             <section className={cx('usage-overview')}>
               <IconWrapper icon={SvgPath.Storage} />
-              <span className={cx('usage-overview-content', { exceed: isStorageLimitExceed })}>
+              <span className={cx('usage-overview-content', { exceed: isStorageFullyUsed })}>
                 {usedStorageSize} of {limitStorageSize} used
               </span>
             </section>

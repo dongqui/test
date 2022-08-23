@@ -130,7 +130,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               </li>
             </ul>
             <footer>
-              <FilledButton onClick={upgrade} disabled={loading} fullSize buttonType="temp-purple-2">
+              <FilledButton onClick={upgrade} disabled={loading} fullSize buttonType="temp-purple">
                 {confirmText}
               </FilledButton>
             </footer>

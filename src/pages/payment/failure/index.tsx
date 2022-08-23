@@ -19,16 +19,20 @@ export default function Success({ token, interval }: PageProps) {
   useEffect(() => {
     tokenManager.set(token);
 
-    // if (!window.opener) {
-    //   window.location.href = '/';
-    // }
+    if (!window.opener) {
+      window.location.href = '/';
+    }
   }, [token]);
 
   async function handleClickTryAgain() {
     const stripeURL: string = await api.createStripeSession(interval === 'month');
     window.location.href = stripeURL;
-    // window.open(`/payment?stripeURL=${stripeURL}`, '_blank');
   }
+
+  if (!global?.opener) {
+    return null;
+  }
+
   const isValidInterval = interval === 'month' || interval === 'year';
   return (
     <div className={cx('container')}>
