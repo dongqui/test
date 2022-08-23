@@ -1,4 +1,3 @@
-import Cookie from 'react-cookies';
 import parseUrl from 'url-parse';
 import axios, { Method } from 'axios';
 
