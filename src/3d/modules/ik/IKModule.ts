@@ -1238,7 +1238,7 @@ export class IKModule extends Module {
       }
     };
     filterKeys();
-    if (boneName.includes('rightFoot')) {
+    if (ikController.limb === 'rightFoot') {
       // Maybe averaging both foot is more accurate ? for now right foot only will do
       fixHipPosition(frameIKPosition);
     } else {
