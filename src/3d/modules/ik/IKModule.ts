@@ -1071,6 +1071,10 @@ export class IKModule extends Module {
       let j = 0;
       // Contact filter
       while (j < transformKeys.length) {
+        // Safeguard : sometimes undefined and NaN are present in transformkeys
+        if (isNaN(transformKeys[j].value) || transformKeys[j].value === undefined) {
+          transformKeys[j].value = 0;
+        }
         let currentPhase = transformKeys[j].value;
         for (let i = j + 1; i < transformKeys.length; i++) {
           if (i === transformKeys.length - 1) {
