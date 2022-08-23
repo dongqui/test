@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 import { BaseModal, FilledButton, IconButton, SvgPath, IconWrapper, Switch } from 'components';
+import * as api from 'api';
 
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -13,11 +14,9 @@ interface Props {
 }
 
 const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
+  const childWindow = useRef<Window | null>(null);
   const [billingCycle, setbillingCycle] = useState('Yearly');
-
-  const handleChangeSwitch = (value: string) => {
-    setbillingCycle(value);
-  };
+  const [loading, setLoading] = useState(false);
 
   const billingCycleOption = [
     {
@@ -35,7 +34,25 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
   const confirmText = hadFreeTrial ? 'Upgrade' : 'Start free';
   const monthlyCost = billingCycle === 'Monthly' ? 140 : 50;
 
-  async function upgrade() {}
+  const upgrade = async () => {
+    setLoading(true);
+    const stripeURL: string = await api.createStripeSession(billingCycle === 'Monthly');
+    setLoading(false);
+    if (childWindow.current && !childWindow.current.closed) {
+      childWindow.current.location.href = stripeURL;
+      childWindow.current.focus();
+    } else {
+      const w = window.open(`/payment?stripeURL=${stripeURL}`, '_blank');
+      if (w) {
+        w.focus();
+        childWindow.current = w;
+      }
+    }
+  };
+
+  const handleChangeSwitch = (value: string) => {
+    setbillingCycle(value);
+  };
   return (
     <BaseModal className="dark">
       <div className={cx('container')}>
@@ -94,7 +111,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
             <ul>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                108,00 credits per month
+                108,000 credits per month
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
@@ -113,7 +130,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               </li>
             </ul>
             <footer>
-              <FilledButton onClick={upgrade} fullSize buttonType="temp-purple-2">
+              <FilledButton onClick={upgrade} disabled={loading} fullSize buttonType="temp-purple-2">
                 {confirmText}
               </FilledButton>
             </footer>

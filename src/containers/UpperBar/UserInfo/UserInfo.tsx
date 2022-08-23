@@ -27,11 +27,6 @@ function UserInfo() {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(userActions.getUserAsync.request());
-    dispatch(userActions.getUserUsagaInfoAsync.request());
-  }, [dispatch]);
-
   function handleClickAvata() {
     setOpenUserInfo(!openUserInfo);
   }
@@ -86,6 +81,8 @@ function UserInfo() {
           <TooltipArrow placement="top-end" backgroundColor="dark" />
         </div>
       )}
+
+      <button hidden onClick={() => dispatch(userActions.getUserUsagaInfoAsync.request())} id="handle-payment-success"></button>
     </div>
   );
 }

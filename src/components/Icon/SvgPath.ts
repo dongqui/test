@@ -69,6 +69,7 @@ import CameraPause from '../../../public/images/CameraPause.svg';
 import CameraStop from '../../../public/images/CameraStop.svg';
 import Storage from './svg/Storage.svg';
 import Credit from './svg/Credit.svg';
+import WarningTriangle from './New_Svg/WarningTriangle.svg';
 
 type Icon =
   | 'ModalClose'
@@ -137,7 +138,8 @@ type Icon =
   | 'CameraPause'
   | 'CameraStop'
   | 'Credit'
-  | 'Storage';
+  | 'Storage'
+  | 'WarningTriangle';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -211,6 +213,7 @@ const images: Images = {
   CameraStop,
   Storage,
   Credit,
+  WarningTriangle,
 };
 
 export default images;
