@@ -202,7 +202,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
           }
         }
         // Release IK Controllers
-        // yield call(removeIK, removeIKAction(asset.id));
+        yield call(removeIK, removeIKAction(asset.id));
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));
