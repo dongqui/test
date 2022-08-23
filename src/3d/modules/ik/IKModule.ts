@@ -1118,7 +1118,6 @@ export class IKModule extends Module {
         console.warn('Could not find hip track for hip correction');
         return;
       }
-      debugger;
       for (let i = 0; i < targetTrack.transformKeys.length; i++) {
         const positionCorrected = (targetTrack.transformKeys[i].value as Vector3).clone();
         // positionCorrected.y += groundCorrectionEachFrame[i];
@@ -1156,6 +1155,10 @@ export class IKModule extends Module {
       let j = 0;
       // Contact filter
       while (j < transformKeys.length) {
+        // Safeguard : sometimes undefined and NaN are present in transformkeys
+        if (isNaN(transformKeys[j].value) || transformKeys[j].value === undefined) {
+          transformKeys[j].value = 0;
+        }
         let currentPhase = transformKeys[j].value;
         for (let i = j + 1; i < transformKeys.length; i++) {
           if (i === transformKeys.length - 1) {
@@ -1207,6 +1210,7 @@ export class IKModule extends Module {
       while (j < transformKeys.length) {
         let currentStatus = transformKeys[j].value;
         let i = j;
+
         while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
           frameIKPosition.push(iKPositions[currentIKIndex].clone());
           i++;
