@@ -95,6 +95,11 @@ export class IKController {
   }
 
   /**
+   * The assetId
+   */
+  public assetId: string;
+
+  /**
    * The pole angle
    */
   public set poleAngle(value: number) {
@@ -268,6 +273,7 @@ export class IKController {
 
   constructor(params: IKControllerParams, public scene: Scene) {
     this.limb = params.limb;
+    this.assetId = params.assetId;
     this.target = new TransformNode('ik_ctrl_target_' + this.limb);
     this.handle = this._createHandle(this.limb, params.assetId, params.controllerSize);
 
