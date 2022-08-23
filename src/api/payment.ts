@@ -1,6 +1,7 @@
 import requestApi from './requestApi';
 
 export default async function createStripeSession(isMonthly: boolean) {
+  const interval = isMonthly ? 'month' : 'year';
   const res = await requestApi({
     method: 'POST',
     base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
@@ -10,8 +11,8 @@ export default async function createStripeSession(isMonthly: boolean) {
     },
     data: {
       successUrl: window.location.origin + '/payment/success',
-      failedUrl: window.location.origin + '/payment/failure',
-      interval: isMonthly ? 'month' : 'year',
+      failedUrl: window.location.origin + `/payment/failure?interval=${interval}`,
+      interval,
     },
   });
 

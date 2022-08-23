@@ -1,0 +1,29 @@
+@import "styles/libraries/_colors";
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+
+  button {
+    margin-top: 40px;
+  }
+}
+
+.failed-text {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
+  color: $content-medium;
+  margin: 40px 0 0;
+}
+
+.retry-text {
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 150%;
+  color: $content-medium;
+  margin: 8px 0 0;
+}
