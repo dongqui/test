@@ -10,3 +10,4 @@ export { default as BaseModal } from './Modal/BaseModal';
 export { Switch as Switch } from './Input';
 export { default as Dropdown } from 'new_components/Dropdown';
 export { Html as Html } from 'components/Typography';
+export { default as Spinner } from './Spinner';
