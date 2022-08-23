@@ -17,11 +17,10 @@ class PopupManager {
   dispatch: Dispatch | null;
 
   constructor() {
-    this.isOnboardingDone = !!localStorage.getItem('onboarding_1');
-    this.isNewFeatureModalDone = localStorage.getItem('notification') === '1';
-    this.isVMOnboardingDone = !!localStorage.getItem('onboarding_2');
-    this.isIKOnboardingDone = !!localStorage.getItem('onboarding_3');
-
+    this.isOnboardingDone = typeof window !== 'undefined' ? !!localStorage.getItem('onboarding_1') : false;
+    this.isNewFeatureModalDone = typeof window !== 'undefined' ? localStorage.getItem('notification') === '1' : false;
+    this.isVMOnboardingDone = typeof window !== 'undefined' ? !!localStorage.getItem('onboarding_2') : false;
+    this.isIKOnboardingDone = typeof window !== 'undefined' ? !!localStorage.getItem('onboarding_3') : false;
     this.proceedGenerator = null;
     this.dispatch = null;
   }

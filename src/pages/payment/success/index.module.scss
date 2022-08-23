@@ -1,0 +1,55 @@
+@import "styles/libraries/_colors";
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.spin-logo-icon {
+  svg {
+    width: 24px;
+    height: 34px;
+    stroke: $outline-border;
+  }
+}
+
+.check-icon {
+  svg {
+    width: 32px;
+    height: 32px;
+
+    path {
+      stroke: var(--blue065);
+    }
+  }
+}
+
+.success-text {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
+  color: $content-medium;
+  margin-top: 32px;
+}
+
+.process-text {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
+  color: $content-medium;
+  margin: 28px 0 0;
+}
+
+.thanks-text {
+  font-style: normal;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 150%;
+  color: $content-medium;
+  margin-top: 8px;
+}

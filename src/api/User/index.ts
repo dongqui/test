@@ -39,3 +39,13 @@ export async function getUserCreditInfo() {
 
   return response.data;
 }
+
+export async function getUserPlanInfo() {
+  const response = await requestApi({
+    method: 'GET',
+    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    url: `/users/settings/tool/plan`,
+  });
+
+  return response.data;
+}

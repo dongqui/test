@@ -1,30 +1,16 @@
 import { ActionType, getType } from 'typesafe-actions';
 
+import { UserState } from 'types/common';
 import * as userActions from 'actions/User';
 
-interface State {
-  name: string;
-  hadFreeTrial: boolean;
-  planName: string;
-  planType: 'freemium' | 'pro_active' | 'pro_trialing';
-  credits: {
-    remaining: number;
-    nextChargeCredit: number;
-    nextChargeDate: string;
-  } | null;
-  storage: {
-    usageSize: number;
-    limitSize: number;
-  } | null;
-}
-
-const defaultState: State = {
+const defaultState: UserState = {
   name: '',
   planName: '',
   planType: 'freemium',
   credits: null,
   storage: null,
   hadFreeTrial: false,
+  usageInfoLoading: false,
 };
 
 export const user = (state = defaultState, action: ActionType<typeof userActions>) => {
@@ -33,6 +19,10 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
       return Object.assign({}, state, {
         name: action.payload.name,
         hadFreeTrial: action.payload.hadFreeTrial,
+        planType: action.payload.planType,
+        planName: action.payload.planName,
+        credits: action.payload.credits,
+        storage: action.payload.storage,
       });
     }
     case getType(userActions.getUserUsagaInfoAsync.success): {
@@ -54,6 +44,12 @@ export const user = (state = defaultState, action: ActionType<typeof userActions
     case getType(userActions.getUserStorageInfoAsync.success): {
       return Object.assign({}, state, {
         storage: action.payload,
+      });
+    }
+
+    case getType(userActions.setUsageInfoLoading): {
+      return Object.assign({}, state, {
+        usageInfoLoading: action.payload,
       });
     }
 

@@ -49,7 +49,7 @@ const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
 
         <footer className={cx('buttons')}>
           <OutlineButton onClick={onClose}>Cancel</OutlineButton>
-          <FilledButton onClick={onClickConfirm} buttonType="temp-purple-2" dataCy="modal-confirm">
+          <FilledButton onClick={onClickConfirm} buttonType="temp-purple" dataCy="modal-confirm">
             {confirmText}
           </FilledButton>
         </footer>
