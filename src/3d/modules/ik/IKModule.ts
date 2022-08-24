@@ -518,12 +518,12 @@ export class IKModule extends Module {
    * Computes all the FK frames from the IK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeIKintoFK(controllers?: IKController[]) {
+  public bakeIKintoFK(controllers?: IKController[], removeBakedKeyframes = false) {
     const bakeTargetControllers = controllers ? controllers : this._selectedIkControllers;
-    return this._IKtoFKAnimationIngredient(bakeTargetControllers);
+    return this._IKtoFKAnimationIngredient(bakeTargetControllers, undefined, removeBakedKeyframes);
   }
 
-  private _IKtoFKAnimationIngredient(controllers?: IKController[], layerId?: string) {
+  private _IKtoFKAnimationIngredient(controllers?: IKController[], layerId?: string, removeBakedKeyframes = false) {
     const frameEdit = (
       ikController: IKController,
       fkPositionTrack: PlaskTrack,
@@ -576,7 +576,18 @@ export class IKModule extends Module {
         ikController.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, rotationQuaternionValue, blendValue, poleAngleValue);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
-
+      // Once bake is completed, we remove the keyframes that have been baked
+      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, ikPositionTrack.targetId, ikPositionTrack.property, []);
+      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, rotationTrack.targetId, rotationTrack.property, []);
+      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(
+        targetAnimation,
+        targetLayerId,
+        rotationQuaternionTrack.targetId,
+        rotationQuaternionTrack.property,
+        [],
+      );
+      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, poleAngleTrack.targetId, poleAngleTrack.property, []);
+      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, blendTrack.targetId, blendTrack.property, []);
       return targetAnimation;
     };
 

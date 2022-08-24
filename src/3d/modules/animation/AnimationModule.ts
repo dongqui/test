@@ -242,6 +242,32 @@ export class AnimationModule extends Module {
   }
 
   /**
+   * Set keyframes for a specific track and layer, ignoring other layers
+   * @param targetAnimationIngredient animationIngredient to edit
+   * @param targetLayerId id of layer to edit
+   * @param targetId id of the target of the track
+   * @param property target property of the track
+   * @param keyframes keyframes list
+   */
+  public setKeyframesForTrack(targetAnimationIngredient: AnimationIngredient, targetLayerId: string, targetId: string, property: PlaskProperty, keyframes: IAnimationKey[]) {
+    const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+      const targetLayer = draft.layers.find((layer) => layer.id === targetLayerId);
+      if (!targetLayer) {
+        console.warn('Could not find layer');
+        return;
+      }
+      const targetTrack = targetLayer.tracks.find((track) => track.targetId === targetId && track.property === property);
+      if (!targetTrack) {
+        console.warn('Could not find track');
+        return;
+      }
+      targetTrack.transformKeys = keyframes;
+    });
+
+    return newAnimationIngredient;
+  }
+
+  /**
    * Edits keyframes with params so that we don't need to select targets in RenderingPanel
    * @param targetAnimationIngredient - animationIngredent to edit
    * @param targetLayerId - id of layer to edit
