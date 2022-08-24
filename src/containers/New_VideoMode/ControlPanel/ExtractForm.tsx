@@ -46,6 +46,7 @@ const selectFootLockAndTPoseOption = [
   },
 ];
 
+// Need to refactor it.........
 const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
   const DEFAULT_MULTI_SELECT_OPTION_INDEX = 1;
   const DEFAULT_FOOT_LOCK_SELECT_OPTION_INDEX = 1;
