@@ -1045,14 +1045,98 @@ export class IKModule extends Module {
     animationGroup.start();
 
     // Direct method (look ahead up to INTERPOLATION_FRAMES frames)
-    let contactIncoming = false;
     let currentBlend = 0;
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
     const INTERPOLATION_FRAMES = (window as any).lookahead || 6;
 
-    const averageLockedPositions = () => {};
+    let groundCorrectionEachFrame: number[] = [];
+    const Y_MARGIN = 0.15; // Approx world units between the heel and the ground (Y axis)
+    const fixIKOnGround = () => {
+      // Now fix IK positions
+      for (let i = 0; i < frameIKPosition.length; i++) {
+        frameIKPosition[i].y = Y_MARGIN;
+      }
+    };
+    const fixHipPosition = (ikPosition: Vector3[]) => {
+      let j = 0;
+      while (j < transformKeys.length) {
+        if (transformKeys[j].value) {
+          // In contact, ground position is hard set
+          groundCorrectionEachFrame.push(-ikPosition[j].y + Y_MARGIN);
+          j++;
+          continue;
+        }
+
+        // Out of contact, we interpolate ground till the next contact
+        let i = j;
+        let initialGroundCorrection = groundCorrectionEachFrame.length ? groundCorrectionEachFrame[groundCorrectionEachFrame.length - 1] : null;
+        while (i < transformKeys.length && !transformKeys[i].value) {
+          i++;
+        }
+        let nbFramesOutOfContact = i - j;
+        let endGroundCorrection = null;
+        if (i < transformKeys.length) {
+          endGroundCorrection = -ikPosition[i].y + Y_MARGIN;
+        }
+
+        for (let k = j; k < i; k++) {
+          let value;
+          if (initialGroundCorrection === null) {
+            value = endGroundCorrection || 0;
+          } else if (endGroundCorrection === null) {
+            value = initialGroundCorrection;
+          } else {
+            value = Scalar.Lerp(initialGroundCorrection, endGroundCorrection, (k - j) / nbFramesOutOfContact);
+          }
+          groundCorrectionEachFrame.push(value);
+        }
+
+        j = i;
+      }
+      // Finding hip Bone
+      const retargetMap = this.getRetargetMap(ikController.assetId);
+      if (!retargetMap) {
+        console.warn('Cannot find retarget map');
+        return;
+      }
+      const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes('hips'));
+      if (!retargetValue) {
+        console.warn('Cannot find hip bone');
+        return;
+      }
+      const transformNodeId = retargetValue.targetTransformNodeId;
+      if (!transformNodeId) {
+        console.warn('Retargeting not completed for hip');
+        return;
+      }
+      // Fixing hip bone
+      let targetLayer = animationIngredient.layers[0];
+      let targetTrack = targetLayer!.tracks.find((track) => track.targetId === transformNodeId && track.property === 'position');
+      if (!targetTrack) {
+        console.warn('Could not find hip track for hip correction');
+        return;
+      }
+      for (let i = 0; i < targetTrack.transformKeys.length; i++) {
+        const positionCorrected = (targetTrack.transformKeys[i].value as Vector3).clone();
+        // positionCorrected.y += groundCorrectionEachFrame[i];
+        // Hipspace scaling
+        const { hipSpace } = retargetMap;
+        positionCorrected.z += -groundCorrectionEachFrame[i] * 100;
+        // positionCorrected.z += (2 * (groundCorrectionEachFrame[i] * 100 * hipSpace)) / 106;
+        const targetDataList = [
+          {
+            targetId: transformNodeId,
+            property: 'position' as PlaskProperty,
+            value: positionCorrected.asArray() as ArrayOfThreeNumbers,
+          },
+        ];
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, transformKeys[i].frame, targetDataList);
+      }
+
+      fixIKOnGround();
+    };
 
     const extractPoseAtFrame = (frameIndex: number) => {
       animationGroup.goToFrame(frameIndex);
@@ -1071,6 +1155,10 @@ export class IKModule extends Module {
       let j = 0;
       // Contact filter
       while (j < transformKeys.length) {
+        // Safeguard : sometimes undefined and NaN are present in transformkeys
+        if (isNaN(transformKeys[j].value) || transformKeys[j].value === undefined) {
+          transformKeys[j].value = 0;
+        }
         let currentPhase = transformKeys[j].value;
         for (let i = j + 1; i < transformKeys.length; i++) {
           if (i === transformKeys.length - 1) {
@@ -1095,7 +1183,6 @@ export class IKModule extends Module {
         }
       }
       // Averaging filter
-      // TODO : debug
       j = 0;
       let iKPositions = [];
       while (j < transformKeys.length) {
@@ -1123,8 +1210,9 @@ export class IKModule extends Module {
       while (j < transformKeys.length) {
         let currentStatus = transformKeys[j].value;
         let i = j;
+
         while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
-          frameIKPosition.push(iKPositions[currentIKIndex]);
+          frameIKPosition.push(iKPositions[currentIKIndex].clone());
           i++;
         }
         // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
@@ -1134,7 +1222,7 @@ export class IKModule extends Module {
             if (!iKPositions[currentIKIndex]) {
               debugger;
             }
-            frameIKPosition.push(iKPositions[currentIKIndex]);
+            frameIKPosition.push(iKPositions[currentIKIndex].clone());
             i++;
             postInterpolation++;
           }
@@ -1150,21 +1238,27 @@ export class IKModule extends Module {
       }
     };
     filterKeys();
-
+    if (ikController.limb === 'rightFoot') {
+      // Maybe averaging both foot is more accurate ? for now right foot only will do
+      fixHipPosition(frameIKPosition);
+    } else {
+      // Right foot is the one to fix the hip, for left foot we just stick IK to the ground
+      fixIKOnGround();
+    }
     ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
 
     for (let i = 0; i < transformKeys.length; i++) {
-      const key = transformKeys[i];
+      // const key = transformKeys[i];
 
-      if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
-        // The first contact frame is in INTERPOLATION_FRAMES
-        contactIncoming = true;
-        // Use this position frow now on in this interpolation
-        ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
-      } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
-        // We were interpolating towards, or even in contact until now, we can release the constraint
-        contactIncoming = false;
-      }
+      // if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
+      //   // The first contact frame is in INTERPOLATION_FRAMES
+      //   contactIncoming = true;
+      //   // Use this position frow now on in this interpolation
+      //   ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
+      // } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
+      //   // We were interpolating towards, or even in contact until now, we can release the constraint
+      //   contactIncoming = false;
+      // }
 
       // ! R&D Try : extract the toe rotation every frame, no matter the lock status
       ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));

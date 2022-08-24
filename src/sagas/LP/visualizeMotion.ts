@@ -208,7 +208,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
-
+      console.log(animationIngredient);
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 
