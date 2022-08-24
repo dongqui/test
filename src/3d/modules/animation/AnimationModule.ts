@@ -886,13 +886,18 @@ export class AnimationModule extends Module {
           } else {
             const prevTimeIndex = findLastIndex(transformKeys, (key) => key.frame < targetFrame);
             const nextTimeIndex = findIndex(transformKeys, (key) => key.frame > targetFrame);
+
             const deltaTime = transformKeys[nextTimeIndex].frame - transformKeys[prevTimeIndex].frame;
             const deltaValue = isQuaternionTrack
               ? transformKeys[nextTimeIndex].value.toEulerAngles().subtract(transformKeys[prevTimeIndex].value.toEulerAngles()).toQuaternion()
+              : typeof transformKeys[nextTimeIndex].value === 'number'
+              ? transformKeys[nextTimeIndex].value - transformKeys[prevTimeIndex].value
               : transformKeys[nextTimeIndex].value.subtract(transformKeys[prevTimeIndex].value);
             const multiplier = (targetFrame - transformKeys[prevTimeIndex].frame) / deltaTime;
             const newValue = isQuaternionTrack
               ? transformKeys[prevTimeIndex].value.toEulerAngles().add(deltaValue.toEulerAngles().multiplyByFloats(multiplier, multiplier, multiplier)).toQuaternion()
+              : typeof transformKeys[nextTimeIndex].value === 'number'
+              ? transformKeys[nextTimeIndex].value + deltaValue * multiplier
               : transformKeys[prevTimeIndex].value.add(deltaValue.multiplyByFloats(multiplier, multiplier, multiplier));
             newTransformKeys.push({ frame: targetFrame, value: newValue });
           }

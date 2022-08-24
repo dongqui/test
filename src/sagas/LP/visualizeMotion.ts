@@ -118,6 +118,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
     }
+    plaskEngine.assetModule.setVisibility(1);
 
     // Foot locking
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
