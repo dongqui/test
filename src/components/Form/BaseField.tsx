@@ -20,11 +20,18 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
       }
       if (!controlledValue) {
         setValue(val);
+        field.onChange(val);
       }
-      field.onChange(val);
     },
     [field, onChange, controlledValue],
   );
+
+  useEffect(() => {
+    if (controlledValue) {
+      field.onChange(controlledValue);
+    }
+  }, [controlledValue, field]);
+
   const renderInner = useCallback(
     (field: ControllerRenderProps) => {
       const renderProps: Field.RenderProps<T> = {
