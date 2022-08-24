@@ -39,9 +39,7 @@ const LibraryPanel: FunctionComponent = () => {
     );
 
     const totalFileSize = files?.reduce((sum, file) => sum + file.size, 0);
-    if (PlanManager.isStorageExceeded(_user, totalFileSize)) {
-      PlanManager.openStorageExceededModal(_user);
-    } else if (hasMoreThanOneVideo) {
+    if (hasMoreThanOneVideo) {
       TagManager.dataLayer({
         dataLayer: {
           event: 'lp-file-drop',
@@ -68,6 +66,8 @@ const LibraryPanel: FunctionComponent = () => {
           title: 'Import failed',
         }),
       );
+    } else if (PlanManager.isStorageExceeded(_user, totalFileSize)) {
+      PlanManager.openStorageExceededModal(_user);
     } else {
       dispatch(lpNodeActions.fileUpload(files));
     }
