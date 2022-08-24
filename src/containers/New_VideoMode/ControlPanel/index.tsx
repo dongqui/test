@@ -45,8 +45,8 @@ interface Props {
 
 interface ExtractFormData {
   model: 'single' | 'multi';
-  footLock: boolean;
-  tPose: boolean;
+  footLock: 'Yes' | 'No';
+  tPose: 'Yes' | 'No';
 }
 
 interface MocapException {
@@ -78,8 +78,8 @@ const ControlPanel = ({
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
-    footLock: false,
-    tPose: false,
+    footLock: 'No',
+    tPose: 'Yes',
   });
   const [tagToolTip, setTagToolTip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -201,8 +201,8 @@ const ControlPanel = ({
       formData.append('endTime', String(endValue));
       formData.append('duration', String(duration));
       formData.append('modelType', valueFormData.model);
-      formData.append('isFootLock', valueFormData.footLock ? 'true' : 'false');
-      formData.append('isTPose', valueFormData.tPose ? 'true' : 'false');
+      formData.append('isFootLock', valueFormData.footLock === 'Yes' ? 'true' : 'false');
+      formData.append('isTPose', valueFormData.tPose === 'Yes' ? 'true' : 'false');
 
       setIsOpenLoadingModal(true);
 

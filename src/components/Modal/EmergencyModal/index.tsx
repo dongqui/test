@@ -32,7 +32,7 @@ export default function NotificationModal({ onClose, title, message, closeCallba
         </header>
         <div className={cx('body')}>
           <Image src="/images/megaPhone.svg" alt="notification" width={160} height={160} />
-          <Html content={message} />
+          <Html content={message.replaceAll('\n', '<br/>')} />
         </div>
         <footer className={cx('footer')}>
           <OutlineButton onClick={handleClose}>Okay</OutlineButton>

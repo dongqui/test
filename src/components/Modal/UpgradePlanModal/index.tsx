@@ -31,7 +31,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
     },
   ];
 
-  const confirmText = hadFreeTrial ? 'Upgrade' : 'Start free';
+  const confirmText = hadFreeTrial ? 'Upgrade' : 'Try it free for 7 days';
   const monthlyCost = billingCycle === 'Monthly' ? 140 : 50;
 
   const upgrade = async () => {
