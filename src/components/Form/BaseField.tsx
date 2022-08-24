@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useController, ControllerRenderProps } from 'react-hook-form';
 
-const BaseField = <T extends {}, Q>({ render, control, name, required, defaultValue, onChange, ...rest }: Field.BaseFieldProps<T, Q>) => {
+const BaseField = <T extends {}, Q>({ render, control, name, required, defaultValue, controlledValue, onChange, ...rest }: Field.BaseFieldProps<T, Q>) => {
   const [value, setValue] = useState<Q>(defaultValue);
   const { fieldState, field } = useController({
     name,
@@ -18,10 +18,12 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
       if (onChange) {
         onChange(val);
       }
-      setValue(val);
+      if (!controlledValue) {
+        setValue(val);
+      }
       field.onChange(val);
     },
-    [field, onChange],
+    [field, onChange, controlledValue],
   );
   const renderInner = useCallback(
     (field: ControllerRenderProps) => {
@@ -30,7 +32,7 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
         ...field,
         ...rest,
         defaultValue,
-        value,
+        value: controlledValue || value,
         onChange: onChangeInner,
         ref: undefined,
       };

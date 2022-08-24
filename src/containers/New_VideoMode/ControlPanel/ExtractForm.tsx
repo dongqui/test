@@ -103,13 +103,12 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             </div>
           )}
         </div>
-
         <BaseField<React.ComponentProps<typeof Switch>, string>
           className={cx('switch')}
           onChange={handleChangeMultiSwitch}
           control={fieldProps.control}
           name="model"
-          value={multiOption.key}
+          controlledValue={multiOption?.key}
           options={selectMultiOption}
           defaultValue={multiOption.key}
           render={(props) => <Switch {...props} />}
@@ -133,7 +132,6 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
               className={cx('overlay')}
               onMouseEnter={() => {
                 setFootLockTooltip(true);
-                console.log('enter');
               }}
               onMouseLeave={() => setFootLockTooltip(false)}
             />
@@ -151,7 +149,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             control={fieldProps.control}
             name="footLock"
             defaultValue={footLockOption.key}
-            value={footLockOption.key}
+            controlledValue={footLockOption.key}
             options={selectFootLockAndTPoseOption}
             render={(props) => <Switch {...props} />}
           />
