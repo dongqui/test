@@ -39,7 +39,7 @@ const BaseField = <T extends {}, Q>({ render, control, name, required, defaultVa
 
       return render(renderProps);
     },
-    [defaultValue, fieldState.error, onChangeInner, render, rest, value],
+    [defaultValue, fieldState.error, onChangeInner, render, rest, value, controlledValue],
   );
 
   return <Controller control={control} name={name} render={({ field }) => renderInner(field)} />;
