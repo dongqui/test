@@ -638,7 +638,7 @@ export class IKModule extends Module {
       if (!targetAnimation) {
         throw new Error('Could not bake, error while fetching animation ingredients.');
       }
-      const targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
+      let targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
       let layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
       if (!layers.length) {
         // Id not found, defaulting to first layer
@@ -650,6 +650,7 @@ export class IKModule extends Module {
       if (!selectedIK.fkInfluenceChain) {
         throw new Error('No FK found for this IK.');
       }
+      targetLayerId = layers[0].id;
 
       const fkPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.fkInfluenceChain![0].id && track.property === 'position');
       const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
