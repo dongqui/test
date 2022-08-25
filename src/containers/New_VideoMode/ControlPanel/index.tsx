@@ -42,6 +42,7 @@ interface Props {
   isOpenLoadingModal: boolean;
   setIsOpenLoadingModal: (state: boolean) => void;
   totalFrames: number;
+  isFastForwardDone: boolean;
 }
 
 interface ExtractFormData {
@@ -72,6 +73,7 @@ const ControlPanel = ({
   isOpenLoadingModal,
   setIsOpenLoadingModal,
   totalFrames,
+  isFastForwardDone,
 }: Props) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
@@ -322,7 +324,9 @@ const ControlPanel = ({
           </div>
         </div>
         <BaseForm onSubmit={handleSubmit}>
-          {(fieldProps) => <ExtractForm doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />}
+          {(fieldProps) => (
+            <ExtractForm isFastForwardDone={isFastForwardDone} doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />
+          )}
         </BaseForm>
       </div>
       {isOpenExtractModal && (

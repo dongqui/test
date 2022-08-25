@@ -79,6 +79,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [step4, setStep4] = useState(false);
 
   const [fraems, setFrames] = useState(0);
+  const [isFastForwardDone, setIsFastForwardDone] = useState(false);
 
   const doneVMOnBoarding = useCallback((index: number) => {
     const KEY = 1 << (index - 1);
@@ -734,6 +735,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               isOpenLoadingModal={isOpenLoadingModal}
               setIsOpenLoadingModal={setIsOpenLoadingModal}
               totalFrames={fraems}
+              isFastForwardDone={isFastForwardDone}
             />
           )}
         </Box>
@@ -799,6 +801,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           const frames = videoHiddenRef?.current?.getVideoPlaybackQuality().totalVideoFrames;
           if (frames) {
             setFrames(frames);
+            setIsFastForwardDone(true);
           }
         }}
         ref={videoHiddenRef}
