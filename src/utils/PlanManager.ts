@@ -32,7 +32,6 @@ class PlanManager {
   }
 
   isCreditExceeded(user: User, frames: number) {
-    return true;
     const neededCredts = this.calculateCreditFromVideoFrames(frames);
 
     return (user.credits?.remaining || 0) < neededCredts;
