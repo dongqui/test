@@ -25,12 +25,12 @@ const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
     <BaseModal className="dark">
       <div className={cx('container')}>
         <header>
-          <div className={cx('title')}>Unlock exclusive features</div>
+          <div className={cx('title')}>Unlock MoCap Pro</div>
           <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
 
         <section className={cx('content')}>
-          <h6>With Mocap Pro</h6>
+          <h6>Exclusive Features</h6>
           <ul>
             <li>
               <IconWrapper icon={SvgPath['Check']} />

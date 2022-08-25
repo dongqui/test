@@ -333,7 +333,7 @@ const ControlPanel = ({
             </div>
             <div className={cx('modal-content')}>
               <span className={cx('extract-text')}>
-                {requiredCredit} credits will be required on this. You will have {remainingCredit} credits remaining.
+                <strong>{requiredCredit} credits</strong> are required on this. You will have <strong>{remainingCredit} credits</strong> remaining.
               </span>
               <label className={cx('label-name')}>Name</label>
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />

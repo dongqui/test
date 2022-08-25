@@ -90,7 +90,7 @@ class PlanManager {
       this.dispatch(
         globalUIActions.openModal('ConfirmModal', {
           title: 'Need more credits?',
-          message: `${neededCredit} credits will be required on this. To resume, get more credits with a Mocap Pro plan.`,
+          message: `You have <strong>${user.credits?.remaining} credits</strong> left. <strong>${neededCredit} credits</strong> are required on this. Upgrade to MoCap Pro to get more credits.`,
           onConfirm: () => {
             this.dispatch && this.dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
           },

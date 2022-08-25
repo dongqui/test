@@ -23,7 +23,7 @@ function storageFormat(bytes: number) {
 
 function userPlanFormat(planName: string) {
   if (planName === 'Motion Capture Pro') {
-    return 'MoCap pro';
+    return 'MoCap Pro';
   }
   return planName;
 }
@@ -64,7 +64,7 @@ function UserInfo() {
       <Avata userNameInitial={getUserNameInitial(user.name)} onClick={handleClickAvata} ref={avataRef} />
 
       {openUserInfo && (
-        <div className={cx('modal')}>
+        <div className={cx('modal')} onClick={(e) => e.stopPropagation()}>
           <header>{user.name}</header>
           <section className={cx('content')}>
             <h6>{userPlanFormat(user.planName)} overview</h6>
@@ -83,7 +83,7 @@ function UserInfo() {
           {isFreemium && (
             <footer>
               <FilledButton onClick={hanldeClickUpgrade} buttonType="temp-purple" fullSize>
-                upgrade
+                Upgrade
               </FilledButton>
             </footer>
           )}
