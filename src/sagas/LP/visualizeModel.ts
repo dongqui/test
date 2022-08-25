@@ -109,7 +109,11 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         plaskEngine.assetModule.setVisibility(1);
 
         // Foot locking
-        let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId);
+        const state: RootState = yield select();
+        const animationIngredientDirect = state.animationData.animationIngredients.find(
+          (animationIngredient) => modelNode.assetId!.includes(animationIngredient.assetId) && animationIngredient.current,
+        );
+        let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId) || animationIngredientDirect;
 
         if (animationIngredient) {
           const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
@@ -142,6 +146,8 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId)!;
           }
           yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+        } else {
+          console.log('Could not find current animation ingredient for foot locking');
         }
       }
     }
