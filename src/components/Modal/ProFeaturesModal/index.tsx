@@ -20,7 +20,7 @@ const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
     onClose();
   };
 
-  const confirmText = hadFreeTrial ? 'Upgrade' : 'Start free';
+  const confirmText = hadFreeTrial ? 'Upgrade' : 'Try Pro Free';
   return (
     <BaseModal className="dark">
       <div className={cx('container')}>
@@ -35,13 +35,13 @@ const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
             <li>
               <IconWrapper icon={SvgPath['Check']} />
               <span className={cx('content-text')}>
-                You can extract <strong>multiple motion</strong>.... TBD
+                <strong>Multi-person motion capture</strong> - Simultaneous mocap up to 10 people
               </span>
             </li>
             <li>
               <IconWrapper icon={SvgPath['Check']} />
               <span className={cx('content-text')}>
-                You can fix sliding feet with our <strong>Foot lock</strong> feature
+                Prevent the model from sliding with the <strong>Foot Lock</strong> feature
               </span>
             </li>
           </ul>

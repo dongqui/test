@@ -17,7 +17,7 @@ import { Overlay } from 'components/Overlay';
 import ExtractForm from './ExtractForm';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'reducers';
-import PlanManager from 'utils/PlanManager';
+import planManager from 'utils/PlanManager';
 import * as errors from 'errors';
 
 import classNames from 'classnames/bind';
@@ -41,6 +41,7 @@ interface Props {
   setIsOpenExtractModal: (state: boolean) => void;
   isOpenLoadingModal: boolean;
   setIsOpenLoadingModal: (state: boolean) => void;
+  frames: number;
 }
 
 interface ExtractFormData {
@@ -70,6 +71,7 @@ const ControlPanel = ({
   setIsOpenExtractModal,
   isOpenLoadingModal,
   setIsOpenLoadingModal,
+  frames,
 }: Props) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
@@ -91,6 +93,14 @@ const ControlPanel = ({
   }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
+    if (planManager.isCreditExceeded(user, frames)) {
+      planManager.openCreditExceededModal(user, frames);
+      return;
+    } else if (planManager.isStorageExceeded(user)) {
+      planManager.openStorageExceededModal(user);
+      return;
+    }
+
     if (endValue - startValue >= 300) {
       dispatch(
         globalUIActions.openModal('_AlertModal', {
@@ -173,14 +183,6 @@ const ControlPanel = ({
         event: 'export-motion',
       },
     });
-
-    if (PlanManager.isCreditExceeded(user, duration)) {
-      PlanManager.openCreditExceededModal(user, duration);
-      return;
-    } else if (PlanManager.isStorageExceeded(user)) {
-      PlanManager.openStorageExceededModal(user);
-      return;
-    }
 
     if (videoRef.current) {
       if (endValue - startValue > 300) {
@@ -269,11 +271,11 @@ const ControlPanel = ({
               case: 'Condition',
             });
           } else if (statusCode === errors.TOOL_PAYMENT_NOT_ALLOWED_FUNCTION) {
-            PlanManager.openProFeaturesNotAllowedModal(user);
+            planManager.openProFeaturesNotAllowedModal(user);
           } else if (statusCode === errors.TOOL_PAYMENT_MAXIMUM_SIZE) {
-            PlanManager.openStorageExceededModal(user);
+            planManager.openStorageExceededModal(user);
           } else if (statusCode === errors.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
-            PlanManager.openCreditExceededModal(user, duration);
+            planManager.openCreditExceededModal(user, duration);
           } else if (statusCode === errors.INVALID_MOCAP_VIDEO_DURATION) {
             setIsOpenExceptionModal({
               isOpen: true,
@@ -300,6 +302,8 @@ const ControlPanel = ({
     }
   }, [isOpenExceptionModal]);
 
+  const requiredCredit = planManager.calculateCreditFromVideoFrames(frames).toLocaleString();
+  const remainingCredit = planManager.remainingCredits(user, frames).toLocaleString();
   return (
     <div className={cx('wrapper')} onMouseEnter={() => setCPModified(false)}>
       <div className={cx('section')}>
@@ -328,6 +332,9 @@ const ControlPanel = ({
               <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
             </div>
             <div className={cx('modal-content')}>
+              <span className={cx('extract-text')}>
+                {requiredCredit} credits will be required on this. You will have {remainingCredit} credits remaining.
+              </span>
               <label className={cx('label-name')}>Name</label>
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
