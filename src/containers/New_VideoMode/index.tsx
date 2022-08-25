@@ -77,6 +77,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [step3, setStep3] = useState(false);
   const [step4, setStep4] = useState(false);
 
+  const [fraems, setFrames] = useState(0);
+
   const doneVMOnBoarding = useCallback((index: number) => {
     const KEY = 1 << (index - 1);
     const OnBoardingMask = Number(localStorage.getItem(VM_ON_BOARDING_KEY) ?? '0');
@@ -730,6 +732,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               setIsOpenExtractModal={setIsOpenExtractModal}
               isOpenLoadingModal={isOpenLoadingModal}
               setIsOpenLoadingModal={setIsOpenLoadingModal}
+              frames={fraems}
             />
           )}
         </Box>

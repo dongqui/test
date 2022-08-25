@@ -21,16 +21,21 @@ class PlanManager {
     return (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0) + addSize;
   }
 
-  _calculateCreditFromVideoDuration(videoDuration: number) {
+  calculateCreditFromVideoFrames(frames: number) {
     // ----------------------------------------- TODO: calculate credit -----------------------------------------
+
+    return frames / 30;
   }
 
-  isCreditExceeded(user: User, videoDuration: number) {
-    // ----------------------------------------- TODO: calculate credit -----------------------------------------
+  remainingCredits(user: User, frames: number) {
+    return (user.credits?.remaining || 0) - this.calculateCreditFromVideoFrames(frames);
+  }
 
-    const neededCredts = this._calculateCreditFromVideoDuration(videoDuration);
+  isCreditExceeded(user: User, frames: number) {
+    return true;
+    const neededCredts = this.calculateCreditFromVideoFrames(frames);
 
-    return !user.credits?.remaining;
+    return (user.credits?.remaining || 0) < neededCredts;
   }
 
   openStorageExceededModal(user: User) {
@@ -75,12 +80,12 @@ class PlanManager {
     }
   }
 
-  openCreditExceededModal(user: User, videoDuration: number) {
+  openCreditExceededModal(user: User, videoFrames: number) {
     if (!this.dispatch) {
       return;
     }
 
-    const neededCredit = this._calculateCreditFromVideoDuration(videoDuration);
+    const neededCredit = this.calculateCreditFromVideoFrames(videoFrames);
 
     if (user.planType === 'freemium') {
       this.dispatch(
