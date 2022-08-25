@@ -74,7 +74,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
 
-    const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;
+    const isAnotherAssetVisualized = visualizedAssetIds.length > 0;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
       // Find transform node
@@ -88,7 +88,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     }
     // visualize new asset
     const newPlaskProject: PlaskProject = yield select(plaskProjectSelector);
-    if (modelNode?.assetId && !visualizedAssetIds.includes(modelNode.assetId)) {
+    if (modelNode?.assetId) {
       const asset = find(newPlaskProject.assetList, { id: modelNode.assetId });
       if (asset?.animationIngredientIds[0]) {
         yield put(
