@@ -47,6 +47,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoHiddenRef = useRef<HTMLVideoElement>(null);
 
   const [currentVideoURL, setVideoURL] = useState<string>('');
   const [isDeviceInitialized, setIsDeviceInitialized] = useState(false);
@@ -732,7 +733,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               setIsOpenExtractModal={setIsOpenExtractModal}
               isOpenLoadingModal={isOpenLoadingModal}
               setIsOpenLoadingModal={setIsOpenLoadingModal}
-              frames={fraems}
+              totalFrames={fraems}
             />
           )}
         </Box>
@@ -786,6 +787,24 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         CPModified={CPModified}
         extractButtonRef={extractButtonRef}
         doneVMOnBoarding={doneVMOnBoarding}
+      />
+      <video
+        onCanPlay={function () {
+          if (videoHiddenRef?.current?.playbackRate) {
+            videoHiddenRef.current.playbackRate = 16;
+            videoHiddenRef.current.play();
+          }
+        }}
+        onEnded={() => {
+          const frames = videoHiddenRef?.current?.getVideoPlaybackQuality().totalVideoFrames;
+          if (frames) {
+            setFrames(frames);
+          }
+        }}
+        ref={videoHiddenRef}
+        muted
+        hidden
+        src={currentVideoURL}
       />
       {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
     </div>

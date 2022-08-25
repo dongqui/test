@@ -41,7 +41,7 @@ interface Props {
   setIsOpenExtractModal: (state: boolean) => void;
   isOpenLoadingModal: boolean;
   setIsOpenLoadingModal: (state: boolean) => void;
-  frames: number;
+  totalFrames: number;
 }
 
 interface ExtractFormData {
@@ -71,7 +71,7 @@ const ControlPanel = ({
   setIsOpenExtractModal,
   isOpenLoadingModal,
   setIsOpenLoadingModal,
-  frames,
+  totalFrames,
 }: Props) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
@@ -86,6 +86,8 @@ const ControlPanel = ({
   const [tagToolTip, setTagToolTip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const requiredCredit = Math.floor(((totalFrames * (endValue - startValue)) / duration) * (valueFormData.model === 'single' ? 1 : 3));
+
   useEffect(() => {
     if (isOpenExtractModal && inputRef.current) {
       inputRef.current.select();
@@ -93,8 +95,8 @@ const ControlPanel = ({
   }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
-    if (planManager.isCreditExceeded(user, frames)) {
-      planManager.openCreditExceededModal(user, frames);
+    if (planManager.isCreditExceeded(user, requiredCredit)) {
+      planManager.openCreditExceededModal(user, requiredCredit);
       return;
     } else if (planManager.isStorageExceeded(user)) {
       planManager.openStorageExceededModal(user);
@@ -302,8 +304,7 @@ const ControlPanel = ({
     }
   }, [isOpenExceptionModal]);
 
-  const requiredCredit = planManager.calculateCreditFromVideoFrames(frames).toLocaleString();
-  const remainingCredit = planManager.remainingCredits(user, frames).toLocaleString();
+  const remainingCredit = planManager.remainingCredits(user, requiredCredit).toLocaleString();
   return (
     <div className={cx('wrapper')} onMouseEnter={() => setCPModified(false)}>
       <div className={cx('section')}>
@@ -333,7 +334,7 @@ const ControlPanel = ({
             </div>
             <div className={cx('modal-content')}>
               <span className={cx('extract-text')}>
-                <strong>{requiredCredit} credits</strong> are required on this. You will have <strong>{remainingCredit} credits</strong> remaining.
+                <strong>{requiredCredit.toLocaleString()} credits</strong> are required on this. You will have <strong>{remainingCredit} credits</strong> remaining.
               </span>
               <label className={cx('label-name')}>Name</label>
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
