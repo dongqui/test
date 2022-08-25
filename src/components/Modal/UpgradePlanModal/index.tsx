@@ -15,7 +15,7 @@ interface Props {
 
 const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
   const childWindow = useRef<Window | null>(null);
-  const [billingCycle, setbillingCycle] = useState('Yearly');
+  const [billingCycle, setbillingCycle] = useState('Annual');
   const [loading, setLoading] = useState(false);
 
   const billingCycleOption = [
@@ -25,9 +25,9 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
       value: 'Monthly',
     },
     {
-      key: 'Yearly',
-      label: `Yearly <strong class=${cx('discount')}>-64%</strong>`,
-      value: 'Yearly',
+      key: 'Annual',
+      label: `Annual <strong class=${cx('discount')}>-64%</strong>`,
+      value: 'Annual',
     },
   ];
 
@@ -66,16 +66,15 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
             <header>Freemium</header>
             <div className={cx('sub-header')}>
               <h6>Free</h6>
-              <span>For trying things out</span>
             </div>
             <ul>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                900 limited credits per day
+                900 credits (15 mins) a day
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                Single-person motion capture only
+                Single-person motion capture
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />1 GB storage
@@ -90,8 +89,8 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
 
           <section className={cx('card-common', 'card-pro')}>
             <header>
-              Mocap Pro
-              <span className={cx('recommend-chip')}>Recommend</span>
+              MoCap Pro
+              <span className={cx('recommend-chip')}>Recommended</span>
             </header>
 
             <Switch
@@ -106,12 +105,12 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
 
             <div className={cx('sub-header')}>
               <h6>${monthlyCost}/month</h6>
-              <span>Billed yearly</span>
+              <span>Billed {billingCycle === 'Annual' ? 'annually' : 'monthly'}</span>
             </div>
             <ul>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                108,000 credits per month
+                108,000 credits (60 mins) a month
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
@@ -122,11 +121,11 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                Advanced foot locking feature
+                Foot lock feature
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                Faster motion capture service
+                Faster motion extraction
               </li>
             </ul>
             <footer>
