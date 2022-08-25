@@ -577,17 +577,19 @@ export class IKModule extends Module {
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
       // Once bake is completed, we remove the keyframes that have been baked
-      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, ikPositionTrack.targetId, ikPositionTrack.property, []);
-      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, rotationTrack.targetId, rotationTrack.property, []);
-      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(
-        targetAnimation,
-        targetLayerId,
-        rotationQuaternionTrack.targetId,
-        rotationQuaternionTrack.property,
-        [],
-      );
-      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, poleAngleTrack.targetId, poleAngleTrack.property, []);
-      targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, blendTrack.targetId, blendTrack.property, []);
+      if (removeBakedKeyframes) {
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, ikPositionTrack.targetId, ikPositionTrack.property, []);
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, rotationTrack.targetId, rotationTrack.property, []);
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(
+          targetAnimation,
+          targetLayerId,
+          rotationQuaternionTrack.targetId,
+          rotationQuaternionTrack.property,
+          [],
+        );
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, poleAngleTrack.targetId, poleAngleTrack.property, []);
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, blendTrack.targetId, blendTrack.property, []);
+      }
       return targetAnimation;
     };
 
@@ -1061,7 +1063,8 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = (window as any).lookahead || 6;
+    const INTERPOLATION_FRAMES = 4;
+    const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
     let groundCorrectionEachFrame: number[] = [];
     const Y_MARGIN = 0.15; // Approx world units between the heel and the ground (Y axis)
@@ -1179,7 +1182,7 @@ export class IKModule extends Module {
             break;
           }
           if (transformKeys[i].value !== currentPhase) {
-            if (i - j < INTERPOLATION_FRAMES * 2) {
+            if (i - j < LOW_PASS_FILTER_MIN_FRAMES) {
               // The locking / unlocking phase is too short, flip the status to ignore this phase
               for (let k = j; k < i; k++) {
                 transformKeys[k].value = 1 - transformKeys[k].value;
@@ -1194,7 +1197,24 @@ export class IKModule extends Module {
           }
         }
       }
+      // After low pass filter, we have definitive phases, we can write them
+      const phases = [];
+      j = 0;
+      while (j < transformKeys.length) {
+        let currentPhase = transformKeys[j].value;
+        let i = j + 1;
+        const phaseObject = { value: currentPhase, length: 1 };
+        phases.push(phaseObject);
+
+        while (i < transformKeys.length && transformKeys[i].value === currentPhase) {
+          i++;
+          phaseObject.length++;
+        }
+        j = i;
+      }
+
       // Averaging filter
+      // TODO : can use phases
       j = 0;
       let iKPositions = [];
       while (j < transformKeys.length) {
@@ -1216,39 +1236,61 @@ export class IKModule extends Module {
         iKPositions.push(targetPosition);
         j = i;
       }
+
       // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
+      // Lerping the pos in no contact phases
       let currentIKIndex = 0;
-      j = 0;
-      while (j < transformKeys.length) {
-        let currentStatus = transformKeys[j].value;
-        let i = j;
-
-        while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
-          frameIKPosition.push(iKPositions[currentIKIndex].clone());
-          i++;
-        }
-        // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
-        if (currentStatus) {
-          let postInterpolation = 0;
-          while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
-            if (!iKPositions[currentIKIndex]) {
-              debugger;
-            }
-            frameIKPosition.push(iKPositions[currentIKIndex].clone());
-            i++;
-            postInterpolation++;
+      for (let j = 0; j < phases.length; j++) {
+        const phase = phases[j];
+        for (let i = 0; i < phase.length; i++) {
+          if (phase.value) {
+            frameIKPosition.push(iKPositions[currentIKIndex]);
+          } else {
+            const previous = iKPositions[Math.max(0, currentIKIndex - 1)];
+            const next = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
+            const lerpedPos = Vector3.Lerp(previous, next, i / phase.length);
+            frameIKPosition.push(lerpedPos);
           }
-          // Clamp necessary if the last phase is no contact
-          currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
         }
-        j = i;
+
+        if (phase.value) {
+          currentIKIndex++;
+        }
       }
 
-      if (frameIKPosition.length !== transformKeys.length) {
-        // Something went wrong in the algorithm
-        debugger;
-      }
+      // let currentIKIndex = 0;
+      // j = 0;
+      // while (j < transformKeys.length) {
+      //   let currentStatus = transformKeys[j].value;
+      //   let i = j;
+
+      //   while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
+      //     frameIKPosition.push(iKPositions[currentIKIndex].clone());
+      //     i++;
+      //   }
+      //   // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
+      //   if (currentStatus) {
+      //     let postInterpolation = 0;
+      //     while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
+      //       if (!iKPositions[currentIKIndex]) {
+      //         debugger;
+      //       }
+      //       frameIKPosition.push(iKPositions[currentIKIndex].clone());
+      //       i++;
+      //       postInterpolation++;
+      //     }
+      //     // Clamp necessary if the last phase is no contact
+      //     currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
+      //   }
+      //   j = i;
+      // }
+
+      // if (frameIKPosition.length !== transformKeys.length) {
+      //   // Something went wrong in the algorithm
+      //   debugger;
+      // }
     };
+
     filterKeys();
     if (ikController.limb === 'rightFoot') {
       // Maybe averaging both foot is more accurate ? for now right foot only will do
@@ -1283,7 +1325,7 @@ export class IKModule extends Module {
         factor = -1;
       }
 
-      const interpolationStrength = (window as any).interpolation || 0.8;
+      const interpolationStrength = 0.5;
       currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
 
       // Insert keyframe if blend > 0
