@@ -96,8 +96,15 @@
   height: 100vh;
   z-index: 1000;
 
-  background-color: black;
-  color: white;
+  background-color: rgb(0 0 0 / 60%);
   justify-content: center;
   align-items: center;
+
+  .spin-logo-icon {
+    svg {
+      width: 24px;
+      height: 34px;
+      stroke: $outline-border;
+    }
+  }
 }

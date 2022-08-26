@@ -25,6 +25,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { Overlay } from 'components/Overlay';
 import TagManager from 'react-gtm-module';
+import { Spinner } from 'components';
 
 const cx = classNames.bind(styles);
 
@@ -228,7 +229,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) {
       setInitialLoading(true);
     } else if (RECORD_AVAILABLE) {
-      setInitialLoading(false);
+      setTimeout(() => setInitialLoading(false), 100);
     }
   }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
 
@@ -825,7 +826,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         src={currentVideoURL}
       />
       {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
-      {initialLoading && <div className={cx('initial-overlay')}>LOADING</div>}
+      {initialLoading && (
+        <div className={cx('initial-overlay')}>
+          <Spinner>
+            <IconWrapper className={cx('spin-logo-icon')} icon={SvgPath.Logo} />
+          </Spinner>
+        </div>
+      )}
     </div>
   );
 };
