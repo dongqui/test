@@ -1058,11 +1058,12 @@ export class IKModule extends Module {
     // Add an animation track for position
     animationGroup.start();
 
-    // Direct method (look ahead up to INTERPOLATION_FRAMES frames)
     let currentBlend = 0;
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
+    // Ignore the TPose if there is one
+    const firstFootlockFrame = transformKeys[0].value === -1 ? 1 : 0;
     const INTERPOLATION_FRAMES = 4;
     const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
@@ -1077,6 +1078,13 @@ export class IKModule extends Module {
     const fixHipPosition = (ikPosition: Vector3[]) => {
       let j = 0;
       while (j < transformKeys.length) {
+        if (transformKeys[j].value === -1) {
+          // No correction for ignored frames
+          groundCorrectionEachFrame.push(0);
+          j++;
+          continue;
+        }
+
         if (transformKeys[j].value) {
           // In contact, ground position is hard set
           groundCorrectionEachFrame.push(-ikPosition[j].y + Y_MARGIN);
@@ -1174,6 +1182,12 @@ export class IKModule extends Module {
         if (isNaN(transformKeys[j].value) || transformKeys[j].value === undefined) {
           transformKeys[j].value = 0;
         }
+        // -1 are ignored frames
+        if (transformKeys[j].value === -1) {
+          j++;
+          continue;
+        }
+
         let currentPhase = transformKeys[j].value;
         for (let i = j + 1; i < transformKeys.length; i++) {
           if (i === transformKeys.length - 1) {
@@ -1219,7 +1233,7 @@ export class IKModule extends Module {
       let iKPositions = [];
       while (j < transformKeys.length) {
         let currentPhase = transformKeys[j].value;
-        if (!currentPhase) {
+        if (!currentPhase || currentPhase === -1) {
           j++;
           continue;
         }
@@ -1243,7 +1257,7 @@ export class IKModule extends Module {
       for (let j = 0; j < phases.length; j++) {
         const phase = phases[j];
         for (let i = 0; i < phase.length; i++) {
-          if (phase.value) {
+          if (phase.value === 1) {
             frameIKPosition.push(iKPositions[currentIKIndex]);
           } else {
             const previous = iKPositions[Math.max(0, currentIKIndex - 1)];
@@ -1257,38 +1271,6 @@ export class IKModule extends Module {
           currentIKIndex++;
         }
       }
-
-      // let currentIKIndex = 0;
-      // j = 0;
-      // while (j < transformKeys.length) {
-      //   let currentStatus = transformKeys[j].value;
-      //   let i = j;
-
-      //   while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
-      //     frameIKPosition.push(iKPositions[currentIKIndex].clone());
-      //     i++;
-      //   }
-      //   // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
-      //   if (currentStatus) {
-      //     let postInterpolation = 0;
-      //     while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
-      //       if (!iKPositions[currentIKIndex]) {
-      //         debugger;
-      //       }
-      //       frameIKPosition.push(iKPositions[currentIKIndex].clone());
-      //       i++;
-      //       postInterpolation++;
-      //     }
-      //     // Clamp necessary if the last phase is no contact
-      //     currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
-      //   }
-      //   j = i;
-      // }
-
-      // if (frameIKPosition.length !== transformKeys.length) {
-      //   // Something went wrong in the algorithm
-      //   debugger;
-      // }
     };
 
     filterKeys();
@@ -1304,19 +1286,8 @@ export class IKModule extends Module {
     for (let i = 0; i < transformKeys.length; i++) {
       // const key = transformKeys[i];
 
-      // if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
-      //   // The first contact frame is in INTERPOLATION_FRAMES
-      //   contactIncoming = true;
-      //   // Use this position frow now on in this interpolation
-      //   ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
-      // } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
-      //   // We were interpolating towards, or even in contact until now, we can release the constraint
-      //   contactIncoming = false;
-      // }
-
-      // ! R&D Try : extract the toe rotation every frame, no matter the lock status
+      // extract the toe rotation every frame, no matter the lock status
       ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));
-      // Also try this IK pos averaging
       targetIKPosition = frameIKPosition[i];
 
       let factor = transformKeys[Math.min(transformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
@@ -1327,8 +1298,7 @@ export class IKModule extends Module {
 
       const interpolationStrength = 0.5;
       currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
-
-      // Insert keyframe if blend > 0
+      const finalBlend = transformKeys[i].value === -1 ? 0 : currentBlend;
       if (currentBlend >= 0) {
         const targetDataList = [
           {
@@ -1344,7 +1314,7 @@ export class IKModule extends Module {
           {
             targetId: ikController.handle.id,
             property: 'blend' as PlaskProperty,
-            value: currentBlend,
+            value: finalBlend,
           },
           {
             targetId: ikController.handle.id,
