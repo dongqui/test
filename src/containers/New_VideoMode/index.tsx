@@ -217,7 +217,6 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       tracks.forEach((track) => {
         track.stop();
       });
-      console.log({ tracks, tracks2 });
 
       setCurrentVideoStream(null);
       setCurrentVideoDevice(null);
@@ -229,7 +228,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) {
       setInitialLoading(true);
     } else if (RECORD_AVAILABLE) {
-      setTimeout(() => setInitialLoading(false), 500);
+      setInitialLoading(false);
     }
   }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
 
