@@ -207,16 +207,20 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   };
 
   const unmountCurrentStream = useCallback(() => {
-    if (currentVideoStream) {
+    if (currentVideoStream && videoRef.current) {
+      const srcObject = videoRef.current.srcObject;
+      videoRef.current.srcObject = null;
       const tracks = currentVideoStream.getTracks();
-      tracks.forEach((track) => track.stop());
+      tracks.forEach((track) => {
+        track.stop();
+      });
+      const tracks2 = (srcObject as MediaStream).getTracks();
+      tracks2.forEach((track) => track.stop());
+      console.log({ tracks, tracks2 });
+
       setCurrentVideoStream(null);
       setCurrentVideoDevice(null);
       setIsDeviceInitialized(false);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
     }
   }, [currentVideoStream]);
 
