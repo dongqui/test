@@ -1,4 +1,4 @@
-import { FunctionComponent, Fragment, memo } from 'react';
+import { FunctionComponent, memo } from 'react';
 import { BaseModal } from 'components/Modal';
 import { Html } from 'components/Typography';
 import classnames from 'classnames/bind';

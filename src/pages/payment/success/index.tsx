@@ -8,6 +8,7 @@ import { Spinner, SvgPath, IconWrapper } from 'components';
 
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
+import { time } from 'console';
 
 const cx = classnames.bind(styles);
 
@@ -18,6 +19,7 @@ interface PageProps {
 export default function Success({ token }: PageProps) {
   const [intervalTime, setIntervalTime] = useState<number | null>(1000);
   const [timeoutTime, setTimeoutTime] = useState<number | null>(null);
+  const [time, setTime] = useState<number>(0);
 
   useEffect(() => {
     tokenManager.set(token);
@@ -29,8 +31,10 @@ export default function Success({ token }: PageProps) {
 
   useInterval(intervalTime, async () => {
     const planInfo = await getUserPlanInfo();
+    setTime((prev) => prev + 1);
+
     // TODO: 좀 더 확장성 있게...!
-    if (planInfo.name === 'Motion Capture Pro') {
+    if (planInfo.name === 'Motion Capture Pro' || time >= 10) {
       window?.opener?.document?.getElementById('handle-payment-success').click();
       setIntervalTime(null);
       setTimeoutTime(2000);

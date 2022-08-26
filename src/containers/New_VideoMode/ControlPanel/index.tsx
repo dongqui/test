@@ -280,7 +280,7 @@ const ControlPanel = ({
           } else if (statusCode === errors.TOOL_PAYMENT_MAXIMUM_SIZE) {
             planManager.openStorageExceededModal(user);
           } else if (statusCode === errors.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
-            planManager.openCreditExceededModal(user, duration);
+            planManager.openCreditExceededModal(user, requiredCredit);
           } else if (statusCode === errors.INVALID_MOCAP_VIDEO_DURATION) {
             setIsOpenExceptionModal({
               isOpen: true,
