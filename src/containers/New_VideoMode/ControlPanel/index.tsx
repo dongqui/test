@@ -22,6 +22,7 @@ import * as errors from 'errors';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
+import { Spinner } from 'components';
 
 const cx = classNames.bind(styles);
 
@@ -358,8 +359,11 @@ const ControlPanel = ({
             </div>
             <div className={cx('modal-content')}>
               <div className={cx('message')}>It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}</div>
+              <div className={cx('loading-spinner')}>
+                <Spinner size="small" backgroundColor="elevated" />
+              </div>
             </div>
-            <div className={cx('modal-footer')}>
+            <div className={cx('modal-footer', 'loading-footer')}>
               <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
                 Cancel
               </OutlineButton>

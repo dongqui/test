@@ -145,6 +145,10 @@
   flex-direction: column;
   margin-bottom: 20px;
 
+  &.loading-spinner {
+    margin-top: 12px;
+  }
+
   &.nomargin {
     margin-bottom: 0;
   }
@@ -175,6 +179,10 @@
 
   .button-negative {
     margin-right: 8px;
+  }
+
+  &.loading-footer {
+    margin-top: 32px;
   }
 }
 
