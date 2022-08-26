@@ -5,12 +5,14 @@ const cx = classnames.bind(styles);
 
 interface Props {
   children?: React.ReactNode;
+  backgroundColor?: 'default' | 'elevated';
+  size?: 'small' | 'medium' | 'large';
 }
 
-export default function Spinner({ children }: Props) {
+export default function Spinner({ children, backgroundColor = 'default', size = 'large' }: Props) {
   return (
-    <div className={cx('spinner-container')}>
-      <div className={cx('spinner')}></div>
+    <div className={cx('spinner-wrapper')}>
+      <div className={cx('spinner', backgroundColor, size)}></div>
       <div className={cx('inner')}>{children}</div>
     </div>
   );

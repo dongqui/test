@@ -20,8 +20,6 @@ interface Props {
   defaultMode: 'VM' | 'EM';
 }
 
-type HelpDropdownItem = 'Onboarding' | 'Tutorial' | 'Help center' | 'Contact us';
-
 const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
   const dispatch = useDispatch();
   const { mode } = useSelector((state: RootState) => state.modeSelection);
