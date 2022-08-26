@@ -57,6 +57,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   const [footLockTooltip, setFootLockTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
   const userState = useSelector((state) => state.user);
+  const [betaTagToolTip, setBetaTagToolTip] = useState(false);
 
   useEffect(() => {
     if (multiOption.value && FOOT_LOCK_AVAILABLE) {
@@ -136,10 +137,22 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
               }}
               onMouseLeave={() => setFootLockTooltip(false)}
             />
+
             {footLockTooltip && (
               <div className={cx('tooltip')}>
                 <div className={cx('arrow')} />
                 <Typography type="body">Locking the feet to the ground and gliding the feet across the ground</Typography>
+              </div>
+            )}
+          </div>
+
+          <div className={cx('beta-chip')}>
+            <Typography className={cx('text')}>Beta</Typography>
+            <div className={cx('overlay')} onMouseEnter={() => setBetaTagToolTip(true)} onMouseLeave={() => setBetaTagToolTip(false)} />
+            {betaTagToolTip && (
+              <div className={cx('tooltip')}>
+                <div className={cx('arrow')} />
+                <Typography type="body">Improving it now!</Typography>
               </div>
             )}
           </div>

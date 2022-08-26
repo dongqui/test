@@ -124,7 +124,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         height: windowHeight - 180 - 38,
       } as BoxProps,
       CP: {
-        width: 300,
+        width: 312,
         height: windowHeight - 180 - 38,
       } as BoxProps,
       MB: {
