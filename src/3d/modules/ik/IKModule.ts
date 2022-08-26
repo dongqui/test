@@ -1255,7 +1255,7 @@ export class IKModule extends Module {
       for (let j = 0; j < phases.length; j++) {
         const phase = phases[j];
         for (let i = 0; i < phase.length; i++) {
-          if (phase.value === 1) {
+          if (phase.value) {
             frameIKPosition.push(iKPositions[currentIKIndex]);
           } else {
             const previous = iKPositions[Math.max(0, currentIKIndex - 1)];
@@ -1265,7 +1265,7 @@ export class IKModule extends Module {
           }
         }
 
-        if (phase.value) {
+        if (phase.value === 1) {
           currentIKIndex++;
         }
       }
