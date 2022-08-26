@@ -78,7 +78,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [step3, setStep3] = useState(false);
   const [step4, setStep4] = useState(false);
 
-  const [fraems, setFrames] = useState(0);
+  const [frames, setFrames] = useState(0);
   const [isFastForwardDone, setIsFastForwardDone] = useState(false);
 
   const doneVMOnBoarding = useCallback((index: number) => {
@@ -514,6 +514,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         confirmButtonColor: 'negative',
         onConfirm: () => {
           dispatch(changeMode({ mode: mode, videoURL: undefined }));
+          setFrames(0);
+          setIsFastForwardDone(false);
           setExtractButtonRef(null);
           setCPModified(undefined);
           setStartValue(0);
@@ -734,7 +736,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               setIsOpenExtractModal={setIsOpenExtractModal}
               isOpenLoadingModal={isOpenLoadingModal}
               setIsOpenLoadingModal={setIsOpenLoadingModal}
-              totalFrames={fraems}
+              totalFrames={frames}
               isFastForwardDone={isFastForwardDone}
             />
           )}
@@ -791,6 +793,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         doneVMOnBoarding={doneVMOnBoarding}
       />
       <video
+        style={{ width: 1, height: 1 }}
         onCanPlay={function () {
           if (videoHiddenRef?.current?.playbackRate) {
             videoHiddenRef.current.playbackRate = 16;
