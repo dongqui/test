@@ -145,8 +145,8 @@
   flex-direction: column;
   margin-bottom: 20px;
 
-  &.loading-spinner {
-    margin-top: 12px;
+  .loading-spinner {
+    margin-top: 24px;
   }
 
   &.nomargin {
