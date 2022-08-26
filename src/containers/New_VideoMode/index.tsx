@@ -59,6 +59,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
   const lock = useRef<boolean>(false);
@@ -210,12 +211,12 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (currentVideoStream && videoRef.current) {
       const srcObject = videoRef.current.srcObject;
       videoRef.current.srcObject = null;
+      const tracks2 = (srcObject as MediaStream).getTracks();
+      tracks2.forEach((track) => track.stop());
       const tracks = currentVideoStream.getTracks();
       tracks.forEach((track) => {
         track.stop();
       });
-      const tracks2 = (srcObject as MediaStream).getTracks();
-      tracks2.forEach((track) => track.stop());
       console.log({ tracks, tracks2 });
 
       setCurrentVideoStream(null);
@@ -223,6 +224,14 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       setIsDeviceInitialized(false);
     }
   }, [currentVideoStream]);
+
+  useEffect(() => {
+    if (PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) {
+      setInitialLoading(true);
+    } else if (RECORD_AVAILABLE) {
+      setTimeout(() => setInitialLoading(false), 500);
+    }
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -599,7 +608,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (currentVideoDevice !== null && !isDeviceInitialized) {
       deviceInitialize(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized, isVideoLoaded, unmountCurrentStream]);
+  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized]);
 
   const dropdownList = useMemo(() => {
     return videoDeviceList.map((device) => ({
@@ -817,6 +826,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         src={currentVideoURL}
       />
       {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
+      {initialLoading && <div className={cx('initial-overlay')}>LOADING</div>}
     </div>
   );
 };

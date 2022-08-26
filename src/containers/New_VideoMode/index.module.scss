@@ -84,3 +84,20 @@
   border-radius: 6px;
   max-width: 189px;
 }
+
+.initial-overlay {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+
+  background-color: black;
+  color: white;
+  justify-content: center;
+  align-items: center;
+}
