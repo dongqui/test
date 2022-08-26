@@ -313,16 +313,6 @@ const ControlPanel = ({
       <div className={cx('section')}>
         <div className={cx('section-title')}>
           <Typography type="title">Extract option</Typography>
-          <div className={cx('tag')}>
-            <Typography className={cx('text')}>Beta</Typography>
-            <div className={cx('overlay')} onMouseEnter={() => setTagToolTip(true)} onMouseLeave={() => setTagToolTip(false)} />
-            {tagToolTip && (
-              <div className={cx('tooltip')}>
-                <div className={cx('arrow')} />
-                <Typography type="body">Currently in Beta and free!</Typography>
-              </div>
-            )}
-          </div>
         </div>
         <BaseForm onSubmit={isFastForwardDone ? handleSubmit : () => null}>
           {(fieldProps) => (
