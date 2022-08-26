@@ -1062,8 +1062,6 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    // Ignore the TPose if there is one
-    const firstFootlockFrame = transformKeys[0].value === -1 ? 1 : 0;
     const INTERPOLATION_FRAMES = 4;
     const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
