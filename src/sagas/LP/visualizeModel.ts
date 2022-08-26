@@ -74,7 +74,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       yield put(plaskProjectActions.addAnimationIngredient({ assetId: asset.id, animationIngredientId: animationIngredient.id }));
     }
 
-    const isAnotherAssetVisualized = visualizedAssetIds.length > 0 && visualizedAssetIds[0] !== modelNode.assetId;
+    const isAnotherAssetVisualized = visualizedAssetIds.length > 0;
     if (isAnotherAssetVisualized) {
       const prevAssetId = visualizedAssetIds[0];
       // Find transform node
@@ -88,7 +88,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     }
     // visualize new asset
     const newPlaskProject: PlaskProject = yield select(plaskProjectSelector);
-    if (modelNode?.assetId && !visualizedAssetIds.includes(modelNode.assetId)) {
+    if (modelNode?.assetId) {
       const asset = find(newPlaskProject.assetList, { id: modelNode.assetId });
       if (asset?.animationIngredientIds[0]) {
         yield put(
@@ -109,7 +109,11 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         plaskEngine.assetModule.setVisibility(1);
 
         // Foot locking
-        let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId);
+        const state: RootState = yield select();
+        const animationIngredientDirect = state.animationData.animationIngredients.find(
+          (animationIngredient) => modelNode.assetId!.includes(animationIngredient.assetId) && animationIngredient.current,
+        );
+        let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId) || animationIngredientDirect;
 
         if (animationIngredient) {
           const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
@@ -126,7 +130,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
               if (controller.limb.toLowerCase().includes('foot')) {
                 plaskEngine.ikModule.setSelectedIk([controller]);
 
-                const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
+                const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, true);
                 animationIngredient = bakeResult.animationIngredient || animationIngredient;
                 yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
@@ -142,6 +146,8 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(modelNode.assetId)!;
           }
           yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+        } else {
+          console.log('Could not find current animation ingredient for foot locking');
         }
       }
     }

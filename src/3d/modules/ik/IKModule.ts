@@ -518,12 +518,12 @@ export class IKModule extends Module {
    * Computes all the FK frames from the IK animation tracks
    * @returns the edited animationIngredients for each selected IK controller
    */
-  public bakeIKintoFK(controllers?: IKController[]) {
+  public bakeIKintoFK(controllers?: IKController[], removeBakedKeyframes = false) {
     const bakeTargetControllers = controllers ? controllers : this._selectedIkControllers;
-    return this._IKtoFKAnimationIngredient(bakeTargetControllers);
+    return this._IKtoFKAnimationIngredient(bakeTargetControllers, undefined, removeBakedKeyframes);
   }
 
-  private _IKtoFKAnimationIngredient(controllers?: IKController[], layerId?: string) {
+  private _IKtoFKAnimationIngredient(controllers?: IKController[], layerId?: string, removeBakedKeyframes = false) {
     const frameEdit = (
       ikController: IKController,
       fkPositionTrack: PlaskTrack,
@@ -576,7 +576,20 @@ export class IKModule extends Module {
         ikController.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, rotationQuaternionValue, blendValue, poleAngleValue);
         targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
-
+      // Once bake is completed, we remove the keyframes that have been baked
+      if (removeBakedKeyframes) {
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, ikPositionTrack.targetId, ikPositionTrack.property, []);
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, rotationTrack.targetId, rotationTrack.property, []);
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(
+          targetAnimation,
+          targetLayerId,
+          rotationQuaternionTrack.targetId,
+          rotationQuaternionTrack.property,
+          [],
+        );
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, poleAngleTrack.targetId, poleAngleTrack.property, []);
+        targetAnimation = this.plaskEngine.animationModule.setKeyframesForTrack(targetAnimation, targetLayerId, blendTrack.targetId, blendTrack.property, []);
+      }
       return targetAnimation;
     };
 
@@ -627,7 +640,7 @@ export class IKModule extends Module {
       if (!targetAnimation) {
         throw new Error('Could not bake, error while fetching animation ingredients.');
       }
-      const targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
+      let targetLayerId = layerId !== undefined ? layerId : this.plaskEngine.state.trackList.selectedLayer;
       let layers = targetAnimation.layers.filter((layer) => layer.id === targetLayerId);
       if (!layers.length) {
         // Id not found, defaulting to first layer
@@ -639,6 +652,7 @@ export class IKModule extends Module {
       if (!selectedIK.fkInfluenceChain) {
         throw new Error('No FK found for this IK.');
       }
+      targetLayerId = layers[0].id;
 
       const fkPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.fkInfluenceChain![0].id && track.property === 'position');
       const ikPositionTrack = layers[0].tracks.find((track) => track.targetId === selectedIK.handle.id && track.property === 'position');
@@ -1045,14 +1059,99 @@ export class IKModule extends Module {
     animationGroup.start();
 
     // Direct method (look ahead up to INTERPOLATION_FRAMES frames)
-    let contactIncoming = false;
     let currentBlend = 0;
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = (window as any).lookahead || 6;
+    const INTERPOLATION_FRAMES = 4;
+    const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
-    const averageLockedPositions = () => {};
+    let groundCorrectionEachFrame: number[] = [];
+    const Y_MARGIN = 0.15; // Approx world units between the heel and the ground (Y axis)
+    const fixIKOnGround = () => {
+      // Now fix IK positions
+      for (let i = 0; i < frameIKPosition.length; i++) {
+        frameIKPosition[i].y = Y_MARGIN;
+      }
+    };
+    const fixHipPosition = (ikPosition: Vector3[]) => {
+      let j = 0;
+      while (j < transformKeys.length) {
+        if (transformKeys[j].value) {
+          // In contact, ground position is hard set
+          groundCorrectionEachFrame.push(-ikPosition[j].y + Y_MARGIN);
+          j++;
+          continue;
+        }
+
+        // Out of contact, we interpolate ground till the next contact
+        let i = j;
+        let initialGroundCorrection = groundCorrectionEachFrame.length ? groundCorrectionEachFrame[groundCorrectionEachFrame.length - 1] : null;
+        while (i < transformKeys.length && !transformKeys[i].value) {
+          i++;
+        }
+        let nbFramesOutOfContact = i - j;
+        let endGroundCorrection = null;
+        if (i < transformKeys.length) {
+          endGroundCorrection = -ikPosition[i].y + Y_MARGIN;
+        }
+
+        for (let k = j; k < i; k++) {
+          let value;
+          if (initialGroundCorrection === null) {
+            value = endGroundCorrection || 0;
+          } else if (endGroundCorrection === null) {
+            value = initialGroundCorrection;
+          } else {
+            value = Scalar.Lerp(initialGroundCorrection, endGroundCorrection, (k - j) / nbFramesOutOfContact);
+          }
+          groundCorrectionEachFrame.push(value);
+        }
+
+        j = i;
+      }
+      // Finding hip Bone
+      const retargetMap = this.getRetargetMap(ikController.assetId);
+      if (!retargetMap) {
+        console.warn('Cannot find retarget map');
+        return;
+      }
+      const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes('hips'));
+      if (!retargetValue) {
+        console.warn('Cannot find hip bone');
+        return;
+      }
+      const transformNodeId = retargetValue.targetTransformNodeId;
+      if (!transformNodeId) {
+        console.warn('Retargeting not completed for hip');
+        return;
+      }
+      // Fixing hip bone
+      let targetLayer = animationIngredient.layers[0];
+      let targetTrack = targetLayer!.tracks.find((track) => track.targetId === transformNodeId && track.property === 'position');
+      if (!targetTrack) {
+        console.warn('Could not find hip track for hip correction');
+        return;
+      }
+      for (let i = 0; i < targetTrack.transformKeys.length; i++) {
+        const positionCorrected = (targetTrack.transformKeys[i].value as Vector3).clone();
+        // positionCorrected.y += groundCorrectionEachFrame[i];
+        // Hipspace scaling
+        const { hipSpace } = retargetMap;
+        positionCorrected.z += -groundCorrectionEachFrame[i] * 100;
+        // positionCorrected.z += (2 * (groundCorrectionEachFrame[i] * 100 * hipSpace)) / 106;
+        const targetDataList = [
+          {
+            targetId: transformNodeId,
+            property: 'position' as PlaskProperty,
+            value: positionCorrected.asArray() as ArrayOfThreeNumbers,
+          },
+        ];
+        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, transformKeys[i].frame, targetDataList);
+      }
+
+      fixIKOnGround();
+    };
 
     const extractPoseAtFrame = (frameIndex: number) => {
       animationGroup.goToFrame(frameIndex);
@@ -1071,6 +1170,10 @@ export class IKModule extends Module {
       let j = 0;
       // Contact filter
       while (j < transformKeys.length) {
+        // Safeguard : sometimes undefined and NaN are present in transformkeys
+        if (isNaN(transformKeys[j].value) || transformKeys[j].value === undefined) {
+          transformKeys[j].value = 0;
+        }
         let currentPhase = transformKeys[j].value;
         for (let i = j + 1; i < transformKeys.length; i++) {
           if (i === transformKeys.length - 1) {
@@ -1079,7 +1182,7 @@ export class IKModule extends Module {
             break;
           }
           if (transformKeys[i].value !== currentPhase) {
-            if (i - j < INTERPOLATION_FRAMES * 2) {
+            if (i - j < LOW_PASS_FILTER_MIN_FRAMES) {
               // The locking / unlocking phase is too short, flip the status to ignore this phase
               for (let k = j; k < i; k++) {
                 transformKeys[k].value = 1 - transformKeys[k].value;
@@ -1094,8 +1197,24 @@ export class IKModule extends Module {
           }
         }
       }
+      // After low pass filter, we have definitive phases, we can write them
+      const phases = [];
+      j = 0;
+      while (j < transformKeys.length) {
+        let currentPhase = transformKeys[j].value;
+        let i = j + 1;
+        const phaseObject = { value: currentPhase, length: 1 };
+        phases.push(phaseObject);
+
+        while (i < transformKeys.length && transformKeys[i].value === currentPhase) {
+          i++;
+          phaseObject.length++;
+        }
+        j = i;
+      }
+
       // Averaging filter
-      // TODO : debug
+      // TODO : can use phases
       j = 0;
       let iKPositions = [];
       while (j < transformKeys.length) {
@@ -1117,54 +1236,83 @@ export class IKModule extends Module {
         iKPositions.push(targetPosition);
         j = i;
       }
+
       // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
+      // Lerping the pos in no contact phases
       let currentIKIndex = 0;
-      j = 0;
-      while (j < transformKeys.length) {
-        let currentStatus = transformKeys[j].value;
-        let i = j;
-        while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
-          frameIKPosition.push(iKPositions[currentIKIndex]);
-          i++;
-        }
-        // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
-        if (currentStatus) {
-          let postInterpolation = 0;
-          while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
-            if (!iKPositions[currentIKIndex]) {
-              debugger;
-            }
+      for (let j = 0; j < phases.length; j++) {
+        const phase = phases[j];
+        for (let i = 0; i < phase.length; i++) {
+          if (phase.value) {
             frameIKPosition.push(iKPositions[currentIKIndex]);
-            i++;
-            postInterpolation++;
+          } else {
+            const previous = iKPositions[Math.max(0, currentIKIndex - 1)];
+            const next = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
+            const lerpedPos = Vector3.Lerp(previous, next, i / phase.length);
+            frameIKPosition.push(lerpedPos);
           }
-          // Clamp necessary if the last phase is no contact
-          currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
         }
-        j = i;
+
+        if (phase.value) {
+          currentIKIndex++;
+        }
       }
 
-      if (frameIKPosition.length !== transformKeys.length) {
-        // Something went wrong in the algorithm
-        debugger;
-      }
+      // let currentIKIndex = 0;
+      // j = 0;
+      // while (j < transformKeys.length) {
+      //   let currentStatus = transformKeys[j].value;
+      //   let i = j;
+
+      //   while (i < transformKeys.length && transformKeys[i].value === currentStatus) {
+      //     frameIKPosition.push(iKPositions[currentIKIndex].clone());
+      //     i++;
+      //   }
+      //   // Try to go INTERPOLATION_FRAMES past this point (interpolation out)
+      //   if (currentStatus) {
+      //     let postInterpolation = 0;
+      //     while (i < transformKeys.length && postInterpolation < INTERPOLATION_FRAMES) {
+      //       if (!iKPositions[currentIKIndex]) {
+      //         debugger;
+      //       }
+      //       frameIKPosition.push(iKPositions[currentIKIndex].clone());
+      //       i++;
+      //       postInterpolation++;
+      //     }
+      //     // Clamp necessary if the last phase is no contact
+      //     currentIKIndex = Math.min(iKPositions.length - 1, currentIKIndex + 1);
+      //   }
+      //   j = i;
+      // }
+
+      // if (frameIKPosition.length !== transformKeys.length) {
+      //   // Something went wrong in the algorithm
+      //   debugger;
+      // }
     };
-    filterKeys();
 
+    filterKeys();
+    if (ikController.limb === 'rightFoot') {
+      // Maybe averaging both foot is more accurate ? for now right foot only will do
+      fixHipPosition(frameIKPosition);
+    } else {
+      // Right foot is the one to fix the hip, for left foot we just stick IK to the ground
+      fixIKOnGround();
+    }
     ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[0].frame));
 
     for (let i = 0; i < transformKeys.length; i++) {
-      const key = transformKeys[i];
+      // const key = transformKeys[i];
 
-      if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
-        // The first contact frame is in INTERPOLATION_FRAMES
-        contactIncoming = true;
-        // Use this position frow now on in this interpolation
-        ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
-      } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
-        // We were interpolating towards, or even in contact until now, we can release the constraint
-        contactIncoming = false;
-      }
+      // if (!contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 1) {
+      //   // The first contact frame is in INTERPOLATION_FRAMES
+      //   contactIncoming = true;
+      //   // Use this position frow now on in this interpolation
+      //   ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractPoseAtFrame(transformKeys[i + INTERPOLATION_FRAMES].frame));
+      // } else if (contactIncoming && i + INTERPOLATION_FRAMES < transformKeys.length && transformKeys[i + INTERPOLATION_FRAMES].value === 0) {
+      //   // We were interpolating towards, or even in contact until now, we can release the constraint
+      //   contactIncoming = false;
+      // }
 
       // ! R&D Try : extract the toe rotation every frame, no matter the lock status
       ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractPoseAtFrame(transformKeys[i].frame));
@@ -1177,7 +1325,7 @@ export class IKModule extends Module {
         factor = -1;
       }
 
-      const interpolationStrength = (window as any).interpolation || 0.8;
+      const interpolationStrength = 0.5;
       currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
 
       // Insert keyframe if blend > 0

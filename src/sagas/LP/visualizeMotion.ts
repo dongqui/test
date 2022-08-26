@@ -118,6 +118,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
     }
+    plaskEngine.assetModule.setVisibility(1);
 
     // Foot locking
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
@@ -193,7 +194,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
           if (controller.limb.toLowerCase().includes('foot')) {
             plaskEngine.ikModule.setSelectedIk([controller]);
 
-            const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
+            const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, true);
             animationIngredient = bakeResult.animationIngredient || animationIngredient;
             yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
@@ -208,7 +209,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
-
+      console.log(animationIngredient);
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 
