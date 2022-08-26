@@ -323,7 +323,7 @@ const ControlPanel = ({
             )}
           </div>
         </div>
-        <BaseForm onSubmit={handleSubmit}>
+        <BaseForm onSubmit={isFastForwardDone ? handleSubmit : () => null}>
           {(fieldProps) => (
             <ExtractForm isFastForwardDone={isFastForwardDone} doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />
           )}
