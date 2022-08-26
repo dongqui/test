@@ -47,6 +47,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoHiddenRef = useRef<HTMLVideoElement>(null);
 
   const [currentVideoURL, setVideoURL] = useState<string>('');
   const [isDeviceInitialized, setIsDeviceInitialized] = useState(false);
@@ -77,7 +78,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [step3, setStep3] = useState(false);
   const [step4, setStep4] = useState(false);
 
-  const [fraems, setFrames] = useState(0);
+  const [frames, setFrames] = useState(0);
+  const [isFastForwardDone, setIsFastForwardDone] = useState(false);
 
   const doneVMOnBoarding = useCallback((index: number) => {
     const KEY = 1 << (index - 1);
@@ -512,6 +514,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         confirmButtonColor: 'negative',
         onConfirm: () => {
           dispatch(changeMode({ mode: mode, videoURL: undefined }));
+          setFrames(0);
+          setIsFastForwardDone(false);
           setExtractButtonRef(null);
           setCPModified(undefined);
           setStartValue(0);
@@ -732,7 +736,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               setIsOpenExtractModal={setIsOpenExtractModal}
               isOpenLoadingModal={isOpenLoadingModal}
               setIsOpenLoadingModal={setIsOpenLoadingModal}
-              frames={fraems}
+              totalFrames={frames}
+              isFastForwardDone={isFastForwardDone}
             />
           )}
         </Box>
@@ -786,6 +791,26 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         CPModified={CPModified}
         extractButtonRef={extractButtonRef}
         doneVMOnBoarding={doneVMOnBoarding}
+      />
+      <video
+        style={{ width: 1, height: 1 }}
+        onCanPlay={function () {
+          if (videoHiddenRef?.current?.playbackRate) {
+            videoHiddenRef.current.playbackRate = 16;
+            videoHiddenRef.current.play();
+          }
+        }}
+        onEnded={() => {
+          const frames = videoHiddenRef?.current?.getVideoPlaybackQuality().totalVideoFrames;
+          if (frames) {
+            setFrames(frames);
+            setIsFastForwardDone(true);
+          }
+        }}
+        ref={videoHiddenRef}
+        muted
+        hidden
+        src={currentVideoURL}
       />
       {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
     </div>

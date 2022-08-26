@@ -21,20 +21,12 @@ class PlanManager {
     return (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0) + addSize;
   }
 
-  calculateCreditFromVideoFrames(frames: number) {
-    // ----------------------------------------- TODO: calculate credit -----------------------------------------
-
-    return frames / 30;
+  remainingCredits(user: User, requiredCredit: number) {
+    return (user.credits?.remaining || 0) - requiredCredit;
   }
 
-  remainingCredits(user: User, frames: number) {
-    return (user.credits?.remaining || 0) - this.calculateCreditFromVideoFrames(frames);
-  }
-
-  isCreditExceeded(user: User, frames: number) {
-    const neededCredts = this.calculateCreditFromVideoFrames(frames);
-
-    return (user.credits?.remaining || 0) < neededCredts;
+  isCreditExceeded(user: User, requiredCredit: number) {
+    return (user.credits?.remaining || 0) < requiredCredit;
   }
 
   openStorageExceededModal(user: User) {
@@ -79,18 +71,16 @@ class PlanManager {
     }
   }
 
-  openCreditExceededModal(user: User, videoFrames: number) {
+  openCreditExceededModal(user: User, requiredCredit: number) {
     if (!this.dispatch) {
       return;
     }
-
-    const neededCredit = this.calculateCreditFromVideoFrames(videoFrames);
 
     if (user.planType === 'freemium') {
       this.dispatch(
         globalUIActions.openModal('ConfirmModal', {
           title: 'Need more credits?',
-          message: `You have <strong>${user.credits?.remaining} credits</strong> left. <strong>${neededCredit} credits</strong> are required on this. Upgrade to MoCap Pro to get more credits.`,
+          message: `You have <strong>${user.credits?.remaining} credits</strong> left. <strong>${requiredCredit} credits</strong> are required on this. Upgrade to MoCap Pro to get more credits.`,
           onConfirm: () => {
             this.dispatch && this.dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
           },
@@ -101,7 +91,7 @@ class PlanManager {
       this.dispatch(
         globalUIActions.openModal('AlertModal', {
           title: 'Out of credits',
-          message: `${neededCredit} credits will be required on this. Mocap Pro plan will be renewed with ${user.credits?.nextChargeCredit.toLocaleString()} credits on ${dateFormat(
+          message: `${requiredCredit} credits will be required on this. Mocap Pro plan will be renewed with ${user.credits?.nextChargeCredit.toLocaleString()} credits on ${dateFormat(
             user.credits?.nextChargeDate || '',
           )}.`,
           confirmText: 'Okay',
