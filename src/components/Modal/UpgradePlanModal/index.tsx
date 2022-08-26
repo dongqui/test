@@ -70,7 +70,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
             <ul>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                900 credits (15 mins) a day
+                900 credits (30 sec) a day
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
@@ -110,7 +110,7 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
             <ul>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                108,000 credits (60 mins) a month
+                108,000 credits (60 min) a month
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />

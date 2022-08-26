@@ -16,6 +16,7 @@ interface Props {
   fieldProps: Field.FormProps;
   setExtractButtonRef: (ref: HTMLButtonElement) => void;
   doneVMOnBoarding: (step: number) => void;
+  isFastForwardDone: boolean;
 }
 
 const FOOT_LOCK_AVAILABLE = true;
@@ -47,7 +48,7 @@ const selectFootLockAndTPoseOption = [
 ];
 
 // Need to refactor it.........
-const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
+const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFastForwardDone }: Props) => {
   const DEFAULT_MULTI_SELECT_OPTION_INDEX = 1;
   const DEFAULT_FOOT_LOCK_SELECT_OPTION_INDEX = 1;
   const DEFAULT_T_POSE_SELECT_OPTION_INDEX = 0;
@@ -180,8 +181,8 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       </div>
       <div style={{ height: '10px' }} />
       <div className={cx('section-item')}>
-        <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused}>
-          <Typography type="button">Extract</Typography>
+        <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused} disabled={!isFastForwardDone}>
+          <Typography type="button">{isFastForwardDone ? 'Extract' : 'Loading...'}</Typography>
         </FilledButton>
       </div>
     </Fragment>
