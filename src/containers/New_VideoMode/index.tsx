@@ -60,7 +60,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
   const lock = useRef<boolean>(false);
@@ -226,12 +226,12 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [currentVideoStream]);
 
   useEffect(() => {
-    if (PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) {
+    if ((PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && !videoURL) {
       setInitialLoading(true);
     } else if (RECORD_AVAILABLE) {
       setTimeout(() => setInitialLoading(false), 100);
     }
-  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
+  }, [NO_DEVICE_FOUND, ON_VIDEO_MOUNTED, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -534,6 +534,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           setStartValue(0);
           setEndValue(0);
           unmountVideo();
+          setInitialLoading(true);
           setStandbyCounter(5);
           setIsVideoLoaded(false);
           setVideoStatus('stop');
