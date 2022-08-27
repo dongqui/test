@@ -60,7 +60,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
-  const [initialLoading, setInitialLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
   const lock = useRef<boolean>(false);
@@ -804,6 +804,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         CPModified={CPModified}
         extractButtonRef={extractButtonRef}
         doneVMOnBoarding={doneVMOnBoarding}
+        initialLoading={initialLoading}
       />
       <video
         style={{ width: 1, height: 1 }}
