@@ -21,6 +21,7 @@ interface Props {
   setStep3: (step: boolean) => void;
   setStep4: (step: boolean) => void;
   doneVMOnBoarding: (step: number) => void;
+  initialLoading: boolean;
 }
 
 const OnBoarding = ({
@@ -37,6 +38,7 @@ const OnBoarding = ({
   setStep3,
   setStep4,
   doneVMOnBoarding,
+  initialLoading,
 }: Props) => {
   useEffect(() => {
     const OnBoardingMask = Number(localStorage.getItem(VM_ON_BOARDING_KEY) ?? '0');
@@ -45,11 +47,11 @@ const OnBoarding = ({
     const STEP3_KEY = 1 << 2;
     const STEP4_KEY = 1 << 3;
 
-    setStep1(!!(!(OnBoardingMask & STEP1_KEY) && recordButtonRef));
-    setStep2(!!(!(OnBoardingMask & STEP2_KEY) && leftCropSliderRef));
-    setStep3(!(OnBoardingMask & STEP3_KEY) && CPModified === false);
-    setStep4(!!(OnBoardingMask & STEP3_KEY && !step3 && !(OnBoardingMask & STEP4_KEY) && extractButtonRef) && CPModified !== undefined);
-  }, [CPModified, extractButtonRef, leftCropSliderRef, recordButtonRef, setStep1, setStep2, setStep3, setStep4, step3]);
+    setTimeout(() => setStep1(!!(!(OnBoardingMask & STEP1_KEY) && recordButtonRef && !initialLoading)), 1000);
+    setTimeout(() => setStep2(!!(!(OnBoardingMask & STEP2_KEY) && leftCropSliderRef)), 1000);
+    setTimeout(() => setStep3(!(OnBoardingMask & STEP3_KEY) && CPModified === false), 500);
+    setTimeout(() => setStep4(!!(OnBoardingMask & STEP3_KEY && !step3 && !(OnBoardingMask & STEP4_KEY) && extractButtonRef) && CPModified !== undefined), 500);
+  }, [CPModified, extractButtonRef, initialLoading, leftCropSliderRef, recordButtonRef, setStep1, setStep2, setStep3, setStep4, step3]);
 
   return (
     <div>

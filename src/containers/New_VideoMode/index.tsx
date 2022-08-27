@@ -25,6 +25,7 @@ import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { Overlay } from 'components/Overlay';
 import TagManager from 'react-gtm-module';
+import { Spinner } from 'components';
 
 const cx = classNames.bind(styles);
 
@@ -59,6 +60,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoStatus, setVideoStatus] = useState<'stop' | 'play' | 'pause'>('stop');
   const [startValue, setStartValue] = useState(0);
   const [endValue, setEndValue] = useState(0);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [isOpenExtractModal, setIsOpenExtractModal] = useState(false);
   const [isOpenLoadingModal, setIsOpenLoadingModal] = useState(false);
   const lock = useRef<boolean>(false);
@@ -207,18 +209,29 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   };
 
   const unmountCurrentStream = useCallback(() => {
-    if (currentVideoStream) {
+    if (currentVideoStream && videoRef.current) {
+      const srcObject = videoRef.current.srcObject;
+      videoRef.current.srcObject = null;
+      const tracks2 = (srcObject as MediaStream).getTracks();
+      tracks2.forEach((track) => track.stop());
       const tracks = currentVideoStream.getTracks();
-      tracks.forEach((track) => track.stop());
+      tracks.forEach((track) => {
+        track.stop();
+      });
+
       setCurrentVideoStream(null);
       setCurrentVideoDevice(null);
       setIsDeviceInitialized(false);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
     }
   }, [currentVideoStream]);
+
+  useEffect(() => {
+    if (PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) {
+      setInitialLoading(true);
+    } else if (RECORD_AVAILABLE) {
+      setTimeout(() => setInitialLoading(false), 100);
+    }
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -595,7 +608,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (currentVideoDevice !== null && !isDeviceInitialized) {
       deviceInitialize(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized, isVideoLoaded, unmountCurrentStream]);
+  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized]);
 
   const dropdownList = useMemo(() => {
     return videoDeviceList.map((device) => ({
@@ -791,6 +804,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         CPModified={CPModified}
         extractButtonRef={extractButtonRef}
         doneVMOnBoarding={doneVMOnBoarding}
+        initialLoading={initialLoading}
       />
       <video
         style={{ width: 1, height: 1 }}
@@ -813,6 +827,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         src={currentVideoURL}
       />
       {(isOpenExtractModal || isOpenLoadingModal) && <Overlay />}
+      {initialLoading && (
+        <div className={cx('initial-overlay')}>
+          <Spinner>
+            <IconWrapper className={cx('spin-logo-icon')} icon={SvgPath.Logo} />
+          </Spinner>
+        </div>
+      )}
     </div>
   );
 };
