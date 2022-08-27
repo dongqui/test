@@ -39,12 +39,19 @@ const ConfirmModal: FunctionComponent<Props> = ({
     onClose();
   };
 
+  const handelCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
+    onClose();
+  };
+
   return (
     <BaseModal>
       <div className={cx('inner')}>
         <header>
           <h3 className={cx('title')}>{title}</h3>
-          <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
+          <IconButton onClick={handelCancel} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
         <div className={cx('content')}>
           <Html content={message} />
