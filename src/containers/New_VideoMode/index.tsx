@@ -231,7 +231,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     } else if (RECORD_AVAILABLE) {
       setTimeout(() => setInitialLoading(false), 100);
     }
-  }, [NO_DEVICE_FOUND, ON_VIDEO_MOUNTED, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE]);
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, videoURL]);
 
   const handleDrop = useCallback(
     async (files: File[]) => {
