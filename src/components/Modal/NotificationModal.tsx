@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 import { BaseModal } from 'components/Modal';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
