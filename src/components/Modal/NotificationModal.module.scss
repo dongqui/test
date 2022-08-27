@@ -29,6 +29,7 @@
 .body {
   video {
     display: block;
+    background-color: $bg-elevated;
   }
   background-color: $content-inactive;
 }
