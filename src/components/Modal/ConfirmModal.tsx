@@ -29,20 +29,13 @@ const ConfirmModal: FunctionComponent<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const onClickConfirm = () => {
+  const handleClickConfirm = () => {
     onConfirm();
     onClose();
   };
 
-  const onClickCancel = () => {
-    onCancel && onCancel();
-    onClose();
-  };
-
   const handelCancel = () => {
-    if (onCancel) {
-      onCancel();
-    }
+    onCancel && onCancel();
     onClose();
   };
 
@@ -51,14 +44,14 @@ const ConfirmModal: FunctionComponent<Props> = ({
       <div className={cx('inner')}>
         <header>
           <h3 className={cx('title')}>{title}</h3>
-          <IconButton onClick={handelCancel} type="ghost" icon={SvgPath['ModalClose']} />
+          <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
         <div className={cx('content')}>
           <Html content={message} />
         </div>
         <div className={cx('buttons')}>
-          <OutlineButton onClick={onClickCancel}>{cancelText}</OutlineButton>
-          <FilledButton onClick={onClickConfirm} buttonType={confirmButtonColor} dataCy="modal-confirm">
+          <OutlineButton onClick={handelCancel}>{cancelText}</OutlineButton>
+          <FilledButton onClick={handleClickConfirm} buttonType={confirmButtonColor} dataCy="modal-confirm">
             {confirmText}
           </FilledButton>
         </div>

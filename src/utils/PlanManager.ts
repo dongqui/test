@@ -34,13 +34,13 @@ class PlanManager {
       return;
     }
 
-    if (user.planType === 'freemium') {
+    if (user?.planType === 'freemium') {
       this.dispatch(
         globalUIActions.openModal(
           'ConfirmModal',
           {
-            title: 'Need more storage?',
-            message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. To keep using Plask, you can get more storage with a Mocap Pro plan.',
+            title: 'Storage limit exceeded',
+            message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. To keep using Plask, you can get more storage with a MoCap Pro plan.',
             confirmText: 'Upgrade',
             onConfirm: () => {
               this.dispatch && this.dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
@@ -48,7 +48,7 @@ class PlanManager {
             confirmButtonColor: 'negative',
             cancelText: 'Learn more',
             onCancel: () => {
-              window.open('https://www.naver.com', '_blank', 'noopener');
+              window.open('https://knowledge.plask.ai/pricing-plan-faqs', '_blank', 'noopener');
             },
           },
           'upgrade',
@@ -61,8 +61,11 @@ class PlanManager {
           'AlertModal',
           {
             title: 'Out of storage',
-            message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
-            confirmText: 'Okay',
+            message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage by removing your assets.',
+            confirmText: 'Learn more',
+            onConfirm: () => {
+              window.open('https://knowledge.plask.ai/pricing-plan-faqs', '_blank', 'noopener');
+            },
           },
           'upgrade',
           false,
