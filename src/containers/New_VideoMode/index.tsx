@@ -226,9 +226,9 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [currentVideoStream]);
 
   useEffect(() => {
-    if ((PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && !videoURL) {
+    if (PERMISSION_WAITING && !videoURL) {
       setInitialLoading(true);
-    } else if (RECORD_AVAILABLE) {
+    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND) {
       setTimeout(() => setInitialLoading(false), 100);
     }
   }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, videoURL]);
