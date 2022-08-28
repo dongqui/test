@@ -67,6 +67,9 @@ import CameraPlay from '../../../public/images/CameraPlay.svg';
 import CameraRecord from '../../../public/images/CameraRecord.svg';
 import CameraPause from '../../../public/images/CameraPause.svg';
 import CameraStop from '../../../public/images/CameraStop.svg';
+import Storage from './svg/Storage.svg';
+import Credit from './svg/Credit.svg';
+import WarningTriangle from './svg/WarningTriangle.svg';
 
 type Icon =
   | 'ModalClose'
@@ -133,7 +136,10 @@ type Icon =
   | 'CameraPlay'
   | 'CameraRecord'
   | 'CameraPause'
-  | 'CameraStop';
+  | 'CameraStop'
+  | 'Credit'
+  | 'Storage'
+  | 'WarningTriangle';
 
 type Images = {
   [key in Icon]: FunctionComponent;
@@ -205,6 +211,9 @@ const images: Images = {
   CameraRecord,
   CameraPause,
   CameraStop,
+  Storage,
+  Credit,
+  WarningTriangle,
 };
 
 export default images;

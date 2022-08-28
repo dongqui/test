@@ -10,12 +10,10 @@
   justify-content: center;
   display: flex;
 
-
   span,
   svg {
     transition: color 0.25s;
     color: $content-active;
-
     display: flex;
     justify-content: center;
     align-items: center;
@@ -46,6 +44,10 @@
 
 .default {
   background-color: var(--grey020);
+}
+
+.bg-base {
+  background-color: $bg-base;
 }
 
 .button-content {

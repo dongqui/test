@@ -1,0 +1,113 @@
+@import "../common.scss";
+@import "styles/libraries/_typography";
+@import "styles/libraries/_colors";
+
+.buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.container {
+  header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .card {
+    width: 52.4rem;
+    height: 38rem;
+    display: flex;
+    gap: 2rem;
+
+    &-common {
+      background-color: $bg-elevated;
+      border-radius: 1rem;
+      height: 38rem;
+      flex: 1;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+
+      header {
+        font-weight: 500;
+        font-size: var(--font-size-14);
+        color: $content-active;
+      }
+
+      li {
+        display: flex;
+        gap: 0.8rem;
+      }
+
+      footer {
+        margin-top: auto;
+      }
+    }
+
+    /* TODO: component to handle svg */
+    &-freemium {
+      svg {
+        stroke: $content-medium;
+      }
+
+      ul {
+        margin-top: 7.6rem;
+        color: $content-medium;
+      }
+    }
+
+    &-pro {
+      header {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      svg {
+        stroke: #8851f6;
+      }
+
+      ul {
+        margin-top: 3rem;
+        color: $content-medium;
+      }
+    }
+  }
+}
+
+.sub-header {
+  margin-top: 1.6rem;
+
+  h6 {
+    color: $content-active;
+    font-weight: 600;
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+
+  span {
+    margin-top: 0.4rem;
+    color: $content-medium;
+    font-weight: 300;
+    font-size: 1.2rem;
+  }
+}
+
+.recommend-chip {
+  background: #413663;
+  border-radius: 0.6rem;
+  font-weight: 400;
+  font-size: 1.1rem;
+  color: #9f80ff;
+  padding: 0.4rem;
+}
+
+.billing-cycle-switch {
+  margin-top: 1.6rem;
+}
+
+.discount {
+  color: #9f80ff;
+  font-weight: 500;
+  margin-left: 0.8rem;
+}

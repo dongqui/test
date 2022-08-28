@@ -1,4 +1,4 @@
-import { AbstractMesh, ActionManager, Bone, ExecuteCodeAction, Matrix, Mesh, MeshBuilder, Nullable, Scene, Vector3, VertexBuffer } from '@babylonjs/core';
+import { AbstractMesh, ActionManager, Bone, Color3, ExecuteCodeAction, Matrix, Mesh, MeshBuilder, Nullable, Scene, StandardMaterial, Vector3, VertexBuffer } from '@babylonjs/core';
 
 /**
  * Inner Function to compute the bone's absolute bind pose
@@ -59,6 +59,9 @@ const addJointSpheres = (bones: Bone[], mesh: AbstractMesh, scene: Scene, assetI
     sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
     sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
     sphere.position = anchorPoint.clone();
+    const mat = new StandardMaterial('', scene);
+    mat.diffuseColor = new Color3(1, 1, 1);
+    sphere.material = mat;
     sphereBoneGroups.push([sphere, bone]);
   });
 

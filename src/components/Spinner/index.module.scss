@@ -1,0 +1,57 @@
+@import "styles/libraries/_colors";
+
+.spinner-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #3d99f5 0%, rgb(0 0 0 / 10%)60%);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.52, 0.1, 0.27, 0.87)infinite;
+  position: relative;
+
+  &::after {
+    content: "";
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    border-radius: 50%;
+    background: $bg-base;
+    z-index: 01;
+  }
+
+  &.elevated {
+    &::after {
+      background: $bg-elevated;
+    }
+  }
+
+  &.large {
+    width: 76px;
+    height: 76px;
+  }
+
+  &.small {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: transparent;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

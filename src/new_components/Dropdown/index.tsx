@@ -5,6 +5,7 @@ import DropdownHeader from './DropdownHeader';
 import DropdownItem from './DropdownItem';
 import DropdownMenu from './DropdownMenu';
 import DropdownProvider from './DropdownProvider';
+import DropdownSubmenu from './DropdownSubmenu';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -28,4 +29,5 @@ export default Object.assign(Dropdown, {
   Header: DropdownHeader,
   Item: DropdownItem,
   Menu: DropdownMenu,
+  Submenu: DropdownSubmenu,
 });

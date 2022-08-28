@@ -1,8 +1,6 @@
 import { FunctionComponent } from 'react';
 
-import { BaseModal } from 'components/Modal';
-import { FilledButton, OutlineButton } from 'components/Button';
-import { Html } from 'components/Typography';
+import { IconButton, FilledButton, OutlineButton, BaseModal, Html, SvgPath } from 'components';
 import { ButtonColor } from 'types/common';
 
 import classnames from 'classnames/bind';
@@ -31,12 +29,12 @@ const ConfirmModal: FunctionComponent<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const onClickConfirm = () => {
+  const handleClickConfirm = () => {
     onConfirm();
     onClose();
   };
 
-  const onClickCancel = () => {
+  const handelCancel = () => {
     onCancel && onCancel();
     onClose();
   };
@@ -44,15 +42,16 @@ const ConfirmModal: FunctionComponent<Props> = ({
   return (
     <BaseModal>
       <div className={cx('inner')}>
-        <div className={cx('title')}>{title}</div>
+        <header>
+          <h3 className={cx('title')}>{title}</h3>
+          <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
+        </header>
         <div className={cx('content')}>
           <Html content={message} />
         </div>
         <div className={cx('buttons')}>
-          <OutlineButton onClick={onClickCancel} fullSize>
-            {cancelText}
-          </OutlineButton>
-          <FilledButton onClick={onClickConfirm} buttonType={confirmButtonColor} fullSize dataCy="modal-confirm">
+          <OutlineButton onClick={handelCancel}>{cancelText}</OutlineButton>
+          <FilledButton onClick={handleClickConfirm} buttonType={confirmButtonColor} dataCy="modal-confirm">
             {confirmText}
           </FilledButton>
         </div>

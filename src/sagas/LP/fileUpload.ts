@@ -2,10 +2,8 @@ import { put, SagaReturnType, take } from 'redux-saga/effects';
 import { channel } from 'redux-saga';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
-import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
-import { ONBOARDING_ID } from 'containers/Onboarding/id';
-import { getTargetCoordinates } from 'utils/common';
+import TagManager from 'react-gtm-module';
 
 const confirmSwitchModeChannel = channel();
 const isValidModelType = (name: string) => name.toLocaleLowerCase().includes('glb') || name.toLocaleLowerCase().includes('fbx');
@@ -18,6 +16,7 @@ export function* watchConfirmSwitchCModelhannel() {
 }
 export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fileUpload>) {
   const files = action.payload;
+
   files.sort((a, b) => {
     if (a.type.includes('json')) {
       return -1;
@@ -38,31 +37,28 @@ export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fil
     const isVideo = file.type.includes('video');
 
     if (isJson) {
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'lp-file-drop',
+          type: 'json',
+        },
+      });
       yield put(lpNodeActions.importMocapJson(file));
     } else if (isModelFile) {
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'lp-file-drop',
+          type: 'model',
+        },
+      });
       yield put(lpNodeActions.addModelAsync.request(file));
     } else if (isVideo) {
-      // const targetElement = document.getElementById(ONBOARDING_ID.VIDEO_MODE);
-      // const targetCoordinates = getTargetCoordinates(targetElement);
-      // if (targetCoordinates?.rightBottom) {
-      //   yield put(
-      //     globalUIActions.openModal(
-      //       'GuideModal',
-      //       {
-      //         title: 'Import a video!',
-      //         message: 'You can start importing now.',
-      //         postion: {
-      //           right: '12px',
-      //           top: `${targetCoordinates?.rightBottom?.y + 8}px`,
-      //         },
-      //         onConfirm: () => localStorage.setItem('onboarding_2', 'onboarding_2'),
-      //         tooltipArrowPlacement: 'top-end',
-      //       },
-      //       '',
-      //       false,
-      //     ),
-      //   );
-      // }
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'lp-file-drop',
+          type: 'video',
+        },
+      });
       yield put(
         modeSelectActions.changeMode({
           mode: 'videoMode',

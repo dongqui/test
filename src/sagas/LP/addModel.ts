@@ -19,11 +19,13 @@ import { PlaskRetargetMap, PlaskPose, PlaskAsset, ServerAnimationLayer, ServerAn
 import { AddModelResponse, RequestNodeResponse } from 'types/LP';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import plaskEngine from '3d/PlaskEngine';
-import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError } from 'errors';
+import { NoBoneImportError, NoMeshImportError, InvalidFormatImportError, TOOL_PAYMENT_MAXIMUM_SIZE } from 'errors';
+import * as userActions from 'actions/User';
+import PlanManager from 'utils/PlanManager';
 
 export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.addModelAsync.request>) {
   // TODO: reduce # of actions by handle multi-files at one action
-  const { lpNode, plaskProject }: RootState = yield select();
+  const { lpNode, plaskProject, user }: RootState = yield select();
   const file = action.payload;
   const baseScene = plaskProject.screenList[0].scene;
 
@@ -115,18 +117,23 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
         }),
       );
     }
-  } catch (e) {
-    const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
-    yield put(
-      globalUIActions.openModal(
-        '_AlertModal',
-        {
-          message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNOWN,
-          title: 'Import failed',
-        },
-        `import_error_${file.name}`,
-      ),
-    );
+    yield put(userActions.getUserStorageInfoAsync.request());
+  } catch (e: any) {
+    if (e?.statusCode === TOOL_PAYMENT_MAXIMUM_SIZE) {
+      PlanManager.openStorageExceededModal(user);
+    } else {
+      const isClassifiedError = e instanceof NoBoneImportError || e instanceof NoMeshImportError || e instanceof InvalidFormatImportError;
+      yield put(
+        globalUIActions.openModal(
+          '_AlertModal',
+          {
+            message: isClassifiedError ? e.message : IMPORT_ERROR_UNKNOWN,
+            title: 'Import failed',
+          },
+          `import_error_${file.name}`,
+        ),
+      );
+    }
   } finally {
     yield put(globalUIActions.closeModal(file.name));
   }

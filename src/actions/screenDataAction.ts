@@ -1,4 +1,5 @@
 import { SkeletonViewer } from '@babylonjs/core';
+import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
 
 export type ScreenDataAction =
   | ReturnType<typeof addScreen>
@@ -132,7 +133,7 @@ export const setIKControllerVisibility = (params: SetIKControllerVisibility) => 
 
 interface AddSkeletonViewer {
   screenId: string;
-  skeletonViewer: SkeletonViewer;
+  skeletonViewer: SkeletonViewer | PlaskSkeletonViewer;
 }
 
 export const addSkeletonViewer = (params: AddSkeletonViewer) => ({

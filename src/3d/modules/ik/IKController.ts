@@ -1,4 +1,21 @@
-import { Bone, Color3, CreateTorusVertexData, Mesh, MeshBuilder, Observable, Quaternion, Scene, Space, StandardMaterial, TmpVectors, Vector3, VertexData } from '@babylonjs/core';
+import {
+  Bone,
+  Color3,
+  CreateTorusVertexData,
+  Matrix,
+  Mesh,
+  MeshBuilder,
+  Observable,
+  Quaternion,
+  Scene,
+  Space,
+  StandardMaterial,
+  TmpVectors,
+  Vector3,
+  VertexData,
+  Scalar,
+  Epsilon,
+} from '@babylonjs/core';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { addMetadata } from 'utils/RP/metadata';
 import { convertToDegree } from 'utils/common';
@@ -6,9 +23,14 @@ import { BoneIk } from './BoneIk';
 import setAbsoluteRotation from '3d/utils/setAbsoluteRotation';
 
 export type IKControllerParams = {
-  body: TransformNode;
-  bone: Bone;
-  transformNode: TransformNode;
+  ikBody: TransformNode;
+  ikBone: Bone;
+  ikTransformNode: TransformNode;
+
+  resultBody: TransformNode;
+  resultBone: Bone;
+  resultTransformNode: TransformNode;
+
   fkBody?: TransformNode;
   fkBone?: Bone;
   fkTransformNode?: TransformNode;
@@ -73,15 +95,21 @@ export class IKController {
   }
 
   /**
+   * The assetId
+   */
+  public assetId: string;
+
+  /**
    * The pole angle
    */
   public set poleAngle(value: number) {
-    this.controller.poleAngle = value;
+    this.ikController.poleAngle = value;
+    this.resultController.poleAngle = value;
     this.onPoleAngleUpdatedObservable.notifyObservers();
   }
 
   public get poleAngle() {
-    return this.controller.poleAngle;
+    return this.ikController.poleAngle;
   }
 
   /**
@@ -90,9 +118,13 @@ export class IKController {
   public limb: string;
 
   /**
-   * IK controller for user defined target (where the handle stands)
+   * IK controller for IK target (where the handle stands)
    */
-  public controller: BoneIk;
+  public ikController: BoneIk;
+  /**
+   * IK controller for user defined Result target (where the handle stands)
+   */
+  public resultController: BoneIk;
   /**
    * Final target position for IK (after applying blend)
    */
@@ -106,11 +138,15 @@ export class IKController {
   /**
    * All transformNodes influenced by the target IK controller
    */
-  public targetInfluenceChain: [TransformNode, TransformNode, TransformNode];
+  public ikInfluenceChain: [TransformNode, TransformNode, TransformNode];
   /**
    * All transformNodes influenced by the IK controller for FK
    */
   public fkInfluenceChain?: [TransformNode, TransformNode, TransformNode];
+  /**
+   * All transformNodes influenced by the IK controller for FK
+   */
+  public resultInfluenceChain?: [TransformNode, TransformNode, TransformNode];
 
   /**
    * Should the IK controller be locked to the FK position
@@ -137,61 +173,54 @@ export class IKController {
   }
 
   public adjustPoleAngleFromFK() {
-    // if (!this.fkInfluenceChain) {
-    //   return;
-    // }
+    if (!this.fkInfluenceChain) {
+      return;
+    }
 
-    // const fkBoneVector = this.fkInfluenceChain[1].absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize();
-    // const ikBoneVector = this.targetInfluenceChain[1].absolutePosition.subtract(this.targetInfluenceChain[2].absolutePosition).normalize();
-    // const angle = Math.acos(Vector3.Dot(fkBoneVector, ikBoneVector));
-
+    for (let i = 0; i < this.fkInfluenceChain.length; i++) {
+      this.fkInfluenceChain![i].computeWorldMatrix(true);
+    }
     this.poleAngle = 0;
-  }
+    this.ikController.target.computeWorldMatrix(true);
+    this.ikController.update();
+    for (let i = 0; i < this.ikInfluenceChain.length; i++) {
+      this.ikInfluenceChain![i].computeWorldMatrix(true);
+    }
 
-  public adjustAlignment() {
-    if (this.handle.rotationQuaternion) {
-      const targetHandleAngle = this.handle.rotationQuaternion.clone().toEulerAngles();
-      this.align = new Vector3(targetHandleAngle.x, targetHandleAngle.y, targetHandleAngle.z);
+    const targetDirection = this.fkInfluenceChain![0].absolutePosition.subtract(this.fkInfluenceChain![2].absolutePosition).normalize();
+    const halfDirection = this.fkInfluenceChain![1].absolutePosition.subtract(this.fkInfluenceChain![2].absolutePosition).normalize();
+    const bendAxis = Vector3.Cross(targetDirection, halfDirection);
+    if (bendAxis.length() < 1e-5) {
+      // limb is fully extended, default pole angle to 0;
+      return;
     }
-  }
-  public alignTargetInfluenceChainWithHandle() {
-    if (this.handle.rotationQuaternion) {
-      const targetHandle = this.handle.absoluteRotationQuaternion.clone();
-      setAbsoluteRotation(this.targetInfluenceChain[0], targetHandle);
-      this.targetInfluenceChain[0].rotate(new Vector3(-1, 0, 0), this.align.x, Space.LOCAL);
-      this.targetInfluenceChain[0].rotate(new Vector3(0, -1, 0), this.align.y, Space.LOCAL);
-      this.targetInfluenceChain[0].rotate(new Vector3(0, 0, -1), this.align.z, Space.LOCAL);
-    }
-  }
+    const upVector = Vector3.Cross(targetDirection, bendAxis).normalize();
 
-  private _getUpVectorFromFK(boneType: string) {
-    if (this.fkInfluenceChain) {
-      this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, TmpVectors.Vector3[0]);
-      this.fkInfluenceChain[0].absolutePosition.subtractToRef(this.fkInfluenceChain[1].absolutePosition, TmpVectors.Vector3[1]);
-      const a = TmpVectors.Vector3[0].normalize();
-      const b = TmpVectors.Vector3[1].normalize();
-      Vector3.CrossToRef(b, a, TmpVectors.Vector3[1]);
-      const right = TmpVectors.Vector3[1];
-      if (right.length() < 1e-5) {
-        // both sections are aligned, cannot guess an up vector
-        switch (boneType) {
-          case 'rightFoot':
-          case 'leftFoot':
-            this.controller.upVector.copyFromFloats(0, 0, 1);
-            break;
-          case 'rightHand':
-            this.controller.upVector.copyFromFloats(-1, 0, 0);
-            break;
-          case 'leftHand':
-            this.controller.upVector.copyFromFloats(-1, 0, 0);
-            break;
-        }
-        return;
-      }
-      // Bones are slightly bent, we can cross again to find the upvector and bend axis
-      right.normalize();
-      Vector3.CrossToRef(right, a, this.controller.upVector);
+    const targetDirectionIK = this.ikInfluenceChain![0].absolutePosition.subtract(this.ikInfluenceChain![2].absolutePosition).normalize();
+    const halfDirectionIK = this.ikInfluenceChain![1].absolutePosition.subtract(this.ikInfluenceChain![2].absolutePosition).normalize();
+    const bendAxisIK = Vector3.Cross(targetDirectionIK, halfDirectionIK);
+    const upVectorIK = Vector3.Cross(targetDirectionIK, bendAxisIK).normalize();
+    const cos = Vector3.Dot(upVector, upVectorIK);
+    const axis = upVectorIK.cross(upVector);
+    const l = axis.length();
+    if (l < 1e-5) {
+      this.poleAngle = 0;
+      return;
     }
+    const sin = l * Math.sign(Vector3.Dot(targetDirection, axis));
+    const angle = Math.atan2(sin, cos);
+
+    this.poleAngle = angle;
+
+    // const rotMatFK = this.fkInfluenceChain[2].getWorldMatrix().getRotationMatrix();
+    // const rotMatIK = this.ikController.getRotationMatrix();
+
+    // const poleRotationMatrix = rotMatIK.clone().invert().multiply(rotMatFK);
+    // const q = Quaternion.FromRotationMatrix(poleRotationMatrix);
+    // const angle = 2 * Math.acos(Scalar.Clamp(q.w, -1, 1));
+    // const axis = TmpVectors.Vector3[0].set(q.x, q.y, q.z);
+    // const toTarget = this.ikController.target.absolutePosition.subtract(this.fkInfluenceChain[2].absolutePosition);
+    // this.poleAngle = angle * Math.sign(Vector3.Dot(toTarget, axis));
   }
 
   public update() {
@@ -200,21 +229,19 @@ export class IKController {
       if (this.lockToFk) {
         this.handle.setAbsolutePosition(this.fkInfluenceChain[0].absolutePosition);
       }
+      this.ikController.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
+      this.ikController.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
+      this.ikController.bone2Quat = this.fkInfluenceChain[0].rotationQuaternion!;
 
-      this.alignTargetInfluenceChainWithHandle();
-
-      this.controller.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
-      this.controller.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
-      this.controller.blend = this.blend;
-
-      // Set upvector to fk
-      this._getUpVectorFromFK(this.limb);
-      // this.fkInfluenceChain[1].absolutePosition.subtractToRef(this.fkInfluenceChain[2].absolutePosition, this.controller.upVector!);
-      // this.controller.upVector!.normalize();
-      // Vector3.CrossToRef(this.controller.upVector!, this.controller.targetPosition.subtract(this.fkInfluenceChain[2].absolutePosition).normalize(), this.controller.upVector!);
+      this.resultController.bone0Quat = this.fkInfluenceChain[2].rotationQuaternion!;
+      this.resultController.bone1Quat = this.fkInfluenceChain[1].rotationQuaternion!;
+      this.resultController.bone2Quat = this.fkInfluenceChain[0].rotationQuaternion!;
+      this.resultController.blend = this.blend;
+      this.ikController.blend = 1;
     }
 
-    this.controller.update();
+    this.ikController.update();
+    this.resultController.update();
   }
 
   /**
@@ -224,15 +251,13 @@ export class IKController {
    * @param blend Blend value
    * @param poleAngle Pole angle
    */
-  public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, blend: number, poleAngle: number) {
-    Vector3.LerpToRef(fkOriginalAbsolutePosition, ikAbsolutePosition, blend, TmpVectors.Vector3[0]);
-    // console.log(
-    //   `blend: ${blend}\nfkOriginalAbsolutePosition: ${fkOriginalAbsolutePosition}\nikAbsolutePosition: ${ikAbsolutePosition}\nTmpVectors.Vector3:${TmpVectors.Vector3[0]}`,
-    // );
-    this.target.setAbsolutePosition(TmpVectors.Vector3[0]);
+  public updateForValues(fkOriginalAbsolutePosition: Vector3, ikAbsolutePosition: Vector3, ikRotationQuaternion: Quaternion, blend: number, poleAngle: number) {
+    this.handle.position.copyFrom(ikAbsolutePosition);
+    this.handle.rotationQuaternion?.copyFrom(ikRotationQuaternion);
     this.poleAngle = poleAngle;
-    this._getUpVectorFromFK(this.limb);
-    this.controller.update();
+    this.blend = blend;
+
+    this.update();
   }
 
   /**
@@ -241,41 +266,76 @@ export class IKController {
   public dispose() {
     this.target.dispose();
     this.handle.dispose();
+
     this.onBlendUpdatedObservable.clear();
     this.onPoleAngleUpdatedObservable.clear();
   }
 
   constructor(params: IKControllerParams, public scene: Scene) {
     this.limb = params.limb;
+    this.assetId = params.assetId;
     this.target = new TransformNode('ik_ctrl_target_' + this.limb);
     this.handle = this._createHandle(this.limb, params.assetId, params.controllerSize);
 
     // ikControllerHandle.rotationQuaternion = Quaternion.FromLookDirectionLH(params.upVector.cross(params.upVector), params.upVector);
-    // TODO : make that generic (for now really bone dependent) - use retargetmap
-    this.handle.rotationQuaternion = params.limb.includes('Hand')
-      ? Quaternion.FromLookDirectionLH(Vector3.Up(), Vector3.Right())
-      : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
+    // TODO : compute handle rotation from lookat between last bone and previous bone
+    const bonePos = params.ikTransformNode.absolutePosition;
+    const parentBonePos = (params.ikTransformNode.parent as TransformNode).absolutePosition;
+    const dir = bonePos.subtract(parentBonePos).normalize();
+    let up = Vector3.Cross(Vector3.UpReadOnly, dir);
+    up = up.length() < Epsilon ? Vector3.Right() : up.normalize();
+
+    // this.handle.rotationQuaternion = params.limb.includes('Hand')
+    //   ? Quaternion.FromLookDirectionLH(Vector3.Up(), Vector3.Right())
+    //   : Quaternion.FromLookDirectionLH(Vector3.Right(), Vector3.Up());
+    const quat = Quaternion.FromLookDirectionLH(up, dir); // BJS' Torus "looks" upward, thus we reverse the axis
+    const mat = TmpVectors.Matrix[0];
+    quat.toRotationMatrix(mat);
+
+    // Multiply by opposite of current rotationQuaternion to cancel out (we set handle's rotation to bone's absolute rotation)
+    const boneQuat = params.ikTransformNode.absoluteRotationQuaternion;
+    const boneMat = TmpVectors.Matrix[1];
+    boneQuat.toRotationMatrix(boneMat);
+    boneMat.invert();
+
+    // Multiply both transforms
+    mat.multiplyToRef(boneMat, mat);
+    this.handle.rotationQuaternion = Quaternion.FromRotationMatrix(mat);
+
+    this.handle.computeWorldMatrix(true);
+    this.handle.bakeCurrentTransformIntoVertices();
+    // Initiali
 
     // Selection outline size
     addMetadata('outlineSize', 0.015, this.handle);
     addMetadata('ikController', this, this.handle);
 
-    params.bone.getPositionToRef(Space.WORLD, params.body, this.handle.position);
+    params.ikBone.getPositionToRef(Space.WORLD, params.ikBody, this.handle.position);
     this.target.position.setAll(0);
     this.target.parent = this.handle;
     this.target.computeWorldMatrix(true);
 
-    const tnIk = params.transformNode;
+    const tnIk = params.ikTransformNode;
     const tn1Ik = tnIk?.parent as TransformNode;
     const tn2Ik = tn1Ik?.parent as TransformNode;
 
-    if (!tnIk || !tn1Ik || !tn2Ik || !((params.bone as any)._parent as Bone)) {
+    if (!tnIk || !tn1Ik || !tn2Ik || !((params.ikBone as any)._parent as Bone)) {
       throw new Error("Couldn't initialize IK : the transform node chain is broken.");
     }
-    this.targetInfluenceChain = [tnIk, tn1Ik, tn2Ik];
+    this.ikInfluenceChain = [tnIk, tn1Ik, tn2Ik];
 
     // Creating IK Controllers
-    this.controller = new BoneIk(params.body, params.bone, this.target, Vector3.Up());
+    let defaultUpVector = new Vector3();
+    switch (this.limb) {
+      case 'rightFoot':
+      case 'leftFoot':
+        defaultUpVector.set(0, 0, 1);
+        break;
+      case 'rightHand':
+      case 'leftHand':
+        defaultUpVector.set(0, 0, -1);
+        break;
+    }
 
     // IK controllers for FK (for blending)
     if (params.fkBone && params.fkTransformNode && params.fkBody) {
@@ -289,8 +349,25 @@ export class IKController {
 
       this.fkInfluenceChain = [tnIk, tn1Ik, tn2Ik];
     }
-    this._getUpVectorFromFK(this.limb);
-    this.controller.initializeFromPose();
+
+    // IK controllers for FK (for blending)
+    if (params.resultBone && params.resultTransformNode && params.resultBody) {
+      const tnIk = params.resultTransformNode;
+      const tn1Ik = tnIk?.parent as TransformNode;
+      const tn2Ik = tn1Ik?.parent as TransformNode;
+
+      if (!tnIk || !tn1Ik || !tn2Ik || !((params.resultBone as any)._parent as Bone)) {
+        throw new Error("Couldn't initialize IK : the transform node chain is broken.");
+      }
+
+      this.resultInfluenceChain = [tnIk, tn1Ik, tn2Ik];
+    }
+
+    this.ikController = new BoneIk(params.ikBody, params.ikBone, this.target, defaultUpVector);
+    this.ikController.initializeFromPose();
+
+    this.resultController = new BoneIk(params.resultBody, params.resultBone, this.target, defaultUpVector);
+    this.resultController.initializeFromPose();
 
     this.update();
 

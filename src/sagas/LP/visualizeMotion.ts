@@ -6,17 +6,22 @@ import * as api from 'api';
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import plaskEngine from '3d/PlaskEngine';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { goToSpecificPoses } from 'utils/RP';
-import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset } from 'types/common';
+import { ServerAnimationResponse, ServerAnimationLayer, ServerAnimation, PlaskProject, PlaskAsset, PlaskTrack, PlaskAxis } from 'types/common';
 import { AnimationModule } from '3d/modules/animation/AnimationModule';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
+import { TimeIndex } from 'utils/TP';
+import { Scalar } from '@babylonjs/core';
+import { removeIK } from 'sagas/RP/ik/removeIK';
+import pause from 'utils/common/pause';
 
 const clickJointChannel = channel();
 
@@ -41,6 +46,8 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
   }
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+    // Leave some time for the modal to open
+    yield call(pause, 100);
 
     let asset = find(assetList, { id: modelNode.assetId });
 
@@ -114,24 +121,58 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
     }
+    plaskEngine.assetModule.setVisibility(1);
 
     // Foot locking
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
 
+    // Hips original Z level evaluation
+    let hipsZOriginal: number;
+    animationIngredient!.layers[0].tracks.forEach((elem) => {
+      if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
+        hipsZOriginal = elem.target.position._z;
+      }
+    });
+
     if (animationIngredient) {
-      // const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-      const contactData = [];
+      const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
+
+      // // Animation End Index adjust
+      // const payload = {
+      //   endTimeIndex: hipsTrack!.transformKeys.length,
+      //   currentTimeIndex: 0,
+      // };
+
+      // yield put(animatingControlsActions.blurEndInput(payload));
+
       if (contactData.length) {
-        // console.log('Auto add IK because foot locking is required.');
-        // yield call(addIK, addIKAction(asset.id, animationIngredient));
-        // // Update after adding IK tracks
-        // animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
-        // animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+        console.log('Contact data detected, using inverse kinematics to lock the feet...');
+        yield call(addIK, addIKAction(asset.id, animationIngredient));
+        // Update after adding IK tracks
+        animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
+        animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
+        yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+        // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
+        for (const controller of plaskEngine.ikModule.ikControllers) {
+          if (controller.limb.toLowerCase().includes('foot')) {
+            plaskEngine.ikModule.setSelectedIk([controller]);
+
+            const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, true);
+            animationIngredient = bakeResult.animationIngredient || animationIngredient;
+            yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+
+            // Set FK position to newly updated values
+            plaskEngine.ikModule.setFKtoIK();
+          }
+        }
+        // Release IK Controllers
+        yield call(removeIK, removeIKAction(asset.id));
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
+      console.log(animationIngredient);
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 

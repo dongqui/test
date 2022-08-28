@@ -1,6 +1,8 @@
 import { PlaskEntity } from '3d/entities/PlaskEntity';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
 import { AbstractMesh, Animation, Bone, Geometry, IAnimationKey, Mesh, Quaternion, Scene, Skeleton, TransformNode, Vector3 } from '@babylonjs/core';
+import { RequestNodeResponse } from 'types/LP';
+import { Dispatch } from 'redux';
 
 export enum GizmoMode {
   POSITION,
@@ -266,7 +268,7 @@ export type SelectingData = {
   allEntitiesMap: { [key: string]: PlaskEntity };
 };
 
-export type ButtonColor = 'default' | 'primary' | 'negative';
+export type ButtonColor = 'default' | 'primary' | 'negative' | 'temp-purple';
 
 export type ExportFormat = 'fbx' | 'fbx_unreal' | 'glb' | 'bvh';
 
@@ -297,3 +299,63 @@ export type TooltipArrowPlacement =
   | 'right-start'
   | 'right-middle'
   | 'right-end';
+
+export type UserResponse = {
+  uid: string;
+  email: string;
+  password: string;
+  encKey: string;
+  country: string;
+  jobs: string;
+  name: string;
+  isEmailVerified: boolean;
+  isMarketingChecked: boolean;
+  isPrivacyChecked: boolean;
+  isDeleted: boolean;
+  hadFreeTrial: boolean;
+};
+
+export type UserUsageInfoResponse = {
+  planType: 'freemium' | 'pro_active' | 'pro_trialing';
+  planName: string;
+  upcomingInvoice: number;
+  payment: {
+    type: string;
+    nextPaymentDate: string;
+  };
+  credits: {
+    remaining: number;
+    nextChargeCredit: number;
+    nextChargeDate: string;
+  };
+  storage: {
+    usageSize: number;
+    limitSize: number;
+  };
+  stipe: {
+    paymentMethodUrl: string;
+    billingInvoiceUrl: string;
+  };
+};
+
+export interface UserCreditInfoResponse {
+  remainingCredit: number;
+  totalCredit: number;
+}
+
+export interface UserState {
+  name: string;
+  hadFreeTrial: boolean;
+  planName: string;
+  planType: UserUsageInfoResponse['planType'];
+  credits: UserUsageInfoResponse['credits'] | null;
+  storage: UserUsageInfoResponse['storage'] | null;
+  usageInfoLoading: boolean;
+}
+
+export interface InitAppRequest {
+  sceneId: string;
+  token: string;
+  nodes: RequestNodeResponse[];
+  dispatch: Dispatch;
+}
