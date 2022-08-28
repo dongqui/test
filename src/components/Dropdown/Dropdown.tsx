@@ -156,7 +156,7 @@ const Dropdown = ({ list, onSelect, fixed, className, alignContext = 'left', dis
     <div ref={wrapperRef} className={cx('wrapper', className)}>
       <div className={cx('header')}>
         <button type="button" ref={buttonRef} className={buttonClasses} onClick={handleToggle}>
-          <div className={cx('text')}>{selectedValue ? selectedValue : 'None'}</div>
+          <div className={cx('text')}>{selectedValue ? selectedValue : 'none'}</div>
           <IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />
         </button>
       </div>

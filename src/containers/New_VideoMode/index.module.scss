@@ -79,10 +79,12 @@
 }
 
 .dropdown {
-  margin-left: 30px;
+  display: flex;
+  flex: 1;
+  margin-left: 42px;
   background-color: $contentbg-base;
   border-radius: 6px;
-  max-width: 189px;
+  //max-width: 189px;
 }
 
 .initial-overlay {
