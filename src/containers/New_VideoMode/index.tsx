@@ -719,10 +719,10 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             <div className={cx('wrapper')}>
               <div className={cx('section')}>
                 <div className={cx('section-title')}>
-                  <Typography type="title">Video set</Typography>
+                  <Typography type="title">Camera set</Typography>
                 </div>
                 <div className={cx('section-item')}>
-                  <Typography type="body">Camera</Typography>
+                  <Typography type="body">Select</Typography>
                   <Dropdown
                     disabled={!cameraPermission || RECORD_COUNTDOWN || ON_RECORDING}
                     alignContext="right"
