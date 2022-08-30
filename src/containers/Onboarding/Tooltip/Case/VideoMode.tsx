@@ -14,7 +14,7 @@ const VideoMode = () => {
     const targetCoordinates = getTargetCoordinates(targetElement);
     if (tooltipRef.current && targetCoordinates) {
       const { leftBottom } = targetCoordinates;
-      tooltipRef.current.style.cssText = `top:${leftBottom.y + 16}px; right:${8}px;`;
+      tooltipRef.current.style.cssText = `top:${leftBottom.y + 12}px; left:${leftBottom.x}px; transform: translateX(calc(-50% + 64px + 24px))`;
     }
   }, [tooltipRef]);
 
@@ -26,7 +26,7 @@ const VideoMode = () => {
           Directly record a video with your webcam to <span>extract</span> <br />
           <span>the mocap data.</span>
         </p>
-        <Arrow placement="top-end" />
+        <Arrow placement="top-middle" />
       </StepTemplate>
     </Fragment>
   );
