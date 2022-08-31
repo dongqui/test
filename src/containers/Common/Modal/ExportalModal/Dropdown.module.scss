@@ -53,6 +53,8 @@
   outline: 1px solid $outline;
   border-radius: 6px;
   padding: 4px;
+  height: 140px;
+  overflow-y: auto;
 
   .item {
     display: flex;
