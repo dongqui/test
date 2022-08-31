@@ -17,6 +17,7 @@ import * as api from 'api';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
 import { removeIK } from 'sagas/RP/ik/removeIK';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
 
 const clickJointChannel = channel();
 
@@ -66,6 +67,8 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode?.animationId === id);
     if (!targetAnimationIngredientId) {
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
+      console.log('====');
+      console.log(_animation);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
       let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
@@ -140,6 +143,15 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             }
             // Release IK Controllers
             yield call(removeIK, removeIKAction(asset.id));
+
+            // Remove Contact data
+            animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
+            const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
+
+            if (motionNode?.animationId)
+              api.putMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
+                animationLayer: serverAnimationLayers,
+              });
           } else if (plaskEngine.ikModule.isEnabled) {
             // IK was enabled before, so we need to add tracks for this new ingredient
             yield call(addIK, addIKAction(asset.id, animationIngredient));

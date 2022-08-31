@@ -66,6 +66,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode.animationId === id);
     if (!targetAnimationIngredientId) {
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
+
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
       let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
@@ -167,12 +168,18 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         }
         // Release IK Controllers
         yield call(removeIK, removeIKAction(asset.id));
+
+        // Remove Contact data
+        animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
+        const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
+        // api.putMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
+        //   animationLayer: serverAnimationLayers,
+        // });
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
-      console.log(animationIngredient);
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 
