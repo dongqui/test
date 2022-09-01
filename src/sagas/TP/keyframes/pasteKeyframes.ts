@@ -35,6 +35,7 @@ function findSmallestTime(copiedPropertyKeyframes: ClusteredKeyframe[]) {
   let smallestFrame = Infinity;
 
   copiedPropertyKeyframes.forEach((group) => {
+    if (group.keyframes.length === 0) return;
     const firstFrame = group.keyframes[0].time;
     if (firstFrame < smallestFrame) smallestFrame = firstFrame;
   });
