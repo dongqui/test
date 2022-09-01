@@ -25,7 +25,6 @@ const createPlaskServerTrack = (name: string, target: any, property: PlaskProper
       filterMinCutoff = MOCAP_POSITION_MIN_CUTOFF;
     }
   }
-
   return {
     id: `layerId//${target.id}//${property}`,
     targetId: target.id,
