@@ -149,7 +149,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
 
             if (motionNode?.animationId)
-              api.putMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
+              api.replaceMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
                 animationLayer: serverAnimationLayers,
               });
           } else if (plaskEngine.ikModule.isEnabled) {

@@ -172,9 +172,9 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         // Remove Contact data
         animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
         const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
-        // api.putMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
-        //   animationLayer: serverAnimationLayers,
-        // });
+        api.replaceMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
+          animationLayer: serverAnimationLayers,
+        });
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));

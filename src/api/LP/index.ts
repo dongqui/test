@@ -93,11 +93,11 @@ export async function postMotion(sceneId: string, libraryId: string, data: PostM
 
   return response.data;
 }
-export async function putMotion(sceneId: string, libraryId: string, motionId: string, data: PutMotionData) {
+export async function replaceMotion(sceneId: string, libraryId: string, animationId: string, data: PutMotionData) {
   const response = await requestApi({
-    method: 'PUT',
+    method: 'POST',
     base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
-    url: `/library/${sceneId}/${libraryId}/${motionId}/put`,
+    url: `/library/${sceneId}/${libraryId}/${animationId}/replace`,
     data,
   });
 

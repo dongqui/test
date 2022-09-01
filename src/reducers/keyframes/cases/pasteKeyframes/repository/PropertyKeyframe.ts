@@ -21,6 +21,7 @@ class PropertyKeyframeRepository implements Repository {
     const { copiedPropertyKeyframes } = this.state;
     let smallestTime = Infinity;
     copiedPropertyKeyframes.forEach((copied) => {
+      if (copied.keyframes.length === 0) return;
       const time = copied.keyframes[0].time;
       if (time < smallestTime) smallestTime = time;
     });
