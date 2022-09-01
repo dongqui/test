@@ -97,7 +97,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
     <Fragment>
       <div className={cx('section-item')}>
         <div className={cx('switch-label')}>
-          <Typography>Tracking</Typography>
+          <Typography className={cx('section-title')}>Tracking</Typography>
           <div className={cx('overlay')} onMouseEnter={() => setTrackingTooltip(true)} onMouseLeave={() => setTrackingTooltip(false)} />
           {trackingTooltip && (
             <div className={cx('tooltip')}>
@@ -130,7 +130,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
       {!multiOption.value && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <div className={cx('switch-label')}>
-            <Typography>Foot lock</Typography>
+            <Typography className={cx('section-title')}>Foot lock</Typography>
             <div
               className={cx('overlay')}
               onMouseEnter={() => {
@@ -153,7 +153,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
             {betaTagToolTip && (
               <div className={cx('tooltip')}>
                 <div className={cx('arrow')} />
-                <Typography type="body">Improving it now!</Typography>
+                <Typography type="body">The keyframe edited in the scene is not saved for foot lock motion.</Typography>
               </div>
             )}
           </div>
@@ -172,7 +172,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
       )}
       <div className={cx('section-item')}>
         <div className={cx('switch-label')}>
-          <Typography>T-pose</Typography>
+          <Typography className={cx('section-title')}>T-pose</Typography>
           <div className={cx('overlay')} onMouseEnter={() => setTPoseTooltip(true)} onMouseLeave={() => setTPoseTooltip(false)} />
           {tPoseTooltip && (
             <div className={cx('tooltip')}>
