@@ -33,7 +33,7 @@ const AnimationMode: FunctionComponent<Props> = ({ className }) => {
   const constants = useMemo(
     () => ({
       width: {
-        lp: 260,
+        lp: 240,
         cp: 256,
       },
       height: {
