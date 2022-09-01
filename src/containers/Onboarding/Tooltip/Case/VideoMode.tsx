@@ -24,7 +24,7 @@ const VideoMode = () => {
         <h3>Shift to the video mode</h3>
         <p>
           Directly record a video with your webcam to <span>extract</span> <br />
-          <span>the mocap data.</span>
+          <span>the MoCap data.</span>
         </p>
         <Arrow placement="top-middle" />
       </StepTemplate>
