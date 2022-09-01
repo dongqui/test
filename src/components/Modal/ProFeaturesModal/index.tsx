@@ -35,7 +35,7 @@ const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
             <li>
               <IconWrapper icon={SvgPath['Check']} />
               <span className={cx('content-text')}>
-                <strong>Multi-person motion capture</strong> - Simultaneous mocap up to 10 people
+                <strong>Multi-person motion capture</strong> - Simultaneous MoCap up to 10 people
               </span>
             </li>
             <li>

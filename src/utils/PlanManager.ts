@@ -94,7 +94,7 @@ class PlanManager {
       this.dispatch(
         globalUIActions.openModal('AlertModal', {
           title: 'Out of credits',
-          message: `${requiredCredit.toLocaleString()} credits will be required on this. Mocap Pro plan will be renewed with ${user.credits?.nextChargeCredit.toLocaleString()} credits on ${dateFormat(
+          message: `${requiredCredit.toLocaleString()} credits will be required on this. MoCap Pro plan will be renewed with ${user.credits?.nextChargeCredit.toLocaleString()} credits on ${dateFormat(
             user.credits?.nextChargeDate || '',
           )}.`,
           confirmText: 'Okay',

@@ -22,7 +22,7 @@ const EditKeyframe = () => {
     <StepTemplate step={5} ref={tooltipRef}>
       <h3>Edit Keyframe</h3>
       <p>
-        You can <span>edit the keyframe</span> that applied mocap in <br />
+        You can <span>edit the keyframe</span> that applied MoCap in <br />
         the timeline.
       </p>
       <Arrow placement="bottom-start" />

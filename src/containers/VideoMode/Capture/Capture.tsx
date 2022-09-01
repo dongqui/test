@@ -473,7 +473,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
       {/*Extract Motion 버튼을 누르고 난 후 뜨는 Modal*/}
       {readyExtract && (
         <BaseModal>
-          <p className={cx('extract-name-paragraph')}>Enter the name of the mocap to extract.</p>
+          <p className={cx('extract-name-paragraph')}>Enter the name of the MoCap to extract.</p>
           <input type="text" className={cx('extract-name-input')} placeholder="Extracted mocap" onChange={(e) => handleChange(e)} value={basicExtractName} />
           <div className={cx('extract-name-wrapper')}>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setReadyExtract(false)} />
@@ -546,7 +546,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
           <div className={cx('failed-modal')}>
             <h4 className={cx('modal-heading')}>Extract Failed</h4>
             <p className={cx('extract-name-paragraph')}>
-              Mocap export<strong> failed</strong>.<br />
+              MoCap export<strong> failed</strong>.<br />
               The uploaded video doesn't meet the motion capture requirement
             </p>
             <FilledButton text="Cancel" className={cx('extract-button', 'cancel')} onClick={() => setIsExtractFailed(false)} />
