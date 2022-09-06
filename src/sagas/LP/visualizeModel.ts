@@ -70,8 +70,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
     const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode?.animationId === id);
     if (!targetAnimationIngredientId) {
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
-      console.log('====');
-      console.log(_animation);
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
       let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
@@ -150,10 +148,15 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
             const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
 
-            api.replaceMotion(lpNode.sceneId, modelNode.id, animationIngredient.id, {
+            yield put(globalUIActions.openModal('LoadingModal', { title: 'Loading the file', message: 'This can take up to 3 minutes' }));
+
+            plaskEngine.stopRenderLoop();
+            yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, animationIngredient.id, {
               animationLayer: serverAnimationLayers,
-            }),
-              console.log('REPLACED MOTION');
+            });
+            console.log('REPLACED MOTION');
+            plaskEngine.startRenderLoop();
+            yield put(globalUIActions.closeModal('LoadingModal'));
           } else if (plaskEngine.ikModule.isEnabled) {
             // IK was enabled before, so we need to add tracks for this new ingredient
             yield call(addIK, addIKAction(asset.id, animationIngredient));
