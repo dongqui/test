@@ -63,6 +63,9 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
         throw Error('No asset');
       }
     }
+    if (!modelNode || !motionNode?.animationId) {
+      return;
+    }
 
     const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode?.animationId === id);
     if (!targetAnimationIngredientId) {
@@ -120,7 +123,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
         if (animationIngredient) {
           const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-          //const contactData = [];
           if (contactData.length) {
             console.log('Contact data detected, using inverse kinematics to lock the feet...');
             yield call(addIK, addIKAction(asset.id, animationIngredient));
@@ -148,10 +150,10 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
             const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
 
-            if (motionNode?.animationId)
-              api.replaceMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
-                animationLayer: serverAnimationLayers,
-              });
+            api.replaceMotion(lpNode.sceneId, modelNode.id, animationIngredient.id, {
+              animationLayer: serverAnimationLayers,
+            }),
+              console.log('REPLACED MOTION');
           } else if (plaskEngine.ikModule.isEnabled) {
             // IK was enabled before, so we need to add tracks for this new ingredient
             yield call(addIK, addIKAction(asset.id, animationIngredient));
