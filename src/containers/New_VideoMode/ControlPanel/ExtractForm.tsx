@@ -16,6 +16,7 @@ interface Props {
   fieldProps: Field.FormProps;
   setExtractButtonRef: (ref: HTMLButtonElement) => void;
   doneVMOnBoarding: (step: number) => void;
+  isFastForwardDone: boolean;
 }
 
 const FOOT_LOCK_AVAILABLE = true;
@@ -46,7 +47,8 @@ const selectFootLockAndTPoseOption = [
   },
 ];
 
-const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Props) => {
+// Need to refactor it.........
+const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFastForwardDone }: Props) => {
   const DEFAULT_MULTI_SELECT_OPTION_INDEX = 1;
   const DEFAULT_FOOT_LOCK_SELECT_OPTION_INDEX = 1;
   const DEFAULT_T_POSE_SELECT_OPTION_INDEX = 0;
@@ -56,6 +58,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
   const [footLockTooltip, setFootLockTooltip] = useState(false);
   const [tPoseTooltip, setTPoseTooltip] = useState(false);
   const userState = useSelector((state) => state.user);
+  const [betaTagToolTip, setBetaTagToolTip] = useState(false);
 
   useEffect(() => {
     if (multiOption.value && FOOT_LOCK_AVAILABLE) {
@@ -94,7 +97,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
     <Fragment>
       <div className={cx('section-item')}>
         <div className={cx('switch-label')}>
-          <Typography>Tracking</Typography>
+          <Typography className={cx('section-title')}>Tracking</Typography>
           <div className={cx('overlay')} onMouseEnter={() => setTrackingTooltip(true)} onMouseLeave={() => setTrackingTooltip(false)} />
           {trackingTooltip && (
             <div className={cx('tooltip')}>
@@ -103,13 +106,12 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             </div>
           )}
         </div>
-
         <BaseField<React.ComponentProps<typeof Switch>, string>
           className={cx('switch')}
           onChange={handleChangeMultiSwitch}
           control={fieldProps.control}
           name="model"
-          value={multiOption.key}
+          controlledValue={multiOption?.key}
           options={selectMultiOption}
           defaultValue={multiOption.key}
           render={(props) => <Switch {...props} />}
@@ -128,19 +130,30 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       {!multiOption.value && FOOT_LOCK_AVAILABLE && (
         <div className={cx('section-item')}>
           <div className={cx('switch-label')}>
-            <Typography>Foot lock</Typography>
+            <Typography className={cx('section-title')}>Foot lock</Typography>
             <div
               className={cx('overlay')}
               onMouseEnter={() => {
                 setFootLockTooltip(true);
-                console.log('enter');
               }}
               onMouseLeave={() => setFootLockTooltip(false)}
             />
+
             {footLockTooltip && (
               <div className={cx('tooltip')}>
                 <div className={cx('arrow')} />
                 <Typography type="body">Locking the feet to the ground and gliding the feet across the ground</Typography>
+              </div>
+            )}
+          </div>
+
+          <div className={cx('beta-chip')}>
+            <Typography className={cx('text')}>Beta</Typography>
+            <div className={cx('overlay')} onMouseEnter={() => setBetaTagToolTip(true)} onMouseLeave={() => setBetaTagToolTip(false)} />
+            {betaTagToolTip && (
+              <div className={cx('tooltip')}>
+                <div className={cx('arrow')} />
+                <Typography type="body">The keyframe edited in the scene is not saved for foot lock motion.</Typography>
               </div>
             )}
           </div>
@@ -151,7 +164,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
             control={fieldProps.control}
             name="footLock"
             defaultValue={footLockOption.key}
-            value={footLockOption.key}
+            controlledValue={footLockOption.key}
             options={selectFootLockAndTPoseOption}
             render={(props) => <Switch {...props} />}
           />
@@ -159,7 +172,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       )}
       <div className={cx('section-item')}>
         <div className={cx('switch-label')}>
-          <Typography>T-pose</Typography>
+          <Typography className={cx('section-title')}>T-pose</Typography>
           <div className={cx('overlay')} onMouseEnter={() => setTPoseTooltip(true)} onMouseLeave={() => setTPoseTooltip(false)} />
           {tPoseTooltip && (
             <div className={cx('tooltip')}>
@@ -181,8 +194,8 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding }: Prop
       </div>
       <div style={{ height: '10px' }} />
       <div className={cx('section-item')}>
-        <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused}>
-          <Typography type="button">Extract</Typography>
+        <FilledButton r={setExtractButtonRef} fullSize type="submit" onFocus={blurFocused} disabled={!isFastForwardDone}>
+          <Typography type="button">{isFastForwardDone ? 'Extract' : 'Loading...'}</Typography>
         </FilledButton>
       </div>
     </Fragment>

@@ -7,6 +7,8 @@ import * as commonActions from 'actions/Common/globalUI';
 import { checkErrorNotice } from 'api';
 
 // Ref: https://www.figma.com/file/cjE07P97OvCTwOIornDmbK/Plask-Master-Design?node-id=2821%3A18043
+
+const CURRENT_NOTIFICATION_NUMBER = '2';
 class PopupManager {
   isOnboardingDone: boolean;
   isNewFeatureModalDone: boolean;
@@ -18,7 +20,7 @@ class PopupManager {
 
   constructor() {
     this.isOnboardingDone = typeof window !== 'undefined' ? !!localStorage.getItem('onboarding_1') : false;
-    this.isNewFeatureModalDone = typeof window !== 'undefined' ? localStorage.getItem('notification') === '1' : false;
+    this.isNewFeatureModalDone = typeof window !== 'undefined' ? localStorage.getItem('notification') === CURRENT_NOTIFICATION_NUMBER : false;
     this.isVMOnboardingDone = typeof window !== 'undefined' ? !!localStorage.getItem('onboarding_2') : false;
     this.isIKOnboardingDone = typeof window !== 'undefined' ? !!localStorage.getItem('onboarding_3') : false;
     this.proceedGenerator = null;
@@ -73,7 +75,7 @@ class PopupManager {
             closeCallback: () => {
               this.next();
               // key value change rule: '1' -> '2'
-              localStorage.setItem('notification', '1');
+              localStorage.setItem('notification', CURRENT_NOTIFICATION_NUMBER);
             },
           },
           'onboarding',
@@ -87,7 +89,7 @@ class PopupManager {
       const isExpierencedUser = this.isOnboardingDone;
       const targetElement = document.getElementById(ONBOARDING_ID.VIDEO_MODE);
       const targetCoordinates = getTargetCoordinates(targetElement);
-      console.log(targetElement, targetCoordinates);
+
       if (targetCoordinates?.rightBottom) {
         this.dispatch(
           commonActions.openModal(
@@ -98,8 +100,8 @@ class PopupManager {
                 ? 'You can extract <span>more than one person’s</span> motion from the video.'
                 : 'Extract <span>one or more than one person’s</span> motion from video that import or record.',
               postion: {
-                left: `${targetCoordinates.leftBottom.x - 120}px`,
-                top: `${targetCoordinates?.rightBottom?.y + 16}px`,
+                left: `${targetCoordinates.leftBottom.x - 108}px`,
+                top: `${targetCoordinates?.rightBottom?.y + 12}px`,
               },
               onConfirm: () => {
                 localStorage.setItem('onboarding_2', 'onboarding_2');
@@ -175,6 +177,25 @@ class PopupManager {
       } else {
         this.next();
       }
+    }
+  }
+
+  showEmergencyNotification() {
+    if (this.dispatch) {
+      this.dispatch(
+        commonActions.openModal('EmergencyModal', {
+          message: `<p>
+          Our motion capture server is down due to technical difficulties.
+          <br />
+          You can only use the animation editing feature at the moment. <br />
+          Sorry for the inconvenience.
+        </p>`,
+          title: 'Emergency Notice',
+          closeCallback: () => {
+            this.next();
+          },
+        }),
+      );
     }
   }
 }

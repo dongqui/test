@@ -242,6 +242,32 @@ export class AnimationModule extends Module {
   }
 
   /**
+   * Set keyframes for a specific track and layer, ignoring other layers
+   * @param targetAnimationIngredient animationIngredient to edit
+   * @param targetLayerId id of layer to edit
+   * @param targetId id of the target of the track
+   * @param property target property of the track
+   * @param keyframes keyframes list
+   */
+  public setKeyframesForTrack(targetAnimationIngredient: AnimationIngredient, targetLayerId: string, targetId: string, property: PlaskProperty, keyframes: IAnimationKey[]) {
+    const newAnimationIngredient = produce(targetAnimationIngredient, (draft) => {
+      const targetLayer = draft.layers.find((layer) => layer.id === targetLayerId);
+      if (!targetLayer) {
+        console.warn('Could not find layer');
+        return;
+      }
+      const targetTrack = targetLayer.tracks.find((track) => track.targetId === targetId && track.property === property);
+      if (!targetTrack) {
+        console.warn('Could not find track');
+        return;
+      }
+      targetTrack.transformKeys = keyframes;
+    });
+
+    return newAnimationIngredient;
+  }
+
+  /**
    * Edits keyframes with params so that we don't need to select targets in RenderingPanel
    * @param targetAnimationIngredient - animationIngredent to edit
    * @param targetLayerId - id of layer to edit
@@ -660,6 +686,36 @@ export class AnimationModule extends Module {
   }
 
   /**
+   * Removes contact data into an animation ingredient, so doesn't compute foot-locking again
+   * @param animationIngredient
+   */
+  public emptyContactDataFromAnimationIngredient(animationIngredient: AnimationIngredient) {
+    const animationIngredientRemovedContactData = this.removeContactData(animationIngredient);
+
+    return animationIngredientRemovedContactData;
+  }
+
+  /**
+   * Generates a new animation ingredient with contact data removed
+   * @param animationIngredient
+   * @returns
+   */
+  public removeContactData(animationIngredient: AnimationIngredient) {
+    // Compute contact data
+    let animationIngredientWithRemovedContactData = produce(animationIngredient, (draft) => {
+      draft.layers.map((layer) => {
+        if (layer) {
+          layer.tracks.map((track) => {
+            if (track.property == 'isContact') {
+              track.transformKeys = [];
+            }
+          });
+        }
+      });
+    });
+    return animationIngredientWithRemovedContactData;
+  }
+  /**
    * Generates a new animation ingredient with foot locking (baked in IK tracks)
    * @param animationIngredient
    * @param animationGroup
@@ -886,13 +942,18 @@ export class AnimationModule extends Module {
           } else {
             const prevTimeIndex = findLastIndex(transformKeys, (key) => key.frame < targetFrame);
             const nextTimeIndex = findIndex(transformKeys, (key) => key.frame > targetFrame);
+
             const deltaTime = transformKeys[nextTimeIndex].frame - transformKeys[prevTimeIndex].frame;
             const deltaValue = isQuaternionTrack
               ? transformKeys[nextTimeIndex].value.toEulerAngles().subtract(transformKeys[prevTimeIndex].value.toEulerAngles()).toQuaternion()
+              : typeof transformKeys[nextTimeIndex].value === 'number'
+              ? transformKeys[nextTimeIndex].value - transformKeys[prevTimeIndex].value
               : transformKeys[nextTimeIndex].value.subtract(transformKeys[prevTimeIndex].value);
             const multiplier = (targetFrame - transformKeys[prevTimeIndex].frame) / deltaTime;
             const newValue = isQuaternionTrack
               ? transformKeys[prevTimeIndex].value.toEulerAngles().add(deltaValue.toEulerAngles().multiplyByFloats(multiplier, multiplier, multiplier)).toQuaternion()
+              : typeof transformKeys[nextTimeIndex].value === 'number'
+              ? transformKeys[nextTimeIndex].value + deltaValue * multiplier
               : transformKeys[prevTimeIndex].value.add(deltaValue.multiplyByFloats(multiplier, multiplier, multiplier));
             newTransformKeys.push({ frame: targetFrame, value: newValue });
           }

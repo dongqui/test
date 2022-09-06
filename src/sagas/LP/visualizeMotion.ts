@@ -21,6 +21,7 @@ import { addIK } from 'sagas/RP/ik/addIK';
 import { TimeIndex } from 'utils/TP';
 import { Scalar } from '@babylonjs/core';
 import { removeIK } from 'sagas/RP/ik/removeIK';
+import pause from 'utils/common/pause';
 
 const clickJointChannel = channel();
 
@@ -45,6 +46,8 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
   }
   try {
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
+    // Leave some time for the modal to open
+    yield call(pause, 100);
 
     let asset = find(assetList, { id: modelNode.assetId });
 
@@ -63,6 +66,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
     const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode.animationId === id);
     if (!targetAnimationIngredientId) {
       const _animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode.animationId!);
+
       const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
       const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
       let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, asset.transformNodes, false, asset.id);
@@ -118,6 +122,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield put(plaskProjectActions.renderAsset({ assetId: modelNode.assetId }));
       }
     }
+    plaskEngine.assetModule.setVisibility(1);
 
     // Foot locking
     let animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(assetId);
@@ -132,46 +137,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
     if (animationIngredient) {
       const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-      //console.log(contactData, animationIngredient);
-
-      // // Hips Z level adjust
-      // let hipsTrack: PlaskTrack;
-      // let leftFootTrack: PlaskTrack;
-      // let rightFootTrack: PlaskTrack;
-      // animationIngredient.layers[0].tracks.forEach((elem) => {
-      //   if (elem.name.match(/hips/gi) && elem.property.match(/position/g)) {
-      //     hipsTrack = elem;
-      //   }
-
-      //   if (elem.name.match(/leftFoot/gi) && elem.property.match(/isContact/g)) {
-      //     leftFootTrack = elem;
-      //   }
-
-      //   if (elem.name.match(/rightFoot/gi) && elem.property.match(/isContact/g)) {
-      //     rightFootTrack = elem;
-      //   }
-      // });
-
-      // let noContactPts: number = 0; // sum of no contact points to trying to evaluate Jumping
-      // let lowPositionPts: number = 0; // sum of low position points trying to evaluate Sitting
-      // for (let i = 0; i < hipsTrack!.transformKeys.length; i++) {
-      //   if (leftFootTrack!.transformKeys[i].value == 0 && rightFootTrack!.transformKeys[i].value == 0) noContactPts += 1;
-      //   else noContactPts = 0;
-
-      //   if (hipsTrack!.transformKeys[i + 1] && Math.abs(hipsTrack!.transformKeys[i].value._z * 0.9) > Math.abs(hipsTrack!.transformKeys[i + 1].value._z)) lowPositionPts += 1;
-      //   else lowPositionPts = 0;
-
-      //   if (noContactPts > 0) {
-      //     hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / noContactPts);
-      //     console.log('Jump ', noContactPts, hipsTrack!.transformKeys[i].value._z);
-      //   } else if (lowPositionPts > 0) {
-      //     hipsTrack!.transformKeys[i].value._z = Scalar.Lerp(hipsTrack!.transformKeys[i].value._z, hipsZOriginal!, 1 / lowPositionPts);
-      //     console.log('Sit ', lowPositionPts, hipsTrack!.transformKeys[i].value._z);
-      //   } else {
-      //     hipsTrack!.transformKeys[i].value._z = hipsZOriginal!;
-      //     console.log('Fixed ', hipsTrack!.transformKeys[i].value._z);
-      //   }
-      // }
 
       // // Animation End Index adjust
       // const payload = {
@@ -193,7 +158,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
           if (controller.limb.toLowerCase().includes('foot')) {
             plaskEngine.ikModule.setSelectedIk([controller]);
 
-            const bakeResult = plaskEngine.ikModule.bakeIKintoFK();
+            const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, true);
             animationIngredient = bakeResult.animationIngredient || animationIngredient;
             yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
@@ -203,12 +168,19 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         }
         // Release IK Controllers
         yield call(removeIK, removeIKAction(asset.id));
+
+        // Remove Contact data
+        animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
+        const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
+
+        yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, motionNode.animationId, {
+          animationLayer: serverAnimationLayers,
+        });
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
       }
-      console.log(animationIngredient);
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
 

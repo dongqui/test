@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 import { BaseModal } from 'components/Modal';
 import { SvgPath } from 'components/Icon';
 import { IconButton } from 'components/Button';
@@ -32,7 +30,7 @@ export default function NotificationModal({ onClose, title, message, closeCallba
         </header>
         <div className={cx('body')}>
           <video autoPlay loop muted width="640" height="360">
-            <source src="/video/vm_update.mp4" type="video/mp4" />
+            <source src="/video/dashboard_update.mp4" type="video/mp4" />
           </video>
         </div>
         <footer className={cx('footer')}>

@@ -29,12 +29,12 @@ const ConfirmModal: FunctionComponent<Props> = ({
   onConfirm,
   onCancel,
 }) => {
-  const onClickConfirm = () => {
+  const handleClickConfirm = () => {
     onConfirm();
     onClose();
   };
 
-  const onClickCancel = () => {
+  const handelCancel = () => {
     onCancel && onCancel();
     onClose();
   };
@@ -50,8 +50,8 @@ const ConfirmModal: FunctionComponent<Props> = ({
           <Html content={message} />
         </div>
         <div className={cx('buttons')}>
-          <OutlineButton onClick={onClickCancel}>{cancelText}</OutlineButton>
-          <FilledButton onClick={onClickConfirm} buttonType={confirmButtonColor} dataCy="modal-confirm">
+          <OutlineButton onClick={handelCancel}>{cancelText}</OutlineButton>
+          <FilledButton onClick={handleClickConfirm} buttonType={confirmButtonColor} dataCy="modal-confirm">
             {confirmText}
           </FilledButton>
         </div>

@@ -19,16 +19,16 @@ const ApplyMotion = () => {
     const targetCoordinates = getTargetCoordinates(targetElement);
     if (tooltipRef.current && targetCoordinates) {
       const { rightTop } = targetCoordinates;
-      tooltipRef.current.style.cssText = `top:${rightTop.y - 32}px; left:${rightTop.x + 16}px;`;
+      tooltipRef.current.style.cssText = `top:${rightTop.y}px; left:${rightTop.x}px;`;
     }
   }, [tooltipRef]);
 
   return (
     <Fragment>
       <StepTemplate step={3} ref={tooltipRef}>
-        <h3>Apply mocap</h3>
+        <h3>Apply MoCap</h3>
         <p>
-          Apply the mocap by <span>dragging and dropping it </span>into <br />
+          Apply the MoCap by <span>dragging and dropping it </span>into <br />
           the model.
         </p>
         <Arrow placement="left-start" />

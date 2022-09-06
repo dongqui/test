@@ -68,6 +68,7 @@
     display: flex;
     align-items: center;
     height: 40px;
+    color: var(--grey090)
   }
 
   .section-item {
@@ -75,12 +76,39 @@
     align-items: center;
     height: 36px;
     justify-content: space-between;
+    color: var(--grey070)
   }
 }
 
 .dropdown {
-  margin-left: 30px;
+  display: flex;
+  flex: 1;
+  margin-left: 42px;
   background-color: $contentbg-base;
   border-radius: 6px;
-  max-width: 189px;
+  //max-width: 189px;
+}
+
+.initial-overlay {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+
+  background-color: rgb(0 0 0 / 60%);
+  justify-content: center;
+  align-items: center;
+
+  .spin-logo-icon {
+    svg {
+      width: 24px;
+      height: 34px;
+      stroke: $outline-border;
+    }
+  }
 }

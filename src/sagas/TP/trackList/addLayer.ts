@@ -61,7 +61,7 @@ function* handleAddLayerRequest(action: ReturnType<typeof trackListActions.addLa
   }
 
   baseLayer.tracks.forEach((track) => {
-    newTracks.push(createPlaskServerTrack(track.name, track.target, track.property, track.isMocapAnimation));
+    if (track.target) newTracks.push(createPlaskServerTrack(track.name, track.target, track.property, track.isMocapAnimation));
   });
 
   const newLayer: ServerAnimationLayerRequest = { name: `Layer ${newLayerTrackNumber}`, isIncluded: true, useFilter: false, tracks: newTracks, isDeleted: false };

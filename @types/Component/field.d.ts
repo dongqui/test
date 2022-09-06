@@ -62,6 +62,7 @@ declare namespace Field {
     onChange?: (value: Q) => void;
     // value: string | boolean;
     className?: string;
+    controlledValue?: Q;
   };
 
   type BaseFieldProps<T, Q> = FormProps & BaseProps<Q> & T;

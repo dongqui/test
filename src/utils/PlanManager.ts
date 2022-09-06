@@ -21,16 +21,12 @@ class PlanManager {
     return (user.storage?.limitSize || 0) <= (user.storage?.usageSize || 0) + addSize;
   }
 
-  _calculateCreditFromVideoDuration(videoDuration: number) {
-    // ----------------------------------------- TODO: calculate credit -----------------------------------------
+  remainingCredits(user: User, requiredCredit: number) {
+    return (user.credits?.remaining || 0) - requiredCredit;
   }
 
-  isCreditExceeded(user: User, videoDuration: number) {
-    // ----------------------------------------- TODO: calculate credit -----------------------------------------
-
-    const neededCredts = this._calculateCreditFromVideoDuration(videoDuration);
-
-    return !user.credits?.remaining;
+  isCreditExceeded(user: User, requiredCredit: number) {
+    return (user.credits?.remaining || 0) < requiredCredit;
   }
 
   openStorageExceededModal(user: User) {
@@ -38,13 +34,13 @@ class PlanManager {
       return;
     }
 
-    if (user.planType === 'freemium') {
+    if (user?.planType === 'freemium') {
       this.dispatch(
         globalUIActions.openModal(
           'ConfirmModal',
           {
-            title: 'Need more storage?',
-            message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. To keep using Plask, you can get more storage with a Mocap Pro plan.',
+            title: 'Storage limit exceeded',
+            message: 'Your 1 GB of free storage is full. You won’t be able to upload new files. To keep using Plask, you can get more storage with a MoCap Pro plan.',
             confirmText: 'Upgrade',
             onConfirm: () => {
               this.dispatch && this.dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
@@ -52,7 +48,7 @@ class PlanManager {
             confirmButtonColor: 'negative',
             cancelText: 'Learn more',
             onCancel: () => {
-              window.open('https://www.naver.com', '_blank', 'noopener');
+              window.open('https://knowledge.plask.ai/pricing-plan-faqs', '_blank', 'noopener');
             },
           },
           'upgrade',
@@ -65,8 +61,11 @@ class PlanManager {
           'AlertModal',
           {
             title: 'Out of storage',
-            message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage space by removing your assets.',
-            confirmText: 'Okay',
+            message: 'Your storage is full. You won’t be able to upload new files. You can clear space in your library and free up storage by removing your assets.',
+            confirmText: 'Learn more',
+            onConfirm: () => {
+              window.open('https://knowledge.plask.ai/pricing-plan-faqs', '_blank', 'noopener');
+            },
           },
           'upgrade',
           false,
@@ -75,18 +74,16 @@ class PlanManager {
     }
   }
 
-  openCreditExceededModal(user: User, videoDuration: number) {
+  openCreditExceededModal(user: User, requiredCredit: number) {
     if (!this.dispatch) {
       return;
     }
-
-    const neededCredit = this._calculateCreditFromVideoDuration(videoDuration);
 
     if (user.planType === 'freemium') {
       this.dispatch(
         globalUIActions.openModal('ConfirmModal', {
           title: 'Need more credits?',
-          message: `${neededCredit} credits will be required on this. To resume, get more credits with a Mocap Pro plan.`,
+          message: `You have <strong>${user.credits?.remaining.toLocaleString()} credits</strong> left. <strong>${requiredCredit.toLocaleString()} credits</strong> are required on this. Upgrade to MoCap Pro to get more credits.`,
           onConfirm: () => {
             this.dispatch && this.dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial: user.hadFreeTrial }));
           },
@@ -97,7 +94,7 @@ class PlanManager {
       this.dispatch(
         globalUIActions.openModal('AlertModal', {
           title: 'Out of credits',
-          message: `${neededCredit} credits will be required on this. Mocap Pro plan will be renewed with ${user.credits?.nextChargeCredit.toLocaleString()} credits on ${dateFormat(
+          message: `${requiredCredit.toLocaleString()} credits will be required on this. MoCap Pro plan will be renewed with ${user.credits?.nextChargeCredit.toLocaleString()} credits on ${dateFormat(
             user.credits?.nextChargeDate || '',
           )}.`,
           confirmText: 'Okay',

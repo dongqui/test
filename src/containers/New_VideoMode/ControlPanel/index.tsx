@@ -1,12 +1,16 @@
 import { RefObject, useState, useCallback, useRef, ChangeEvent, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import axios, { Canceler } from 'axios';
+import TagManager from 'react-gtm-module';
+import { useSelector } from 'reducers';
+import * as errors from 'errors';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import * as userActions from 'actions/User';
 import requestApi from 'api/requestApi';
+import { Spinner } from 'components';
 import { FilledButton, OutlineButton } from 'components/Button';
 import { Typography } from 'components/Typography';
 import { BaseForm } from 'components/Form';
@@ -14,11 +18,8 @@ import { BaseModal } from 'components/Modal';
 import { BaseInput } from 'components/Input';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import { Overlay } from 'components/Overlay';
+import planManager from 'utils/PlanManager';
 import ExtractForm from './ExtractForm';
-import TagManager from 'react-gtm-module';
-import { useSelector } from 'reducers';
-import PlanManager from 'utils/PlanManager';
-import * as errors from 'errors';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -41,12 +42,14 @@ interface Props {
   setIsOpenExtractModal: (state: boolean) => void;
   isOpenLoadingModal: boolean;
   setIsOpenLoadingModal: (state: boolean) => void;
+  totalFrames: number;
+  isFastForwardDone: boolean;
 }
 
 interface ExtractFormData {
   model: 'single' | 'multi';
-  footLock: boolean;
-  tPose: boolean;
+  footLock: 'Yes' | 'No';
+  tPose: 'Yes' | 'No';
 }
 
 interface MocapException {
@@ -70,6 +73,8 @@ const ControlPanel = ({
   setIsOpenExtractModal,
   isOpenLoadingModal,
   setIsOpenLoadingModal,
+  totalFrames,
+  isFastForwardDone,
 }: Props) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
@@ -78,11 +83,13 @@ const ControlPanel = ({
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
-    footLock: false,
-    tPose: false,
+    footLock: 'No',
+    tPose: 'Yes',
   });
   const [tagToolTip, setTagToolTip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const requiredCredit = Math.floor(((totalFrames * (endValue - startValue)) / duration) * (valueFormData.model === 'single' ? 1 : 3));
 
   useEffect(() => {
     if (isOpenExtractModal && inputRef.current) {
@@ -91,6 +98,14 @@ const ControlPanel = ({
   }, [isOpenExtractModal, inputRef]);
 
   const handleSubmit = async (data: ExtractFormData) => {
+    if (planManager.isCreditExceeded(user, requiredCredit)) {
+      planManager.openCreditExceededModal(user, requiredCredit);
+      return;
+    } else if (planManager.isStorageExceeded(user)) {
+      planManager.openStorageExceededModal(user);
+      return;
+    }
+
     if (endValue - startValue >= 300) {
       dispatch(
         globalUIActions.openModal('_AlertModal', {
@@ -174,14 +189,6 @@ const ControlPanel = ({
       },
     });
 
-    if (PlanManager.isCreditExceeded(user, duration)) {
-      PlanManager.openCreditExceededModal(user, duration);
-      return;
-    } else if (PlanManager.isStorageExceeded(user)) {
-      PlanManager.openStorageExceededModal(user);
-      return;
-    }
-
     if (videoRef.current) {
       if (endValue - startValue > 300) {
         setIsOpenExceptionModal({
@@ -201,8 +208,8 @@ const ControlPanel = ({
       formData.append('endTime', String(endValue));
       formData.append('duration', String(duration));
       formData.append('modelType', valueFormData.model);
-      formData.append('isFootLock', valueFormData.footLock ? 'true' : 'false');
-      formData.append('isTPose', valueFormData.tPose ? 'true' : 'false');
+      formData.append('isFootLock', valueFormData.footLock === 'Yes' ? 'true' : 'false');
+      formData.append('isTPose', valueFormData.tPose === 'Yes' ? 'true' : 'false');
 
       setIsOpenLoadingModal(true);
 
@@ -269,11 +276,11 @@ const ControlPanel = ({
               case: 'Condition',
             });
           } else if (statusCode === errors.TOOL_PAYMENT_NOT_ALLOWED_FUNCTION) {
-            PlanManager.openProFeaturesNotAllowedModal(user);
+            planManager.openProFeaturesNotAllowedModal(user);
           } else if (statusCode === errors.TOOL_PAYMENT_MAXIMUM_SIZE) {
-            PlanManager.openStorageExceededModal(user);
+            planManager.openStorageExceededModal(user);
           } else if (statusCode === errors.TOOL_PAYMENT_NOT_ENOUGH_CREDIT) {
-            PlanManager.openCreditExceededModal(user, duration);
+            planManager.openCreditExceededModal(user, requiredCredit);
           } else if (statusCode === errors.INVALID_MOCAP_VIDEO_DURATION) {
             setIsOpenExceptionModal({
               isOpen: true,
@@ -300,24 +307,17 @@ const ControlPanel = ({
     }
   }, [isOpenExceptionModal]);
 
+  const remainingCredit = planManager.remainingCredits(user, requiredCredit).toLocaleString();
   return (
     <div className={cx('wrapper')} onMouseEnter={() => setCPModified(false)}>
       <div className={cx('section')}>
         <div className={cx('section-title')}>
           <Typography type="title">Extract option</Typography>
-          <div className={cx('tag')}>
-            <Typography className={cx('text')}>Beta</Typography>
-            <div className={cx('overlay')} onMouseEnter={() => setTagToolTip(true)} onMouseLeave={() => setTagToolTip(false)} />
-            {tagToolTip && (
-              <div className={cx('tooltip')}>
-                <div className={cx('arrow')} />
-                <Typography type="body">Currently in Beta and free!</Typography>
-              </div>
-            )}
-          </div>
         </div>
-        <BaseForm onSubmit={handleSubmit}>
-          {(fieldProps) => <ExtractForm doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />}
+        <BaseForm onSubmit={isFastForwardDone ? handleSubmit : () => null}>
+          {(fieldProps) => (
+            <ExtractForm isFastForwardDone={isFastForwardDone} doneVMOnBoarding={doneVMOnBoarding} setExtractButtonRef={setExtractButtonRef} fieldProps={fieldProps} />
+          )}
         </BaseForm>
       </div>
       {isOpenExtractModal && (
@@ -328,6 +328,9 @@ const ControlPanel = ({
               <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
             </div>
             <div className={cx('modal-content')}>
+              <span className={cx('extract-text')}>
+                <strong>{requiredCredit.toLocaleString()} credits</strong> are required on this. You will have <strong>{remainingCredit} credits</strong> remaining.
+              </span>
               <label className={cx('label-name')}>Name</label>
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
@@ -351,8 +354,11 @@ const ControlPanel = ({
             </div>
             <div className={cx('modal-content')}>
               <div className={cx('message')}>It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}</div>
+              <div className={cx('loading-spinner')}>
+                <Spinner size="small" backgroundColor="elevated" />
+              </div>
             </div>
-            <div className={cx('modal-footer')}>
+            <div className={cx('modal-footer', 'loading-footer')}>
               <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
                 Cancel
               </OutlineButton>

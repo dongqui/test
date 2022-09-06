@@ -3,6 +3,7 @@ export { createFolderOrMocap as createFolderOrMocap } from './LP';
 export { addModel as addModel } from './LP';
 export { putRetargetMap as putRetargetMap } from './LP';
 export { postMotion as postMotion } from './LP';
+export { replaceMotion as replaceMotion } from './LP';
 export { addMocapByJson as addMocapByJson } from './LP';
 export { getAnimation as getAnimation } from './LP';
 export { getMocapData as getMocapData } from './LP';
