@@ -172,7 +172,8 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         // Remove Contact data
         animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
         const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
-        api.replaceMotion(lpNode.sceneId, modelNode.id, motionNode.animationId, {
+
+        yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, motionNode.animationId, {
           animationLayer: serverAnimationLayers,
         });
       } else if (plaskEngine.ikModule.isEnabled) {
