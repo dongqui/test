@@ -1041,12 +1041,12 @@ export class IKModule extends Module {
       return null;
     }
 
-    const ikBoneName = side + 'Foot';
+    const limb = side + 'Foot';
     // Create/find an IK controller for this bone
-    const ikController = this.ikControllers.find((ikController) => ikController.fkInfluenceChain![0].id === ikBoneName);
+    const ikController = this.ikControllers.find((ikController) => ikController.limb === limb);
 
     if (!ikController) {
-      console.warn('Foot locking not supported for ' + ikBoneName);
+      console.warn('Foot locking not supported for ' + limb);
       return null;
     }
 

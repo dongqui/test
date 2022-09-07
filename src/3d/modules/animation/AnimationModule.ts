@@ -682,12 +682,12 @@ export class AnimationModule extends Module {
     }
 
     const right = {
-      toe: contactData.find((elt) => elt.boneName === 'rightToe')!,
-      heel: contactData.find((elt) => elt.boneName === 'rightFoot')!,
+      toe: contactData.find((elt) => elt.boneName.includes('rightToe'))!,
+      heel: contactData.find((elt) => elt.boneName.includes('rightFoot'))!,
     };
     const left = {
-      toe: contactData.find((elt) => elt.boneName === 'leftToe')!,
-      heel: contactData.find((elt) => elt.boneName === 'leftFoot')!,
+      toe: contactData.find((elt) => elt.boneName.includes('leftToe'))!,
+      heel: contactData.find((elt) => elt.boneName.includes('leftFoot'))!,
     };
 
     if (!right.toe || !right.heel || !left.toe || !left.heel) {
