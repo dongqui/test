@@ -11,13 +11,16 @@ export class BoneIk {
   private _bone0: Bone;
   private _bone1: Bone;
   private _bone2: Bone;
+  private _bone3?: Bone;
   private _bone0Length: number;
   private _bone1Length: number;
+  private _bone2Length?: number;
   private _maxReach: number;
   private _tNode: TransformNode;
   private _defaultUpVector: Vector3;
   private _initialUpVector = new Vector3();
   private _initialTargetDirection = new Vector3();
+  private _initialBone3Direction?: Vector3;
 
   public poleAngle: number = 0;
   public blend: number = 1;
@@ -34,6 +37,27 @@ export class BoneIk {
 
   public setExtremityRotation(q: Quaternion) {
     this._bone2.setRotationQuaternion(q, Space.WORLD);
+  }
+
+  /**
+   * In case of a foot IK, we can compute the target position from the
+   * next bone (toe) linked to this IK chain.
+   * @param extremityTarget The position target of the next bone (toe)
+   * @param bone2QuatTarget The quaternion of bone2 (heel). We must specify that to guarantee the
+   * unicity of the solution. This must be in world space.
+   * @param targetOut Will store the expected target position as a result of this function
+   */
+  public computeTargetPosition(extremityTarget: Vector3, bone2QuatTarget: Quaternion, targetOut: Vector3) {
+    if (!this._initialBone3Direction || !this._bone2Length) {
+      console.warn('Cannot perform that on this IK : must be a foot IK');
+      return;
+    }
+    bone2QuatTarget.toRotationMatrix(TmpVectors.Matrix[0]);
+    const direction = TmpVectors.Vector3[0];
+    Vector3.TransformNormalToRef(this._initialBone3Direction, TmpVectors.Matrix[0], direction);
+    direction.scaleInPlace(-this._bone2Length);
+
+    extremityTarget.addToRef(direction, targetOut);
   }
 
   constructor(skeletonNode: TransformNode, bone: Bone, target: TransformNode, defaultUpVector: Vector3) {
@@ -55,6 +79,12 @@ export class BoneIk {
     const bone2Pos = this._bone2.getAbsolutePosition(this._tNode);
     this._bone0Length = Vector3.Distance(bone1Pos, bone0Pos);
     this._bone1Length = Vector3.Distance(bone1Pos, bone2Pos);
+    if (this._bone2.children && this._bone2.children.length === 1) {
+      const bone3 = this._bone2.children[0];
+      this._bone3 = bone3;
+      const bone3Pos = bone3.getAbsolutePosition(this._tNode);
+      this._bone2Length = Vector3.Distance(bone2Pos, bone3Pos);
+    }
     this._maxReach = this._bone0Length + this._bone1Length;
   }
 
@@ -188,6 +218,18 @@ export class BoneIk {
     const bone0Pos = this._bone0.getAbsolutePosition(this._tNode);
     const bone1Pos = this._bone1.getAbsolutePosition(this._tNode);
     const bone2Pos = this._bone2.getAbsolutePosition(this._tNode);
+
+    // If this is a foot IK (bone3 is defined), we must
+    // store the initial toe direction in local space
+    if (this._bone3) {
+      const bone3Pos = this._bone3.getAbsolutePosition(this._tNode);
+      const toWorldSpaceQuat = this._bone2.getRotationQuaternion(Space.WORLD, this._tNode);
+      const toLocalSpace = TmpVectors.Matrix[0];
+      toWorldSpaceQuat.toRotationMatrix(toLocalSpace);
+      toLocalSpace.invert();
+      this._initialBone3Direction = bone3Pos.subtract(bone2Pos).normalize();
+      Vector3.TransformNormalToRef(this._initialBone3Direction, toLocalSpace, this._initialBone3Direction);
+    }
 
     // Infering initial up vector
     const targetDirection = bone2Pos.subtract(bone0Pos).normalize();

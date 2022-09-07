@@ -1252,17 +1252,25 @@ export class IKModule extends Module {
       // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
       // Lerping the pos in no contact phases
       let currentIKIndex = 0;
+      let frameIndex = 0;
       for (let j = 0; j < phases.length; j++) {
         const phase = phases[j];
         for (let i = 0; i < phase.length; i++) {
           if (phase.value) {
-            frameIKPosition.push(iKPositions[currentIKIndex]);
+            const result = new Vector3();
+            ikController.ikController.computeTargetPosition(iKPositions[currentIKIndex], extractPoseAtFrame(frameIndex).quaternion, result);
+            // frameIKPosition.push(iKPositions[currentIKIndex]);
+            frameIKPosition.push(result);
           } else {
-            const previous = iKPositions[Math.max(0, currentIKIndex - 1)];
-            const next = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
+            let previous = iKPositions[Math.max(0, currentIKIndex - 1)];
+            let next = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
             const lerpedPos = Vector3.Lerp(previous, next, i / phase.length);
-            frameIKPosition.push(lerpedPos);
+            const result = new Vector3();
+            ikController.ikController.computeTargetPosition(lerpedPos, extractPoseAtFrame(frameIndex).quaternion, result);
+
+            frameIKPosition.push(result);
           }
+          frameIndex++;
         }
 
         if (phase.value === 1) {
