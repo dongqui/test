@@ -146,7 +146,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
 
       // yield put(animatingControlsActions.blurEndInput(payload));
 
-      if (contactData.length) {
+      if (contactData) {
         console.log('Contact data detected, using inverse kinematics to lock the feet...');
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         // Update after adding IK tracks
@@ -173,9 +173,9 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
         const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
 
-        yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, motionNode.animationId, {
-          animationLayer: serverAnimationLayers,
-        });
+        // yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, motionNode.animationId, {
+        //   animationLayer: serverAnimationLayers,
+        // });
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));

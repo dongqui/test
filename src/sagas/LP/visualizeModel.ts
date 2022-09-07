@@ -121,7 +121,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
         if (animationIngredient) {
           const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-          if (contactData.length) {
+          if (contactData) {
             console.log('Contact data detected, using inverse kinematics to lock the feet...');
             yield call(addIK, addIKAction(asset.id, animationIngredient));
             // Update after adding IK tracks

@@ -21,6 +21,7 @@ import {
   VectorTransformKey,
   ArrayOfThreeNumbers,
   ArrayOfFourNumbers,
+  ContactData,
 } from 'types/common';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -195,13 +196,7 @@ export class AnimationModule extends Module {
    * @param animationIngredient
    * @param contactData
    */
-  public updateIngredientWithFootLocking(
-    animationIngredient: AnimationIngredient,
-    contactData: {
-      boneName: string;
-      transformKeys: IAnimationKey[];
-    }[],
-  ) {
+  public updateIngredientWithFootLocking(animationIngredient: AnimationIngredient, contactData: ContactData) {
     const animationGroupTemp = this.createAnimationGroupFromIngredient(animationIngredient, this.fps);
     const animationIngredientWithFootLocking = this.processContactData(animationIngredient, animationGroupTemp, contactData);
 
@@ -668,7 +663,7 @@ export class AnimationModule extends Module {
    * @param animationIngredient
    * @returns
    */
-  public extractContactData(animationIngredient: AnimationIngredient) {
+  public extractContactData(animationIngredient: AnimationIngredient): Nullable<ContactData> {
     const { name, layers } = animationIngredient;
 
     const contactData: { boneName: string; transformKeys: IAnimationKey[] }[] = [];
@@ -681,8 +676,26 @@ export class AnimationModule extends Module {
         });
       }
     });
+    if (!contactData.length) {
+      // no contact for this motion
+      return null;
+    }
 
-    return contactData;
+    const right = {
+      toe: contactData.find((elt) => elt.boneName === 'rightToe')!,
+      heel: contactData.find((elt) => elt.boneName === 'rightFoot')!,
+    };
+    const left = {
+      toe: contactData.find((elt) => elt.boneName === 'leftToe')!,
+      heel: contactData.find((elt) => elt.boneName === 'leftFoot')!,
+    };
+
+    if (!right.toe || !right.heel || !left.toe || !left.heel) {
+      console.warn('Incomplete contact data ! Cannot apply foot locking.');
+      return null;
+    }
+
+    return { right, left };
   }
 
   /**
@@ -722,15 +735,26 @@ export class AnimationModule extends Module {
    * @param contactData
    * @returns
    */
-  public processContactData(animationIngredient: AnimationIngredient, animationGroup: AnimationGroup, contactData: { boneName: string; transformKeys: IAnimationKey[] }[]) {
+  public processContactData(animationIngredient: AnimationIngredient, animationGroup: AnimationGroup, contactData: ContactData) {
     // Compute contact data
     let animationIngredientWithFootLocking = animationIngredient;
-    for (const data of contactData) {
-      if (data.transformKeys.length) {
-        animationIngredientWithFootLocking =
-          this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, animationGroup, animationIngredientWithFootLocking) || animationIngredientWithFootLocking;
-      }
-    }
+
+    animationIngredientWithFootLocking =
+      this.plaskEngine.ikModule.computeFootLocking(
+        'left',
+        contactData.left.heel.transformKeys,
+        contactData.left.toe.transformKeys,
+        animationGroup,
+        animationIngredientWithFootLocking,
+      ) || animationIngredientWithFootLocking;
+    animationIngredientWithFootLocking =
+      this.plaskEngine.ikModule.computeFootLocking(
+        'right',
+        contactData.right.heel.transformKeys,
+        contactData.right.toe.transformKeys,
+        animationGroup,
+        animationIngredientWithFootLocking,
+      ) || animationIngredientWithFootLocking;
 
     return animationIngredientWithFootLocking;
   }
