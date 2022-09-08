@@ -1071,7 +1071,7 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = 4;
+    const INTERPOLATION_FRAMES = 1;
     const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
     let groundCorrectionEachFrame: number[] = [];
@@ -1245,7 +1245,7 @@ export class IKModule extends Module {
         const phaseObject = { length: 0, toe: toeTransformKeys[j].value, heel: heelTransformKeys[j].value };
         phases.push(phaseObject);
 
-        while (i < heelTransformKeys.length && phaseObject.toe === toeTransformKeys[j].value && phaseObject.heel === heelTransformKeys[j].value) {
+        while (i < heelTransformKeys.length && phaseObject.toe === toeTransformKeys[i].value && phaseObject.heel === heelTransformKeys[i].value) {
           i++;
           phaseObject.length++;
         }
@@ -1259,6 +1259,7 @@ export class IKModule extends Module {
       for (let j = 0; j < phases.length; j++) {
         const phase = phases[j];
         if ((phase.toe === -1 || phase.toe === 0) && (phase.heel === -1 || phase.heel === 0)) {
+          frameIndex += phase.length;
           continue;
         }
 
@@ -1272,7 +1273,8 @@ export class IKModule extends Module {
             // Heel is out of contact, we will use
             framePosition = extractToePoseAtFrame(frameIndex).position;
           }
-          targetPosition.addInPlace(extractHeelPoseAtFrame(frameIndex).position);
+          targetPosition.addInPlace(framePosition);
+          frameIndex++;
         }
         if (phase.length > 0) {
           targetPosition.scaleInPlace(1 / phase.length);
@@ -1338,13 +1340,15 @@ export class IKModule extends Module {
       targetIKPosition = frameIKPosition[i];
 
       // TODO : this blending smoothing should use phases now
-      let factor = heelTransformKeys[Math.min(heelTransformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
-      if (factor === 0 && heelTransformKeys[i].value === 0) {
+      let factorHeel = heelTransformKeys[Math.min(heelTransformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
+      let factorToe = toeTransformKeys[Math.min(heelTransformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
+      let factor = factorHeel | factorToe;
+      if (factor === 0 && heelTransformKeys[i].value !== 1 && toeTransformKeys[i].value !== 1) {
         // There is no contact ahead anymore, remove blend with inertia
         factor = -1;
       }
 
-      const interpolationStrength = 0.5;
+      const interpolationStrength = 1;
       currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
       const finalBlend = heelTransformKeys[i].value === -1 ? 0 : currentBlend;
       if (currentBlend >= 0) {
