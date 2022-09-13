@@ -11,6 +11,10 @@
     align-items: flex-start;
   }
 
+  .section-title {
+    color: var(--grey070)
+  }
+
   .switch {
     width: 180px;
   }
@@ -20,7 +24,7 @@
     font-size: var(--font-size-11);
     font-weight: 300;
     line-height: 150%;
-    padding-left: 88px;
+    padding-left: 100px;
   }
 
   .switch-label {
@@ -55,7 +59,7 @@
   border-radius: 6px;
 
   .tooltip {
-    width: 122px;
+    width: 227px;
   }
 
   .text {
@@ -78,6 +82,7 @@
   width: 246px;
   padding: 8px 12px;
   line-height: 150%;
+  color: var(--grey090);
 
   .arrow {
     &::before,

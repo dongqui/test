@@ -686,6 +686,36 @@ export class AnimationModule extends Module {
   }
 
   /**
+   * Removes contact data into an animation ingredient, so doesn't compute foot-locking again
+   * @param animationIngredient
+   */
+  public emptyContactDataFromAnimationIngredient(animationIngredient: AnimationIngredient) {
+    const animationIngredientRemovedContactData = this.removeContactData(animationIngredient);
+
+    return animationIngredientRemovedContactData;
+  }
+
+  /**
+   * Generates a new animation ingredient with contact data removed
+   * @param animationIngredient
+   * @returns
+   */
+  public removeContactData(animationIngredient: AnimationIngredient) {
+    // Compute contact data
+    let animationIngredientWithRemovedContactData = produce(animationIngredient, (draft) => {
+      draft.layers.map((layer) => {
+        if (layer) {
+          layer.tracks.map((track) => {
+            if (track.property == 'isContact') {
+              track.transformKeys = [];
+            }
+          });
+        }
+      });
+    });
+    return animationIngredientWithRemovedContactData;
+  }
+  /**
    * Generates a new animation ingredient with foot locking (baked in IK tracks)
    * @param animationIngredient
    * @param animationGroup

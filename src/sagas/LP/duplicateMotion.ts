@@ -19,6 +19,8 @@ export default function* handleDuplicateMotion(action: ReturnType<typeof lpNodeA
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }));
 
     const animation: ServerAnimationResponse = yield call(api.getAnimation, motionNode?.animationId!);
+    console.log('====');
+    console.log(animation);
     // TODO: resolve ts
     // @ts-ignore
     const animationLayersWithoutUid: ServerAnimationLayerRequest[] = animation?.scenesLibraryModelAnimationLayers.map((layer) =>

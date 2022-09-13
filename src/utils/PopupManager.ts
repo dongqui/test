@@ -100,8 +100,8 @@ class PopupManager {
                 ? 'You can extract <span>more than one person’s</span> motion from the video.'
                 : 'Extract <span>one or more than one person’s</span> motion from video that import or record.',
               postion: {
-                left: `${targetCoordinates.leftBottom.x - 120}px`,
-                top: `${targetCoordinates?.rightBottom?.y + 16}px`,
+                left: `${targetCoordinates.leftBottom.x - 108}px`,
+                top: `${targetCoordinates?.rightBottom?.y + 12}px`,
               },
               onConfirm: () => {
                 localStorage.setItem('onboarding_2', 'onboarding_2');

@@ -17,6 +17,7 @@ import * as api from 'api';
 import { addIKAction, removeIKAction } from 'actions/iKAction';
 import { addIK } from 'sagas/RP/ik/addIK';
 import { removeIK } from 'sagas/RP/ik/removeIK';
+import { AnimationModule } from '3d/modules/animation/AnimationModule';
 
 const clickJointChannel = channel();
 
@@ -61,6 +62,9 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
       if (!asset) {
         throw Error('No asset');
       }
+    }
+    if (!modelNode || !motionNode?.animationId) {
+      return;
     }
 
     const targetAnimationIngredientId = asset?.animationIngredientIds?.find((id) => motionNode?.animationId === id);
@@ -117,7 +121,6 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
 
         if (animationIngredient) {
           const contactData = plaskEngine.animationModule.extractContactData(animationIngredient);
-          //const contactData = [];
           if (contactData.length) {
             console.log('Contact data detected, using inverse kinematics to lock the feet...');
             yield call(addIK, addIKAction(asset.id, animationIngredient));
@@ -140,6 +143,20 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             }
             // Release IK Controllers
             yield call(removeIK, removeIKAction(asset.id));
+
+            // Remove Contact data
+            animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
+            const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
+
+            yield put(globalUIActions.openModal('LoadingModal', { title: 'Loading the file', message: 'This can take up to 3 minutes' }));
+
+            plaskEngine.stopRenderLoop();
+            yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, animationIngredient.id, {
+              animationLayer: serverAnimationLayers,
+            });
+            console.log('REPLACED MOTION');
+            plaskEngine.startRenderLoop();
+            yield put(globalUIActions.closeModal('LoadingModal'));
           } else if (plaskEngine.ikModule.isEnabled) {
             // IK was enabled before, so we need to add tracks for this new ingredient
             yield call(addIK, addIKAction(asset.id, animationIngredient));

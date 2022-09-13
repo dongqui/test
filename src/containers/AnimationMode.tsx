@@ -16,7 +16,6 @@ import MiddleBar from './MiddleBar/Shoot';
 import Modal from 'containers/Common/Modal/Modal';
 import ContextMenu from 'containers/Common/ContextMenu/ContextMenu';
 import Onboarding from './Onboarding';
-import * as commonActions from 'actions/Common/globalUI';
 
 import styles from './AnimationMode.module.scss';
 import classNames from 'classnames/bind';

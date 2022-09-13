@@ -24,8 +24,10 @@ class PropertyKeyframeRepository implements Repository {
           draft[trackIndex].keyframes.push({ isDeleted: false, isSelected: false, time: transformKey.to, value: transformKey.value });
           draft[trackIndex].keyframes.sort((a, b) => a.time - b.time);
         } else {
-          draft[trackIndex].keyframes[keyframeIndex].isDeleted = false;
-          draft[trackIndex].keyframes[keyframeIndex].value = transformKey.value;
+          if (transformKey.value) {
+            draft[trackIndex].keyframes[keyframeIndex].isDeleted = false;
+            draft[trackIndex].keyframes[keyframeIndex].value = transformKey.value;
+          }
         }
       });
     });

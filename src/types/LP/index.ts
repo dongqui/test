@@ -35,6 +35,10 @@ export interface PostMotionData {
   animationLayer: ServerAnimationLayerRequest[];
 }
 
+export interface PutMotionData {
+  animationLayer: ServerAnimationLayerRequest[];
+}
+
 export interface addMocapByJsonData {
   name: string;
   json: {
