@@ -38,7 +38,7 @@ const BoneTrackComponent: FunctionComponent<Props> = (props) => {
     <Fragment>
       <g className={cx('track')} transform={`translate(0, ${translateY})`}>
         <rect className={cx({ selected: isSelected })} height="24" width="200000" transform="translate(-5000 0)" />
-        {keyframes.map(
+        {keyframes?.map(
           (keyframe) =>
             !keyframe.isDeleted && (
               <Keyframe
