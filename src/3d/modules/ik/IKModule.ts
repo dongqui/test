@@ -1243,12 +1243,14 @@ export class IKModule extends Module {
       while (j < heelTransformKeys.length) {
         let i = j;
         const phaseObject = { length: 0, toe: toeTransformKeys[j].value, heel: heelTransformKeys[j].value };
+        console.log(`${side} foot : phase from ${j} : toe is ${phaseObject.toe} and heel is ${phaseObject.heel}`);
         phases.push(phaseObject);
 
         while (i < heelTransformKeys.length && phaseObject.toe === toeTransformKeys[i].value && phaseObject.heel === heelTransformKeys[i].value) {
           i++;
           phaseObject.length++;
         }
+        console.log(`ends in ${j}`);
         j = i;
       }
 
@@ -1288,6 +1290,8 @@ export class IKModule extends Module {
       frameIndex = 0;
       for (let j = 0; j < phases.length; j++) {
         const phase = phases[j];
+        const beingFrame = frameIndex;
+        const endFrame = frameIndex + phase.length - 1;
         for (let i = 0; i < phase.length; i++) {
           if (phase.toe === 1 || phase.heel === 1) {
             const result = new Vector3();
@@ -1301,14 +1305,20 @@ export class IKModule extends Module {
             // frameIKPosition.push(iKPositions[currentIKIndex]);
             frameIKPosition.push(result);
           } else {
-            // TODO : discriminate if next/previous phase is heel or toe lock
-            let previous = iKPositions[Math.max(0, currentIKIndex - 1)];
-            let next = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
-            const lerpedPos = Vector3.Lerp(previous, next, i / phase.length);
-            const result = new Vector3();
-            ikController.ikController.computeTargetPosition(lerpedPos, extractHeelPoseAtFrame(frameIndex).quaternion, result);
+            let previousPhase = j > 0 ? phases[j - 1] : null;
+            let nextPhase = j < phase.length - 1 ? phases[j + 1] : null;
+            let previousPos = iKPositions[Math.max(0, currentIKIndex - 1)];
+            let nextPos = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
+            // Toe lock correction
+            if (previousPhase && !previousPhase.heel && previousPhase.toe) {
+              ikController.ikController.computeTargetPosition(previousPos, extractHeelPoseAtFrame(Math.max(0, beingFrame - 1)).quaternion, previousPos);
+            }
+            if (nextPhase && !nextPhase.heel && nextPhase.toe) {
+              ikController.ikController.computeTargetPosition(nextPos, extractHeelPoseAtFrame(Math.min(heelTransformKeys.length - 1, endFrame + 1)).quaternion, nextPos);
+            }
+            const lerpedPos = Vector3.Lerp(previousPos, nextPos, i / phase.length);
 
-            frameIKPosition.push(result);
+            frameIKPosition.push(lerpedPos);
           }
           frameIndex++;
         }
