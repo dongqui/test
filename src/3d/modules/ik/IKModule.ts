@@ -1071,7 +1071,7 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = 1;
+    const INTERPOLATION_FRAMES = 3;
     const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
     let groundCorrectionEachFrame: number[] = [];
@@ -1266,15 +1266,16 @@ export class IKModule extends Module {
         }
 
         let targetPosition = new Vector3();
+        let framePosition: Vector3;
         for (let i = 0; i < phase.length; i++) {
-          let framePosition;
           if (phase.heel === 1) {
             // If heel is in contact, it supercedes toe
             framePosition = extractHeelPoseAtFrame(frameIndex).position;
           } else {
-            // Heel is out of contact, we will use
+            // Heel is out of contact, we will use toe
             framePosition = extractToePoseAtFrame(frameIndex).position;
           }
+
           targetPosition.addInPlace(framePosition);
           frameIndex++;
         }
@@ -1290,7 +1291,7 @@ export class IKModule extends Module {
       frameIndex = 0;
       for (let j = 0; j < phases.length; j++) {
         const phase = phases[j];
-        const beingFrame = frameIndex;
+        const beginFrame = frameIndex;
         const endFrame = frameIndex + phase.length - 1;
         for (let i = 0; i < phase.length; i++) {
           if (phase.toe === 1 || phase.heel === 1) {
@@ -1305,13 +1306,14 @@ export class IKModule extends Module {
             // frameIKPosition.push(iKPositions[currentIKIndex]);
             frameIKPosition.push(result);
           } else {
+            // TODO : should be done in the next TODO procedure
             let previousPhase = j > 0 ? phases[j - 1] : null;
             let nextPhase = j < phase.length - 1 ? phases[j + 1] : null;
-            let previousPos = iKPositions[Math.max(0, currentIKIndex - 1)];
-            let nextPos = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)];
+            let previousPos = iKPositions[Math.max(0, currentIKIndex - 1)].clone();
+            let nextPos = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)].clone();
             // Toe lock correction
             if (previousPhase && !previousPhase.heel && previousPhase.toe) {
-              ikController.ikController.computeTargetPosition(previousPos, extractHeelPoseAtFrame(Math.max(0, beingFrame - 1)).quaternion, previousPos);
+              ikController.ikController.computeTargetPosition(previousPos, extractHeelPoseAtFrame(Math.max(0, beginFrame - 1)).quaternion, previousPos);
             }
             if (nextPhase && !nextPhase.heel && nextPhase.toe) {
               ikController.ikController.computeTargetPosition(nextPos, extractHeelPoseAtFrame(Math.min(heelTransformKeys.length - 1, endFrame + 1)).quaternion, nextPos);
@@ -1327,6 +1329,11 @@ export class IKModule extends Module {
           currentIKIndex++;
         }
       }
+
+      // Here write a procedure to :
+      // 1) Compute blend for each frame
+      // 2) Compute quaternion for each frame (toe lock/unlock)
+      // 3) Smooth out IK position for each frame for phase transitions - should be in sync with blend
     };
 
     filterKeys(heelTransformKeys);
