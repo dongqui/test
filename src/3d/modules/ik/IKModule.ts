@@ -1072,7 +1072,7 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = 3;
+    const INTERPOLATION_FRAMES = 6;
     const LOW_PASS_FILTER_MIN_FRAMES = 0;
 
     let groundCorrectionEachFrame: number[] = [];
@@ -1360,14 +1360,14 @@ export class IKModule extends Module {
           const broadPhaseIn = broadPhases[j];
           const broadPhaseOut = broadPhases[j + 1];
           // Computing the runway we have for blending periods. Max being INTERPOLATION_FRAMES
-          const inRunway = Math.min(Math.floor(broadPhaseIn.length / 2), INTERPOLATION_FRAMES / 2);
-          const outRunway = Math.min(Math.floor(broadPhaseOut.length / 2), INTERPOLATION_FRAMES / 2);
+          const inRunway = Math.min(Math.floor(broadPhaseIn.length / 2), Math.floor(INTERPOLATION_FRAMES / 2));
+          const outRunway = Math.min(Math.floor(broadPhaseOut.length / 2), Math.ceil(INTERPOLATION_FRAMES / 2));
           const indexBlendBegin = broadPhaseIn.startFrame + broadPhaseIn.length - inRunway;
           const indexBlendEnd = indexBlendBegin + inRunway + outRunway;
           const blendStart = broadPhaseIn.state ? 1 : 0;
           const blendEnd = broadPhaseOut.state ? 1 : 0;
 
-          frameIndex = indexBlendBegin;
+          frameIndex = Math.min(frameBlend.length, indexBlendBegin);
           while (frameIndex < broadPhaseOut.startFrame + broadPhaseOut.length) {
             frameBlend[frameIndex] = Scalar.Lerp(blendStart, blendEnd, Scalar.Clamp((frameIndex - indexBlendBegin) / (indexBlendEnd - indexBlendBegin), 0, 1));
             frameIndex++;

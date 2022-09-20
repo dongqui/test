@@ -133,12 +133,12 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
               if (controller.limb.toLowerCase().includes('foot')) {
                 plaskEngine.ikModule.setSelectedIk([controller]);
 
-                // const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, false);
-                // animationIngredient = bakeResult.animationIngredient || animationIngredient;
-                // yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
+                const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, false);
+                animationIngredient = bakeResult.animationIngredient || animationIngredient;
+                yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
                 // Set FK position to newly updated values
-                // plaskEngine.ikModule.setFKtoIK();
+                plaskEngine.ikModule.setFKtoIK();
               }
             }
             // Release IK Controllers
