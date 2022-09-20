@@ -1035,6 +1035,7 @@ export class IKModule extends Module {
     const heelTransformKeys = cloneTransformKeys(readonlyHeelTransformKeys);
     const toeTransformKeys = cloneTransformKeys(readonlyToeTransformKeys);
     const frameIKPosition: Vector3[] = [];
+    const frameBlend: number[] = [];
 
     if (!heelTransformKeys.length || !toeTransformKeys.length || toeTransformKeys.length !== heelTransformKeys.length) {
       console.warn("Problem with transformkeys' length in contact data.");
@@ -1330,8 +1331,51 @@ export class IKModule extends Module {
         }
       }
 
+      // We write "broadPhases" containing lock/unlock status (regardless of toe/heel), to compute the IK blend
+      const broadPhases: { state: boolean; length: number; startFrame: number }[] = [];
+      frameIndex = 0;
+
+      for (let j = 0; j < phases.length; j++) {
+        const phase = phases[j];
+        const previousPhase = broadPhases.length ? broadPhases[broadPhases.length - 1] : null;
+        const lockState = phase.toe === 1 || phase.heel === 1;
+        if (!previousPhase || lockState !== previousPhase.state) {
+          broadPhases.push({ state: lockState, length: phase.length, startFrame: frameIndex });
+        } else {
+          previousPhase.length += phase.length;
+        }
+        frameIndex += phase.length;
+      }
+
+      frameIndex = 0;
+      if (broadPhases.length === 1) {
+        // No blend, just fill with a constant value
+        const value = broadPhases[0].state ? 1 : 0;
+        for (let i = 0; i < broadPhases[0].length; i++) {
+          frameBlend.push(value);
+        }
+      } else {
+        for (let j = 0; j < broadPhases.length - 1; j++) {
+          // Blending broad phases 2 by 2
+          const broadPhaseIn = broadPhases[j];
+          const broadPhaseOut = broadPhases[j + 1];
+          // Computing the runway we have for blending periods. Max being INTERPOLATION_FRAMES
+          const inRunway = Math.min(Math.floor(broadPhaseIn.length / 2), INTERPOLATION_FRAMES / 2);
+          const outRunway = Math.min(Math.floor(broadPhaseOut.length / 2), INTERPOLATION_FRAMES / 2);
+          const indexBlendBegin = broadPhaseIn.startFrame + broadPhaseIn.length - inRunway;
+          const indexBlendEnd = indexBlendBegin + inRunway + outRunway;
+          const blendStart = broadPhaseIn.state ? 1 : 0;
+          const blendEnd = broadPhaseOut.state ? 1 : 0;
+
+          frameIndex = indexBlendBegin;
+          while (frameIndex < broadPhaseOut.startFrame + broadPhaseOut.length) {
+            frameBlend[frameIndex] = Scalar.Lerp(blendStart, blendEnd, Scalar.Clamp((frameIndex - indexBlendBegin) / (indexBlendEnd - indexBlendBegin), 0, 1));
+            frameIndex++;
+          }
+        }
+      }
       // Here write a procedure to :
-      // 1) Compute blend for each frame
+      // //1) Compute blend for each frame - DONE
       // 2) Compute quaternion for each frame (toe lock/unlock)
       // 3) Smooth out IK position for each frame for phase transitions - should be in sync with blend
     };
@@ -1347,7 +1391,7 @@ export class IKModule extends Module {
       // Right foot is the one to fix the hip, for left foot we just stick IK to the ground
       fixIKOnGround();
     }
-    ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractHeelPoseAtFrame(heelTransformKeys[0].frame));
+    // ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractHeelPoseAtFrame(heelTransformKeys[0].frame));
 
     for (let i = 0; i < heelTransformKeys.length; i++) {
       // const key = heelTransformKeys[i];
@@ -1355,19 +1399,8 @@ export class IKModule extends Module {
       // extract the toe rotation every frame, no matter the lock status
       ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractHeelPoseAtFrame(heelTransformKeys[i].frame));
       targetIKPosition = frameIKPosition[i];
+      const finalBlend = frameBlend[i];
 
-      // TODO : this blending smoothing should use phases now
-      let factorHeel = heelTransformKeys[Math.min(heelTransformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
-      let factorToe = toeTransformKeys[Math.min(heelTransformKeys.length - 1, i + INTERPOLATION_FRAMES)].value ? 1 : 0;
-      let factor = factorHeel | factorToe;
-      if (factor === 0 && heelTransformKeys[i].value !== 1 && toeTransformKeys[i].value !== 1) {
-        // There is no contact ahead anymore, remove blend with inertia
-        factor = -1;
-      }
-
-      const interpolationStrength = 1;
-      currentBlend = Scalar.Clamp(currentBlend + (factor / INTERPOLATION_FRAMES) * interpolationStrength, 0, 1);
-      const finalBlend = heelTransformKeys[i].value === -1 ? 0 : currentBlend;
       if (currentBlend >= 0) {
         const targetDataList = [
           {
