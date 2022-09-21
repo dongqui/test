@@ -10,14 +10,14 @@ interface Props {
   parentId: string;
   nodeName: string;
   assetId?: string;
+  animationId?: string;
   type: string;
 }
 
-const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type }: Props) => {
+const MotionContextMenu = ({ nodeId, parentId, nodeName, assetId, type, animationId }: Props) => {
   const dispatch = useDispatch();
   const { lpNode, plaskProject, animationData } = useSelector((state) => state);
-  const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
-
+  const isCurrentVisualizedNode = !!animationData.animationIngredients.find((animationIngredient) => animationIngredient.id === animationId && animationIngredient.current);
   const handleDelete = () => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
