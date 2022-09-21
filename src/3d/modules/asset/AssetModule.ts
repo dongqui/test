@@ -23,7 +23,7 @@ const EXPORT_OPTIONS = {
       !node.id.includes('joint') &&
       !node.id.includes('ik_ctrl') &&
       !node.id.includes('__plask_result_') &&
-      !node.id.includes('skeletonViewer') &&
+      // !node.id.includes('skeletonViewer') &&
       !node.id.includes('Light')
     ) {
       console.log(`Exporting id : ${node.id}, name : ${node.name}`);
@@ -36,7 +36,7 @@ const EXPORT_OPTIONS = {
       !node.id.includes('joint') &&
       !node.id.includes('ik_ctrl') &&
       !node.id.includes('__plask_result_') &&
-      !node.id.includes('skeletonViewer') &&
+      // !node.id.includes('skeletonViewer') &&
       !node.id.includes('Light')
     );
   },
