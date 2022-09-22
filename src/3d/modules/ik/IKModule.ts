@@ -1072,7 +1072,7 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = 6;
+    const INTERPOLATION_FRAMES = 4;
     const LOW_PASS_FILTER_MIN_FRAMES = 2;
 
     let groundCorrectionEachFrame: number[] = [];
@@ -1326,17 +1326,17 @@ export class IKModule extends Module {
             targetStart = phaseIn.target!.clone();
             targetEnd = phaseOut.target!.clone();
             if (phaseIn.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseIn.target!, extractHeelPoseAtFrame(frameIndex).quaternion, targetStart);
+              ikController.ikController.computeTargetPosition(phaseIn.target!, extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, targetStart);
             }
             if (phaseOut.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseOut.target!, extractHeelPoseAtFrame(frameIndex).quaternion, targetStart);
+              ikController.ikController.computeTargetPosition(phaseOut.target!, extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, targetEnd);
             }
           } else if ((phaseIn.toe === 1 || phaseIn.heel === 1) && !(phaseOut.toe === 1 || phaseOut.heel === 1)) {
             // Blend from contact to no contact
             targetStart = phaseIn.target!.clone();
             targetEnd = phaseIn.target!.clone();
             if (phaseIn.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseIn.target!, extractHeelPoseAtFrame(frameIndex).quaternion, targetStart);
+              ikController.ikController.computeTargetPosition(phaseIn.target!, extractHeelPoseAtFrame(phaseIn.startFrame + phaseIn.length - 1).quaternion, targetStart);
               targetEnd.copyFrom(targetStart);
             }
           } else if (!(phaseIn.toe === 1 || phaseIn.heel === 1) && (phaseOut.toe === 1 || phaseOut.heel === 1)) {
@@ -1344,7 +1344,7 @@ export class IKModule extends Module {
             targetStart = phaseOut.target!.clone();
             targetEnd = phaseOut.target!.clone();
             if (phaseOut.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseOut.target!, extractHeelPoseAtFrame(frameIndex).quaternion, targetStart);
+              ikController.ikController.computeTargetPosition(phaseOut.target!, extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, targetStart);
               targetEnd.copyFrom(targetStart);
             }
           } else {
@@ -1436,7 +1436,8 @@ export class IKModule extends Module {
         }
       }
 
-      // TODO : Debug with basketball motion, right foot, frame 81
+      // TODO : IK Lock position averaging cannot be independent in heel locking phases and toe locking phases
+      // TODO : gather video reference to determine the best strategy
       // Here write a procedure to :
       // //1) Compute blend for each frame - DONE
       // 2) Compute quaternion for each frame (toe lock/unlock)
