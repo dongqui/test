@@ -32,6 +32,8 @@ import produce, { castDraft } from 'immer';
 import { PlaskSkeletonViewer } from '3d/assets/plaskSkeletonViewer';
 import { IK_SKELETON_VIEWER_OPTION, RESULT_SKELETON_VIEWER_OPTION } from 'utils/const';
 import { current, WritableDraft } from 'immer/dist/internal';
+import { FootLocking } from './FootLocking';
+import { AnimationModule } from '../animation/AnimationModule';
 
 type BoneIKParams = {
   bone: 'rightFoot' | 'leftFoot' | 'rightHand' | 'leftHand';
@@ -574,7 +576,7 @@ export class IKModule extends Module {
         // Our method require bones to get transforms from transform nodes, so the right positions are used for the ik calculations down the line
         this.forceUpdateIKSkeleton();
         ikController.updateForValues(fkPositionTrack.target.absolutePosition, positionValue, rotationQuaternionValue, blendValue, poleAngleValue);
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
+        targetAnimation = AnimationModule.EditKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForController(ikController))!;
       }
       // Once bake is completed, we remove the keyframes that have been baked
       if (removeBakedKeyframes) {
@@ -757,7 +759,7 @@ export class IKModule extends Module {
         this.forceUpdateIKSkeleton();
 
         this.setIKtoFK([ikController]);
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(ikController))!;
+        targetAnimation = AnimationModule.EditKeyframesWithParams(targetAnimation, targetLayerId, i, this._getKeyframeDataForHandle(ikController))!;
       }
       return targetAnimation;
     };
@@ -1019,28 +1021,6 @@ export class IKModule extends Module {
     animationIngredient: AnimationIngredient,
   ) {
     let targetAnimation: Nullable<AnimationIngredient> = animationIngredient;
-    const cloneTransformKeys = (transformKeys: IAnimationKey[]) => {
-      // The purpose of this function is to give a writable copy of transform keys
-      // So we can apply filters, without altering the read-only state object
-      const result: IAnimationKey[] = [];
-      for (const key of transformKeys) {
-        result.push({
-          value: key.value,
-          frame: key.frame,
-        });
-      }
-
-      return result;
-    };
-    const heelTransformKeys = cloneTransformKeys(readonlyHeelTransformKeys);
-    const toeTransformKeys = cloneTransformKeys(readonlyToeTransformKeys);
-    const frameIKPosition: Vector3[] = [];
-    const frameBlend: number[] = [];
-
-    if (!heelTransformKeys.length || !toeTransformKeys.length || toeTransformKeys.length !== heelTransformKeys.length) {
-      console.warn("Problem with transformkeys' length in contact data.");
-      return null;
-    }
 
     const limb = side + 'Foot';
     // Create/find an IK controller for this bone
@@ -1065,6 +1045,29 @@ export class IKModule extends Module {
       }
     }
 
+    // Finding hip Bone
+    const retargetMap = this.getRetargetMap(ikController.assetId);
+    if (!retargetMap) {
+      console.warn('Cannot find retarget map');
+      return;
+    }
+    const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes('hips'));
+    if (!retargetValue) {
+      console.warn('Cannot find hip bone');
+      return;
+    }
+    const transformNodeId = retargetValue.targetTransformNodeId;
+    if (!transformNodeId) {
+      console.warn('Retargeting not completed for hip');
+      return;
+    }
+    // Fixing hip bone
+    const hipTrack = targetLayer!.tracks.find((track) => track.targetId === transformNodeId && track.property === 'position');
+    if (!hipTrack) {
+      console.warn('Could not find hip track for hip correction');
+      return;
+    }
+
     // Add an animation track for position
     animationGroup.start();
 
@@ -1072,397 +1075,26 @@ export class IKModule extends Module {
     let targetPoleAngle = 0;
     let targetIKPosition = Vector3.Zero();
     let targetIKQuaternion = Quaternion.Identity();
-    const INTERPOLATION_FRAMES = 4;
-    const LOW_PASS_FILTER_MIN_FRAMES = 2;
 
-    let groundCorrectionEachFrame: number[] = [];
-    const Y_MARGIN = 0.15; // Approx world units between the heel and the ground (Y axis)
-    const fixIKOnGround = () => {
-      // Now fix IK positions
-      for (let i = 0; i < frameIKPosition.length; i++) {
-        frameIKPosition[i].y = Y_MARGIN;
-      }
-    };
-    const fixHipPosition = (ikPosition: Vector3[]) => {
-      let j = 0;
-      while (j < heelTransformKeys.length) {
-        if (heelTransformKeys[j].value === -1) {
-          // No correction for ignored frames
-          groundCorrectionEachFrame.push(0);
-          j++;
-          continue;
-        }
-
-        if (heelTransformKeys[j].value) {
-          // In contact, ground position is hard set
-          groundCorrectionEachFrame.push(-ikPosition[j].y + Y_MARGIN);
-          j++;
-          continue;
-        }
-
-        // Out of contact, we interpolate ground till the next contact
-        let i = j;
-        let initialGroundCorrection = groundCorrectionEachFrame.length ? groundCorrectionEachFrame[groundCorrectionEachFrame.length - 1] : null;
-        while (i < heelTransformKeys.length && !heelTransformKeys[i].value) {
-          i++;
-        }
-        let nbFramesOutOfContact = i - j;
-        let endGroundCorrection = null;
-        if (i < heelTransformKeys.length) {
-          endGroundCorrection = -ikPosition[i].y + Y_MARGIN;
-        }
-
-        for (let k = j; k < i; k++) {
-          let value;
-          if (initialGroundCorrection === null) {
-            value = endGroundCorrection || 0;
-          } else if (endGroundCorrection === null) {
-            value = initialGroundCorrection;
-          } else {
-            value = Scalar.Lerp(initialGroundCorrection, endGroundCorrection, (k - j) / nbFramesOutOfContact);
-          }
-          groundCorrectionEachFrame.push(value);
-        }
-
-        j = i;
-      }
-      // Finding hip Bone
-      const retargetMap = this.getRetargetMap(ikController.assetId);
-      if (!retargetMap) {
-        console.warn('Cannot find retarget map');
-        return;
-      }
-      const retargetValue = retargetMap.values.find((elt) => elt.sourceBoneName.includes('hips'));
-      if (!retargetValue) {
-        console.warn('Cannot find hip bone');
-        return;
-      }
-      const transformNodeId = retargetValue.targetTransformNodeId;
-      if (!transformNodeId) {
-        console.warn('Retargeting not completed for hip');
-        return;
-      }
-      // Fixing hip bone
-      let targetLayer = animationIngredient.layers[0];
-      let targetTrack = targetLayer!.tracks.find((track) => track.targetId === transformNodeId && track.property === 'position');
-      if (!targetTrack) {
-        console.warn('Could not find hip track for hip correction');
-        return;
-      }
-      for (let i = 0; i < targetTrack.transformKeys.length; i++) {
-        const positionCorrected = (targetTrack.transformKeys[i].value as Vector3).clone();
-        // positionCorrected.y += groundCorrectionEachFrame[i];
-        // Hipspace scaling
-        const { hipSpace } = retargetMap;
-        positionCorrected.z += -groundCorrectionEachFrame[i] * 100;
-        // positionCorrected.z += (2 * (groundCorrectionEachFrame[i] * 100 * hipSpace)) / 106;
-        const targetDataList = [
-          {
-            targetId: transformNodeId,
-            property: 'position' as PlaskProperty,
-            value: positionCorrected.asArray() as ArrayOfThreeNumbers,
-          },
-        ];
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(
-          targetAnimation as AnimationIngredient,
-          targetLayerId,
-          heelTransformKeys[i].frame,
-          targetDataList,
-        );
-      }
-
-      fixIKOnGround();
-    };
-
-    const extractHeelPoseAtFrame = (frameIndex: number) => {
-      animationGroup.goToFrame(frameIndex);
-      ikController.fkInfluenceChain![0].computeWorldMatrix(true);
-      return {
-        position: ikController.fkInfluenceChain![0].absolutePosition.clone(),
-        quaternion: ikController.fkInfluenceChain![0].absoluteRotationQuaternion.clone(),
-        poleAngle: 0,
-      };
-    };
-
-    // TODO : Absolutely no check on this function - use the bone's linked transform node as we know the bone exists
-    const extractToePoseAtFrame = (frameIndex: number) => {
-      animationGroup.goToFrame(frameIndex);
-      ikController.fkInfluenceChain![0].getChildren()[0]!.computeWorldMatrix(true);
-      return {
-        position: (ikController.fkInfluenceChain![0].getChildren()[0] as TransformNode).absolutePosition.clone(),
-        quaternion: (ikController.fkInfluenceChain![0].getChildren()[0] as TransformNode).absoluteRotationQuaternion.clone(),
-        poleAngle: 0,
-      };
-    };
-
-    const filterKeys = (transformKeys: IAnimationKey[]) => {
-      // We apply 2 filters in this function :
-      // Low pass filter contact data (we want to remove short contact/out of contact periods)
-      // And averaging filter in contact periods
-      let j = 0;
-      // Contact filter
-      while (j < transformKeys.length) {
-        // Safeguard : sometimes undefined and NaN are present in transformkeys
-        if (isNaN(transformKeys[j].value) || transformKeys[j].value === undefined) {
-          transformKeys[j].value = 0;
-        }
-        // -1 are ignored frames
-        if (transformKeys[j].value === -1) {
-          j++;
-          continue;
-        }
-
-        let currentPhase = transformKeys[j].value;
-        for (let i = j + 1; i < transformKeys.length; i++) {
-          if (i === transformKeys.length - 1) {
-            // End of the list, we are done
-            j = transformKeys.length;
-            break;
-          }
-          if (transformKeys[i].value !== currentPhase) {
-            if (i - j < LOW_PASS_FILTER_MIN_FRAMES) {
-              // The locking / unlocking phase is too short, flip the status to ignore this phase
-              for (let k = j; k < i; k++) {
-                transformKeys[k].value = 1 - transformKeys[k].value;
-              }
-              // Continue this phase as an opposite phase
-              currentPhase = 1 - currentPhase;
-            } else {
-              // This phase was long enough, we can proceed to the next one
-              j = i;
-              break;
-            }
-          }
-        }
-      }
-    };
-
-    const computeFrameIK = () => {
-      // After low pass filter, we have definitive phases, we can write them
-      const phases = [];
-      let j = 0;
-      while (j < heelTransformKeys.length) {
-        let i = j;
-        const phaseObject = { length: 0, toe: toeTransformKeys[j].value, heel: heelTransformKeys[j].value, target: null as Nullable<Vector3>, startFrame: j };
-        console.log(`${side} foot : phase from ${j} : toe is ${phaseObject.toe} and heel is ${phaseObject.heel}`);
-        phases.push(phaseObject);
-
-        while (i < heelTransformKeys.length && phaseObject.toe === toeTransformKeys[i].value && phaseObject.heel === heelTransformKeys[i].value) {
-          i++;
-          phaseObject.length++;
-        }
-        console.log(`ends in ${j}`);
-        j = i;
-      }
-
-      // Averaging filter
-      j = 0;
-      let iKPositions = [];
-      let frameIndex = 0;
-      // Write phases of contact toe/ contact heel/ both/ no contact
-      for (let j = 0; j < phases.length; j++) {
-        const phase = phases[j];
-        if ((phase.toe === -1 || phase.toe === 0) && (phase.heel === -1 || phase.heel === 0)) {
-          frameIndex += phase.length;
-          continue;
-        }
-
-        let targetPosition = new Vector3();
-        let framePosition: Vector3;
-        for (let i = 0; i < phase.length; i++) {
-          if (phase.heel === 1) {
-            // If heel is in contact, it supercedes toe
-            framePosition = extractHeelPoseAtFrame(frameIndex).position;
-          } else {
-            // Heel is out of contact, we will use toe
-            framePosition = extractToePoseAtFrame(frameIndex).position;
-          }
-
-          targetPosition.addInPlace(framePosition);
-          frameIndex++;
-        }
-        if (phase.length > 0) {
-          targetPosition.scaleInPlace(1 / phase.length);
-        }
-        iKPositions.push(targetPosition);
-        phase.target = targetPosition.clone();
-      }
-
-      // We write also "broadPhases" containing lock/unlock status (regardless of toe/heel), to compute the IK blend
-      const broadPhases: { state: boolean; length: number; startFrame: number }[] = [];
-      frameIndex = 0;
-
-      for (let j = 0; j < phases.length; j++) {
-        const phase = phases[j];
-        const previousPhase = broadPhases.length ? broadPhases[broadPhases.length - 1] : null;
-        const lockState = phase.toe === 1 || phase.heel === 1;
-        if (!previousPhase || lockState !== previousPhase.state) {
-          broadPhases.push({ state: lockState, length: phase.length, startFrame: frameIndex });
-        } else {
-          previousPhase.length += phase.length;
-        }
-        frameIndex += phase.length;
-      }
-
-      // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
-      // Lerping the pos in no contact phases
-      let currentIKIndex = 0;
-      frameIndex = 0;
-      for (let j = 0; j < phases.length - 1; j++) {
-        const phaseIn = phases[j];
-        const phaseOut = phases[j + 1];
-        // const previousPhase = j > 0 ? phases[j - 1] : null;
-        const inRunway = Math.min(Math.floor(phaseIn.length / 2), Math.floor(INTERPOLATION_FRAMES / 2));
-        const outRunway = Math.min(Math.floor(phaseOut.length / 2), Math.ceil(INTERPOLATION_FRAMES / 2));
-        const indexBegin = phaseIn.startFrame + phaseIn.length - inRunway;
-        const indexEnd = indexBegin + inRunway + outRunway;
-        let targetStart: Vector3;
-        let targetEnd: Vector3;
-
-        frameIndex = Math.min(frameIKPosition.length, indexBegin);
-        while (frameIndex < phaseOut.startFrame + phaseOut.length) {
-          if ((phaseIn.toe === 1 || phaseIn.heel === 1) && (phaseOut.toe === 1 || phaseOut.heel === 1)) {
-            // This is a blend between 2 contact phases
-            targetStart = phaseIn.target!.clone();
-            targetEnd = phaseOut.target!.clone();
-            if (phaseIn.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseIn.target!, extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, targetStart);
-            }
-            if (phaseOut.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseOut.target!, extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, targetEnd);
-            }
-          } else if ((phaseIn.toe === 1 || phaseIn.heel === 1) && !(phaseOut.toe === 1 || phaseOut.heel === 1)) {
-            // Blend from contact to no contact
-            targetStart = phaseIn.target!.clone();
-            targetEnd = phaseIn.target!.clone();
-            if (phaseIn.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseIn.target!, extractHeelPoseAtFrame(phaseIn.startFrame + phaseIn.length - 1).quaternion, targetStart);
-              targetEnd.copyFrom(targetStart);
-            }
-          } else if (!(phaseIn.toe === 1 || phaseIn.heel === 1) && (phaseOut.toe === 1 || phaseOut.heel === 1)) {
-            // Blend from no contact to contact
-            targetStart = phaseOut.target!.clone();
-            targetEnd = phaseOut.target!.clone();
-            if (phaseOut.heel !== 1) {
-              ikController.ikController.computeTargetPosition(phaseOut.target!, extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, targetStart);
-              targetEnd.copyFrom(targetStart);
-            }
-          } else {
-            // Blend from no contact to no contact
-            // ! This should not happen, raise an error
-            throw new Error('Error while computing contact phases');
-          }
-          if (indexEnd > indexBegin) {
-            // We have runway to interpolate
-            frameIKPosition[frameIndex] = Vector3.Lerp(targetStart, targetEnd, Scalar.Clamp((frameIndex - indexBegin) / (indexEnd - indexBegin), 0, 1));
-          } else {
-            // Very short phases, no interpolation
-            frameIKPosition[frameIndex] = frameIndex < indexBegin ? targetStart : targetEnd;
-          }
-          frameIndex++;
-        }
-      }
-
-      //   const beginFrame = phaseIn.startFrame;
-      //   const endFrame = frameIndex + phase.length - 1;
-      //   for (let i = 0; i < phase.length; i++) {
-      //     if (phase.toe === 1 || phase.heel === 1) {
-      //       const result = new Vector3();
-      //       if (phase.heel === 1) {
-      //         // Heel supercedes.
-      //         // TODO : If toe is also locked, then down the line we'll have to fix the extremity quaternion
-      //         result.copyFrom(phase.target!);
-      //       } else {
-      //         ikController.ikController.computeTargetPosition(phase.target!, extractHeelPoseAtFrame(frameIndex).quaternion, result);
-      //       }
-      //       // frameIKPosition.push(iKPositions[currentIKIndex]);
-      //       frameIKPosition.push(result);
-      //     } else {
-      //       // TODO : should be done in the next TODO procedure
-      //       let previousPhase = j > 0 ? phases[j - 1] : null;
-      //       let nextPhase = j < phase.length - 1 ? phases[j + 1] : null;
-      //       let previousPos = iKPositions[Math.max(0, currentIKIndex - 1)].clone();
-      //       let nextPos = iKPositions[Math.min(iKPositions.length - 1, currentIKIndex)].clone();
-      //       // Toe lock correction
-      //       if (previousPhase && !previousPhase.heel && previousPhase.toe) {
-      //         ikController.ikController.computeTargetPosition(previousPos, extractHeelPoseAtFrame(Math.max(0, beginFrame - 1)).quaternion, previousPos);
-      //       }
-      //       if (nextPhase && !nextPhase.heel && nextPhase.toe) {
-      //         ikController.ikController.computeTargetPosition(nextPos, extractHeelPoseAtFrame(Math.min(heelTransformKeys.length - 1, endFrame + 1)).quaternion, nextPos);
-      //       }
-      //       const lerpedPos = Vector3.Lerp(previousPos, nextPos, i / phase.length);
-
-      //       frameIKPosition.push(lerpedPos);
-      //     }
-      //     frameIndex++;
-      //   }
-
-      //   if (phase.toe === 1 || phase.heel === 1) {
-      //     currentIKIndex++;
-      //   }
-      // }
-
-      frameIndex = 0;
-      if (broadPhases.length === 1) {
-        // No blend, just fill with a constant value
-        const value = broadPhases[0].state ? 1 : 0;
-        for (let i = 0; i < broadPhases[0].length; i++) {
-          frameBlend.push(value);
-        }
-      } else {
-        for (let j = 0; j < broadPhases.length - 1; j++) {
-          // Blending broad phases 2 by 2
-          const broadPhaseIn = broadPhases[j];
-          const broadPhaseOut = broadPhases[j + 1];
-          // Computing the runway we have for blending periods. Max being INTERPOLATION_FRAMES
-          const inRunway = Math.min(Math.floor(broadPhaseIn.length / 2), Math.floor(INTERPOLATION_FRAMES / 2));
-          const outRunway = Math.min(Math.floor(broadPhaseOut.length / 2), Math.ceil(INTERPOLATION_FRAMES / 2));
-          const indexBlendBegin = broadPhaseIn.startFrame + broadPhaseIn.length - inRunway;
-          const indexBlendEnd = indexBlendBegin + inRunway + outRunway;
-          const blendStart = broadPhaseIn.state ? 1 : 0;
-          const blendEnd = broadPhaseOut.state ? 1 : 0;
-
-          frameIndex = Math.min(frameBlend.length, indexBlendBegin);
-          while (frameIndex < broadPhaseOut.startFrame + broadPhaseOut.length) {
-            if (indexBlendEnd > indexBlendBegin) {
-              // We have runway to interpolate
-              frameBlend[frameIndex] = Scalar.Lerp(blendStart, blendEnd, Scalar.Clamp((frameIndex - indexBlendBegin) / (indexBlendEnd - indexBlendBegin), 0, 1));
-            } else {
-              // Very short phases, no interpolation
-              frameBlend[frameIndex] = frameIndex < indexBlendBegin ? blendStart : blendEnd;
-            }
-            frameIndex++;
-          }
-        }
-      }
-
-      // TODO : IK Lock position averaging cannot be independent in heel locking phases and toe locking phases
-      // TODO : gather video reference to determine the best strategy
-      // Here write a procedure to :
-      // //1) Compute blend for each frame - DONE
-      // 2) Compute quaternion for each frame (toe lock/unlock)
-      // //3) Smooth out IK position for each frame for phase transitions - should be in sync with Blend
-      // 4) Plug hip position correction
-    };
-
-    filterKeys(heelTransformKeys);
-    filterKeys(toeTransformKeys);
-    computeFrameIK();
+    const footLocking = new FootLocking(targetAnimation, animationGroup, retargetMap, readonlyHeelTransformKeys, readonlyToeTransformKeys, side, ikController);
+    const { frameIKPosition, frameBlend } = footLocking.computeFrameIKValues();
 
     if (side === 'right') {
       // Maybe averaging both foot is more accurate ? for now right foot only will do
       // fixHipPosition(frameIKPosition);
+      targetAnimation = footLocking.fixHipPosition(frameIKPosition, readonlyHeelTransformKeys, hipTrack, hipTrack.layerId);
+      FootLocking.FixIKOnGround(frameIKPosition);
     } else {
       // Right foot is the one to fix the hip, for left foot we just stick IK to the ground
-      fixIKOnGround();
+      FootLocking.FixIKOnGround(frameIKPosition);
     }
     // ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractHeelPoseAtFrame(heelTransformKeys[0].frame));
 
-    for (let i = 0; i < heelTransformKeys.length; i++) {
+    for (let i = 0; i < readonlyHeelTransformKeys.length; i++) {
       // const key = heelTransformKeys[i];
 
       // extract the toe rotation every frame, no matter the lock status
-      ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = extractHeelPoseAtFrame(heelTransformKeys[i].frame));
+      ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = footLocking.extractHeelPoseAtFrame(readonlyHeelTransformKeys[i].frame));
       targetIKPosition = frameIKPosition[i];
       const finalBlend = frameBlend[i];
 
@@ -1489,12 +1121,7 @@ export class IKModule extends Module {
             value: targetIKQuaternion.asArray() as ArrayOfFourNumbers,
           },
         ];
-        targetAnimation = this.plaskEngine.animationModule.editKeyframesWithParams(
-          targetAnimation as AnimationIngredient,
-          targetLayerId,
-          heelTransformKeys[i].frame,
-          targetDataList,
-        );
+        targetAnimation = AnimationModule.EditKeyframesWithParams(targetAnimation as AnimationIngredient, targetLayerId, readonlyHeelTransformKeys[i].frame, targetDataList);
         if (!targetAnimation) {
           throw new Error('Could not bake, error while fetching animation ingredients.');
         }

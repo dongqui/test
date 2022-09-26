@@ -269,7 +269,7 @@ export class AnimationModule extends Module {
    * @param targetFrameIndex - index of frame to edit
    * @param keyframeDataList - list of data that is used to edit keyframes, including targetId, property, value
    */
-  public editKeyframesWithParams(
+  public static EditKeyframesWithParams(
     targetAnimationIngredient: AnimationIngredient,
     targetLayerId: string,
     targetFrameIndex: number,
@@ -405,7 +405,7 @@ export class AnimationModule extends Module {
                       } else {
                         otherValue = getInterpolatedValue(otherLayerTrack.transformKeys, otherLayerTrack.property, targetFrameIndex);
                       }
-                      value = this.plaskEngine.animationModule.getInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue) as number;
+                      value = AnimationModule.GetInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue) as number;
                     }
                   });
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, value);
@@ -990,7 +990,7 @@ export class AnimationModule extends Module {
     }
   }
 
-  public getInvertTransformForKeyframe(property: PlaskProperty, value: Quaternion | Vector3 | number, otherValue: Quaternion | Vector3 | number) {
+  public static GetInvertTransformForKeyframe(property: PlaskProperty, value: Quaternion | Vector3 | number, otherValue: Quaternion | Vector3 | number) {
     if (property === 'position' || property === 'rotation') {
       return (value as Vector3).subtract(otherValue as Vector3);
     } else if (property === 'rotationQuaternion') {
