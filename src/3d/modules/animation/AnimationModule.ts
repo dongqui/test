@@ -452,12 +452,12 @@ export class AnimationModule extends Module {
         const track = this.createPlaskTrack(`${animationIngredientName}|baseLayer|${target.name}|${property}`, layerId, target, property, [], isMocapAnimation);
         tracks.push(track);
       }
-
       // Fill tracks with animation data, if provided
       targetedAnimations
         .filter((targetAnimation) => targetAnimation.target.id === target.id)
         .forEach(({ target: t, animation: a }) => {
-          let track = tracks.find((track) => track.property === a.targetProperty);
+          const _tracks = tracks.filter((track) => track.target.id === target.id);
+          let track = _tracks.find((track) => track.property === a.targetProperty);
           if (!track) {
             console.warn(`Could not fill animation data with ${a.targetProperty} : not supported in this context`);
             return;
@@ -472,7 +472,7 @@ export class AnimationModule extends Module {
             const quaternionTransformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // use integer frame
             track.transformKeys = quaternionTransformKeys;
 
-            track = tracks.find((track) => track.property === 'rotation');
+            track = _tracks.find((track) => track.property === 'rotation');
 
             const eulerTransformKeys: IAnimationKey[] = quaternionTransformKeys.map((transformKey) => {
               const q: Quaternion = transformKey.value;
@@ -484,6 +484,8 @@ export class AnimationModule extends Module {
               return;
             }
             track.transformKeys = eulerTransformKeys;
+          } else if (a.targetProperty === 'position' || a.targetProperty === 'scaling') {
+            track.transformKeys = a.getKeys().map((key) => ({ frame: round(key.frame * 30), value: key.value })); // use integer frame
           }
         });
     });
@@ -500,6 +502,7 @@ export class AnimationModule extends Module {
    * @param current - if the animationIngredient is visualized currently
    * @param trackProperties The default tracks to create
    */
+
   public createAnimationIngredient(
     assetId: string,
     animationIngredientName: string,

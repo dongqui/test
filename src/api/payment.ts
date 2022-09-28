@@ -1,6 +1,8 @@
+import Cookies from 'js-cookie';
 import requestApi from './requestApi';
 
 export default async function createStripeSession(isMonthly: boolean) {
+  const cookie = Cookies.get('_ga');
   const interval = isMonthly ? 'month' : 'year';
   const res = await requestApi({
     method: 'POST',
@@ -10,6 +12,7 @@ export default async function createStripeSession(isMonthly: boolean) {
       'Content-Type': 'application/json',
     },
     data: {
+      clientIdForGa: cookie ? cookie.split('.').slice(-2).join('.') : '',
       successUrl: window.location.origin + '/payment/success',
       failedUrl: window.location.origin + `/payment/failure?interval=${interval}`,
       interval,

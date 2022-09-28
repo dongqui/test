@@ -9,7 +9,7 @@ interface Props {
 }
 
 const MotionNode = ({ node }: Props) => {
-  const { id, assetId, name, parentId, type } = node;
+  const { id, assetId, name, parentId, type, animationId } = node;
   const dispatch = useDispatch();
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -21,6 +21,7 @@ const MotionNode = ({ node }: Props) => {
         nodeName: name,
         parentId,
         type,
+        animationId,
       }),
     );
   };
