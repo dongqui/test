@@ -1079,15 +1079,15 @@ export class IKModule extends Module {
     const footLocking = new FootLocking(targetAnimation, animationGroup, retargetMap, readonlyHeelTransformKeys, readonlyToeTransformKeys, side, ikController);
     const { frameIKPosition, frameBlend } = footLocking.computeFrameIKValues();
 
-    if (side === 'right') {
-      // Maybe averaging both foot is more accurate ? for now right foot only will do
-      // fixHipPosition(frameIKPosition);
-      targetAnimation = footLocking.fixHipPosition(frameIKPosition, readonlyHeelTransformKeys, hipTrack, hipTrack.layerId);
-      FootLocking.FixIKOnGround(frameIKPosition);
-    } else {
-      // Right foot is the one to fix the hip, for left foot we just stick IK to the ground
-      FootLocking.FixIKOnGround(frameIKPosition);
-    }
+    // if (side === 'right') {
+    //   // Maybe averaging both foot is more accurate ? for now right foot only will do
+    //   // fixHipPosition(frameIKPosition);
+    //   targetAnimation = footLocking.fixHipPosition(frameIKPosition, readonlyHeelTransformKeys, hipTrack, hipTrack.layerId);
+    //   FootLocking.FixIKOnGround(frameIKPosition);
+    // } else {
+    //   // Right foot is the one to fix the hip, for left foot we just stick IK to the ground
+    //   FootLocking.FixIKOnGround(frameIKPosition);
+    // }
     // ({ poleAngle: targetPoleAngle, position: targetIKPosition, quaternion: targetIKQuaternion } = extractHeelPoseAtFrame(heelTransformKeys[0].frame));
 
     for (let i = 0; i < readonlyHeelTransformKeys.length; i++) {
