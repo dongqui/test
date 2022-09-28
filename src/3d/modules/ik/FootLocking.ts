@@ -3,6 +3,21 @@ import { AnimationIngredient, ArrayOfThreeNumbers, PlaskProperty, PlaskRetargetM
 import { AnimationModule } from '../animation/AnimationModule';
 import { IKController } from './IKController';
 
+interface PhaseBase {
+  length: number;
+  startFrame: number;
+  target: Nullable<Vector3>;
+}
+interface BroadPhase extends PhaseBase {
+  phases: PrecisePhase[];
+  state: boolean;
+}
+
+interface PrecisePhase extends PhaseBase {
+  toe: number;
+  heel: number;
+}
+
 export class FootLocking {
   constructor(
     public animationIngredient: AnimationIngredient,
@@ -17,14 +32,14 @@ export class FootLocking {
   public static readonly INTERPOLATION_FRAMES = 4;
   public static readonly LOW_PASS_FILTER_MIN_FRAMES = 2;
 
-  public static FixIKOnGround = (frameIKPosition: Vector3[]) => {
+  public static FixIKOnGround(frameIKPosition: Vector3[]) {
     // Now fix IK positions
     for (let i = 0; i < frameIKPosition.length; i++) {
       frameIKPosition[i].y = FootLocking.Y_MARGIN;
     }
-  };
+  }
 
-  public fixHipPosition = (frameIKPosition: Vector3[], transformKeys: IAnimationKey[], hipTrack: PlaskTrack, layerId: string) => {
+  public fixHipPosition(frameIKPosition: Vector3[], transformKeys: IAnimationKey[], hipTrack: PlaskTrack, layerId: string) {
     let j = 0;
     const groundCorrectionEachFrame: number[] = [];
     let targetAnimation = this.animationIngredient;
@@ -94,7 +109,7 @@ export class FootLocking {
     this.animationIngredient = targetAnimation;
 
     return targetAnimation;
-  };
+  }
 
   public cloneTransformKeys = (transformKeys: IAnimationKey[]) => {
     // The purpose of this function is to give a writable copy of transform keys
@@ -188,7 +203,8 @@ export class FootLocking {
     this.filterKeys(toeTransformKeys);
 
     // After low pass filter, we have definitive phases, we can write them
-    const phases = [];
+    const phases: PrecisePhase[] = [];
+
     let j = 0;
     while (j < heelTransformKeys.length) {
       let i = j;
@@ -204,10 +220,27 @@ export class FootLocking {
       j = i;
     }
 
+    // We write also "broadPhases" containing lock/unlock status (regardless of toe/heel), to compute the IK blend
+    const broadPhases: BroadPhase[] = [];
+    let frameIndex = 0;
+
+    for (let j = 0; j < phases.length; j++) {
+      const phase = phases[j];
+      const previousPhase = broadPhases.length ? broadPhases[broadPhases.length - 1] : null;
+      const lockState = phase.toe === 1 || phase.heel === 1;
+      if (!previousPhase || lockState !== previousPhase.state) {
+        broadPhases.push({ state: lockState, length: phase.length, startFrame: frameIndex, phases: [phase], target: null });
+      } else {
+        previousPhase.length += phase.length;
+        phases.push(phase);
+      }
+      frameIndex += phase.length;
+    }
+
     // Averaging filter
     j = 0;
     let iKPositions = [];
-    let frameIndex = 0;
+    frameIndex = 0; // store
     // Write phases of contact toe/ contact heel/ both/ no contact
     for (let j = 0; j < phases.length; j++) {
       const phase = phases[j];
@@ -235,22 +268,6 @@ export class FootLocking {
       }
       iKPositions.push(targetPosition);
       phase.target = targetPosition.clone();
-    }
-
-    // We write also "broadPhases" containing lock/unlock status (regardless of toe/heel), to compute the IK blend
-    const broadPhases: { state: boolean; length: number; startFrame: number }[] = [];
-    frameIndex = 0;
-
-    for (let j = 0; j < phases.length; j++) {
-      const phase = phases[j];
-      const previousPhase = broadPhases.length ? broadPhases[broadPhases.length - 1] : null;
-      const lockState = phase.toe === 1 || phase.heel === 1;
-      if (!previousPhase || lockState !== previousPhase.state) {
-        broadPhases.push({ state: lockState, length: phase.length, startFrame: frameIndex });
-      } else {
-        previousPhase.length += phase.length;
-      }
-      frameIndex += phase.length;
     }
 
     // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
