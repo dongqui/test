@@ -276,28 +276,36 @@ export class FootLocking {
       // let targetEnd: Vector3;
       if (!phaseIn.state) {
         phaseIn.target = phaseOut.target!.clone();
-        if (phaseOut.phases[0].heel !== 1) {
-          // This is a toe only contact
-          this.ikController.ikController.computeTargetPosition(phaseIn.target, this.extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, phaseIn.target);
-        }
+        // if (phaseOut.phases[0].heel !== 1) {
+        //   // This is a toe only contact
+        //   this.ikController.ikController.computeHeelPosition(phaseIn.target, this.extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, phaseIn.target);
+        // }
       }
       if (!phaseOut.state) {
         phaseOut.target = phaseIn.target!.clone();
-        if (phaseIn.phases[phaseIn.phases.length - 1].heel !== 1) {
-          // This is a toe only contact
-          this.ikController.ikController.computeTargetPosition(phaseOut.target, this.extractHeelPoseAtFrame(phaseIn.startFrame + phaseIn.length - 1).quaternion, phaseOut.target);
-        }
+        // if (phaseIn.phases[phaseIn.phases.length - 1].heel !== 1) {
+        //   // This is a toe only contact
+        //   this.ikController.ikController.computeHeelPosition(phaseOut.target, this.extractHeelPoseAtFrame(phaseIn.startFrame + phaseIn.length - 1).quaternion, phaseOut.target);
+        // }
       }
 
       if (phaseIn.state) {
         const currentLockingPosition = phaseIn.target!.clone();
-
+        let isHeelLocked = true;
         for (const precisePhase of phaseIn.phases) {
+          if (precisePhase.heel === 1 && !isHeelLocked) {
+            this.ikController.ikController.computeHeelPosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+          } else if (precisePhase.heel !== 1 && isHeelLocked) {
+            this.ikController.ikController.computeToePosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+          }
+          isHeelLocked = precisePhase.heel === 1;
+
           for (let i = 0; i < precisePhase.length; i++) {
+            let target = currentLockingPosition.clone();
             if (precisePhase.heel !== 1) {
-              this.ikController.ikController.computeTargetPosition(phaseOut.target!, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+              this.ikController.ikController.computeHeelPosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, target);
             }
-            frameIKPosition.push(currentLockingPosition.clone());
+            frameIKPosition.push(target);
             frameIndex++;
           }
         }
@@ -314,13 +322,22 @@ export class FootLocking {
         if (j === broadPhases.length - 2) {
           // could be better written, but we have to process the last index phase
           const currentLockingPosition = phaseOut.target!.clone();
+          let isHeelLocked = true;
 
           for (const precisePhase of phaseOut.phases) {
+            if (precisePhase.heel === 1 && !isHeelLocked) {
+              this.ikController.ikController.computeHeelPosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+            } else if (precisePhase.heel !== 1 && isHeelLocked) {
+              this.ikController.ikController.computeToePosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+            }
+            isHeelLocked = precisePhase.heel === 1;
+
             for (let i = 0; i < precisePhase.length; i++) {
+              let target = currentLockingPosition.clone();
               if (precisePhase.heel !== 1) {
-                this.ikController.ikController.computeTargetPosition(phaseOut.target!, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+                this.ikController.ikController.computeHeelPosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, target);
               }
-              frameIKPosition.push(currentLockingPosition.clone());
+              frameIKPosition.push(target);
               frameIndex++;
             }
           }

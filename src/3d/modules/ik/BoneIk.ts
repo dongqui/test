@@ -42,22 +42,35 @@ export class BoneIk {
   /**
    * In case of a foot IK, we can compute the target position from the
    * next bone (toe) linked to this IK chain.
-   * @param extremityTarget The position target of the next bone (toe)
-   * @param bone2QuatTarget The quaternion of bone2 (heel). We must specify that to guarantee the
+   * @param toePosition The position target of the next bone (toe)
+   * @param heelQuaternion The quaternion of bone2 (heel). We must specify that to guarantee the
    * unicity of the solution. This must be in world space.
    * @param targetOut Will store the expected target position as a result of this function
    */
-  public computeTargetPosition(extremityTarget: Vector3, bone2QuatTarget: Quaternion, targetOut: Vector3) {
+  public computeHeelPosition(toePosition: Vector3, heelQuaternion: Quaternion, targetOut: Vector3) {
     if (!this._initialBone3Direction || !this._bone2Length) {
       console.warn('Cannot perform that on this IK : must be a foot IK');
       return;
     }
-    bone2QuatTarget.toRotationMatrix(TmpVectors.Matrix[0]);
+    heelQuaternion.toRotationMatrix(TmpVectors.Matrix[0]);
     const direction = TmpVectors.Vector3[0];
     Vector3.TransformNormalToRef(this._initialBone3Direction, TmpVectors.Matrix[0], direction);
     direction.scaleInPlace(-this._bone2Length);
 
-    extremityTarget.addToRef(direction, targetOut);
+    toePosition.addToRef(direction, targetOut);
+  }
+
+  public computeToePosition(heelPosition: Vector3, heelQuaternion: Quaternion, targetOut: Vector3) {
+    if (!this._initialBone3Direction || !this._bone2Length) {
+      console.warn('Cannot perform that on this IK : must be a foot IK');
+      return;
+    }
+    heelQuaternion.toRotationMatrix(TmpVectors.Matrix[0]);
+    const direction = TmpVectors.Vector3[0];
+    Vector3.TransformNormalToRef(this._initialBone3Direction, TmpVectors.Matrix[0], direction);
+    direction.scaleInPlace(this._bone2Length);
+
+    heelPosition.addToRef(direction, targetOut);
   }
 
   constructor(skeletonNode: TransformNode, bone: Bone, target: TransformNode, defaultUpVector: Vector3) {
