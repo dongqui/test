@@ -1077,7 +1077,7 @@ export class IKModule extends Module {
     let targetIKQuaternion = Quaternion.Identity();
 
     const footLocking = new FootLocking(targetAnimation, animationGroup, retargetMap, readonlyHeelTransformKeys, readonlyToeTransformKeys, side, ikController);
-    const { frameIKPosition, frameBlend } = footLocking.computeFrameIKValues();
+    const { frameIKPosition, frameIKQuaternion, frameBlend } = footLocking.computeFrameIKValues();
 
     // if (side === 'right') {
     //   // Maybe averaging both foot is more accurate ? for now right foot only will do
@@ -1094,8 +1094,9 @@ export class IKModule extends Module {
       // const key = heelTransformKeys[i];
 
       // extract the toe rotation every frame, no matter the lock status
-      ({ quaternion: targetIKQuaternion, poleAngle: targetPoleAngle } = footLocking.extractHeelPoseAtFrame(readonlyHeelTransformKeys[i].frame));
+      ({ poleAngle: targetPoleAngle } = footLocking.extractHeelPoseAtFrame(readonlyHeelTransformKeys[i].frame));
       targetIKPosition = frameIKPosition[i];
+      targetIKQuaternion = frameIKQuaternion[i];
       const finalBlend = frameBlend[i];
 
       if (currentBlend >= 0) {
