@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Dropdown, SvgPath, ExpandButton, PageLoading } from 'components';
 import HelpMenus from '../Common/HelpMenus';
+import FileMenus from '../Common/FileMenus';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -31,6 +32,11 @@ const MainLogoDropDown = () => {
           <Dropdown.Item menuItem="Onboarding" onClick={handleClickGoToDashboard}>
             Go to dashboard
           </Dropdown.Item>
+          <hr className={cx('divider')} />
+          <Dropdown.Submenu label="File" classNames={cx('main-logo-sub-menu')}>
+            <FileMenus />
+          </Dropdown.Submenu>
+          <hr className={cx('divider')} />
           <Dropdown.Submenu label="Help & Feedback" classNames={cx('main-logo-sub-menu')}>
             <HelpMenus />
           </Dropdown.Submenu>
