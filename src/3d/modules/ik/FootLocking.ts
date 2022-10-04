@@ -53,7 +53,7 @@ export class FootLocking {
         continue;
       }
 
-      if (transformKeys[j].value) {
+      if (transformKeys[j].value === 1) {
         // In contact, ground position is hard set
         groundCorrectionEachFrame.push(-frameIKPosition[j].y + FootLocking.Y_MARGIN);
         j++;
