@@ -11,6 +11,10 @@
   padding: 6px 12px;
   background-color: inherit;
 
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
   .left-upper-inner {
     max-width: 166px;
     padding: 0 8px;
@@ -137,6 +141,6 @@
   }
 
   &:hover {
-    border: 1px solid #7A7A7B;
+    border: 1px solid #7a7a7b;
   }
 }
