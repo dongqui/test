@@ -7,6 +7,7 @@ import { partition } from 'lodash';
 import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as globalUIActions from 'actions/Common/globalUI';
+import { changeMode } from 'actions/modeSelection';
 import { Dropdown } from 'components';
 import PlanManager from 'utils/PlanManager';
 
@@ -60,6 +61,10 @@ export default function FileMenus() {
     );
   }, [dispatch, handleLoad]);
 
+  const handleChangeSwitchMode = useCallback(() => {
+    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode', videoURL: undefined }));
+  }, [dispatch, mode]);
+
   return (
     <Fragment>
       {/* import modal */}
@@ -67,7 +72,9 @@ export default function FileMenus() {
         Import Model
       </Dropdown.Item>
       {/* VM 전환 */}
-      <Dropdown.Item menuItem="File">Import Video to get motion</Dropdown.Item>
+      <Dropdown.Item menuItem="File" onClick={handleChangeSwitchMode}>
+        Import Video to get motion
+      </Dropdown.Item>
     </Fragment>
   );
 }
