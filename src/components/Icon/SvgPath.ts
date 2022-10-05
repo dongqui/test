@@ -142,7 +142,7 @@ type Icon =
   | 'WarningTriangle';
 
 type Images = {
-  [key in Icon]: FunctionComponent;
+  [key in Icon]: FunctionComponent<React.PropsWithChildren<unknown>>;
 };
 
 const images: Images = {

@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 type Props = ScreenVisivilityItem;
 
-const ScreenVisibilityItem: FunctionComponent<Props> = ({ value, onSelect, checked, active }) => {
+const ScreenVisibilityItem: FunctionComponent<React.PropsWithChildren<Props>> = ({ value, onSelect, checked, active }) => {
   const handleClick: MouseEventHandler<HTMLLIElement> = useCallback(
     (event) => {
       active && onSelect();

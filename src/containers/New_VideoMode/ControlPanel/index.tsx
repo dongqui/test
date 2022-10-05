@@ -163,7 +163,7 @@ const ControlPanel = ({
     cancelTokenSource.current && cancelTokenSource.current();
   }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
-  const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
+  const convertBlobToFile = useCallback(async ({ url, type, fileName }: any) => {
     const response = await fetch(url);
     const data = await response
       .blob()

@@ -13,7 +13,7 @@ interface Props {
   itemList: ScreenVisivilityItem[];
 }
 
-const ScreenVisibility: FunctionComponent<Props> = ({ itemList }) => {
+const ScreenVisibility: FunctionComponent<React.PropsWithChildren<Props>> = ({ itemList }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 

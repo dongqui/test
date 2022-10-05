@@ -29,7 +29,7 @@ const LEARN_MORE_HREF: LearnMore = {
 
 const LAST_STEP = 6;
 
-const ProgressFooter: FunctionComponent<Props> = (props) => {
+const ProgressFooter: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { step } = props;
 
   const dispatch = useDispatch();

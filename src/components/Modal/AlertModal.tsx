@@ -16,7 +16,7 @@ interface Props {
   confirmColor?: string;
 }
 
-const AlertModal: FunctionComponent<Props> = ({ onClose, title, onConfirm, message, confirmText = 'Confirm' }) => {
+const AlertModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ onClose, title, onConfirm, message, confirmText = 'Confirm' }) => {
   const onClickButton = () => {
     onConfirm && onConfirm();
     onClose();

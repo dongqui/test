@@ -39,7 +39,7 @@ interface Props {
  * @param children - input 요소들 이후에 추가할 element
  * @returns input 요소로 이루어진 목록과 해당 목록을 대표하는 title이 포함된 JSX 요소
  */
-const AnimationInputWrapper: FunctionComponent<Props> = ({ className, inputTitle, inputInfo, activeStatus, inactiveMessage, dropdownList, children }) => {
+const AnimationInputWrapper: FunctionComponent<React.PropsWithChildren<Props>> = ({ className, inputTitle, inputInfo, activeStatus, inactiveMessage, dropdownList, children }) => {
   // dropdown을 펼치거나 접을 수 있는 상태값
   const [isActiveDropdown, setIsActiveDropdown] = useState<boolean>(false);
 

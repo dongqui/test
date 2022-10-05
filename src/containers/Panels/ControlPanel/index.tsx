@@ -12,7 +12,7 @@ const cx = classNames.bind(styles);
 
 type ControlPanelMode = 'Animation' | 'Retargeting';
 
-const ControlPanel: FunctionComponent = () => {
+const ControlPanel: FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const dispatch = useDispatch();
 
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);

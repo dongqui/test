@@ -17,7 +17,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const LayerTrackItem: FunctionComponent<LayerTrack> = (props) => {
+const LayerTrackItem: FunctionComponent<React.PropsWithChildren<LayerTrack>> = (props) => {
   const { isMuted, isSelected, isPointedDownCaret, trackName, trackId, trackType } = props;
   const dispatch = useDispatch();
   const trackItemRef = useRef<HTMLLIElement>(null);

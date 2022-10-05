@@ -19,7 +19,7 @@ interface Position {
 
 const SUBMENU_OFFSET = '100%';
 
-const ContextMenuSubmenu: FunctionComponent<Props> = ({ children, arrow = '▶', disabled = false, label }) => {
+const ContextMenuSubmenu: FunctionComponent<React.PropsWithChildren<Props>> = ({ children, arrow = '▶', disabled = false, label }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position>({
     top: 0,

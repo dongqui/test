@@ -21,7 +21,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const LibraryPanel: FunctionComponent = () => {
+const LibraryPanel: FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const dispatch = useDispatch();
   const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);

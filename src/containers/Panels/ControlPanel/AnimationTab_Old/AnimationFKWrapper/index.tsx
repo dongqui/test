@@ -27,7 +27,7 @@ interface Props {
   handleSelectColor: any;
 }
 
-const AnimationFKWrapper: FunctionComponent<Props> = ({ className, fkInfo, activeStatus, inactiveMessage, currentColor, handleSelectColor }) => {
+const AnimationFKWrapper: FunctionComponent<React.PropsWithChildren<Props>> = ({ className, fkInfo, activeStatus, inactiveMessage, currentColor, handleSelectColor }) => {
   // 색상 선택 dropdown을 펼치거나 접을 수 있는 상태값
   const [isPaletteOpen, setIsPaletteOpen] = useState<boolean>(false);
 

@@ -13,7 +13,7 @@ interface Props {
   onCancelEdit: () => void;
 }
 
-const NodeName: FunctionComponent<Props> = ({ isEditing, name, onEditName, onCancelEdit, extension }) => {
+const NodeName: FunctionComponent<React.PropsWithChildren<Props>> = ({ isEditing, name, onEditName, onCancelEdit, extension }) => {
   const nameWithoutExtension = extension ? name?.replace(new RegExp(`.${extension}$`), '') : name;
   const [inputValue, setInputValue] = useState(nameWithoutExtension || '');
 

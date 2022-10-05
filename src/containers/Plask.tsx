@@ -24,7 +24,7 @@ interface Props {
   data: RequestNodeResponse[];
 }
 
-const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) => {
+const Plask: FunctionComponent<React.PropsWithChildren<Props>> = ({ browserType, sceneId, token, data }) => {
   const { mode } = useSelector((state) => state.modeSelection);
   const dispatch = useDispatch();
 

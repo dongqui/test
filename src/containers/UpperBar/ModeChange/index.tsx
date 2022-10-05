@@ -15,7 +15,7 @@ interface Props {
   onSwitchVideoMode: () => void;
 }
 
-const ChangeModeButton: FunctionComponent<Props> = (props) => {
+const ChangeModeButton: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { onSwitchAnimationMode, onSwitchVideoMode } = props;
 
   const { mode } = useSelector((state) => state.modeSelection);

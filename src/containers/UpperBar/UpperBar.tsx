@@ -20,7 +20,7 @@ interface Props {
   defaultMode: 'VM' | 'EM';
 }
 
-const UpperBar: FunctionComponent<Props> = ({ switchMode, defaultMode }) => {
+const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMode, defaultMode }) => {
   const dispatch = useDispatch();
   const { mode } = useSelector((state: RootState) => state.modeSelection);
 

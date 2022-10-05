@@ -29,7 +29,7 @@ interface Props {
   browserType: string;
 }
 
-export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) => {
+export const VideoMode: FunctionComponent<React.PropsWithChildren<Props>> = ({ className, browserType }) => {
   const dispatch = useDispatch();
 
   const sceneId = useSelector((state) => state.lpNode.sceneId);
@@ -135,7 +135,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   };
 
   const handleTimeline = useCallback(
-    (e) => {
+    (e: any) => {
       if (videoRef.current) {
         videoRef.current.currentTime = e.target.value;
         if (e.target.value < start) {
@@ -155,7 +155,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     }
   }, [videoRef]);
 
-  const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
+  const convertBlobToFile = useCallback(async ({ url, type, fileName }: any) => {
     const response = await fetch(url);
     const data = await response
       .blob()
@@ -181,7 +181,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
    * @param endTime - 영상 전체의 종료 시간
    * @param duration - 영상의 길이 (metaData에서 자체적으로 frame 값을 추출 할 수 없을 경우 대비)
    */
-  const handleExtractMotion = useCallback(async ({ id, start, end, startTime, endTime, url, type, fileName, duration }) => {
+  const handleExtractMotion = useCallback(async ({ id, start, end, startTime, endTime, url, type, fileName, duration }: any) => {
     if (end - start > 300) {
       setIsTimeout(true);
       return;
@@ -211,7 +211,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   }, []);
 
   const handleDeleteRecord = useCallback(
-    (e) => {
+    (e: any) => {
       if (videoRef.current && videoRef.current.src) {
         setTurnStandbyPhase(true);
       } else {
@@ -261,7 +261,7 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
   );
 
   const handleMouseMove = useCallback(
-    (e, parentNodeWidth) => {
+    (e: any, parentNodeWidth: any) => {
       // e.preventDefault();
       if (isIndicatorClicked) {
         setIndicatorPosition(indicatorPosition + ((e.clientX - prevX) / parentNodeWidth) * 100);
@@ -279,12 +279,12 @@ export const VideoMode: FunctionComponent<Props> = ({ className, browserType }) 
     [prevX, isIndicatorClicked, videoRef],
   );
 
-  const handleMouseUp = useCallback((e) => {
+  const handleMouseUp = useCallback((e: any) => {
     // e.preventDefault();
     setIsIndicatorClicked(false);
   }, []);
 
-  const handleMouseDown = useCallback((e) => {
+  const handleMouseDown = useCallback((e: any) => {
     // e.preventDefault();
     setIsIndicatorClicked(true);
     setPrevX(e.clientX);

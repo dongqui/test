@@ -23,7 +23,7 @@ interface Props {
   isAllActive: boolean;
 }
 
-const RetargetTab: FunctionComponent<Props> = ({ isAllActive }) => {
+const RetargetTab: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAllActive }) => {
   const dispatch = useDispatch();
 
   const isSelectedTargetBoneOption = useRef(false); // targetBone dropdown을 선택했을 경우에만 Assign 버튼이 활성화 되도록 체크

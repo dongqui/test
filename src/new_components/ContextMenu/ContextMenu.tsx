@@ -9,7 +9,7 @@ const cx = classnames.bind(styles);
 
 type Props = ContextMenu.BaseProps;
 
-const ContextMenu: FunctionComponent<Props> = ({ menu, top, left }) => {
+const ContextMenu: FunctionComponent<React.PropsWithChildren<Props>> = ({ menu, top, left }) => {
   const portalElement = document.getElementById('__portal-contextmenu');
   const portalRef = useRef(portalElement);
 

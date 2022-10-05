@@ -10,7 +10,7 @@ interface Props {
   end: number;
 }
 
-export const VMRuler: FunctionComponent<Props> = ({ start, end }) => {
+export const VMRuler: FunctionComponent<React.PropsWithChildren<Props>> = ({ start, end }) => {
   let rulerTime: number[] = [];
   let roundEnd = Math.floor((end + Number.EPSILON) * 10) / 10;
 

@@ -7,7 +7,7 @@ import styles from './TextInput.module.scss';
 const cx = classNames.bind(styles);
 
 interface BaseProps {
-  prefix?: string | FunctionComponent;
+  prefix?: string | FunctionComponent<React.PropsWithChildren<unknown>>;
   placeholder?: string;
   fullSize?: boolean;
 
