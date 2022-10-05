@@ -33,7 +33,7 @@ const ModelNode = ({ node }: Props) => {
     if (draggedNode?.type !== 'MOCAP') {
       return;
     }
-    draggedNode.mocapId = draggedNode.id;
+
     e.stopPropagation();
 
     if (PlanManager.isStorageExceeded(user)) {
