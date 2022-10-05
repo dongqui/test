@@ -1,6 +1,7 @@
 import { channel } from 'redux-saga';
 import { select, put, SagaReturnType, take } from 'redux-saga/effects';
 import { isEqual } from 'lodash';
+import TagManager from 'react-gtm-module';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -40,6 +41,12 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         });
         const mocap = convertServerResponseToNode(reponseNode);
         readJsonChannel.put(lpNodeActions.addNodes([mocap]));
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'lp-file-drop',
+            type: 'etc',
+          },
+        });
       } catch (e: any) {
         if (e.statusCode === TOOL_PAYMENT_MAXIMUM_SIZE) {
           PlanManager.openStorageExceededModal(user);

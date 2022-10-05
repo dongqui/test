@@ -70,7 +70,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
 
   function handleChangeMultiSwitch(key: string) {
     if (userState.planType === 'freemium') {
-      PlanManager.openProFeaturesNotAllowedModal(userState);
+      PlanManager.openProFeaturesNotAllowedModal(userState, 'multi');
       setMultiOption(selectMultiOption[DEFAULT_MULTI_SELECT_OPTION_INDEX]);
     } else {
       const option = selectMultiOption.find((option) => option.key === key);
@@ -83,7 +83,7 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
 
   function handleClickFootLock(key: string) {
     if (userState.planType === 'freemium') {
-      PlanManager.openProFeaturesNotAllowedModal(userState);
+      PlanManager.openProFeaturesNotAllowedModal(userState, 'foot lock');
       setFootLockOption(selectFootLockAndTPoseOption[DEFAULT_FOOT_LOCK_SELECT_OPTION_INDEX]);
     } else {
       const option = selectFootLockAndTPoseOption.find((option) => option.key === key);

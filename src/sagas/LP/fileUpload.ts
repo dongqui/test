@@ -37,12 +37,6 @@ export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fil
     const isVideo = file.type.includes('video');
 
     if (isJson) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'lp-file-drop',
-          type: 'json',
-        },
-      });
       yield put(lpNodeActions.importMocapJson(file));
     } else if (isModelFile) {
       TagManager.dataLayer({

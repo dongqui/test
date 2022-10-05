@@ -1,6 +1,8 @@
-import { BaseModal, FilledButton, OutlineButton, IconButton, SvgPath, IconWrapper } from 'components';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
+
 import * as globalUIActions from 'actions/Common/globalUI';
+import { BaseModal, FilledButton, OutlineButton, IconButton, SvgPath, IconWrapper } from 'components';
 
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -10,12 +12,19 @@ const cx = classnames.bind(styles);
 interface Props {
   onClose: () => void;
   hadFreeTrial: boolean;
+  referrer?: 'foot lock' | 'multi';
 }
 
-const ProFeaturesModal = ({ onClose, hadFreeTrial }: Props) => {
+const ProFeaturesModal = ({ onClose, hadFreeTrial, referrer }: Props) => {
   const dispatch = useDispatch();
 
   const onClickConfirm = () => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: hadFreeTrial ? 'click_upgrade_01' : 'click_free_trial_01',
+        type: referrer === 'multi' ? 'btn_04' : 'btn_05',
+      },
+    });
     dispatch(globalUIActions.openModal('UpgradePlanModal', { hadFreeTrial }));
     onClose();
   };
