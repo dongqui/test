@@ -29,7 +29,7 @@ const DropdownSubmenu = ({ children, label, arrow = '>', classNames }: Props) =>
   const nodeRef = useRef<HTMLDivElement>(null);
   const [showSubmenu, setShowSubmenu] = useState(false);
   const [position, setPosition] = useState<Position>({
-    top: 0,
+    // top: 0,
     right: undefined,
     bottom: 'initial',
     left: SUBMENU_OFFSET,
