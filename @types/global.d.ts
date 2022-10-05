@@ -1,8 +1,7 @@
-import { IpcRenderer } from 'electron';
 declare global {
-  namespace NodeJS {
-    interface Global {
-      ipcRenderer: IpcRenderer;
-    }
+  interface File extends File {
+    path?: string;
   }
 }
+
+export {};
