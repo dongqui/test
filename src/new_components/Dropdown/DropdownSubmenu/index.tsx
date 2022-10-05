@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState, ReactNode } from 'react';
 
 import { DropdownContext } from '../DropdownProvider';
+import { IconWrapper, SvgPath } from 'components/Icon';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -76,7 +77,8 @@ const DropdownSubmenu = ({ children, label, arrow = '>', classNames }: Props) =>
     <div className={cx('wrapper', classNames)} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className={cx('trigger')}>
         {label}
-        <span className={cx('arrow')}>{arrow}</span>
+        {/* <span className={cx('arrow')}>{arrow}</span> */}
+        <IconWrapper className={cx('arrow')} icon={SvgPath.ChevronRight} />
       </div>
       {showSubmenu && (
         <div className={cx('submenu')} ref={nodeRef} style={submenuStyle}>
