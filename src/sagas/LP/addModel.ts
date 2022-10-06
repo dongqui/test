@@ -1,6 +1,7 @@
 import { convertServerResponseToNode } from 'utils/LP/converters';
 import { RootState } from 'reducers';
 import { select, put, call, all } from 'redux-saga/effects';
+import TagManager from 'react-gtm-module';
 import produce from 'immer';
 import { omitBy } from 'lodash';
 
@@ -135,6 +136,12 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
       );
     }
   } finally {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'import_success',
+        type: '3d_asset',
+      },
+    });
     yield put(globalUIActions.closeModal(file.name));
   }
 }

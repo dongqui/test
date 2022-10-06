@@ -1,4 +1,5 @@
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import { SubButton, PostiveButton } from '../Buttons';
@@ -25,6 +26,11 @@ const StartFooter = () => {
 
   // Show me around 버튼 클릭
   const handleShowMeAroundButtonClick = () => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'tutorial_begin',
+      },
+    });
     dispatch(globalUIActions.progressOnboarding({ onboardingStep: 1 }));
   };
 

@@ -1,4 +1,5 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect } from 'react';
+import TagManager from 'react-gtm-module';
 
 import { OnboardingStep } from 'containers/Onboarding';
 
@@ -14,6 +15,16 @@ interface StepTemplateProps {
 
 const StepTemplate = forwardRef<HTMLDivElement, StepTemplateProps>((props, ref) => {
   const { children, step } = props;
+  useEffect(() => {
+    if (step >= 1 && step <= 6) {
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'unlock_achievement',
+          achievement_id: `am_onboarding_0${step}`,
+        },
+      });
+    }
+  }, [step]);
 
   return (
     <BaseTemplate onboardingStep={step} ref={ref}>
