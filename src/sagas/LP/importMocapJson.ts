@@ -43,8 +43,8 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         readJsonChannel.put(lpNodeActions.addNodes([mocap]));
         TagManager.dataLayer({
           dataLayer: {
-            event: 'lp-file-drop',
-            type: 'etc',
+            event: 'import_success',
+            type: 'other',
           },
         });
       } catch (e: any) {
