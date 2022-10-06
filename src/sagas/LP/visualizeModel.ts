@@ -133,7 +133,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
               if (controller.limb.toLowerCase().includes('foot')) {
                 plaskEngine.ikModule.setSelectedIk([controller]);
 
-                const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, false);
+                const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, true);
                 animationIngredient = bakeResult.animationIngredient || animationIngredient;
                 yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
@@ -142,7 +142,7 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
               }
             }
             // Release IK Controllers
-            // yield call(removeIK, removeIKAction(asset.id));
+            yield call(removeIK, removeIKAction(asset.id));
 
             // Remove Contact data
             animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
