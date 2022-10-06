@@ -220,7 +220,7 @@ const ControlPanel = ({
             .then((response) => {
               TagManager.dataLayer({
                 dataLayer: {
-                  event: 'export-motion-success',
+                  event: 'extract_mocap_success',
                 },
               });
 
