@@ -110,11 +110,11 @@ export default function* handleApplyMocapToModel(action: ReturnType<typeof lpNod
     draft.push(motionNode);
   });
 
-  if (motionNode.assetId && motionNode.animationId) {
+  if (modelNode.assetId && motionNode.animationId) {
     yield put(lpNodeActions.changeNode({ nodes: nextNodes }));
     yield put(animationDataActions.addAnimationIngredient({ animationIngredient: animationIngredient }));
-    yield put(plaskProjectActions.addAnimationIngredient({ assetId: motionNode.assetId, animationIngredientId: animationIngredient.id }));
-    yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: motionNode.assetId, animationIngredientId: animationIngredient.id }));
+    yield put(plaskProjectActions.addAnimationIngredient({ assetId: modelNode.assetId, animationIngredientId: animationIngredient.id }));
+    yield put(animationDataActions.changeCurrentAnimationIngredient({ assetId: modelNode.assetId, animationIngredientId: animationIngredient.id }));
     yield put(lpNodeActions.visualizeModel(modelNode, animationIngredient.id));
     forceClickAnimationPlayAndStop();
   }
