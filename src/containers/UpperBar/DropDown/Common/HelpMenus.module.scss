@@ -1,0 +1,9 @@
+@import 'styles/libraries/_colors';
+
+.divider {
+  border: 0;
+  border-top: 1px solid $contentbg-base;
+  margin: 0 -4px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
