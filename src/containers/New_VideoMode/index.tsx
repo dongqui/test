@@ -103,15 +103,6 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     localStorage.setItem(VM_ON_BOARDING_KEY, Number(OnBoardingMask | KEY).toString());
   }, []);
 
-  useEffect(() => {
-    TagManager.dataLayer({
-      dataLayer: {
-        event: 'change-mode',
-        mode: 'VM',
-      },
-    });
-  }, []);
-
   const boxProps = useMemo(
     () => ({
       US: {
