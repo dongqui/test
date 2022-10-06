@@ -211,14 +211,14 @@ export class FootLocking {
     while (j < heelTransformKeys.length) {
       let i = j;
       const phaseObject = { length: 0, toe: toeTransformKeys[j].value, heel: heelTransformKeys[j].value, target: null as Nullable<Vector3>, startFrame: j };
-      console.log(`${this.side} foot : phase from ${j} : toe is ${phaseObject.toe} and heel is ${phaseObject.heel}`);
+      // console.log(`${this.side} foot : phase from ${j} : toe is ${phaseObject.toe} and heel is ${phaseObject.heel}`);
       phases.push(phaseObject);
 
       while (i < heelTransformKeys.length && phaseObject.toe === toeTransformKeys[i].value && phaseObject.heel === heelTransformKeys[i].value) {
         i++;
         phaseObject.length++;
       }
-      console.log(`ends in ${j}`);
+      // console.log(`ends in ${i-1}`);
       j = i;
     }
 
