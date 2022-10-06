@@ -8,12 +8,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({ enabled: false });
 
 module.exports = withBundleAnalyzer({
   distDir: '_next',
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  sassLoader: {
-    includePaths: path.join(__dirname, 'src'),
-  },
   webpack(config, options) {
     const { dev, isServer } = options;
 
