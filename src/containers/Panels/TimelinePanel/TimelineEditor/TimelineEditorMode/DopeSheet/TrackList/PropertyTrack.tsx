@@ -14,7 +14,7 @@ interface Props extends TimeEditorTrack, PropertyTrack {
   translateY: number;
 }
 
-const TransformTrackComponent: FunctionComponent<Props> = (props) => {
+const TransformTrackComponent: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { trackId, keyframes, isSelected, translateY, trackNumber, parentTrackNumber } = props;
 
   return (

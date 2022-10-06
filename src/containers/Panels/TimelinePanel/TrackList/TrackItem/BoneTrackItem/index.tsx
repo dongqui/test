@@ -15,7 +15,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const BoneTrackItem: FunctionComponent<BoneTrack> = (props) => {
+const BoneTrackItem: FunctionComponent<React.PropsWithChildren<BoneTrack>> = (props) => {
   const { isSelected, isPointedDownCaret, trackName, trackNumber, trackType } = props;
   const dispatch = useDispatch();
   const trackItemRef = useRef<HTMLLIElement>(null);

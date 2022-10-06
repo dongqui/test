@@ -15,7 +15,7 @@ interface Props {
   inactiveMessage?: string;
 }
 
-const DropdownWrapper: FunctionComponent<Props> = ({ className, title, options, activeStatus, inactiveMessage, currentValue }) => {
+const DropdownWrapper: FunctionComponent<React.PropsWithChildren<Props>> = ({ className, title, options, activeStatus, inactiveMessage, currentValue }) => {
   const classes = cx('wrapper', className, { able: activeStatus === undefined ? true : activeStatus });
 
   return (

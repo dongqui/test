@@ -183,8 +183,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
       }
       yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
     }
-
-    forceClickAnimationPlayAndStop(50);
   } catch (e) {
     console.log(e);
   } finally {

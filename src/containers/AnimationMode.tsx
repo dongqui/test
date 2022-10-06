@@ -26,7 +26,7 @@ interface Props {
   className?: string;
 }
 
-const AnimationMode: FunctionComponent<Props> = ({ className }) => {
+const AnimationMode: FunctionComponent<React.PropsWithChildren<Props>> = ({ className }) => {
   const dispatch = useDispatch();
 
   // Panel, Bar의 width, height 값. 없는 경우 100%

@@ -19,7 +19,7 @@ interface Props {
   onClose: () => void;
 }
 
-const ConfirmModal: FunctionComponent<Props> = ({
+const ConfirmModal: FunctionComponent<React.PropsWithChildren<Props>> = ({
   onClose,
   title,
   message,

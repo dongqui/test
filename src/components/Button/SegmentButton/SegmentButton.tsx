@@ -22,7 +22,7 @@ interface BaseProps {
 export type Props = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
 
 // 접근성 관련은 추후 대응이 필요
-const SegmentButton: FunctionComponent<Props> = ({ list, color, fullSize, ...rest }) => {
+const SegmentButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ list, color, fullSize, ...rest }) => {
   const classes = cx('segment-group', {
     fullSize,
   });
@@ -43,7 +43,10 @@ const SegmentButton: FunctionComponent<Props> = ({ list, color, fullSize, ...res
         const key = `${item.key}_${i}`;
 
         if (isIcon) {
-          return <IconWrapper key={key} className={buttonClasses} onClick={handleClick} icon={item.value as FunctionComponent} hasFrame={false} />;
+          return (
+            // @ts-ignore
+            <IconWrapper key={key} className={buttonClasses} onClick={handleClick} icon={item.value as FunctionComponent<React.PropsWithChildren<unknown>>} hasFrame={false} />
+          );
         }
 
         return <button className={cx('segment')}>{item.value}</button>;

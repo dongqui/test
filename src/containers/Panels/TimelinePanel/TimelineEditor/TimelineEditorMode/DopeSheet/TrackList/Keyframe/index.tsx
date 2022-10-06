@@ -18,7 +18,7 @@ const cx = classNames.bind(styles);
 
 type Props = TrackIdentifier & Keyframe;
 
-const KeyframeComponent: FunctionComponent<Props> = (props) => {
+const KeyframeComponent: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { trackNumber, trackId, trackType, time, isSelected, parentTrackNumber } = props;
   const dispatch = useDispatch();
   const keyframeRef = useRef<SVGPathElement>(null);

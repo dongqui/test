@@ -14,7 +14,7 @@ interface Props {
   className?: string;
 }
 
-const BaseModal: FunctionComponent<Props> = ({ dataCy, children, hasPadding = true, className }) => {
+const BaseModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ dataCy, children, hasPadding = true, className }) => {
   const portalRef = useRef(document.getElementById('portal_modal')) as MutableRefObject<HTMLElement>;
   const modalRef = useRef<HTMLDivElement>(null);
 

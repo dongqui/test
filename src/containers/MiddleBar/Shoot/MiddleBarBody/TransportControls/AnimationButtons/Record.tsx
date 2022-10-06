@@ -12,7 +12,7 @@ const cx = classNames.bind(styles);
 
 interface Props {}
 
-const Record: FunctionComponent<Props> = () => {
+const Record: FunctionComponent<React.PropsWithChildren<Props>> = () => {
   const dispatch = useDispatch();
 
   const handleRecordButtonClick = useCallback(() => {

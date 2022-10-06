@@ -6,7 +6,7 @@ import styles from './IconWrapper.module.scss';
 const cx = classnames.bind(styles);
 
 interface Props {
-  icon: FunctionComponent;
+  icon: FunctionComponent<React.PropsWithChildren<unknown>>;
   hasFrame?: boolean;
   className?: string;
   onClick?: (e?: any) => void;
@@ -19,7 +19,7 @@ const defaultProps: Partial<Props> = {
   hasFrame: false,
 };
 
-const IconWrapper: FunctionComponent<Props> = ({ icon, hasFrame, innerRef, className, tabState, onClick, id }) => {
+const IconWrapper: FunctionComponent<React.PropsWithChildren<Props>> = ({ icon, hasFrame, innerRef, className, tabState, onClick, id }) => {
   const Component = icon;
 
   const isClickable = !!onClick;

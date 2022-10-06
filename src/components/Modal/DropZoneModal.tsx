@@ -33,7 +33,7 @@ interface Props {
   onDrop: (files: File[]) => void;
 }
 
-const DropZoneModal: FunctionComponent<Props> = ({ title, subTitle, onClose, onDrop }) => {
+const DropZoneModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ title, subTitle, onClose, onDrop }) => {
   const dropHandler = useCallback(
     (files: File[]) => {
       onClose();

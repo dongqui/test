@@ -21,7 +21,7 @@ const defaultProps: Partial<BaseProps> = {
   defaultState: false,
 };
 
-const ToggleButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, defaultState, onClick, className, children, ...rest }) => {
+const ToggleButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ size, text, type, fullSize, disabled, defaultState, onClick, className, children, ...rest }) => {
   const [toggleState, setToggleState] = useState(defaultState ?? false);
   const classes = cx('toggle', className, size, type, {
     disabled,

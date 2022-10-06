@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   type: ButtonColor | 'outline' | 'ghost';
-  icon: FunctionComponent;
+  icon: FunctionComponent<React.PropsWithChildren<unknown>>;
   r?: (ref: HTMLButtonElement) => void;
 }
 
@@ -19,7 +19,7 @@ const defaultProps: Partial<BaseProps> = {
   type: 'primary',
 };
 
-const IconButton: FunctionComponent<Props> = ({ r, type, icon, disabled, onClick, className, children, ...rest }) => {
+const IconButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ r, type, icon, disabled, onClick, className, children, ...rest }) => {
   const classes = cx('icon-button', className, type, {
     disabled,
   });

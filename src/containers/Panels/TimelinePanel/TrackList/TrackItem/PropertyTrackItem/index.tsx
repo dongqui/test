@@ -10,7 +10,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const PropertyTrackItem: FunctionComponent<PropertyTrack> = (props) => {
+const PropertyTrackItem: FunctionComponent<React.PropsWithChildren<PropertyTrack>> = (props) => {
   const { isSelected, trackName, trackNumber } = props;
   const dispatch = useDispatch();
   const trackItemRef = useRef<HTMLLIElement>(null);

@@ -9,7 +9,7 @@ interface Props {
   isMapped: boolean;
 }
 
-const RetargetMapIndicator: FunctionComponent<Props> = ({ isMapped }) => {
+const RetargetMapIndicator: FunctionComponent<React.PropsWithChildren<Props>> = ({ isMapped }) => {
   const classes = cx('map-indicator', { mapped: isMapped });
 
   return (

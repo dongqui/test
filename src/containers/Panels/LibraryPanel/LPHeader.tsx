@@ -15,7 +15,7 @@ interface Props {
   onLoad: (files: File[]) => void;
 }
 
-const LPHeader: FunctionComponent<Props> = ({ onLoad }) => {
+const LPHeader: FunctionComponent<React.PropsWithChildren<Props>> = ({ onLoad }) => {
   const dispatch = useDispatch();
 
   // file import 버튼 클릭

@@ -33,7 +33,17 @@ interface Props {
   };
 }
 
-const PlaskCard: FunctionComponent<Props> = ({ id, children, className, type = 'normal', title, isPowerOn = true, activeStatus, toggleOptions, dropdownOptions }) => {
+const PlaskCard: FunctionComponent<React.PropsWithChildren<Props>> = ({
+  id,
+  children,
+  className,
+  type = 'normal',
+  title,
+  isPowerOn = true,
+  activeStatus,
+  toggleOptions,
+  dropdownOptions,
+}) => {
   const [isSectionSpread, setIsSectionSpread] = useState<boolean>(isPowerOn);
 
   // callback to spread/fold transform section

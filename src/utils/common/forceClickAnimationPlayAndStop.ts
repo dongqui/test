@@ -7,9 +7,9 @@
  */
 function forceClickAnimationPlayAndStop(timeout?: number) {
   setTimeout(() => {
-    document.getElementById('animationPlayButton')?.click();
     document.getElementById('animationStopButton')!.click();
   }, timeout ?? 0);
+  document.getElementById('animationPlayButton')?.click();
 }
 
 export default forceClickAnimationPlayAndStop;

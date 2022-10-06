@@ -20,7 +20,7 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const OutlineButton: FunctionComponent<Props> = ({ size, text, fullSize, disabled, type, textColor, onClick, className, children, ...rest }) => {
+const OutlineButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ size, text, fullSize, disabled, type, textColor, onClick, className, children, ...rest }) => {
   const classes = cx('outline', className, size, `border-color-${type}`, `text-color-${textColor}`, {
     disabled,
     fullSize,

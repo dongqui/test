@@ -21,7 +21,7 @@ interface Props {
   targetMotrionId?: string;
 }
 
-const ExportModal: FunctionComponent<Props> = ({ onClose, motions, targetMotrionId, onConfirm, onCancel }) => {
+const ExportModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ onClose, motions, targetMotrionId, onConfirm, onCancel }) => {
   const baseMotionList =
     motions.length > 0
       ? [

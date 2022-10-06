@@ -37,7 +37,7 @@ interface Props {
   animationIngredients: Array<AnimationIngredient>;
 }
 
-const IKControllerSection: FunctionComponent<Props> = ({
+const IKControllerSection: FunctionComponent<React.PropsWithChildren<Props>> = ({
   isAllActive,
   selectableObjects,
   selectedTargets,

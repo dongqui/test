@@ -20,7 +20,7 @@ interface Props {
   handleChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const AnimationRangeInput: FunctionComponent<Props> = ({
+const AnimationRangeInput: FunctionComponent<React.PropsWithChildren<Props>> = ({
   className,
   text,
   step,
@@ -114,7 +114,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
 
   // range input이 change 될 때에 range input의 최대값을 변경하는 함수
   const setRangeMaxLimit = useCallback(
-    (e) => {
+    (e: any) => {
       const num = parseFloat(e.target.value);
 
       if (limitMax) {
@@ -152,7 +152,7 @@ const AnimationRangeInput: FunctionComponent<Props> = ({
   );
 
   // 'Enter'키를 누를 경우 text input의 blur와 동일한 이벤트가 발생하도록 하는 함수
-  const handleKeyboard = useCallback((e) => {
+  const handleKeyboard = useCallback((e: any) => {
     if (e.key === 'Enter') {
       inputRef.current!.blur();
     }

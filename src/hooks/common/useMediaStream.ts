@@ -64,7 +64,7 @@ const useMediaStream = (props: Props) => {
   }, [setDeviceList]);
 
   const mediaStreamInitialize = useCallback(
-    async (constraint = { video: true }) => {
+    async (constraint: any = { video: true }) => {
       await navigator.mediaDevices.getUserMedia(constraint).then((stream) => {
         if (videoRef.current) videoRef.current.srcObject = stream;
         setCurrentStream(stream);
@@ -187,7 +187,7 @@ const useMediaStream = (props: Props) => {
   ]);
 
   const handleChangeCamera = useCallback(
-    (e) => {
+    (e: any) => {
       stopStream();
       mediaStreamInitialize({ video: { deviceId: { exact: e.target.id } } });
       setConstraint({ video: { deviceId: { exact: e.target.id } } });
@@ -199,7 +199,7 @@ const useMediaStream = (props: Props) => {
   );
 
   const stopRecording = useCallback(
-    async (e) => {
+    async (e: any) => {
       if (recorderData && recorderData.onstop) {
         if (recorderData.state === 'recording') {
           await recorderData.onstop(e);
