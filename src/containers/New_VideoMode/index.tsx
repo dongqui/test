@@ -501,6 +501,11 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (videoRecorder && videoRecorder.state === 'recording') {
       videoRecorder.stop();
       setVideoRecorder(null);
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'record_done',
+        },
+      });
     }
   }, [videoRecorder]);
 
