@@ -1,10 +1,13 @@
-import { find, filter } from 'lodash';
 import { FunctionComponent, memo, useState } from 'react';
+import { find, filter } from 'lodash';
+import TagManager from 'react-gtm-module';
+
 import { useSelector } from 'reducers';
 import { BaseModal } from 'components/Modal';
 import { BaseForm, BaseField } from 'components/Form';
 import { AnimationIngredient } from 'types/common';
 import Dropdown from './Dropdown';
+
 import classnames from 'classnames/bind';
 import styles from './ExportModal.module.scss';
 
@@ -66,6 +69,11 @@ const ExportModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ onClos
   });
 
   const handleSubmit = (data: any) => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'export_asset',
+      },
+    });
     onConfirm(data);
     onClose();
   };

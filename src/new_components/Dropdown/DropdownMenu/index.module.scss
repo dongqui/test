@@ -1,15 +1,14 @@
-@import "styles/libraries/_colors";
+@import 'styles/libraries/_colors';
 
 .menu {
   position: absolute;
   background-color: $bg-elevated;
-  //min-width: 95px;
   padding: 4px;
   margin: 4px 0 0;
   border-radius: 6px;
   border: 1px solid var(--grey030);
   z-index: 999;
-  letter-spacing: 1px;
+  line-height: 15px;
   font-size: 12px;
   font-weight: 300;
 

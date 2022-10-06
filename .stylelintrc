@@ -1,0 +1,12 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "rules": {
+    "alpha-value-notation": null,
+    "color-function-notation": "modern",
+    "string-quotes": "single",
+    "scss/at-mixin-argumentless-call-parentheses": null,
+    "selector-id-pattern": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "no-descending-specificity": null
+  }
+}

@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 import { ThinTexture } from '@babylonjs/core/Materials/Textures/thinTexture';
 import { Timeline } from '@babylonjs/controls';
+import TagManager from 'react-gtm-module';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import { changeMode } from 'actions/modeSelection';
@@ -24,7 +25,6 @@ import ControlPanel from './ControlPanel';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import { Overlay } from 'components/Overlay';
-import TagManager from 'react-gtm-module';
 import { Spinner } from 'components';
 
 const cx = classNames.bind(styles);
@@ -101,15 +101,6 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
 
     localStorage.setItem(VM_ON_BOARDING_KEY, Number(OnBoardingMask | KEY).toString());
-  }, []);
-
-  useEffect(() => {
-    TagManager.dataLayer({
-      dataLayer: {
-        event: 'change-mode',
-        mode: 'VM',
-      },
-    });
   }, []);
 
   const boxProps = useMemo(
@@ -260,6 +251,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             unmountCurrentStream();
 
             videoRef.current.src = videoURL;
+
+            TagManager.dataLayer({
+              dataLayer: {
+                event: 'import_success',
+                type: 'video',
+              },
+            });
           }
         })
         .catch(() => {
@@ -494,6 +492,11 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (videoRecorder && videoRecorder.state === 'recording') {
       videoRecorder.stop();
       setVideoRecorder(null);
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'record_done',
+        },
+      });
     }
   }, [videoRecorder]);
 
