@@ -30,10 +30,9 @@ const ModelNode = ({ node }: Props) => {
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    if (draggedNode?.type !== 'MOCAP') {
+    if (draggedNode?.type !== 'MOCAP' || !draggedNode?.mocapId) {
       return;
     }
-
     e.stopPropagation();
 
     if (PlanManager.isStorageExceeded(user)) {
