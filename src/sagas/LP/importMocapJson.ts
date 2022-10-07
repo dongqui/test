@@ -35,12 +35,12 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         const json: MocapJson = JSON.parse(e.target.result);
         checkMocapJson(json);
 
-        const reponseNode = await api.addMocapByJson(lpNode.sceneId, {
+        const reponseNodes = await api.addMocapByJson(lpNode.sceneId, {
           name: mocapJsonFile.name,
           json: json.result,
         });
-        const mocap = convertServerResponseToNode(reponseNode);
-        readJsonChannel.put(lpNodeActions.addNodes([mocap]));
+        const nodes = reponseNodes.map(convertServerResponseToNode);
+        readJsonChannel.put(lpNodeActions.addNodes(nodes));
         TagManager.dataLayer({
           dataLayer: {
             event: 'import_success',
