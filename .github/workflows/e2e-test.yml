@@ -39,7 +39,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
-          working-directory: ./apps/tool
+          # working-directory: ./apps/tool
           browser: chrome
         env:
           CYPRESS_BASE_URL: https://dev-app.plask.ai/
