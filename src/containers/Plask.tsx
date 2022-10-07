@@ -1,5 +1,6 @@
 import { FunctionComponent, Fragment, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import { useSelector } from 'reducers';
 import { changeMode } from 'actions/modeSelection';
@@ -40,6 +41,11 @@ const Plask: FunctionComponent<React.PropsWithChildren<Props>> = ({ browserType,
     ['k'],
     () => {
       console.log('Keyframe Added');
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'edit_keyframe',
+        },
+      });
       dispatch(keyframeActions.editKeyframesSocket.request());
     },
     { repeatOnHold: false },
