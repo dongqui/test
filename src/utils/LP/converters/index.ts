@@ -1,3 +1,5 @@
+import { find } from 'lodash';
+
 import { getFileExtension } from 'utils/common';
 import { RequestNodeResponse } from 'types/LP';
 
@@ -16,4 +18,13 @@ export function convertServerResponseToNode(response: RequestNodeResponse): LP.N
     retargetMap: response.retargetMap,
     createdAt: response.createdAt,
   };
+}
+
+export function setChildNodeIds(nodes: LP.Node[]) {
+  for (const node of nodes) {
+    if (node.parentId) {
+      const parentNode = find(nodes, { id: node.parentId });
+      parentNode?.childNodeIds.push(node.id);
+    }
+  }
 }

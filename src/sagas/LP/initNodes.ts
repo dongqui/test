@@ -3,16 +3,7 @@ import { put, take } from 'redux-saga/effects';
 import { find } from 'lodash';
 
 import * as lpActions from 'actions/LP/lpNodeAction';
-import { convertServerResponseToNode } from 'utils/LP/converters';
-
-function setChildNodeIds(nodes: LP.Node[]) {
-  for (const node of nodes) {
-    if (node.parentId) {
-      const parentNode = find(nodes, { id: node.parentId });
-      parentNode?.childNodeIds.push(node.id);
-    }
-  }
-}
+import { convertServerResponseToNode, setChildNodeIds } from 'utils/LP/converters';
 
 function isFirstSceneLoad(nodes: LP.Node[]) {
   const noRetargetmap = nodes.every((node) => !node.retargetMap);
