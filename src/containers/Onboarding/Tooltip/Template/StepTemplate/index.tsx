@@ -20,7 +20,7 @@ const StepTemplate = forwardRef<HTMLDivElement, StepTemplateProps>((props, ref) 
       TagManager.dataLayer({
         dataLayer: {
           event: 'unlock_achievement',
-          achievement_id: `am_onboarding_0${step}`,
+          achievement_id: `am_onboarding_${step.toString().padStart(2, '0')}`,
         },
       });
     }
