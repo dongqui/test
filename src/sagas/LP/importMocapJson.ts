@@ -9,7 +9,7 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import { MocapJson } from 'types/common';
 import { BONE_NAMES, TRACK_DATA_PROPERTY } from 'constants/index';
 import * as api from 'api';
-import { convertServerResponseToNode } from 'utils/LP/converters';
+import { convertServerResponseToNode, setChildNodeIds } from 'utils/LP/converters';
 import { TOOL_PAYMENT_MAXIMUM_SIZE } from 'errors';
 import PlanManager from 'utils/PlanManager';
 
@@ -39,7 +39,10 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
           name: mocapJsonFile.name,
           json: json.result,
         });
+
         const nodes = reponseNodes.map(convertServerResponseToNode);
+        setChildNodeIds(nodes);
+
         readJsonChannel.put(lpNodeActions.addNodes(nodes));
         TagManager.dataLayer({
           dataLayer: {
