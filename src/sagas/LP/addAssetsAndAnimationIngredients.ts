@@ -55,7 +55,7 @@ export default function* addAssetsAndAnimationIngredients(action: ReturnType<typ
     const animationLayers = _animation.scenesLibraryModelAnimationLayers as ServerAnimationLayer[];
     const animation = omitBy(_animation, (value, key) => key === 'scenesLibraryModelAnimationLayers') as ServerAnimation;
 
-    let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, newAsset.transformNodes, false, modelNode.assetId);
+    let { animationIngredient } = plaskEngine.animationModule.serverDataToIngredient(animation, animationLayers, newAsset.transformNodes, false, motion?.assetId!);
 
     const animationIngredients = [animationIngredient];
 
