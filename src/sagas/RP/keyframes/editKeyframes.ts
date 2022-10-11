@@ -10,7 +10,6 @@ import { getInterpolatedQuaternion, getInterpolatedVector, getValueInsertedTrans
 import { UpdatedPropertyKeyframes } from 'types/TP/keyframe';
 import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
 import plaskEngine from '3d/PlaskEngine';
-import { AnimationModule } from '3d/modules/animation/AnimationModule';
 
 function getSelectedLayer(state: RootState) {
   return state.trackList.selectedLayer;
@@ -121,7 +120,7 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
                 } else {
                   otherValue = getInterpolatedValue(otherLayerTrack.transformKeys, otherLayerTrack.property, _currentFrameIndex);
                 }
-                value = AnimationModule.GetInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue);
+                value = plaskEngine.animationModule.getInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue);
               }
             });
             targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, _currentFrameIndex, value);
