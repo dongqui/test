@@ -26,7 +26,20 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const LinkedButton: FunctionComponent<Props> = ({ variant, size, text, color, fullSize, disabled, onClick, className, children, dataCy, href, ...rest }) => {
+const LinkedButton: FunctionComponent<React.PropsWithChildren<Props>> = ({
+  variant,
+  size,
+  text,
+  color,
+  fullSize,
+  disabled,
+  onClick,
+  className,
+  children,
+  dataCy,
+  href,
+  ...rest
+}) => {
   const classes = cx(variant, className, size, color, {
     disabled,
     fullSize,

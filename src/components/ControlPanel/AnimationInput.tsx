@@ -18,13 +18,22 @@ interface Props {
   handleBlur?: (event: FocusEvent<HTMLInputElement>) => void;
 }
 
-const AnimationInput: FunctionComponent<Props> = ({ className, currentValue, text, defaultValue, activeStatus, inactiveMessage, decimalDigit, handleBlur }) => {
+const AnimationInput: FunctionComponent<React.PropsWithChildren<Props>> = ({
+  className,
+  currentValue,
+  text,
+  defaultValue,
+  activeStatus,
+  inactiveMessage,
+  decimalDigit,
+  handleBlur,
+}) => {
   // input의 값이 바뀌었는지 체크하기 위한 boolean 값, input이 focus 되면 기본적으로 값을 바꾸기 위해 접근한 것으로 간주
   const [isValueChanged, setIsValueChanged] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleKeyUp = useCallback((event) => {
+  const handleKeyUp = useCallback((event: any) => {
     if (event.key === 'Enter') {
       event.target.blur();
     }

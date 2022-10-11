@@ -11,7 +11,7 @@ interface Props {
   option: {
     key: string;
     value: string | number | boolean;
-    label: string | FunctionComponent;
+    label: string | FunctionComponent<React.PropsWithChildren<unknown>>;
   };
   selected: boolean;
   onClick: (key: string) => void;

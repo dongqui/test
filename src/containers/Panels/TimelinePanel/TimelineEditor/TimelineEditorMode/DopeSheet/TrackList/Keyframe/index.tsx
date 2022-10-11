@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, FunctionComponent } from
 import { useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import _ from 'lodash';
+import TagManager from 'react-gtm-module';
 
 import { useSelector } from 'reducers';
 import { TrackIdentifier, TrackNumber } from 'types/TP';
@@ -17,7 +18,7 @@ const cx = classNames.bind(styles);
 
 type Props = TrackIdentifier & Keyframe;
 
-const KeyframeComponent: FunctionComponent<Props> = (props) => {
+const KeyframeComponent: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { trackNumber, trackId, trackType, time, isSelected, parentTrackNumber } = props;
   const dispatch = useDispatch();
   const keyframeRef = useRef<SVGPathElement>(null);
@@ -65,6 +66,11 @@ const KeyframeComponent: FunctionComponent<Props> = (props) => {
         label: 'Delete Keyframe',
         onClick: () => {
           document.getElementById('timeline-editor-svg')?.focus();
+          TagManager.dataLayer({
+            dataLayer: {
+              event: 'edit_keyframe',
+            },
+          });
           dispatch(keyframeActions.deleteKeyframesSocket.request());
         },
         disabled: !isSelected || TimeIndex.getPlayState() === 'play',

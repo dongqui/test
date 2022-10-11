@@ -14,7 +14,7 @@ export interface Props {
   onSelect: (key: string, value: string) => void;
 }
 
-const DropdownItem: FunctionComponent<Props> = ({ item, selectedValue, onSelect }) => {
+const DropdownItem: FunctionComponent<React.PropsWithChildren<Props>> = ({ item, selectedValue, onSelect }) => {
   const handleClick: MouseEventHandler<HTMLLIElement> = useCallback(
     (_e) => {
       onSelect(item.key, item.value);

@@ -20,7 +20,7 @@ interface Props {
   data: RequestNodeResponse[];
 }
 
-const Index: FunctionComponent<Props> = ({ browserType, error, token, sceneId, data }) => {
+const Index: FunctionComponent<React.PropsWithChildren<Props>> = ({ browserType, error, token, sceneId, data }) => {
   if (error) {
     return <Authentication statusCode={error.statusCode} message={error.message} />;
   }

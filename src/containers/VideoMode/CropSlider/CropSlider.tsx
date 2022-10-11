@@ -22,7 +22,7 @@ interface Props {
   children: ReactNode;
 }
 
-export const CropSlider: FunctionComponent<Props> = ({
+export const CropSlider: FunctionComponent<React.PropsWithChildren<Props>> = ({
   start,
   end,
   duration,
@@ -72,7 +72,7 @@ export const CropSlider: FunctionComponent<Props> = ({
     }
   };
 
-  const handlePreventEvent = useCallback((e) => {
+  const handlePreventEvent = useCallback((e: any) => {
     e.preventDefault();
   }, []);
 

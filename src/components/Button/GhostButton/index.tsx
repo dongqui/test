@@ -19,7 +19,7 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const GhostButton: FunctionComponent<Props> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
+const GhostButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ size, text, type, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
   const classes = cx('text', className, size, type, {
     disabled,
     fullSize,

@@ -26,7 +26,7 @@ function iconFormat(iconName: LP.NodeType): NodeIcon {
   }
 }
 
-const NodeIcon: FunctionComponent<Props> = ({ icon, isVisualizedUICondition, isSelected }) => {
+const NodeIcon: FunctionComponent<React.PropsWithChildren<Props>> = ({ icon, isVisualizedUICondition, isSelected }) => {
   const classes = cx('icon', {
     visualized: isVisualizedUICondition,
     selected: isSelected,

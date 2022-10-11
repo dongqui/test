@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
 interface Option {
   key: string;
   value: string | number | boolean;
-  label: string | FunctionComponent;
+  label: string | FunctionComponent<React.PropsWithChildren<unknown>>;
 }
 
 interface Props {

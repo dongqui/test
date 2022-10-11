@@ -11,7 +11,7 @@ interface Props {
   requestAnimationFrameId: MutableRefObject<number>;
 }
 
-const Stop: FunctionComponent<Props> = (props) => {
+const Stop: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { requestAnimationFrameId } = props;
 
   const _playState = useSelector((state) => state.animatingControls.playState);

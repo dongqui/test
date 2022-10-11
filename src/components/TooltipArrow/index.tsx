@@ -20,7 +20,7 @@ interface Props {
   backgroundColor?: 'default' | 'dark';
 }
 
-const Arrow: FunctionComponent<Props> = ({ placement, backgroundColor = 'default' }) => {
+const Arrow: FunctionComponent<React.PropsWithChildren<Props>> = ({ placement, backgroundColor = 'default' }) => {
   return <div className={cx('arrow', placement, backgroundColor)} />;
 };
 

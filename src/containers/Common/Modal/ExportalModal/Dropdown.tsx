@@ -1,5 +1,5 @@
 import { find } from 'lodash';
-import { Fragment, memo, forwardRef, useState, useCallback, useRef } from 'react';
+import React, { Fragment, memo, forwardRef, useState, useCallback, useRef } from 'react';
 import { IconWrapper, SvgPath } from 'components/Icon';
 import classnames from 'classnames/bind';
 import styles from './Dropdown.module.scss';
@@ -29,13 +29,20 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
   const [isOpen, setIsOpen] = useState(false);
   const [values, setValues] = useState(initialValue);
 
+  const handleToggle = useCallback(
+    (e: React.MouseEvent | MouseEvent) => {
+      e.stopPropagation();
+      setIsOpen(!isOpen);
+    },
+    [isOpen],
+  );
+
   useEffect(() => {
     const handleOutSideClick = (e: MouseEvent) => {
       const target = e.target as Node;
       const isContains = wrapperRef.current?.contains(target);
-
       if (!isContains && isOpen) {
-        handleToggle();
+        handleToggle(e);
       }
     };
 
@@ -44,7 +51,7 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
     return () => {
       window.removeEventListener('click', handleOutSideClick);
     };
-  });
+  }, [handleToggle, isOpen]);
 
   useEffect(() => {
     const item = find(list, { value });
@@ -56,10 +63,6 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
     }
   }, [list, value]);
 
-  const handleToggle = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen]);
-
   const handleChange = useCallback(
     (value: { value: string; label: string }) => {
       setValues(value);
@@ -70,7 +73,7 @@ const Dropdown = forwardRef<HTMLDivElement, Props>(({ initialValue, list, onChan
 
   return (
     <div className={cx('wrapper')}>
-      <div className={cx('header')} ref={ref} onClick={handleToggle}>
+      <div className={cx('header')} ref={ref}>
         <button data-cy={`dropdown-${name}-btn`} className={cx('button')} type="button" onClick={handleToggle}>
           <div className={cx('text')}>{values.label}</div>
           <IconWrapper className={cx('arrow')} icon={SvgPath.EmptyDownArrow} hasFrame={false} />

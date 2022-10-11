@@ -35,7 +35,7 @@ interface Props {
   onDragEnd?: (list: NodeListOf<HTMLElement>) => void;
 }
 
-const DragBox: FunctionComponent<Props> = (props) => {
+const DragBox: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { areaRef, selectableId, selectedId, onDragMove, onDragEnd } = props;
   const [isOpenedDragBox, setIsOpenedDragBox] = useState(false);
   const dragBoxRef = useRef<HTMLDivElement>(null);

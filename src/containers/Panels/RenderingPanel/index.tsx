@@ -29,7 +29,7 @@ const cx = classNames.bind(styles);
 
 interface Props {}
 
-const RenderingPanel: FunctionComponent<Props> = () => {
+const RenderingPanel: FunctionComponent<React.PropsWithChildren<Props>> = () => {
   /**
    * global states
    */

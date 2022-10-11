@@ -1,6 +1,7 @@
 import { ChangeEvent, FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { isNull } from 'lodash';
+import TagManager from 'react-gtm-module';
 
 import { StaticRangeInput } from 'components/ControlPanel';
 import { FilledButton } from 'components/Button';
@@ -36,7 +37,7 @@ interface Props {
   animationIngredients: Array<AnimationIngredient>;
 }
 
-const IKControllerSection: FunctionComponent<Props> = ({
+const IKControllerSection: FunctionComponent<React.PropsWithChildren<Props>> = ({
   isAllActive,
   selectableObjects,
   selectedTargets,
@@ -312,6 +313,11 @@ const IKControllerSection: FunctionComponent<Props> = ({
 
   const handleSetupIK = useCallback(() => {
     const assetId = _visualizedAssetIds[0];
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'setup_ik_control',
+      },
+    });
     dispatch(addIKAction(assetId));
 
     if (!popupManager.isIKOnboardingDone) {

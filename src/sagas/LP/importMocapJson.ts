@@ -1,6 +1,7 @@
 import { channel } from 'redux-saga';
 import { select, put, SagaReturnType, take } from 'redux-saga/effects';
 import { isEqual } from 'lodash';
+import TagManager from 'react-gtm-module';
 
 import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -8,7 +9,7 @@ import * as globalUIActions from 'actions/Common/globalUI';
 import { MocapJson } from 'types/common';
 import { BONE_NAMES, TRACK_DATA_PROPERTY } from 'constants/index';
 import * as api from 'api';
-import { convertServerResponseToNode } from 'utils/LP/converters';
+import { convertServerResponseToNode, setChildNodeIds } from 'utils/LP/converters';
 import { TOOL_PAYMENT_MAXIMUM_SIZE } from 'errors';
 import PlanManager from 'utils/PlanManager';
 
@@ -34,12 +35,21 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         const json: MocapJson = JSON.parse(e.target.result);
         checkMocapJson(json);
 
-        const reponseNode = await api.addMocapByJson(lpNode.sceneId, {
+        const reponseNodes = await api.addMocapByJson(lpNode.sceneId, {
           name: mocapJsonFile.name,
           json: json.result,
         });
-        const mocap = convertServerResponseToNode(reponseNode);
-        readJsonChannel.put(lpNodeActions.addNodes([mocap]));
+
+        const nodes = reponseNodes.map(convertServerResponseToNode);
+        setChildNodeIds(nodes);
+
+        readJsonChannel.put(lpNodeActions.addNodes(nodes));
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'import_success',
+            type: 'other',
+          },
+        });
       } catch (e: any) {
         if (e.statusCode === TOOL_PAYMENT_MAXIMUM_SIZE) {
           PlanManager.openStorageExceededModal(user);

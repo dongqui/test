@@ -7,7 +7,7 @@ interface Props {
   items: string[];
 }
 
-const ListChildren: FunctionComponent<Props> = ({ items }) => {
+const ListChildren: FunctionComponent<React.PropsWithChildren<Props>> = ({ items }) => {
   const _lpNode = useSelector((state) => state.lpNode.nodes);
 
   const recursiveRender = useCallback(

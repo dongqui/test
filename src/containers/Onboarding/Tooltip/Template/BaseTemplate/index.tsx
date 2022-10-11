@@ -1,5 +1,6 @@
 import { forwardRef, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -25,6 +26,15 @@ const BaseTemplate = forwardRef<HTMLDivElement, Props>((props, ref) => {
 
   const handleCloseButtonClick = useCallback(() => {
     localStorage.setItem('onboarding_1', 'onboarding_1');
+    // if last step
+    if (onboardingStep === 6) {
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'tutorial_complete',
+        },
+      });
+    }
+
     if (onboardingStep === 999) {
       dispatch(globalUIActions.progressOnboarding({ onboardingStep: null }));
       document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();

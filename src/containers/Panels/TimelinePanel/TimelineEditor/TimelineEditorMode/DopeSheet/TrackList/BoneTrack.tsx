@@ -18,7 +18,7 @@ interface Props extends TimeEditorTrack, BoneTrack {
   translateY: number;
 }
 
-const BoneTrackComponent: FunctionComponent<Props> = (props) => {
+const BoneTrackComponent: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { trackNumber, trackId, keyframes, isPointedDownCaret, isSelected, translateY, parentTrackNumber } = props;
   const propertyKeyframes = useSelector((state) => state.keyframes.propertyTrackList);
   const propertyTrackList = useSelector((state) => state.trackList.propertyTrackList);

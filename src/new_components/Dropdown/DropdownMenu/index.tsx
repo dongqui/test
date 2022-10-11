@@ -21,7 +21,7 @@ interface Props {
   onClose?: (params?: any) => void;
 }
 
-const DropdownMenu: FunctionComponent<Props> = (props) => {
+const DropdownMenu: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { autoClose = true, children, onClose } = props;
 
   const dropdownMenuRef = useRef<HTMLUListElement>(null);
@@ -113,7 +113,7 @@ const DropdownMenu: FunctionComponent<Props> = (props) => {
   );
 };
 
-const DropdownMenuWrapper: FunctionComponent<Props> = (props) => {
+const DropdownMenuWrapper: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { children, ...rest } = props;
 
   const [{ isOpenMenu }] = useContext(DropdownContext);

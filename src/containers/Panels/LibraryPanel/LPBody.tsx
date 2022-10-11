@@ -17,7 +17,7 @@ interface Props {
   isPreventContextmenu?: boolean;
 }
 
-const LPBody: FunctionComponent<Props> = ({ lpNodes }) => {
+const LPBody: FunctionComponent<React.PropsWithChildren<Props>> = ({ lpNodes }) => {
   const dispatch = useDispatch();
   const { nodes, draggedNode } = useSelector((state) => state.lpNode);
 

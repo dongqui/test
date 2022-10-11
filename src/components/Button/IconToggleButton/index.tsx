@@ -9,7 +9,7 @@ const cx = classNames.bind(styles);
 
 interface BaseProps {
   type?: 'primary';
-  icon: FunctionComponent;
+  icon: FunctionComponent<React.PropsWithChildren<unknown>>;
   defaultState?: boolean;
 }
 
@@ -19,7 +19,7 @@ const defaultProps: Partial<BaseProps> = {
   type: 'primary',
 };
 
-const IconToggleButton: FunctionComponent<Props> = ({ type, icon, disabled, defaultState, onClick, className, children, ...rest }) => {
+const IconToggleButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ type, icon, disabled, defaultState, onClick, className, children, ...rest }) => {
   const [toggleState, setToggleState] = useState(defaultState ?? false);
   const classes = cx('icon-toggle-button', className, type, {
     disabled,

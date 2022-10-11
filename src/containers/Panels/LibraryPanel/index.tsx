@@ -21,7 +21,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const LibraryPanel: FunctionComponent = () => {
+const LibraryPanel: FunctionComponent<React.PropsWithChildren<unknown>> = () => {
   const dispatch = useDispatch();
   const _lpNode = useSelector((state) => state.lpNode.nodes);
   const _screenList = useSelector((state) => state.plaskProject.screenList);
@@ -41,12 +41,6 @@ const LibraryPanel: FunctionComponent = () => {
     const totalFileSize = files?.reduce((sum, file) => sum + file.size, 0);
     const onlyOneViedo = files.length === 1 && files[0].type.includes('video');
     if (hasMoreThanOneVideo) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'lp-file-drop',
-          type: 'etc',
-        },
-      });
       dispatch(
         globalUIActions.openModal('AlertModal', {
           title: 'Warning',
@@ -55,12 +49,6 @@ const LibraryPanel: FunctionComponent = () => {
         }),
       );
     } else if (isInvalidFileFormat) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'lp-file-drop',
-          type: 'etc',
-        },
-      });
       dispatch(
         globalUIActions.openModal('_AlertModal', {
           message: IMPORT_ERROR_INVALID_FORMAT,

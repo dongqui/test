@@ -13,7 +13,7 @@ const cx = classNames.bind(styles);
 
 interface Props {}
 
-const FasterDropdown: FunctionComponent<Props> = () => {
+const FasterDropdown: FunctionComponent<React.PropsWithChildren<Props>> = () => {
   // variable for detecting mose hover selector.
   const [onDropdown, setOnDropdown] = useState(false);
   const _playSpeed = useSelector((state) => state.animatingControls.playSpeed);

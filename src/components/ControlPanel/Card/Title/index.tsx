@@ -31,7 +31,7 @@ interface Props {
   handleSpread: () => void;
 }
 
-const PlaskCardTitle: FunctionComponent<Props> = ({
+const PlaskCardTitle: FunctionComponent<React.PropsWithChildren<Props>> = ({
   type = 'normal',
   title,
   className,

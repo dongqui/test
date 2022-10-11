@@ -7,7 +7,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const PostiveButton: FunctionComponent<ButtonHTMLAttributes<HTMLButtonElement>> = (props) => {
+const PostiveButton: FunctionComponent<React.PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>> = (props) => {
   const { children, onClick } = props;
 
   return (

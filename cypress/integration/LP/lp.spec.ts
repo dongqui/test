@@ -27,7 +27,7 @@ import {
   FIXTURES_GLB_FILE_NAME,
 } from '../helper';
 
-describe('LP test', () => {
+describe.skip('LP test', () => {
   before(() => {
     visitAndGetMockData();
     handleOnboarding();

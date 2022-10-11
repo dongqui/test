@@ -9,7 +9,7 @@ import styles from './index.module.scss';
 
 const cx = classNames.bind(styles);
 
-const CaretButton: FunctionComponent<ClickLayerCaretButton> = (props) => {
+const CaretButton: FunctionComponent<React.PropsWithChildren<ClickLayerCaretButton>> = (props) => {
   const { isPointedDownCaret, trackId, trackType } = props;
   const dispatch = useDispatch();
 

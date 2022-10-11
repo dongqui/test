@@ -22,7 +22,7 @@ interface Props {
   selectedTargets: Array<PlaskTransformNode>;
 }
 
-const TransformSection: FunctionComponent<Props> = ({ isAllActive, selectableObjects, selectedTargets }) => {
+const TransformSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAllActive, selectableObjects, selectedTargets }) => {
   const _selectableObjects = selectableObjects;
   const _selectedTargets = selectedTargets;
 

@@ -11,7 +11,7 @@ interface Props {
   message: string;
 }
 
-const LoadingModal: FunctionComponent<Props> = ({ title, message }) => {
+const LoadingModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ title, message }) => {
   return (
     <BaseModal dataCy="loading-modal">
       <div className={cx('title')}>{title}</div>

@@ -19,7 +19,7 @@ interface Props {
   isFocusedTimelineEditor: boolean;
 }
 
-const Scrubber: FunctionComponent<Props> = (props) => {
+const Scrubber: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { isFocusedTimelineEditor } = props;
   const dispatch = useDispatch();
 

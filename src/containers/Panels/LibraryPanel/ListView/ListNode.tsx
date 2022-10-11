@@ -9,7 +9,7 @@ interface Props {
   node: LP.Node;
 }
 
-const ListNode: FunctionComponent<Props> = ({ node }) => {
+const ListNode: FunctionComponent<React.PropsWithChildren<Props>> = ({ node }) => {
   return (
     <Fragment>
       {node.type === 'MODEL' && <ModelNode node={node} />}

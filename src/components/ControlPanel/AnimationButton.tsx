@@ -15,7 +15,7 @@ interface Props {
 
 const cx = classNames.bind(styles);
 
-const AnimationButton: FunctionComponent<Props> = ({ className, buttonInfo, activeStatus }) => {
+const AnimationButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ className, buttonInfo, activeStatus }) => {
   // 버튼이 활성화 되었는지 확인하여 css 스타일을 변경하기 위한 상태
   const [activeButton, setActiveButton] = useState<string>(buttonInfo[0].text);
 
