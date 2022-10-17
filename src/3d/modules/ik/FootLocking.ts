@@ -30,7 +30,7 @@ export class FootLocking {
     public ikController: IKController,
   ) {}
   public static readonly Y_MARGIN = 0.15; // Approx world units between the heel and the ground (Y axis)
-  public static readonly INTERPOLATION_FRAMES = 4;
+  public static readonly INTERPOLATION_FRAMES = 8;
   public static readonly LOW_PASS_FILTER_MIN_FRAMES = 2;
 
   public static FixIKOnGround(frameIKPosition: Vector3[]) {
@@ -211,7 +211,7 @@ export class FootLocking {
     while (j < heelTransformKeys.length) {
       let i = j;
       const phaseObject = { length: 0, toe: toeTransformKeys[j].value, heel: heelTransformKeys[j].value, target: null as Nullable<Vector3>, startFrame: j };
-      // console.log(`${this.side} foot : phase from ${j} : toe is ${phaseObject.toe} and heel is ${phaseObject.heel}`);
+      console.log(`${this.side} foot : phase from ${j} : toe is ${phaseObject.toe} and heel is ${phaseObject.heel}`);
       phases.push(phaseObject);
 
       while (i < heelTransformKeys.length && phaseObject.toe === toeTransformKeys[i].value && phaseObject.heel === heelTransformKeys[i].value) {
