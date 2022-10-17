@@ -53,7 +53,7 @@ class MyDocument extends Document {
         (function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`,
                 }}
               />
-              <Script src="https://r.wdfl.co/rw.js' data-rewardful='78056c" async />
+              <Script src="https://r.wdfl.co/rw.js" data-rewardful="78056c" data-domains="plask.ai" async />
             </Fragment>
           )}
           <div id="portal" />
