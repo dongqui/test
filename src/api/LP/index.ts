@@ -25,10 +25,11 @@ export async function createFolderOrMocap(sceneId: string, data: CreateFolderOrM
   return response.data;
 }
 
-export async function addModel(sceneId: string, file: File, parentId?: string) {
+export async function addModel(sceneId: string, originalFileName: string, fileKey: string, parentId?: string) {
   const formData = new FormData();
 
-  formData.append('file', file);
+  formData.append('originalFileName', originalFileName);
+  formData.append('fileKey', fileKey);
   if (parentId) {
     formData.append('parentId', parentId);
   }
@@ -124,4 +125,33 @@ export async function getMocapData(scenesId: string, libraryId: string) {
   });
 
   return response.data;
+}
+
+interface UploadResult {
+  originalFileName: string;
+  fileKey: string;
+  headers: {
+    'Content-Type': string;
+    'x-amz-tagging': string;
+  };
+  url: string;
+}
+export async function upload(file: File): Promise<{
+  originalFileName: string;
+  fileKey: string;
+}> {
+  const { data }: { data: UploadResult } = await requestApi({
+    method: 'GET',
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    url: `/upload?filename=${file.name}`,
+  });
+
+  await axios.put(data.url, file, {
+    headers: data.headers,
+  });
+
+  return {
+    originalFileName: file.name,
+    fileKey: data.fileKey,
+  };
 }
