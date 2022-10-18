@@ -14,7 +14,7 @@ const cx = classNames.bind(styles);
 
 interface Props {}
 
-const Dropdown: FunctionComponent<Props> = (props) => {
+const Dropdown: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { children } = props;
 
   return (

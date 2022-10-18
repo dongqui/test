@@ -3,7 +3,6 @@ import { channel } from 'redux-saga';
 
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as modeSelectActions from 'actions/modeSelection';
-import TagManager from 'react-gtm-module';
 
 const confirmSwitchModeChannel = channel();
 const isValidModelType = (name: string) => name.toLocaleLowerCase().includes('glb') || name.toLocaleLowerCase().includes('fbx');
@@ -37,28 +36,10 @@ export default function* _fileUpload(action: ReturnType<typeof lpNodeActions.fil
     const isVideo = file.type.includes('video');
 
     if (isJson) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'lp-file-drop',
-          type: 'json',
-        },
-      });
       yield put(lpNodeActions.importMocapJson(file));
     } else if (isModelFile) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'lp-file-drop',
-          type: 'model',
-        },
-      });
       yield put(lpNodeActions.addModelAsync.request(file));
     } else if (isVideo) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'lp-file-drop',
-          type: 'video',
-        },
-      });
       yield put(
         modeSelectActions.changeMode({
           mode: 'videoMode',

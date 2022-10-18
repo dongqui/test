@@ -10,7 +10,7 @@ interface Props extends Omit<React.HTMLAttributes<HTMLElement>, 'disabled' | 'on
   dataCy?: string;
 }
 
-const ContextMenuItem: FunctionComponent<Props> = ({ dataCy, children, disabled = false, onClick, ...rest }) => {
+const ContextMenuItem: FunctionComponent<React.PropsWithChildren<Props>> = ({ dataCy, children, disabled = false, onClick, ...rest }) => {
   const _onClick = (e: React.MouseEvent) => {
     if (disabled) {
       e.preventDefault();

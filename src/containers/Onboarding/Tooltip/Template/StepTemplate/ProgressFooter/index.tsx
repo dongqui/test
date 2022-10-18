@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import * as globalUIActions from 'actions/Common/globalUI';
 import { OnboardingStep } from 'containers/Onboarding';
@@ -29,7 +30,7 @@ const LEARN_MORE_HREF: LearnMore = {
 
 const LAST_STEP = 6;
 
-const ProgressFooter: FunctionComponent<Props> = (props) => {
+const ProgressFooter: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { step } = props;
 
   const dispatch = useDispatch();
@@ -44,6 +45,11 @@ const ProgressFooter: FunctionComponent<Props> = (props) => {
   const handleClickDoneButton = () => {
     const localStorage = window.localStorage;
     localStorage.setItem('onboarding_1', 'onboarding_1');
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'tutorial_complete',
+      },
+    });
     dispatch(globalUIActions.progressOnboarding({ onboardingStep: 999 }));
   };
 

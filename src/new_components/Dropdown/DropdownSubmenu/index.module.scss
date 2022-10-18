@@ -1,8 +1,11 @@
-@import "styles/libraries/_colors";
+@import 'styles/libraries/_colors';
 
 .wrapper {
-  border-radius: 6px;
-  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  width: auto;
+  height: 26px;
   position: relative;
   cursor: pointer;
   color: $content-active;
@@ -21,6 +24,7 @@
   .trigger {
     width: 100%;
     display: flex;
+    justify-content: space-between;
   }
 
   .submenu {
@@ -38,6 +42,15 @@
 }
 
 .arrow {
-  margin-left: auto;
-  font-size: 12px;
+  color: var(--grey090);
+  width: 16px;
+  height: 16px;
+
+  & > svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+  }
 }

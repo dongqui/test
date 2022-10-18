@@ -12,7 +12,7 @@ interface Props {
   className?: string;
 }
 
-const PlaskCardBody: FunctionComponent<Props> = ({ children, className, isSpread }) => {
+const PlaskCardBody: FunctionComponent<React.PropsWithChildren<Props>> = ({ children, className, isSpread }) => {
   const classes = cx('container', className, { active: isSpread });
 
   return <div className={classes}>{children}</div>;

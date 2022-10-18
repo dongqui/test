@@ -19,7 +19,7 @@ interface Props {
   isAllActive: boolean;
 }
 
-const AnimationTab: FunctionComponent<Props> = ({ isAllActive }) => {
+const AnimationTab: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAllActive }) => {
   const _visualizedAssetIds = useSelector((state) => state.plaskProject.visualizedAssetIds);
   const _selectableObjects = useSelector((state) => state.selectingData.present.selectableObjects);
   const _selectedTargets = useSelector((state) => state.selectingData.present.selectedTargets);

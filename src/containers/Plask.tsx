@@ -1,5 +1,6 @@
 import { FunctionComponent, Fragment, useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import { useSelector } from 'reducers';
 import { changeMode } from 'actions/modeSelection';
@@ -24,7 +25,7 @@ interface Props {
   data: RequestNodeResponse[];
 }
 
-const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) => {
+const Plask: FunctionComponent<React.PropsWithChildren<Props>> = ({ browserType, sceneId, token, data }) => {
   const { mode } = useSelector((state) => state.modeSelection);
   const dispatch = useDispatch();
 
@@ -40,6 +41,11 @@ const Plask: FunctionComponent<Props> = ({ browserType, sceneId, token, data }) 
     ['k'],
     () => {
       console.log('Keyframe Added');
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'edit_keyframe',
+        },
+      });
       dispatch(keyframeActions.editKeyframesSocket.request());
     },
     { repeatOnHold: false },

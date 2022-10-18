@@ -26,7 +26,15 @@ interface Props {
   playDirection: PlayDirection;
 }
 
-const FilterSection: FunctionComponent<Props> = ({ isAllActive, visualizedAssetIds, selectedTargets, seletedLayer, animationIngredients, playState, playDirection }) => {
+const FilterSection: FunctionComponent<React.PropsWithChildren<Props>> = ({
+  isAllActive,
+  visualizedAssetIds,
+  selectedTargets,
+  seletedLayer,
+  animationIngredients,
+  playState,
+  playDirection,
+}) => {
   const _visualizedAssetIds = visualizedAssetIds;
   const _selectedTargets = selectedTargets;
   const _seletedLayer = seletedLayer;

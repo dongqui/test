@@ -1,6 +1,7 @@
 import { Fragment, useEffect } from 'react';
-import NextApp, { AppContext, AppInitialProps, AppProps } from 'next/app';
 import { NextComponentType } from 'next';
+import NextApp, { AppContext, AppInitialProps, AppProps } from 'next/app';
+import Script from 'next/script';
 import { wrapper } from 'store';
 import { hotjar } from 'analytics';
 import Head from 'next/head';
@@ -44,6 +45,18 @@ const App: NextComponentType<AppContext, AppInitialProps, AppProps> = ({ Compone
         <title>Plask</title>
         <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
       </Head>
+      {process.env.NODE_ENV === 'production' && (
+        <Fragment>
+          <Script
+            id="rewardful-loader-1"
+            dangerouslySetInnerHTML={{
+              __html: `
+        (function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`,
+            }}
+          />
+          <Script src="https://r.wdfl.co/rw.js" data-rewardful="78056c" data-domains="plask.ai" async />
+        </Fragment>
+      )}
       <Component {...pageProps} />
     </Fragment>
   );

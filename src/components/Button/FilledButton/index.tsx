@@ -23,7 +23,7 @@ const defaultProps: Partial<BaseProps> = {
   size: 'small',
 };
 
-const FilledButton: FunctionComponent<Props> = ({ r, size, text, buttonType, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
+const FilledButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ r, size, text, buttonType, fullSize, disabled, onClick, className, children, dataCy, ...rest }) => {
   const classes = cx('filled', className, size, buttonType, {
     disabled,
     fullSize,

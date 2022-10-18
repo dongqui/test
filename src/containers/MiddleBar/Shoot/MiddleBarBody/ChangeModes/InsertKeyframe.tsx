@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import { useSelector } from 'reducers';
 import { IconWrapper, SvgPath } from 'components/Icon';
@@ -20,6 +21,11 @@ const InsertKeyframe = () => {
   const handleClickButton = useCallback(() => {
     if (_selectedTargets.length !== 0 && _playState !== 'play') {
       dispatch(keyframeActions.editKeyframesSocket.request());
+      TagManager.dataLayer({
+        dataLayer: {
+          event: 'edit_keyframe',
+        },
+      });
     }
   }, [_playState, _selectedTargets.length, dispatch]);
 

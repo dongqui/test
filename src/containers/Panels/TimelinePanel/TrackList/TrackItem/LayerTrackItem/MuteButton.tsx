@@ -14,7 +14,7 @@ const cx = classNames.bind(styles);
 
 type Props = Pick<LayerTrack, 'isMuted' | 'trackName' | 'trackId'>;
 
-const MuteButton: FunctionComponent<Props> = (props) => {
+const MuteButton: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { isMuted, trackName, trackId } = props;
   const dispatch = useDispatch();
 

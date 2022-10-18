@@ -152,18 +152,12 @@ const ControlPanel = ({
   }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
   const handleCancel = useCallback(() => {
-    TagManager.dataLayer({
-      dataLayer: {
-        event: 'export-motion-cancel',
-      },
-    });
-
     setIsOpenLoadingModal(false);
     setIsOpenExtractModal(false);
     cancelTokenSource.current && cancelTokenSource.current();
   }, [setIsOpenExtractModal, setIsOpenLoadingModal]);
 
-  const convertBlobToFile = useCallback(async ({ url, type, fileName }) => {
+  const convertBlobToFile = useCallback(async ({ url, type, fileName }: any) => {
     const response = await fetch(url);
     const data = await response
       .blob()
@@ -182,12 +176,6 @@ const ControlPanel = ({
 
   const handleSubmitModal = async () => {
     setIsOpenExtractModal(false);
-
-    TagManager.dataLayer({
-      dataLayer: {
-        event: 'export-motion',
-      },
-    });
 
     if (videoRef.current) {
       if (endValue - startValue > 300) {
@@ -232,7 +220,7 @@ const ControlPanel = ({
             .then((response) => {
               TagManager.dataLayer({
                 dataLayer: {
-                  event: 'export-motion-success',
+                  event: 'extract_mocap_success',
                 },
               });
 
@@ -295,17 +283,6 @@ const ControlPanel = ({
         });
     }
   };
-
-  useEffect(() => {
-    if (isOpenExceptionModal.isOpen && isOpenExceptionModal.case !== undefined) {
-      TagManager.dataLayer({
-        dataLayer: {
-          event: 'error',
-          type: isOpenExceptionModal.case,
-        },
-      });
-    }
-  }, [isOpenExceptionModal]);
 
   const remainingCredit = planManager.remainingCredits(user, requiredCredit).toLocaleString();
   return (

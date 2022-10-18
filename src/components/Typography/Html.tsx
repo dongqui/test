@@ -5,7 +5,7 @@ export interface Props {
   className?: string;
 }
 
-const Html: FunctionComponent<Props> = ({ content, ...rest }) => {
+const Html: FunctionComponent<React.PropsWithChildren<Props>> = ({ content, ...rest }) => {
   return <div {...rest} dangerouslySetInnerHTML={{ __html: content }} />;
 };
 

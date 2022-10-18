@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { GetServerSideProps } from 'next';
 
 import { useInterval, useSetTimeout } from 'hooks/common';
@@ -8,7 +8,6 @@ import { Spinner, SvgPath, IconWrapper } from 'components';
 
 import classnames from 'classnames/bind';
 import styles from './index.module.scss';
-import { time } from 'console';
 
 const cx = classnames.bind(styles);
 
@@ -17,6 +16,7 @@ interface PageProps {
 }
 
 export default function Success({ token }: PageProps) {
+  const [opener, setOpener] = useState(false);
   const [intervalTime, setIntervalTime] = useState<number | null>(1000);
   const [timeoutTime, setTimeoutTime] = useState<number | null>(null);
   const [time, setTime] = useState<number>(0);
@@ -26,6 +26,8 @@ export default function Success({ token }: PageProps) {
 
     if (!window.opener) {
       window.location.href = '/';
+    } else {
+      setOpener(true);
     }
   }, [token]);
 
@@ -67,8 +69,8 @@ export default function Success({ token }: PageProps) {
     }
   }
 
-  if (!global?.opener) {
-    return null;
+  if (!opener) {
+    return <Fragment />;
   }
 
   return <div className={cx('container')}>{renderPage()}</div>;

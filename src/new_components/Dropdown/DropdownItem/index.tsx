@@ -13,7 +13,7 @@ interface Props {
   onClick?: (menuItem: any) => void;
 }
 
-const DropdownItem: FunctionComponent<Props> = (props) => {
+const DropdownItem: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { children, disabled, menuItem, onClick } = props;
 
   const [_, dispatch] = useContext(DropdownContext);

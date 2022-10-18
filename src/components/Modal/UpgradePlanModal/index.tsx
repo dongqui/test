@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import TagManager from 'react-gtm-module';
 
 import { BaseModal, FilledButton, IconButton, SvgPath, IconWrapper, Switch } from 'components';
 import * as api from 'api';
@@ -35,6 +36,13 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
   const monthlyCost = billingCycle === 'Monthly' ? 140 : 50;
 
   const upgrade = async () => {
+    TagManager.dataLayer({
+      dataLayer: {
+        event: hadFreeTrial ? 'click_upgrade_02' : 'click_free_trial_02',
+        type: 'mocap_pro',
+      },
+    });
+
     setLoading(true);
     const stripeURL: string = await api.createStripeSession(billingCycle === 'Monthly');
     setLoading(false);

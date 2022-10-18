@@ -4,6 +4,11 @@ import { Dropdown } from 'components';
 import { RootState, useSelector } from 'reducers';
 import * as commonActions from 'actions/Common/globalUI';
 
+import classNames from 'classnames/bind';
+import styles from './HelpMenus.module.scss';
+
+const cx = classNames.bind(styles);
+
 export default function HelpMenus() {
   const { mode } = useSelector((state: RootState) => state.modeSelection);
   const dispatch = useDispatch();
@@ -26,7 +31,7 @@ export default function HelpMenus() {
         </a>
       </Dropdown.Item>
 
-      <Dropdown.Divider />
+      <hr className={cx('divider')} />
 
       <Dropdown.Item menuItem="Onboarding">
         <a href="https://knowledge.plask.ai/kb-tickets/new" rel="noopener noreferrer" target="_blank">
@@ -39,7 +44,7 @@ export default function HelpMenus() {
         </a>
       </Dropdown.Item>
 
-      <Dropdown.Divider />
+      <hr className={cx('divider')} />
 
       <Dropdown.Item menuItem="Onboarding" onClick={handleClickOnboarding} disabled={mode !== 'animationMode'}>
         Reset onboarding

@@ -13,7 +13,7 @@ interface Props {
   children?: ReactNode;
 }
 
-export const ContextMenu: FunctionComponent<Props> = ({ children }) => {
+export const ContextMenu: FunctionComponent<React.PropsWithChildren<Props>> = ({ children }) => {
   const dispatch = useDispatch();
   const contextMenu = useSelector((state) => state.globalUI.contextMenu);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);

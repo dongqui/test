@@ -15,7 +15,7 @@ interface Props extends LayerTrack {
   translateY: number;
 }
 
-const LayerTrackComponent: FunctionComponent<Props> = (props) => {
+const LayerTrackComponent: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
   const { trackId, trackNumber, isPointedDownCaret, isSelected, translateY, parentTrackNumber } = props;
   const layerKeyframes = useSelector((state) => state.keyframes.layerTrack);
   const boneKeyframes = useSelector((state) => state.keyframes.boneTrackList);

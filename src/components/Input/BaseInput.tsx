@@ -106,6 +106,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
     if (mask) {
       return (
         <MaskedInput className={classes} mask={mask} maskChar={maskChar} readOnly={readOnly} alwaysShowMask {...rest}>
+          {/* @ts-ignore */}
           {(inputProps: object) => (
             <input type={type} ref={ref} autoComplete={autoComplete ? 'on' : 'off'} spellCheck={spellCheck ? 'true' : 'false'} readOnly={readOnly} {...handlers} {...inputProps} />
           )}

@@ -7,7 +7,7 @@ import styles from './ExpandButton.module.scss';
 const cx = classNames.bind(styles);
 
 interface BaseProps {
-  content: FunctionComponent | string;
+  content: FunctionComponent<React.PropsWithChildren<unknown>> | string;
   type?: 'default' | 'ghost';
   fullSize?: boolean;
 }
@@ -19,7 +19,7 @@ const defaultProps: Partial<BaseProps> = {
   fullSize: false,
 };
 
-const ExpandButton: FunctionComponent<Props> = ({ content, type, color, fullSize, disabled, onClick, className, children, ...rest }) => {
+const ExpandButton: FunctionComponent<React.PropsWithChildren<Props>> = ({ content, type, color, fullSize, disabled, onClick, className, children, ...rest }) => {
   const classes = cx('expand', className, type, {
     disabled,
     fullSize,

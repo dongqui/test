@@ -19,7 +19,17 @@ interface Props {
   handleSpread: () => void;
 }
 
-const AnimationTitleToggle: FunctionComponent<Props> = ({ text, className, withSwitch, isPowerOn, isSpread, handleToggle, canToggle, activeStatus, handleSpread }) => {
+const AnimationTitleToggle: FunctionComponent<React.PropsWithChildren<Props>> = ({
+  text,
+  className,
+  withSwitch,
+  isPowerOn,
+  isSpread,
+  handleToggle,
+  canToggle,
+  activeStatus,
+  handleSpread,
+}) => {
   // 해당 section의 비활성화
   const handleTogglePower = useCallback(() => {
     canToggle && handleToggle && handleToggle();

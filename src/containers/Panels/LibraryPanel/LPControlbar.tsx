@@ -11,7 +11,7 @@ interface Props {
   onSearch: (text: string) => void;
 }
 
-const LPControlbar: FunctionComponent<Props> = ({ onSearch }) => {
+const LPControlbar: FunctionComponent<React.PropsWithChildren<Props>> = ({ onSearch }) => {
   const search = useMemo(
     () =>
       throttle((value) => {
