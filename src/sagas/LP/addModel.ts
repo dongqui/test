@@ -39,7 +39,7 @@ export default function* handleAddModel(action: ReturnType<typeof lpNodeActions.
     yield put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, file.name));
     const { fileKey, originalFileName } = yield call(api.upload, file);
     const { assetsUid, modelUrl, uid }: AddModelResponse = yield call(api.addModel, lpNode.sceneId, originalFileName, fileKey);
-    console.log(assetsUid, modelUrl);
+
     if (!assetsUid || !modelUrl) {
       return;
     }
