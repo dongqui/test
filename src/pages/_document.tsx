@@ -1,6 +1,4 @@
-import { Fragment } from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 
 class MyDocument extends Document {
   render() {
@@ -44,18 +42,6 @@ class MyDocument extends Document {
         <body>
           <Main />
           <NextScript />
-          {process.env.NODE_ENV === 'production' && (
-            <Fragment>
-              <Script
-                id="rewardful-loader-1"
-                dangerouslySetInnerHTML={{
-                  __html: `
-        (function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');`,
-                }}
-              />
-              <Script src="https://r.wdfl.co/rw.js" data-rewardful="78056c" data-domains="plask.ai" async />
-            </Fragment>
-          )}
           <div id="portal" />
           <div id="portal_modal" />
           <div id="__portal-contextmenu" />
