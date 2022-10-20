@@ -169,6 +169,10 @@ function* handleEditKeyframesRequest(action: ReturnType<typeof keyframesActions.
                 value = { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
                 break;
 
+              case 'scaling':
+                value = { x: transformKey.value.x, y: transformKey.value.y, z: transformKey.value.z };
+                break;
+
               default:
                 value = transformKey.value;
                 break;

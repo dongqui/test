@@ -149,13 +149,13 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
 
           <div className={cx('beta-chip')}>
             <Typography className={cx('text')}>Beta</Typography>
-            <div className={cx('overlay')} onMouseEnter={() => setBetaTagToolTip(true)} onMouseLeave={() => setBetaTagToolTip(false)} />
-            {betaTagToolTip && (
-              <div className={cx('tooltip')}>
-                <div className={cx('arrow')} />
-                <Typography type="body">The keyframe edited in the scene is not saved for foot lock motion.</Typography>
-              </div>
-            )}
+            <div className={cx('overlay')} />
+            {/*{betaTagToolTip && (*/}
+            {/*  <div className={cx('tooltip')}>*/}
+            {/*    <div className={cx('arrow')} />*/}
+            {/*    <Typography type="body">The keyframe edited in the scene is not saved for foot lock motion.</Typography>*/}
+            {/*  </div>*/}
+            {/*)}*/}
           </div>
 
           <BaseField<React.ComponentProps<typeof Switch>, string>
