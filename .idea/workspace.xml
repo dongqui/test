@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8d04a00f-d73f-4105-95ee-ad4673e4c929" name="Changes" comment="test" />
+    <list default="true" id="8d04a00f-d73f-4105-95ee-ad4673e4c929" name="Changes" comment="test">
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2022-06-29__10_39__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2022-06-29__10_39__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/@types/global.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/@types/global.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/3d/modules/animation/AnimationModule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/3d/modules/animation/AnimationModule.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/3d/modules/ik/BoneIk.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/3d/modules/ik/BoneIk.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/3d/modules/ik/IKModule.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/3d/modules/ik/IKModule.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sagas/LP/visualizeModel.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sagas/LP/visualizeModel.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sagas/LP/visualizeMotion.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sagas/LP/visualizeMotion.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sagas/RP/keyframes/editKeyframes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/sagas/RP/keyframes/editKeyframes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/common/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/common/index.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,7 +37,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="ajh-code-review" />
+        <entry key="$PROJECT_DIR$" value="develop" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -55,7 +66,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.stylelint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -64,11 +75,12 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="yarn" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
-    <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2021.3.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
+    <property name="ts.external.directory.path" value="D:\plask\node_modules\typescript\lib" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\plask\src" />
       <recent name="D:\plask" />
     </key>
   </component>
