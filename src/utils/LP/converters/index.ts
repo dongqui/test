@@ -24,7 +24,11 @@ export function setChildNodeIds(nodes: LP.Node[]) {
   for (const node of nodes) {
     if (node.parentId) {
       const parentNode = find(nodes, { id: node.parentId });
-      parentNode?.childNodeIds.push(node.id);
+      if (!parentNode?.childNodeIds.includes(node.id)) {
+        parentNode?.childNodeIds.push(node.id);
+      }
     }
   }
+
+  return nodes;
 }

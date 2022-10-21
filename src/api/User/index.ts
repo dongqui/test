@@ -3,7 +3,7 @@ import requestApi from '../requestApi';
 export async function getUser() {
   const response = await requestApi({
     method: 'GET',
-    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: `/users`,
   });
 
@@ -13,7 +13,7 @@ export async function getUser() {
 export async function getUserUsageInfo() {
   const response = await requestApi({
     method: 'GET',
-    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: `/users/settings/tool`,
   });
 
@@ -23,7 +23,7 @@ export async function getUserUsageInfo() {
 export async function getUserStorageInfo() {
   const response = await requestApi({
     method: 'GET',
-    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: `/users/settings/tool/storage`,
   });
 
@@ -33,7 +33,7 @@ export async function getUserStorageInfo() {
 export async function getUserCreditInfo() {
   const response = await requestApi({
     method: 'GET',
-    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: `/users/settings/tool/credits`,
   });
 
@@ -43,7 +43,7 @@ export async function getUserCreditInfo() {
 export async function getUserPlanInfo() {
   const response = await requestApi({
     method: 'GET',
-    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: `/users/settings/tool/plan`,
   });
 

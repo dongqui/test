@@ -10,6 +10,7 @@ import * as modeSelectActions from 'actions/modeSelection';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import * as userActions from 'actions/User';
 import requestApi from 'api/requestApi';
+import * as api from 'api';
 import { Spinner } from 'components';
 import { FilledButton, OutlineButton } from 'components/Button';
 import { Typography } from 'components/Typography';
@@ -20,6 +21,7 @@ import { IconWrapper, SvgPath } from 'components/Icon';
 import { Overlay } from 'components/Overlay';
 import planManager from 'utils/PlanManager';
 import ExtractForm from './ExtractForm';
+import { convertServerResponseToNode, setChildNodeIds } from 'utils/LP/converters';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -78,6 +80,7 @@ const ControlPanel = ({
 }: Props) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
+  const lpNode = useSelector((state) => state.lpNode);
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
   const [valueName, setValueName] = useState('Extracted motion');
@@ -189,8 +192,12 @@ const ControlPanel = ({
 
       const formData = new FormData();
 
+      setIsOpenLoadingModal(true);
+
       const file = await convertBlobToFile({ url: videoRef.current.src, type: browserType === 'safari' ? 'mp4' : 'webm', valueName });
-      formData.append('file', file);
+      const { fileKey } = await api.upload(file);
+
+      formData.append('fileKey', fileKey);
       formData.append('name', valueName || 'Extracted motion');
       formData.append('startTime', String(startValue));
       formData.append('endTime', String(endValue));
@@ -198,8 +205,6 @@ const ControlPanel = ({
       formData.append('modelType', valueFormData.model);
       formData.append('isFootLock', valueFormData.footLock === 'Yes' ? 'true' : 'false');
       formData.append('isTPose', valueFormData.tPose === 'Yes' ? 'true' : 'false');
-
-      setIsOpenLoadingModal(true);
 
       await requestApi({
         method: 'POST',
@@ -213,41 +218,21 @@ const ControlPanel = ({
         }),
       })
         .then(async (response) => {
-          await requestApi({
-            method: 'GET',
-            url: `/library/get/${sceneId}/library`,
-          })
-            .then((response) => {
-              TagManager.dataLayer({
-                dataLayer: {
-                  event: 'extract_mocap_success',
-                },
-              });
+          TagManager.dataLayer({
+            dataLayer: {
+              event: 'extract_mocap_success',
+            },
+          });
 
-              setIsOpenLoadingModal(false);
-              onUnmount();
-              dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
-              dispatch(lpActions.initNodes(response.data));
-              dispatch(userActions.getUserCreditInfoAsync.request());
-              dispatch(userActions.getUserStorageInfoAsync.request());
-              return {
-                loaded: true,
-                error: null,
-                data: response.data,
-              };
-            })
-            .catch((error) => {
-              setIsOpenExceptionModal({
-                isOpen: true,
-                case: 'Others',
-              });
+          setIsOpenLoadingModal(false);
+          onUnmount();
+          const mocapNode = convertServerResponseToNode(response.data);
+          const nodes = setChildNodeIds([mocapNode, ...lpNode.nodes]);
 
-              return {
-                loaded: false,
-                data: [],
-                error: error,
-              };
-            });
+          dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
+          dispatch(lpActions.changeNode({ nodes }));
+          dispatch(userActions.getUserCreditInfoAsync.request());
+          dispatch(userActions.getUserStorageInfoAsync.request());
         })
         .catch((error) => {
           const { statusCode } = error;

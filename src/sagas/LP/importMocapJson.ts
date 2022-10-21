@@ -18,7 +18,7 @@ const readJsonChannel = channel();
 // delete this comment
 export function* watchReadJsonChannel() {
   while (true) {
-    const action: SagaReturnType<typeof globalUIActions.openModal> = yield take(readJsonChannel);
+    const action: SagaReturnType<typeof globalUIActions.openModal | typeof globalUIActions.closeModal> = yield take(readJsonChannel);
     yield put(action);
   }
 }
@@ -35,12 +35,16 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
         const json: MocapJson = JSON.parse(e.target.result);
         checkMocapJson(json);
 
+        readJsonChannel.put(globalUIActions.openModal('LoadingModal', { title: 'Importing the file', message: 'This can take up to 3 minutes' }, 'importJson'));
+
+        const { fileKey } = await api.upload(mocapJsonFile);
+
         const reponseNodes = await api.addMocapByJson(lpNode.sceneId, {
           name: mocapJsonFile.name,
-          json: json.result,
+          fileKey,
         });
 
-        const nodes = reponseNodes.map(convertServerResponseToNode);
+        const nodes = (Array.isArray(reponseNodes) ? reponseNodes : [reponseNodes]).map(convertServerResponseToNode);
         setChildNodeIds(nodes);
 
         readJsonChannel.put(lpNodeActions.addNodes(nodes));
@@ -65,6 +69,8 @@ export default function* importMocapJson(action: ReturnType<typeof lpNodeActions
             }),
           );
         }
+      } finally {
+        readJsonChannel.put(globalUIActions.closeModal('importJson'));
       }
     }
   };
