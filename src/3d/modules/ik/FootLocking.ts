@@ -30,7 +30,7 @@ export class FootLocking {
     public ikController: IKController,
   ) {}
   public static readonly Y_MARGIN = 0.15; // Approx world units between the heel and the ground (Y axis)
-  public static readonly INTERPOLATION_FRAMES = 4;
+  public static readonly INTERPOLATION_FRAMES = 8;
   public static readonly LOW_PASS_FILTER_MIN_FRAMES = 2;
 
   public static FixIKOnGround(frameIKPosition: Vector3[]) {
