@@ -7,6 +7,7 @@ export { replaceMotion as replaceMotion } from './LP';
 export { addMocapByJson as addMocapByJson } from './LP';
 export { getAnimation as getAnimation } from './LP';
 export { getMocapData as getMocapData } from './LP';
+export { upload as upload } from './LP';
 
 export { getUser as getUser } from './User';
 export { getUserUsageInfo as getUserUsageInfo } from './User';

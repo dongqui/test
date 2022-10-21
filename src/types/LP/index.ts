@@ -41,8 +41,5 @@ export interface PutMotionData {
 
 export interface addMocapByJsonData {
   name: string;
-  json: {
-    motionNumber: number;
-    trackData: PlaskMocapData;
-  }[];
+  fileKey: string;
 }
