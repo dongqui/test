@@ -158,7 +158,7 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
           if (controller.limb.toLowerCase().includes('foot')) {
             plaskEngine.ikModule.setSelectedIk([controller]);
 
-            const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, false);
+            const bakeResult = plaskEngine.ikModule.bakeIKintoFK(undefined, true);
             animationIngredient = bakeResult.animationIngredient || animationIngredient;
             yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
 
@@ -167,15 +167,15 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
           }
         }
         // Release IK Controllers
-        // yield call(removeIK, removeIKAction(asset.id));
+        yield call(removeIK, removeIKAction(asset.id));
 
         // Remove Contact data
         animationIngredient = plaskEngine.animationModule.emptyContactDataFromAnimationIngredient(animationIngredient);
         const [serverAnimation, serverAnimationLayers] = AnimationModule.ingredientToServerData(animationIngredient, 30, false);
 
-        // yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, motionNode.animationId, {
-        //   animationLayer: serverAnimationLayers,
-        // });
+        yield call(api.replaceMotion, lpNode.sceneId, modelNode.id, motionNode.animationId, {
+          animationLayer: serverAnimationLayers,
+        });
       } else if (plaskEngine.ikModule.isEnabled) {
         // IK was enabled before, so we need to add tracks for this new ingredient
         yield call(addIK, addIKAction(asset.id, animationIngredient));

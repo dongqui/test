@@ -103,11 +103,12 @@ class PlanManager {
     }
   }
 
-  openProFeaturesNotAllowedModal(user: User) {
+  openProFeaturesNotAllowedModal(user: User, referrer?: 'foot lock' | 'multi') {
     if (this.dispatch) {
       this.dispatch(
         globalUIActions.openModal('ProFeaturesModal', {
           hadFreeTrial: user.hadFreeTrial,
+          referrer: referrer,
         }),
       );
     }

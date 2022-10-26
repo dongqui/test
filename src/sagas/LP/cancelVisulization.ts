@@ -25,6 +25,6 @@ export default function* handleCancelVisulization(action: ReturnType<typeof lpNo
     yield put(selectingDataActions.removeEntity({ targets: ptns }));
     yield put(selectingDataActions.unrenderAsset({ assetId }));
     yield put(plaskProjectActions.unrenderAsset({ assetId }));
-    // yield put(removeIKAction(assetId));
+    yield put(removeIKAction(assetId));
   }
 }
