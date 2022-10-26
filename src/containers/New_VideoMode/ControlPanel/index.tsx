@@ -227,8 +227,8 @@ const ControlPanel = ({
 
           setIsOpenLoadingModal(false);
           onUnmount();
-          const mocapNode = convertServerResponseToNode(response.data);
-          const nodes = setChildNodeIds([mocapNode, ...lpNode.nodes]);
+          const mocapNode = Array.isArray(response.data) ? response.data.map(convertServerResponseToNode) : [convertServerResponseToNode(response.data)];
+          const nodes = setChildNodeIds([...mocapNode, ...lpNode.nodes]);
 
           dispatch(modeSelectActions.changeMode({ mode: 'animationMode', videoURL: undefined }));
           dispatch(lpActions.changeNode({ nodes }));
