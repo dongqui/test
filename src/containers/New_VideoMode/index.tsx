@@ -171,7 +171,11 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
 
             if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
-              resolve('mov');
+              if (browserType === 'safari') {
+                resolve('mov');
+              } else {
+                reject('Not supported extension');
+              }
             }
 
             if (regexMp4[0].test(fileHeader) || regexMp4[1].test(fileHeader)) {
@@ -264,7 +268,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           dispatch(changeMode({ mode: mode, videoURL: undefined }));
           dispatch(
             globalUIActions.openModal('_AlertModal', {
-              message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
+              message: 'There are <b>no supported</b> files. Only mp4, webm formats are supported.',
               title: 'Import failed',
             }),
           );
