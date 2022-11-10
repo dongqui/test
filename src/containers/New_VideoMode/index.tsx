@@ -142,66 +142,69 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const ON_RECORDING = standbyCounter === -1;
   const ON_VIDEO_MOUNTED = isVideoLoaded && currentVideoURL;
 
-  const headerInspector = async (file: File) => {
-    const load = async () => {
-      return new Promise<string>((resolve, reject) => {
-        const fileReader = new FileReader();
+  const headerInspector = useCallback(
+    async (file: File) => {
+      const load = async () => {
+        return new Promise<string>((resolve, reject) => {
+          const fileReader = new FileReader();
 
-        fileReader.onloadend = async (e: ProgressEvent<FileReader>) => {
-          const isDone = e.target?.readyState === FileReader.DONE;
+          fileReader.onloadend = async (e: ProgressEvent<FileReader>) => {
+            const isDone = e.target?.readyState === FileReader.DONE;
 
-          if (isDone) {
-            const array = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
+            if (isDone) {
+              const array = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
 
-            let fileHeader = '';
-            for (let i = 0; i < array.length; i++) {
-              fileHeader += array[i].toString(16);
-            }
-
-            const regexMov = [
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(6674797071742020)((([\da-fA-F]{1,2})\s?){2})/gi),
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(7466707974712020)((([\da-fA-F]{1,2})\s?){2})/gi),
-            ];
-
-            const regexMp4 = [
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(66747970)((([\da-fA-F]{1,2})\s?){8})/gi),
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(74667079)((([\da-fA-F]{1,2})\s?){8})/gi),
-            ];
-
-            const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
-
-            if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
-              if (browserType === 'safari') {
-                resolve('mov');
-              } else {
-                reject('Not supported extension');
+              let fileHeader = '';
+              for (let i = 0; i < array.length; i++) {
+                fileHeader += array[i].toString(16);
               }
+
+              const regexMov = [
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(6674797071742020)((([\da-fA-F]{1,2})\s?){2})/gi),
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(7466707974712020)((([\da-fA-F]{1,2})\s?){2})/gi),
+              ];
+
+              const regexMp4 = [
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(66747970)((([\da-fA-F]{1,2})\s?){8})/gi),
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(74667079)((([\da-fA-F]{1,2})\s?){8})/gi),
+              ];
+
+              const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
+
+              if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
+                if (browserType === 'safari') {
+                  resolve('mov');
+                } else {
+                  reject('Not supported extension');
+                }
+              }
+
+              if (regexMp4[0].test(fileHeader) || regexMp4[1].test(fileHeader)) {
+                resolve('mp4');
+              }
+
+              if (regexWebm[0].test(fileHeader) || regexWebm[1].test(fileHeader)) {
+                resolve('webm');
+              }
+
+              reject('Not supported extension');
             }
+          };
 
-            if (regexMp4[0].test(fileHeader) || regexMp4[1].test(fileHeader)) {
-              resolve('mp4');
-            }
+          fileReader.readAsArrayBuffer(file);
+        });
+      };
 
-            if (regexWebm[0].test(fileHeader) || regexWebm[1].test(fileHeader)) {
-              resolve('webm');
-            }
-
-            reject('Not supported extension');
-          }
-        };
-
-        fileReader.readAsArrayBuffer(file);
-      });
-    };
-
-    return load()
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        throw err;
-      });
-  };
+      return load()
+        .then((res) => {
+          return res;
+        })
+        .catch((err) => {
+          throw err;
+        });
+    },
+    [browserType],
+  );
 
   const unmountCurrentStream = useCallback(() => {
     if (currentVideoStream && videoRef.current) {
@@ -274,7 +277,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           );
         });
     },
-    [dispatch, doneVMOnBoarding, mode, unmountCurrentStream],
+    [dispatch, doneVMOnBoarding, headerInspector, mode, unmountCurrentStream],
   );
 
   useEffect(() => {
