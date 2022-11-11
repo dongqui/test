@@ -698,6 +698,7 @@ export class AnimationModule extends Module {
       return null;
     }
 
+    console.log(right, left);
     return { right, left };
   }
 
