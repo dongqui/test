@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import TagManager from 'react-gtm-module';
 
 import { useSelector } from 'reducers';
 import { isDroppedOnRP } from 'utils/LP/FileSystem';
@@ -39,6 +40,13 @@ const ModelNode = ({ node }: Props) => {
       PlanManager.openStorageExceededModal(user);
       return;
     }
+
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'apply_mocap',
+      },
+    });
+
     dispatch(
       lpNodeActions.applyMocapToModel.request({
         nodeId: id,
