@@ -385,7 +385,9 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         stream.getTracks().forEach((track) => track.stop());
         return true;
       })
-      .catch(() => false);
+      .catch((reason) => {
+        return reason.message.includes('Permission denied by system');
+      });
   }, []);
 
   // return videoinput device list
