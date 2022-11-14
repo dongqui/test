@@ -425,6 +425,17 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [videoRecorder]);
 
   const startCountdown = useCallback(() => {
+    if (SYSTEM_PERMISSION_FAILED) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message:
+            'Chrome might not have access to your camera. To fix this problem, open <a href="x-apple.systempreferences:com.apple.preference.security?Privacy_Camera">System Preferences.<a>',
+          title: "Can't use your camera",
+        }),
+      );
+      return;
+    }
+
     if (PERMISSION_WAITING) {
       dispatch(
         globalUIActions.openModal('_AlertModal', {
@@ -450,17 +461,6 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         globalUIActions.openModal('_AlertModal', {
           message: 'You need connect to the camera to take video. Check the camera connection.',
           title: 'Camera not connected',
-        }),
-      );
-      return;
-    }
-
-    if (SYSTEM_PERMISSION_FAILED) {
-      dispatch(
-        globalUIActions.openModal('_AlertModal', {
-          message:
-            'Chrome might not have access to your camera. To fix this problem, open <a href="x-apple.systempreferences:com.apple.preference.security?Privacy_Camera">System Preferences.<a>',
-          title: "Can't use your camera",
         }),
       );
       return;
