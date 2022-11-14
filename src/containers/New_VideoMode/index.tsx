@@ -136,6 +136,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const PERMISSION_DENIED = cameraPermission === false;
   const NO_DEVICE_FOUND = cameraPermission === true && videoDeviceListLoaded && videoDeviceList.length === 0;
   const VIDEO_STREAM_READY = !!currentVideoDevice && !!currentVideoStream;
+  const SYSTEM_PERMISSION_FAILED = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND || VIDEO_STREAM_READY);
   const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && VIDEO_STREAM_READY;
   const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5;
   const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && standbyCounter !== 5;
@@ -226,10 +227,10 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   useEffect(() => {
     if (PERMISSION_WAITING && !videoURL) {
       setInitialLoading(true);
-    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND) {
+    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
       setTimeout(() => setInitialLoading(false), 100);
     }
-  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, videoURL, isVideoLoaded]);
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -384,7 +385,9 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         stream.getTracks().forEach((track) => track.stop());
         return true;
       })
-      .catch(() => false);
+      .catch((reason) => {
+        return reason.message.includes('Permission denied by system');
+      });
   }, []);
 
   // return videoinput device list
@@ -424,6 +427,17 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [videoRecorder]);
 
   const startCountdown = useCallback(() => {
+    if (SYSTEM_PERMISSION_FAILED) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message:
+            'Chrome might not have access to your camera. To fix this problem, open <a href="x-apple.systempreferences:com.apple.preference.security?Privacy_Camera">System Preferences.<a>',
+          title: "Can't use your camera",
+        }),
+      );
+      return;
+    }
+
     if (PERMISSION_WAITING) {
       dispatch(
         globalUIActions.openModal('_AlertModal', {
@@ -484,7 +498,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         setVideoRecorder(recorder);
       }
     }
-  }, [PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, RECORD_STANDBY, dispatch, currentVideoStream, browserType, unmountCurrentStream]);
+  }, [PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, SYSTEM_PERMISSION_FAILED, RECORD_STANDBY, dispatch, currentVideoStream, browserType, unmountCurrentStream]);
 
   const cancelCountdown = useCallback(() => {
     setVideoRecorder(null);
