@@ -60,6 +60,9 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
         />
       </div>
       <div className={cx('right-upper')}>
+        <button className={cx('colorful-button')}>
+          <span>Export</span>
+        </button>
         <SupportDropdown />
         <UserInfo />
       </div>
