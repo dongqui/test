@@ -43,6 +43,8 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
     },
   ];
 
+  const handleExport = () => {};
+
   return (
     <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
@@ -60,7 +62,7 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
         />
       </div>
       <div className={cx('right-upper')}>
-        <button className={cx('colorful-button')}>
+        <button onClick={handleExport} className={cx('colorful-button')}>
           <span>Export</span>
         </button>
         <SupportDropdown />
