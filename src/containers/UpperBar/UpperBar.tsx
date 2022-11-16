@@ -3,8 +3,10 @@ import { useDispatch } from 'react-redux';
 
 import { RootState, useSelector } from 'reducers';
 import * as commonActions from 'actions/Common/globalUI';
-import { SvgPath } from 'components/Icon';
+import * as globalUIActions from 'actions/Common/globalUI';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import { Switch } from 'components/Input';
+import { ExportFormat } from 'types/common';
 import UserInfo from './UserInfo/UserInfo';
 import MainLogoDropDown from './DropDown/MainLogoDropDown';
 import SupportDropdown from './DropDown/SupportDropdown';
@@ -23,6 +25,7 @@ interface Props {
 const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMode, defaultMode }) => {
   const dispatch = useDispatch();
   const { mode } = useSelector((state: RootState) => state.modeSelection);
+  const { plaskProject, lpNode, trackList } = useSelector((state) => state);
 
   const handleChangeSwitchMode = useCallback(() => {
     dispatch(commonActions.closeModal('GuideModal'));
@@ -43,7 +46,37 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
     },
   ];
 
-  const handleExport = () => {};
+  const handleExport = () => {
+    if (plaskProject.visualizedAssetIds.length === 1 && plaskProject.visualizedAssetIds[0]) {
+      const modelId = plaskProject.visualizedAssetIds[0];
+      const motions = lpNode.nodes.filter((node) => node.type === 'MOTION' && node.assetId === modelId);
+      const selectedMotion = motions.find((motion) => motion.animationId === trackList.animationIngredientId);
+
+      if (selectedMotion && selectedMotion.assetId) {
+        dispatch(
+          globalUIActions.openModal('ExportModal', {
+            onConfirm: (data: { motion: string; format: ExportFormat }) => {
+              if (selectedMotion && selectedMotion.assetId) {
+                dispatch(
+                  lpNodeActions.exportAsset({
+                    ...data,
+                    parentId: selectedMotion.parentId,
+                    nodeName: selectedMotion.name,
+                    assetId: selectedMotion.assetId,
+                    type: 'MOTION',
+                  }),
+                );
+              }
+            },
+            motions: motions,
+            targetMotrionId: selectedMotion.id,
+          }),
+        );
+      }
+    } else {
+      alert('cannot export');
+    }
+  };
 
   return (
     <div className={cx('wrap')}>
