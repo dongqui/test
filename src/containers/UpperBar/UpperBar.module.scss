@@ -151,18 +151,21 @@
   background: white;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
 
   span {
     font-size: 20px;
     font-weight: 700;
     text-align: center;
 
-    cursor: pointer;
     color: #000;
   }
 
-  &:hover > span {
+  &.disabled {
+    cursor: not-allowed;
+  }
+
+  &:not(.disabled):hover > span {
+    cursor: pointer;
     background: linear-gradient(
                     90deg,
                     rgba(255, 0, 0, 1) 0%,

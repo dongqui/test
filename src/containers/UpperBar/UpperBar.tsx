@@ -27,6 +27,11 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
   const { mode } = useSelector((state: RootState) => state.modeSelection);
   const { plaskProject, lpNode, trackList } = useSelector((state) => state);
 
+  const modelId = plaskProject.visualizedAssetIds[0];
+  const motions = lpNode.nodes.filter((node) => node.type === 'MOTION' && node.assetId === modelId);
+  const selectedMotion = motions.find((motion) => motion.animationId === trackList.animationIngredientId);
+  const exportAvailable = modelId && motions.length > 0 && selectedMotion !== undefined;
+
   const handleChangeSwitchMode = useCallback(() => {
     dispatch(commonActions.closeModal('GuideModal'));
     localStorage.setItem('onboarding_2', 'onboarding_2');
@@ -47,11 +52,7 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
   ];
 
   const handleExport = () => {
-    if (plaskProject.visualizedAssetIds.length === 1 && plaskProject.visualizedAssetIds[0]) {
-      const modelId = plaskProject.visualizedAssetIds[0];
-      const motions = lpNode.nodes.filter((node) => node.type === 'MOTION' && node.assetId === modelId);
-      const selectedMotion = motions.find((motion) => motion.animationId === trackList.animationIngredientId);
-
+    if (exportAvailable) {
       if (selectedMotion && selectedMotion.assetId) {
         dispatch(
           globalUIActions.openModal('ExportModal', {
@@ -74,7 +75,7 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
         );
       }
     } else {
-      alert('cannot export');
+      alert('model visualize && motion must exist');
     }
   };
 
@@ -95,7 +96,12 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
         />
       </div>
       <div className={cx('right-upper')}>
-        <button onClick={handleExport} className={cx('colorful-button')}>
+        <button
+          onClick={handleExport}
+          className={cx('colorful-button', {
+            disabled: !exportAvailable,
+          })}
+        >
           <span>Export</span>
         </button>
         <SupportDropdown />
