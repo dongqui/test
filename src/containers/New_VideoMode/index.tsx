@@ -49,6 +49,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoHiddenRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLDivElement>(null);
 
   const [currentVideoURL, setVideoURL] = useState<string>('');
   const [isDeviceInitialized, setIsDeviceInitialized] = useState(false);
@@ -575,11 +576,16 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (requestStandbyMode) {
       if (ON_VIDEO_MOUNTED) {
         switchStandbyMode(() => dispatch(changeMode({ mode: mode, videoURL: undefined, requestStandbyMode: false })));
+      } else if (!ON_RECORDING && !RECORD_COUNTDOWN) {
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+        dispatch(changeMode({ mode: mode, videoURL: videoURL, requestStandbyMode: false }));
       } else {
         dispatch(changeMode({ mode: mode, videoURL: videoURL, requestStandbyMode: false }));
       }
     }
-  }, [ON_VIDEO_MOUNTED, dispatch, handleDrop, mode, requestStandbyMode, switchStandbyMode, videoURL]);
+  }, [ON_RECORDING, ON_VIDEO_MOUNTED, RECORD_COUNTDOWN, dispatch, handleDrop, mode, requestStandbyMode, switchStandbyMode, videoURL]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -827,6 +833,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             onChangeEnd={handleChangeEndValue}
             leftCropSliderRef={setLeftCropSliderRef}
             doneVMOnBoarding={doneVMOnBoarding}
+            fileInputRef={fileInputRef}
           />
         </Box>
       </Box>

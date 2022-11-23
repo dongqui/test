@@ -23,6 +23,7 @@ interface Props {
   onChangeEnd: (value: number) => void;
   leftCropSliderRef: (ref: HTMLInputElement | null) => void;
   doneVMOnBoarding: (step: number) => void;
+  fileInputRef: RefObject<HTMLDivElement>;
 }
 
 const TimelinePanel = ({
@@ -39,6 +40,7 @@ const TimelinePanel = ({
   onChangeEnd,
   dropzoneDisabled = false,
   doneVMOnBoarding,
+  fileInputRef,
 }: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
@@ -239,7 +241,7 @@ const TimelinePanel = ({
       <div className={cx('dropzone', { hidden: isVideoLoaded })}>
         <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
           {({ open }) => (
-            <div className={cx('dropzone-guide')} onClick={open}>
+            <div className={cx('dropzone-guide')} onClick={open} ref={fileInputRef}>
               <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
               <div className={cx('dropzone-guide-text')}>
                 Drag and drop <br />
