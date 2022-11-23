@@ -1,3 +1,5 @@
+@import "styles/libraries/colors";
+
 .wrap {
   display: flex;
   justify-content: space-between;
@@ -6,28 +8,22 @@
 }
 
 .left-upper {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 6px 12px;
   background-color: inherit;
 
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  .menus, .import-button, .export-button {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    height: 100%;
+    background-color: inherit;
   }
 
-  .left-upper-inner {
-    max-width: 166px;
-    padding: 0 8px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #d3d3d3;
-
-    .scene-name {
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 24px;
-    }
+  .menus, .import-button {
+    border-right: solid 1px var(--grey020);
   }
 }
 
@@ -145,49 +141,52 @@
   }
 }
 
-.colorful-button {
-  width: 80px;
-  height: 30px;
-  background: white;
-  border: none;
+.ghost-button {
+  height: 100%;
+  border-radius: 0;
+  background-color: inherit;
+
+  &:not(.disabled) {
+    &.active, &:hover {
+      filter: var(--button-filter);
+    }
+  }
+}
+
+.tooltip {
+  position: absolute;
+  background-color: var(--grey010);
+  border: solid 1px $outline-border;
   border-radius: 6px;
+  z-index: 1000;
+  bottom: -5px;
+  transform: translate(calc(-50% + 30px), calc(100%));
+  left: 0;
+  width: 192px;
+  padding: 8px 12px;
+  line-height: 150%;
+  color: var(--grey090);
 
-  span {
-    font-size: 20px;
-    font-weight: 700;
-    text-align: center;
+  .arrow {
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 7px 7px;
+      left: 50%;
+    }
 
-    color: #000;
-  }
+    &::before {
+      border-color: $outline-border transparent;
+      top: -7.5px;
+    }
 
-  &.disabled {
-    cursor: not-allowed;
-  }
-
-  &:not(.disabled):hover > span {
-    cursor: pointer;
-    background: linear-gradient(
-                    90deg,
-                    rgba(255, 0, 0, 1) 0%,
-                    rgba(255, 154, 0, 1) 10%,
-                    rgba(208, 222, 33, 1) 20%,
-                    rgba(79, 220, 74, 1) 30%,
-                    rgba(63, 218, 216, 1) 40%,
-                    rgba(47, 201, 226, 1) 50%,
-                    rgba(28, 127, 238, 1) 60%,
-                    rgba(95, 21, 242, 1) 70%,
-                    rgba(186, 12, 248, 1) 80%,
-                    rgba(251, 7, 217, 1) 90%,
-                    rgba(255, 0, 0, 1) 100%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 1s linear infinite;
-    @keyframes shine {
-      to {
-        background-position: 200% center;
-      }
+    &::after {
+      border-color: var(--grey010)transparent;
+      top: -6.5px;
     }
   }
 }

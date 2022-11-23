@@ -2,7 +2,13 @@
 
 @import "styles/libraries/_functions";
 
-.wrapper {
+.dropdown {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex: 1;
+  //display: inline-block;
+  align-items: center;
+  background-color: inherit;
+  cursor: pointer;
+  border-radius: inherit;
 }

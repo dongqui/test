@@ -37,7 +37,7 @@ interface Props {
 
 const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const dispatch = useDispatch();
-  const { mode, videoURL } = useSelector((state: RootState) => state.modeSelection);
+  const { mode, videoURL, requestStandbyMode } = useSelector((state: RootState) => state.modeSelection);
 
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -542,30 +542,44 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
   }, [currentVideoURL, videoRef]);
 
-  const switchStandbyMode = useCallback(() => {
-    dispatch(
-      globalUIActions.openModal('ConfirmModal', {
-        title: 'Delete previous video taken?',
-        message: 'Your video will be deleted to take a new video.',
-        confirmText: 'Delete',
-        confirmButtonColor: 'negative',
-        onConfirm: () => {
-          dispatch(changeMode({ mode: mode, videoURL: undefined }));
-          setFrames(0);
-          setIsFastForwardDone(false);
-          setExtractButtonRef(null);
-          setCPModified(undefined);
-          setStartValue(0);
-          setEndValue(0);
-          unmountVideo();
-          setInitialLoading(true);
-          setStandbyCounter(5);
-          setIsVideoLoaded(false);
-          setVideoStatus('stop');
-        },
-      }),
-    );
-  }, [dispatch, mode, unmountVideo]);
+  const switchStandbyMode = useCallback(
+    (additionalConfirmAction?: () => void) => {
+      dispatch(
+        globalUIActions.openModal('ConfirmModal', {
+          title: 'Delete previous video taken?',
+          message: 'Your video will be deleted to take a new video.',
+          confirmText: 'Delete',
+          confirmButtonColor: 'negative',
+          onConfirm: () => {
+            dispatch(changeMode({ mode: mode, videoURL: undefined }));
+            setFrames(0);
+            setIsFastForwardDone(false);
+            setExtractButtonRef(null);
+            setCPModified(undefined);
+            setStartValue(0);
+            setEndValue(0);
+            unmountVideo();
+            setInitialLoading(true);
+            setStandbyCounter(5);
+            setIsVideoLoaded(false);
+            setVideoStatus('stop');
+            additionalConfirmAction?.();
+          },
+        }),
+      );
+    },
+    [dispatch, mode, unmountVideo],
+  );
+
+  useEffect(() => {
+    if (requestStandbyMode) {
+      if (ON_VIDEO_MOUNTED) {
+        switchStandbyMode(() => dispatch(changeMode({ mode: mode, videoURL: undefined, requestStandbyMode: false })));
+      } else {
+        dispatch(changeMode({ mode: mode, videoURL: videoURL, requestStandbyMode: false }));
+      }
+    }
+  }, [ON_VIDEO_MOUNTED, dispatch, handleDrop, mode, requestStandbyMode, switchStandbyMode, videoURL]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -712,6 +726,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [handleKeyDown, isOpenExtractModal, isOpenLoadingModal, modals]);
 
   const blurFocused = (e: FocusEvent<HTMLButtonElement>) => e.target.blur();
+  const handleClickSwitchStandbyMode = () => switchStandbyMode();
 
   return (
     <div className={cx('wrapper')}>
@@ -719,7 +734,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
           <div className={cx('lp-button-wrapper')}>
             {ON_VIDEO_MOUNTED && (
-              <GhostButton onFocus={blurFocused} onClick={switchStandbyMode} className={cx('lp-button')}>
+              <GhostButton onFocus={blurFocused} onClick={handleClickSwitchStandbyMode} className={cx('lp-button')}>
                 <div className={cx('lp-button-inner')}>
                   <IconWrapper icon={SvgPath.ChevronLeft} className={cx('button-icon')} />
                   <Typography type="title">back to standby</Typography>

@@ -72,7 +72,7 @@ const FasterDropdown: FunctionComponent<React.PropsWithChildren<Props>> = () => 
       {/*리팩토링 이후에 select/option 코드 제거.*/}
       {/*<div className={cx('text')}>{selectedValue}</div>*/}
       {/*<IconWrapper className={arrowClasses} icon={SvgPath.ChevronLeft} hasFrame={false} />*/}
-      <ExpandButton id="dropdown-button" className={cx('dropdown-button', { active: onDropdown })} content={selectedValue} type="ghost" />
+      <ExpandButton paddingMiddle id="dropdown-button" className={cx('dropdown-button', { active: onDropdown })} content={selectedValue} type="ghost" />
       <select
         onMouseEnter={() => setOnDropdown(true)}
         onMouseLeave={() => setOnDropdown(false)}

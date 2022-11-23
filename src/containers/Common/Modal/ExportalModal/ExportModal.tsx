@@ -92,7 +92,7 @@ const ExportModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ onClos
           },
           {
             value: 'fbx_unreal',
-            label: 'fbx (Unreal engine)',
+            label: 'fbx (Game engine)',
             disabled: false,
           },
           {
@@ -114,7 +114,7 @@ const ExportModal: FunctionComponent<React.PropsWithChildren<Props>> = ({ onClos
           },
           {
             value: 'fbx_unreal',
-            label: 'fbx (Unreal engine)',
+            label: 'fbx (Game engine)',
             disabled: false,
           },
           {

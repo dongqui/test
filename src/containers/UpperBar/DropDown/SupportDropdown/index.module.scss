@@ -1,5 +1,14 @@
-.header-wrapper {
-  text-align: center;
-  padding-top: 0.2rem;
-  cursor: pointer;
+.dropdown {
+  border-radius: 6px;
+}
+
+.support-icon {
+  box-sizing: content-box;
+  height: 18px;
+  width: 18px;
+  padding: 5px;
+}
+
+.dropdown-menu {
+  margin-top: 8px;
 }

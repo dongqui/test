@@ -13,7 +13,7 @@ interface Props {
 const ModelContextMenu = ({ node }: Props) => {
   const dispatch = useDispatch();
   const { id, assetId, parentId, type, name, childNodeIds } = node;
-  const { animationData, lpNode, plaskProject } = useSelector((state) => state);
+  const { trackList, lpNode, plaskProject } = useSelector((state) => state);
   const isCurrentVisualizedNode = !!lpNode.nodes.find((node) => node.assetId && plaskProject.visualizedAssetIds.includes(assetId || ''));
 
   const handleDelete = () => {
@@ -64,6 +64,8 @@ const ModelContextMenu = ({ node }: Props) => {
     if (!assetId) return;
 
     const currentMotions = lpNode.nodes.filter((node) => assetId === node.assetId && node.type === 'MOTION');
+    const selectedMotion = currentMotions.find((motion) => motion.animationId === trackList.animationIngredientId);
+
     dispatch(
       globalUIActions.openModal('ExportModal', {
         onConfirm: (data: { motion: string; format: ExportFormat }) => {
@@ -78,6 +80,7 @@ const ModelContextMenu = ({ node }: Props) => {
           );
         },
         motions: currentMotions,
+        targetMotrionId: selectedMotion ? selectedMotion.id : undefined,
       }),
     );
   };

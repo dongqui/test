@@ -19,9 +19,11 @@
     align-items: center;
   }
 
-  &:active,
-  &:hover {
-    filter: var(--button-filter);
+  &:not(.disableHover) {
+    &:active,
+    &:hover {
+      filter: var(--button-filter);
+    }
   }
 
   &.disabled {
@@ -58,5 +60,8 @@
 }
 
 .button-arrow {
-  margin-left: 5px;
+  margin-left: 4px;
+ &.paddingMiddle {
+   margin-left: 10px;
+ }
 }

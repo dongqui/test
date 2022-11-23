@@ -1,9 +1,7 @@
-import { Fragment, useState } from 'react';
-import { RootState, useSelector } from 'reducers';
+import { Fragment, useRef, useState } from 'react';
 
 import { Dropdown, SvgPath, ExpandButton, PageLoading } from 'components';
 import HelpMenus from '../Common/HelpMenus';
-import FileMenus from '../Common/FileMenus';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
@@ -11,7 +9,7 @@ import styles from './index.module.scss';
 const cx = classNames.bind(styles);
 
 const MainLogoDropDown = () => {
-  const { mode } = useSelector((state: RootState) => state.modeSelection);
+  const ref = useRef<HTMLDivElement>(null);
 
   const [isPageLoading, setIsPageLoading] = useState(false);
 
@@ -27,22 +25,14 @@ const MainLogoDropDown = () => {
 
   return (
     <Fragment>
-      <Dropdown>
+      <Dropdown innerRef={ref} className={cx('dropdown')}>
         <Dropdown.Header>
-          <ExpandButton content={SvgPath.Logo} type="ghost" />
+          <ExpandButton disableHover paddingMiddle content={SvgPath.Logo} type="ghost" className={cx('dropdown-header-button')} />
         </Dropdown.Header>
-        <Dropdown.Menu>
+        <Dropdown.Menu innerRef={ref}>
           <Dropdown.Item menuItem="Onboarding" onClick={handleClickGoToDashboard}>
             Go to dashboard
           </Dropdown.Item>
-          {mode === 'animationMode' && (
-            <Fragment>
-              <hr className={cx('divider')} />
-              <Dropdown.Submenu label="File" classNames={cx('main-logo-sub-menu')}>
-                <FileMenus />
-              </Dropdown.Submenu>
-            </Fragment>
-          )}
           <hr className={cx('divider')} />
           <Dropdown.Submenu label="Help & Feedback" classNames={cx('main-logo-sub-menu')}>
             <HelpMenus />
