@@ -126,7 +126,7 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
           {exportVMTooltip && (
             <div className={cx('tooltip')}>
               <div className={cx('arrow')} />
-              <Typography type="body">Switch to the Animation mode to export assets.</Typography>
+              <Typography type="body">Switch to the Editing mode to export assets.</Typography>
             </div>
           )}
         </div>
