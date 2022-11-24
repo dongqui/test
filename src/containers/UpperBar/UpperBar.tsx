@@ -35,7 +35,7 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
   const modelId = plaskProject.visualizedAssetIds[0];
   const motions = lpNode.nodes.filter((node) => node.type === 'MOTION' && node.assetId === modelId);
   const selectedMotion = motions.find((motion) => motion.animationId === trackList.animationIngredientId);
-  const exportAvailable = modelId && motions.length > 0 && selectedMotion && selectedMotion.assetId;
+  const exportAvailable = modelId && motions.length > 0 && selectedMotion && selectedMotion.assetId && mode === 'animationMode';
 
   const handleChangeSwitchMode = useCallback(() => {
     dispatch(commonActions.closeModal('GuideModal'));
