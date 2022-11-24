@@ -1,12 +1,17 @@
-import { FunctionComponent, useCallback } from 'react';
+import { FunctionComponent, useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { RootState, useSelector } from 'reducers';
 import * as commonActions from 'actions/Common/globalUI';
-import { SvgPath } from 'components/Icon';
+import * as globalUIActions from 'actions/Common/globalUI';
+import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import { Switch } from 'components/Input';
+import { GhostButton } from 'components/Button';
+import { Typography } from 'components/Typography';
+import { ExportFormat } from 'types/common';
 import UserInfo from './UserInfo/UserInfo';
 import MainLogoDropDown from './DropDown/MainLogoDropDown';
+import ImportDropdown from './DropDown/ImportDropdown';
 import SupportDropdown from './DropDown/SupportDropdown';
 import { ONBOARDING_ID } from 'containers/Onboarding/id';
 
@@ -23,6 +28,14 @@ interface Props {
 const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMode, defaultMode }) => {
   const dispatch = useDispatch();
   const { mode } = useSelector((state: RootState) => state.modeSelection);
+  const { plaskProject, lpNode, trackList } = useSelector((state) => state);
+  const [exportDisabledTooltip, setExportDisabledTooltip] = useState(false);
+  const [exportVMTooltip, setExportVMTooltip] = useState(false);
+
+  const modelId = plaskProject.visualizedAssetIds[0];
+  const motions = lpNode.nodes.filter((node) => node.type === 'MOTION' && node.assetId === modelId);
+  const selectedMotion = motions.find((motion) => motion.animationId === trackList.animationIngredientId);
+  const exportAvailable = modelId && motions.length > 0 && selectedMotion && selectedMotion.assetId;
 
   const handleChangeSwitchMode = useCallback(() => {
     dispatch(commonActions.closeModal('GuideModal'));
@@ -43,10 +56,80 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
     },
   ];
 
+  const handleExport = () => {
+    if (exportAvailable) {
+      dispatch(
+        globalUIActions.openModal('ExportModal', {
+          onConfirm: (data: { motion: string; format: ExportFormat }) => {
+            if (selectedMotion && selectedMotion.assetId) {
+              dispatch(
+                lpNodeActions.exportAsset({
+                  ...data,
+                  parentId: selectedMotion.parentId,
+                  nodeName: selectedMotion.name,
+                  assetId: selectedMotion.assetId,
+                  type: 'MOTION',
+                }),
+              );
+            }
+          },
+          motions: motions,
+          targetMotrionId: selectedMotion.id,
+        }),
+      );
+    }
+  };
+
+  const handleMouseEnter = () => {
+    if (mode === 'animationMode' && !exportAvailable) {
+      setExportDisabledTooltip(true);
+    }
+
+    if (mode !== 'animationMode') {
+      setExportVMTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setExportDisabledTooltip(false);
+    setExportVMTooltip(false);
+  };
+
   return (
     <div className={cx('wrap')}>
       <div className={cx('left-upper')}>
-        <MainLogoDropDown />
+        <div className={cx('menus')}>
+          <MainLogoDropDown />
+        </div>
+        <div className={cx('import-button')}>
+          <ImportDropdown />
+        </div>
+        <div className={cx('export-button')}>
+          <GhostButton
+            disabled={!exportAvailable}
+            disableHover
+            onClick={handleExport}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            className={cx('ghost-button', {
+              disabled: !exportAvailable,
+            })}
+          >
+            Export
+          </GhostButton>
+          {exportDisabledTooltip && (
+            <div className={cx('tooltip')}>
+              <div className={cx('arrow')} />
+              <Typography type="body">Drag the asset into the scene to export it.</Typography>
+            </div>
+          )}
+          {exportVMTooltip && (
+            <div className={cx('tooltip')}>
+              <div className={cx('arrow')} />
+              <Typography type="body">Switch to the Editing mode to export assets.</Typography>
+            </div>
+          )}
+        </div>
       </div>
       <div className={cx('middle-upper')}>
         <Switch

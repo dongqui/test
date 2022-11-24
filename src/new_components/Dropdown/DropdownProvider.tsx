@@ -26,7 +26,6 @@ const initialstate: DropdownContextState = { isOpenMenu: false };
 const reducer = (state: DropdownContextState, actions: Actions): DropdownContextState => {
   switch (actions.type) {
     case 'changeIsOpenMenu': {
-      console.log('changeIsOpenMenu', actions.payload.isOpenMenu);
       return { ...state, isOpenMenu: actions.payload.isOpenMenu };
     }
     default:

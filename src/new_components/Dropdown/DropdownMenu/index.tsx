@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, FunctionComponent, useState } from 'react';
+import { useContext, useRef, FunctionComponent, useState, useLayoutEffect, ReactNode, RefObject } from 'react';
 import { isEqual } from 'lodash';
 
 import { DropdownContext } from '../DropdownProvider';
@@ -13,72 +13,34 @@ interface Position {
   right?: string | number;
   top?: string | number;
   bottom?: string | number;
+  transform?: string;
 }
 
 interface Props {
-  autoClose?: boolean;
-
-  onClose?: (params?: any) => void;
+  children: ReactNode;
+  innerRef?: RefObject<HTMLDivElement>;
+  className?: string;
 }
 
-const DropdownMenu: FunctionComponent<React.PropsWithChildren<Props>> = (props) => {
-  const { autoClose = true, children, onClose } = props;
+const DropdownMenu = (props: Props) => {
+  const { children, innerRef, className } = props;
 
   const dropdownMenuRef = useRef<HTMLUListElement>(null);
   const [_, dispatch] = useContext(DropdownContext);
-  const [position, setPosition] = useState<Position>({
+  const [style, setStyle] = useState<Position>({
     top: 0,
     right: undefined,
     bottom: 'initial',
     left: 0,
+    transform: '',
   });
 
-  // 드랍다운 메뉴 출력 시, window에 click/keydown/focus 이벤트 추가
-  useEffect(() => {
+  useLayoutEffect(() => {
     const currentRef = dropdownMenuRef.current;
+    const parentRef = innerRef?.current;
 
-    if (currentRef) {
-      const handleOutSideClick = (event: MouseEvent) => {
-        const target = event.target as Node;
-        const isContains = currentRef.contains(target);
-        if (!isContains && autoClose) {
-          dispatch('changeIsOpenMenu', { isOpenMenu: false });
-          onClose && onClose();
-        }
-      };
-
-      const handleFocusin = (event: FocusEvent) => {
-        if (!currentRef.contains(event.target as Node)) {
-          event.preventDefault();
-        }
-      };
-
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (isEqual(event.key, 'Escape') && autoClose) {
-          dispatch('changeIsOpenMenu', { isOpenMenu: false });
-          onClose && onClose();
-        }
-
-        if (isEqual(event.key, 'Enter')) {
-          event.preventDefault();
-        }
-      };
-
-      window.addEventListener('click', handleOutSideClick);
-      window.addEventListener('focusin', handleFocusin);
-      window.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        window.removeEventListener('click', handleOutSideClick);
-        window.removeEventListener('focusin', handleFocusin);
-        window.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [autoClose, dispatch, onClose]);
-
-  useEffect(() => {
-    const currentRef = dropdownMenuRef.current;
-    if (currentRef) {
+    if (parentRef && currentRef) {
+      const parentRect = parentRef.getBoundingClientRect();
       const { innerWidth, innerHeight } = window;
       const rect = currentRef.getBoundingClientRect();
       const style: Position = {};
@@ -95,19 +57,18 @@ const DropdownMenu: FunctionComponent<React.PropsWithChildren<Props>> = (props) 
         style.bottom = 0;
         style.top = 'initial';
       } else {
+        style.top = 0;
         style.bottom = 'initial';
       }
 
-      setPosition(style);
-    }
-  }, []);
+      style.transform = `translate3d(0, ${parentRect.height}px, 0)`;
 
-  const menuStyle = {
-    ...position,
-  };
+      setStyle(style);
+    }
+  }, [innerRef]);
 
   return (
-    <ul className={cx('menu')} role="menu" ref={dropdownMenuRef} style={menuStyle}>
+    <ul className={cx('menu', className)} role="menu" ref={dropdownMenuRef} style={style}>
       {children}
     </ul>
   );

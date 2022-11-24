@@ -6,9 +6,11 @@
   color: $content-active;
   background-color: inherit;
 
-  &:active,
-  &:hover {
-    filter: var(--button-filter);
+  &:not(.disableHover) {
+    &:active,
+    &:hover {
+      filter: var(--button-filter);
+    }
   }
 
   &.disabled {

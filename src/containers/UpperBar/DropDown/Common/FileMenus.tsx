@@ -62,18 +62,18 @@ export default function FileMenus() {
   }, [dispatch, handleLoad]);
 
   const handleChangeSwitchMode = useCallback(() => {
-    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode', videoURL: undefined }));
+    dispatch(changeMode({ mode: 'videoMode', videoURL: undefined, requestStandbyMode: mode === 'animationMode' ? undefined : true }));
   }, [dispatch, mode]);
 
   return (
     <Fragment>
       {/* import modal */}
-      <Dropdown.Item menuItem="File" onClick={handleImportModelClick}>
-        Import Model
+      <Dropdown.Item disabled={mode !== 'animationMode'} menuItem="File" onClick={handleImportModelClick}>
+        Import 3d file
       </Dropdown.Item>
       {/* VM 전환 */}
       <Dropdown.Item menuItem="File" onClick={handleChangeSwitchMode}>
-        Import Video to get motion
+        Import video file
       </Dropdown.Item>
     </Fragment>
   );
