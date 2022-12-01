@@ -243,11 +243,11 @@
 
 .slider-time {
   position: absolute;
-  top: 3px;
+  top: 4px;
   left: 0;
   border: 2px solid $secondary;
   border-radius: 14px;
-  height: calc(100% - 4px);
+  height: calc(100% - 6px);
   padding: 0 10px;
 
   &::before {
@@ -289,6 +289,11 @@
   }
 
   .slider-time-start {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+
     width: 14px;
     height: 100%;
     border-radius: 12px 0 0 12px;
@@ -296,10 +301,22 @@
   }
 
   .slider-time-end {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+
     width: 14px;
     height: 100%;
     background-color: $secondary;
     border-radius: 0 12px 12px 0;
     transform: translateX(-4px);
   }
+}
+
+.line {
+  border-radius: 6px;
+  width: 1px;
+  height: 20px;
+  background-color: black;
 }
