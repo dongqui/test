@@ -327,6 +327,7 @@ const ControlPanel = ({
               </OutlineButton>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
       {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'OverLength' && (
@@ -345,9 +346,10 @@ const ControlPanel = ({
               </div>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
-      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Condition' && (
+      {isOpenExceptionModal.isOpen && (isOpenExceptionModal.case === 'Condition' || isOpenExceptionModal.case === 'Timeout') && (
         <BaseModal>
           <div className={cx('modal-inner')}>
             <div className={cx('modal-header')}>
@@ -364,6 +366,7 @@ const ControlPanel = ({
               </div>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
       {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Others' && (
@@ -382,6 +385,7 @@ const ControlPanel = ({
               </div>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
     </div>
