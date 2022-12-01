@@ -13,8 +13,8 @@ const ImportFile = () => {
     const targetElement = document.getElementById(ONBOARDING_ID.IMPORT_FILE);
     const targetCoordinates = getTargetCoordinates(targetElement);
     if (tooltipRef.current && targetCoordinates) {
-      const { rightTop } = targetCoordinates;
-      tooltipRef.current.style.cssText = `top:${rightTop.y - 16}px; left:${rightTop.x + 16}px;`;
+      const { leftBottom } = targetCoordinates;
+      tooltipRef.current.style.cssText = `top:${leftBottom.y}px; left:${leftBottom.x + 16}px;`;
     }
   }, [tooltipRef]);
 
@@ -26,7 +26,7 @@ const ImportFile = () => {
           Import your <span>model or video file</span> by clicking the button <br />
           or simply drag and drop them in the library.
         </p>
-        <Arrow placement="left-start" />
+        <Arrow placement="top-start" />
       </StepTemplate>
     </Fragment>
   );

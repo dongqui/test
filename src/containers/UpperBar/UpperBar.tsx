@@ -101,10 +101,10 @@ const UpperBar: FunctionComponent<React.PropsWithChildren<Props>> = ({ switchMod
         <div className={cx('menus')}>
           <MainLogoDropDown />
         </div>
-        <div className={cx('import-button')}>
+        <div className={cx('import-button')} id={ONBOARDING_ID.IMPORT_FILE}>
           <ImportDropdown />
         </div>
-        <div className={cx('export-button')}>
+        <div className={cx('export-button')} id={ONBOARDING_ID.EXPORT_FILE}>
           <GhostButton
             disabled={!exportAvailable}
             disableHover
