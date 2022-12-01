@@ -827,6 +827,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             leftCropSliderRef={setLeftCropSliderRef}
             doneVMOnBoarding={doneVMOnBoarding}
             fileInputRef={fileInputRef}
+            browserType={browserType}
           />
         </Box>
       </Box>

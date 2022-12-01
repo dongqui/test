@@ -24,6 +24,7 @@ interface Props {
   leftCropSliderRef: (ref: HTMLInputElement | null) => void;
   doneVMOnBoarding: (step: number) => void;
   fileInputRef: RefObject<HTMLDivElement>;
+  browserType: string;
 }
 
 const TimelinePanel = ({
@@ -41,6 +42,7 @@ const TimelinePanel = ({
   dropzoneDisabled = false,
   doneVMOnBoarding,
   fileInputRef,
+  browserType,
 }: Props) => {
   const rulerRef = useRef<HTMLInputElement>(null);
   const [number, setNumber] = useState(0);
@@ -183,6 +185,12 @@ const TimelinePanel = ({
     }
   }, [duration, videoRef, videoStatus]);
 
+  const acceptableVideoFormat = {
+    'video/mp4': ['.mp4', '.mov'],
+    'video/webm': ['.webm'],
+    ...(browserType === 'safari' && { 'video/quicktime': ['.mov'] }),
+  };
+
   return (
     <Fragment>
       <div className={cx('wrapper', { hidden: !isVideoLoaded })}>
@@ -239,7 +247,7 @@ const TimelinePanel = ({
         </div>
       </div>
       <div className={cx('dropzone', { hidden: isVideoLoaded })}>
-        <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')}>
+        <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')} accept={acceptableVideoFormat}>
           {({ open }) => (
             <div className={cx('dropzone-guide')} onClick={open} ref={fileInputRef}>
               <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
