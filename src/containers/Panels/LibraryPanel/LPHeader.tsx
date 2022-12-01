@@ -32,7 +32,7 @@ const LPHeader: FunctionComponent<React.PropsWithChildren<Props>> = ({ onLoad })
   return (
     <div className={cx('wrapper')}>
       <div className={cx('title')}>library</div>
-      <IconButton icon={SvgPath.Plus} type="ghost" id={ONBOARDING_ID.IMPORT_FILE} onClick={handleFileImportButtonClick} />
+      {/*<IconButton icon={SvgPath.Plus} type="ghost" id={ONBOARDING_ID.IMPORT_FILE} onClick={handleFileImportButtonClick} />*/}
     </div>
   );
 };

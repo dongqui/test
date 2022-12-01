@@ -13,8 +13,8 @@ const ExportFile = () => {
     const targetElement = document.getElementById(ONBOARDING_ID.EXPORT_FILE);
     const targetCoordinates = getTargetCoordinates(targetElement);
     if (tooltipRef.current && targetCoordinates) {
-      const { rightTop } = targetCoordinates;
-      tooltipRef.current.style.cssText = `top:${rightTop.y - 32}px; left:${rightTop.x + 16}px;`;
+      const { leftBottom } = targetCoordinates;
+      tooltipRef.current.style.cssText = `top:${leftBottom.y}px; left:${leftBottom.x + 16}px;`;
     }
   }, [tooltipRef]);
 
@@ -24,9 +24,9 @@ const ExportFile = () => {
         <h3>File export</h3>
         <p>
           When you have completed your work, you can <br />
-          <span>extract files</span> by right-clicking on them.
+          <span>extract files</span> by clicking this button.
         </p>
-        <Arrow placement="left-start" />
+        <Arrow placement="top-start" />
       </StepTemplate>
     </Fragment>
   );

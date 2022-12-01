@@ -135,6 +135,22 @@ export interface PlaskLayer {
   tracks: PlaskTrack[];
 }
 
+export type ContactTrack = {
+  boneName: string;
+  transformKeys: IAnimationKey[];
+};
+
+export type ContactData = {
+  left: {
+    toe: ContactTrack;
+    heel: ContactTrack;
+  };
+  right: {
+    toe: ContactTrack;
+    heel: ContactTrack;
+  };
+};
+
 export type PlaskProperty = 'position' | 'rotation' | 'rotationQuaternion' | 'scaling' | 'inContact' | 'blend' | 'poleAngle' | 'isContact';
 export const PlaskPropertyFormat: { [key in PlaskProperty]: number } = {
   position: Animation.ANIMATIONTYPE_VECTOR3,

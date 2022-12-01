@@ -21,6 +21,7 @@ import {
   VectorTransformKey,
   ArrayOfThreeNumbers,
   ArrayOfFourNumbers,
+  ContactData,
 } from 'types/common';
 import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as animationDataActions from 'actions/animationDataAction';
@@ -195,13 +196,7 @@ export class AnimationModule extends Module {
    * @param animationIngredient
    * @param contactData
    */
-  public updateIngredientWithFootLocking(
-    animationIngredient: AnimationIngredient,
-    contactData: {
-      boneName: string;
-      transformKeys: IAnimationKey[];
-    }[],
-  ) {
+  public updateIngredientWithFootLocking(animationIngredient: AnimationIngredient, contactData: ContactData) {
     const animationGroupTemp = this.createAnimationGroupFromIngredient(animationIngredient, this.fps);
     const animationIngredientWithFootLocking = this.processContactData(animationIngredient, animationGroupTemp, contactData);
 
@@ -274,7 +269,7 @@ export class AnimationModule extends Module {
    * @param targetFrameIndex - index of frame to edit
    * @param keyframeDataList - list of data that is used to edit keyframes, including targetId, property, value
    */
-  public editKeyframesWithParams(
+  public static EditKeyframesWithParams(
     targetAnimationIngredient: AnimationIngredient,
     targetLayerId: string,
     targetFrameIndex: number,
@@ -410,7 +405,7 @@ export class AnimationModule extends Module {
                       } else {
                         otherValue = getInterpolatedValue(otherLayerTrack.transformKeys, otherLayerTrack.property, targetFrameIndex);
                       }
-                      value = this.plaskEngine.animationModule.getInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue) as number;
+                      value = AnimationModule.GetInvertTransformForKeyframe(otherLayerTrack.property, value, otherValue) as number;
                     }
                   });
                   targetTrack.transformKeys = getValueInsertedTransformKeys(targetTrack.transformKeys, targetFrameIndex, value);
@@ -671,7 +666,7 @@ export class AnimationModule extends Module {
    * @param animationIngredient
    * @returns
    */
-  public extractContactData(animationIngredient: AnimationIngredient) {
+  public extractContactData(animationIngredient: AnimationIngredient): Nullable<ContactData> {
     const { name, layers } = animationIngredient;
 
     const contactData: { boneName: string; transformKeys: IAnimationKey[] }[] = [];
@@ -684,8 +679,27 @@ export class AnimationModule extends Module {
         });
       }
     });
+    if (!contactData.length) {
+      // no contact for this motion
+      return null;
+    }
 
-    return contactData;
+    const right = {
+      toe: contactData.find((elt) => elt.boneName.includes('rightToe'))!,
+      heel: contactData.find((elt) => elt.boneName.includes('rightFoot'))!,
+    };
+    const left = {
+      toe: contactData.find((elt) => elt.boneName.includes('leftToe'))!,
+      heel: contactData.find((elt) => elt.boneName.includes('leftFoot'))!,
+    };
+
+    if (!right.toe || !right.heel || !left.toe || !left.heel) {
+      console.warn('Incomplete contact data ! Cannot apply foot locking.');
+      return null;
+    }
+
+    console.log(right, left);
+    return { right, left };
   }
 
   /**
@@ -725,15 +739,26 @@ export class AnimationModule extends Module {
    * @param contactData
    * @returns
    */
-  public processContactData(animationIngredient: AnimationIngredient, animationGroup: AnimationGroup, contactData: { boneName: string; transformKeys: IAnimationKey[] }[]) {
+  public processContactData(animationIngredient: AnimationIngredient, animationGroup: AnimationGroup, contactData: ContactData) {
     // Compute contact data
     let animationIngredientWithFootLocking = animationIngredient;
-    for (const data of contactData) {
-      if (data.transformKeys.length) {
-        animationIngredientWithFootLocking =
-          this.plaskEngine.ikModule.computeFootLocking(data.boneName, data.transformKeys, animationGroup, animationIngredientWithFootLocking) || animationIngredientWithFootLocking;
-      }
-    }
+
+    animationIngredientWithFootLocking =
+      this.plaskEngine.ikModule.computeFootLocking(
+        'left',
+        contactData.left.heel.transformKeys,
+        contactData.left.toe.transformKeys,
+        animationGroup,
+        animationIngredientWithFootLocking,
+      ) || animationIngredientWithFootLocking;
+    animationIngredientWithFootLocking =
+      this.plaskEngine.ikModule.computeFootLocking(
+        'right',
+        contactData.right.heel.transformKeys,
+        contactData.right.toe.transformKeys,
+        animationGroup,
+        animationIngredientWithFootLocking,
+      ) || animationIngredientWithFootLocking;
 
     return animationIngredientWithFootLocking;
   }
@@ -969,7 +994,7 @@ export class AnimationModule extends Module {
     }
   }
 
-  public getInvertTransformForKeyframe(property: PlaskProperty, value: Quaternion | Vector3 | number, otherValue: Quaternion | Vector3 | number) {
+  public static GetInvertTransformForKeyframe(property: PlaskProperty, value: Quaternion | Vector3 | number, otherValue: Quaternion | Vector3 | number) {
     if (property === 'position' || property === 'rotation') {
       return (value as Vector3).subtract(otherValue as Vector3);
     } else if (property === 'rotationQuaternion') {

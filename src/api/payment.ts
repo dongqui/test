@@ -11,7 +11,7 @@ export default async function createStripeSession(isMonthly: boolean) {
 
   const res = await requestApi({
     method: 'POST',
-    base: process.env.NEXT_PUBLIC_BACKEND_HOMEPAGE_URL,
+    base: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     url: '/payment/tool',
     headers: {
       'Content-Type': 'application/json',

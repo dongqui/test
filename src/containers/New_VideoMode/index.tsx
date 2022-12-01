@@ -37,7 +37,7 @@ interface Props {
 
 const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const dispatch = useDispatch();
-  const { mode, videoURL } = useSelector((state: RootState) => state.modeSelection);
+  const { mode, videoURL, requestStandbyMode } = useSelector((state: RootState) => state.modeSelection);
 
   const [windowWidth, windowHeight] = useWindowSize();
   const [videoDeviceList, setVideoDeviceList] = useState<MediaDeviceInfo[]>([]);
@@ -49,6 +49,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoHiddenRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLDivElement>(null);
 
   const [currentVideoURL, setVideoURL] = useState<string>('');
   const [isDeviceInitialized, setIsDeviceInitialized] = useState(false);
@@ -136,68 +137,76 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const PERMISSION_DENIED = cameraPermission === false;
   const NO_DEVICE_FOUND = cameraPermission === true && videoDeviceListLoaded && videoDeviceList.length === 0;
   const VIDEO_STREAM_READY = !!currentVideoDevice && !!currentVideoStream;
+  const SYSTEM_PERMISSION_FAILED = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND || VIDEO_STREAM_READY);
   const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && VIDEO_STREAM_READY;
   const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5;
   const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && standbyCounter !== 5;
   const ON_RECORDING = standbyCounter === -1;
   const ON_VIDEO_MOUNTED = isVideoLoaded && currentVideoURL;
 
-  const headerInspector = async (file: File) => {
-    const load = async () => {
-      return new Promise<string>((resolve, reject) => {
-        const fileReader = new FileReader();
+  const headerInspector = useCallback(
+    async (file: File) => {
+      const load = async () => {
+        return new Promise<string>((resolve, reject) => {
+          const fileReader = new FileReader();
 
-        fileReader.onloadend = async (e: ProgressEvent<FileReader>) => {
-          const isDone = e.target?.readyState === FileReader.DONE;
+          fileReader.onloadend = async (e: ProgressEvent<FileReader>) => {
+            const isDone = e.target?.readyState === FileReader.DONE;
 
-          if (isDone) {
-            const array = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
+            if (isDone) {
+              const array = new Uint8Array(e.target.result as ArrayBuffer).subarray(0, 16);
 
-            let fileHeader = '';
-            for (let i = 0; i < array.length; i++) {
-              fileHeader += array[i].toString(16);
+              let fileHeader = '';
+              for (let i = 0; i < array.length; i++) {
+                fileHeader += array[i].toString(16);
+              }
+
+              const regexMov = [
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(6674797071742020)((([\da-fA-F]{1,2})\s?){2})/gi),
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(7466707974712020)((([\da-fA-F]{1,2})\s?){2})/gi),
+              ];
+
+              const regexMp4 = [
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(66747970)((([\da-fA-F]{1,2})\s?){8})/gi),
+                new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(74667079)((([\da-fA-F]{1,2})\s?){8})/gi),
+              ];
+
+              const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
+
+              if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
+                if (browserType === 'safari') {
+                  resolve('mov');
+                } else {
+                  reject('Not supported extension');
+                }
+              }
+
+              if (regexMp4[0].test(fileHeader) || regexMp4[1].test(fileHeader)) {
+                resolve('mp4');
+              }
+
+              if (regexWebm[0].test(fileHeader) || regexWebm[1].test(fileHeader)) {
+                resolve('webm');
+              }
+
+              reject('Not supported extension');
             }
+          };
 
-            const regexMov = [
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(6674797071742020)((([\da-fA-F]{1,2})\s?){2})/gi),
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(7466707974712020)((([\da-fA-F]{1,2})\s?){2})/gi),
-            ];
+          fileReader.readAsArrayBuffer(file);
+        });
+      };
 
-            const regexMp4 = [
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(66747970)((([\da-fA-F]{1,2})\s?){8})/gi),
-              new RegExp(/^((([\da-fA-F]{1,2})\s?){4})(74667079)((([\da-fA-F]{1,2})\s?){8})/gi),
-            ];
-
-            const regexWebm = [new RegExp(/^(1a45dfa3)((([\da-fA-F]{1,2})\s?){12})/gi), new RegExp(/^(451aa3df)((([\da-fA-F]{1,2})\s?){12})/gi)];
-
-            if (regexMov[0].test(fileHeader) || regexMov[1].test(fileHeader)) {
-              resolve('mov');
-            }
-
-            if (regexMp4[0].test(fileHeader) || regexMp4[1].test(fileHeader)) {
-              resolve('mp4');
-            }
-
-            if (regexWebm[0].test(fileHeader) || regexWebm[1].test(fileHeader)) {
-              resolve('webm');
-            }
-
-            reject('Not supported extension');
-          }
-        };
-
-        fileReader.readAsArrayBuffer(file);
-      });
-    };
-
-    return load()
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        throw err;
-      });
-  };
+      return load()
+        .then((res) => {
+          return res;
+        })
+        .catch((err) => {
+          throw err;
+        });
+    },
+    [browserType],
+  );
 
   const unmountCurrentStream = useCallback(() => {
     if (currentVideoStream && videoRef.current) {
@@ -219,10 +228,10 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   useEffect(() => {
     if (PERMISSION_WAITING && !videoURL) {
       setInitialLoading(true);
-    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND) {
-      setTimeout(() => setInitialLoading(false), 100);
+    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
+      setTimeout(() => setInitialLoading(false), 1000);
     }
-  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, videoURL, isVideoLoaded]);
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -264,13 +273,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           dispatch(changeMode({ mode: mode, videoURL: undefined }));
           dispatch(
             globalUIActions.openModal('_AlertModal', {
-              message: 'There are <b>no supported</b> files. Only mp4, mov, webm formats are supported.',
+              message: 'There are <b>no supported</b> files. Only mp4, webm formats are supported.',
               title: 'Import failed',
             }),
           );
         });
     },
-    [dispatch, doneVMOnBoarding, mode, unmountCurrentStream],
+    [dispatch, doneVMOnBoarding, headerInspector, mode, unmountCurrentStream],
   );
 
   useEffect(() => {
@@ -377,7 +386,9 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         stream.getTracks().forEach((track) => track.stop());
         return true;
       })
-      .catch(() => false);
+      .catch((reason) => {
+        return reason.message.includes('Permission denied by system');
+      });
   }, []);
 
   // return videoinput device list
@@ -417,6 +428,17 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [videoRecorder]);
 
   const startCountdown = useCallback(() => {
+    if (SYSTEM_PERMISSION_FAILED) {
+      dispatch(
+        globalUIActions.openModal('_AlertModal', {
+          message:
+            'Chrome might not have access to your camera. To fix this problem, open <a href="x-apple.systempreferences:com.apple.preference.security?Privacy_Camera">System Preferences.<a>',
+          title: "Can't use your camera",
+        }),
+      );
+      return;
+    }
+
     if (PERMISSION_WAITING) {
       dispatch(
         globalUIActions.openModal('_AlertModal', {
@@ -477,7 +499,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         setVideoRecorder(recorder);
       }
     }
-  }, [PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, RECORD_STANDBY, dispatch, currentVideoStream, browserType, unmountCurrentStream]);
+  }, [PERMISSION_WAITING, PERMISSION_DENIED, NO_DEVICE_FOUND, SYSTEM_PERMISSION_FAILED, RECORD_STANDBY, dispatch, currentVideoStream, browserType, unmountCurrentStream]);
 
   const cancelCountdown = useCallback(() => {
     setVideoRecorder(null);
@@ -545,6 +567,19 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       }),
     );
   }, [dispatch, mode, unmountVideo]);
+
+  useEffect(() => {
+    if (requestStandbyMode) {
+      if (ON_VIDEO_MOUNTED) {
+        switchStandbyMode();
+      } else if (!ON_RECORDING && !RECORD_COUNTDOWN) {
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+      }
+      dispatch(changeMode({ mode: mode, videoURL: videoURL, requestStandbyMode: false }));
+    }
+  }, [ON_RECORDING, ON_VIDEO_MOUNTED, RECORD_COUNTDOWN, dispatch, handleDrop, mode, requestStandbyMode, switchStandbyMode, videoURL]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -791,6 +826,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             onChangeEnd={handleChangeEndValue}
             leftCropSliderRef={setLeftCropSliderRef}
             doneVMOnBoarding={doneVMOnBoarding}
+            fileInputRef={fileInputRef}
           />
         </Box>
       </Box>

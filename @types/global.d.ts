@@ -1,3 +1,4 @@
+import { IpcRenderer } from 'electron';
 declare global {
   interface File extends File {
     path?: string;
@@ -5,6 +6,12 @@ declare global {
 
   interface Window {
     Rewardful: any;
+  }
+
+  namespace NodeJS {
+    interface Global {
+      ipcRenderer: IpcRenderer;
+    }
   }
 }
 

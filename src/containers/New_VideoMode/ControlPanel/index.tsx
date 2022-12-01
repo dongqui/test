@@ -10,6 +10,7 @@ import * as modeSelectActions from 'actions/modeSelection';
 import * as lpActions from 'actions/LP/lpNodeAction';
 import * as userActions from 'actions/User';
 import requestApi from 'api/requestApi';
+import * as api from 'api';
 import { Spinner } from 'components';
 import { FilledButton, OutlineButton } from 'components/Button';
 import { Typography } from 'components/Typography';
@@ -191,8 +192,12 @@ const ControlPanel = ({
 
       const formData = new FormData();
 
+      setIsOpenLoadingModal(true);
+
       const file = await convertBlobToFile({ url: videoRef.current.src, type: browserType === 'safari' ? 'mp4' : 'webm', valueName });
-      formData.append('file', file);
+      const { fileKey } = await api.upload(file);
+
+      formData.append('fileKey', fileKey);
       formData.append('name', valueName || 'Extracted motion');
       formData.append('startTime', String(startValue));
       formData.append('endTime', String(endValue));
@@ -200,8 +205,7 @@ const ControlPanel = ({
       formData.append('modelType', valueFormData.model);
       formData.append('isFootLock', valueFormData.footLock === 'Yes' ? 'true' : 'false');
       formData.append('isTPose', valueFormData.tPose === 'Yes' ? 'true' : 'false');
-
-      setIsOpenLoadingModal(true);
+      formData.append('fps', (totalFrames / (endValue - startValue)).toString());
 
       await requestApi({
         method: 'POST',
@@ -323,6 +327,7 @@ const ControlPanel = ({
               </OutlineButton>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
       {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'OverLength' && (
@@ -341,9 +346,10 @@ const ControlPanel = ({
               </div>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
-      {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Condition' && (
+      {isOpenExceptionModal.isOpen && (isOpenExceptionModal.case === 'Condition' || isOpenExceptionModal.case === 'Timeout') && (
         <BaseModal>
           <div className={cx('modal-inner')}>
             <div className={cx('modal-header')}>
@@ -360,6 +366,7 @@ const ControlPanel = ({
               </div>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
       {isOpenExceptionModal.isOpen && isOpenExceptionModal.case === 'Others' && (
@@ -378,6 +385,7 @@ const ControlPanel = ({
               </div>
             </div>
           </div>
+          <Overlay />
         </BaseModal>
       )}
     </div>
