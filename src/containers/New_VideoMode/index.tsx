@@ -229,7 +229,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     if (PERMISSION_WAITING && !videoURL) {
       setInitialLoading(true);
     } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
-      setTimeout(() => setInitialLoading(false), 100);
+      setTimeout(() => setInitialLoading(false), 1000);
     }
   }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
 
