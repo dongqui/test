@@ -58,14 +58,15 @@ const Onboarding = () => {
     if (onboardingStep === 999) {
       timeoutId.current = window.setTimeout(() => {
         document.getElementById(ONBOARDING_ID.HELP_BUTTON)?.click();
-        dispatch(commonActions.progressOnboarding({ onboardingStep: null }));
-      }, 4000);
+        setTimeout(() => dispatch(commonActions.progressOnboarding({ onboardingStep: null })), 4000);
+      }, 10);
+
+      return () => {
+        clearTimeout(timeoutId.current);
+      };
     } else {
       clearTimeout(timeoutId.current);
     }
-    return () => {
-      clearTimeout(timeoutId.current);
-    };
   }, [onboardingStep, dispatch]);
 
   return (
