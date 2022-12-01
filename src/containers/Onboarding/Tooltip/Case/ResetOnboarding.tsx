@@ -16,7 +16,7 @@ const ResetOnboarding = () => {
 
     if (tooltipRef.current && targetCoordinates) {
       const { leftBottom } = targetCoordinates;
-      tooltipRef.current.style.cssText = `top:${leftBottom.y + 100}px; left:${leftBottom.x - 580}px;`;
+      tooltipRef.current.style.cssText = `top:${leftBottom.y + 110}px; left:${leftBottom.x - 580}px;`;
     }
   }, [tooltipRef]);
 

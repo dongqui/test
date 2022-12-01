@@ -47,7 +47,7 @@ const LPBody: FunctionComponent<React.PropsWithChildren<Props>> = ({ lpNodes }) 
 
   return (
     <div className={cx('inner')} onContextMenu={handleContextMenu} onClick={handleClick} onDrop={handleDrop} data-cy="lp-body">
-      <div className={cx('onboarding-export-file-target')} id={ONBOARDING_ID.EXPORT_FILE} />
+      <div className={cx('onboarding-export-file-target')} />
       <div className={cx('onboarding-apply-motion-target')} id={ONBOARDING_ID.APPLY_MOTION} />
       {rootPathNodes.map((node) => (
         <div className={cx('node-row')} key={node.id}>
