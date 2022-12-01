@@ -242,7 +242,14 @@ const TimelinePanel = ({
               value={endValue}
               onChange={handleChangeEndValue}
             />
-            <div className={cx('slider-time')} style={{ left: `calc(${sliderStyles.left}%)`, width: `calc(${sliderStyles.width}%)` }} />
+            <div className={cx('slider-time')} style={{ left: `calc(${sliderStyles.left}%)`, width: `calc(${sliderStyles.width}%)` }}>
+              <div className={cx('slider-time-wrapper', 'pos-left')}>
+                <div className={cx('slider-time-start')} />
+              </div>
+              <div className={cx('slider-time-wrapper', 'pos-right')}>
+                <div className={cx('slider-time-end')} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
