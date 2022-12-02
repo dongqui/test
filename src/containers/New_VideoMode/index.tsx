@@ -107,21 +107,21 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const boxProps = useMemo(
     () => ({
       US: {
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       LS: {
         height: 180,
       } as BoxProps,
       LP: {
         width: 240,
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       RP: {
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       CP: {
         width: 312,
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       MB: {
         height: 32,
