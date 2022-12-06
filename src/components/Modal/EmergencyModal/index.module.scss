@@ -1,10 +1,10 @@
-@import "styles/libraries/colors";
-@import "styles/libraries/typography";
+@import 'styles/libraries/colors';
+@import 'styles/libraries/typography';
 
 .container {
   width: 64rem;
   background-color: var(--grey010);
-  border-radius: 10px;  
+  border-radius: 10px;
 }
 
 .header {
@@ -28,15 +28,17 @@
 
 .body {
   width: 640px;
-  height: 360px;
+  max-height: calc(100vh - 200px);
   overflow-y: auto;
-  background-color: $bg-elevated;
   padding: 40px;
   text-align: center;
+
   img {
     margin: 0 auto;
   }
-  p {
+
+  div {
+    margin-top: 16px;
     color: $content-active;
     font-weight: 600;
     font-size: 18px;
@@ -45,7 +47,7 @@
 }
 
 .footer {
-  padding: 1.6rem 2rem;  
+  padding: 1.6rem 2rem;
   display: flex;
   justify-content: end;
 }
