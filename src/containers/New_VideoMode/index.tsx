@@ -13,6 +13,8 @@ import { Typography } from 'components/Typography';
 import { Dropdown } from 'components/Dropdown';
 import { GhostButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { Overlay } from 'components/Overlay';
+import { Spinner } from 'components';
 import { WARNING_02 } from 'constants/Text';
 import { VM_ON_BOARDING_KEY } from 'utils/const';
 
@@ -24,8 +26,6 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { Overlay } from 'components/Overlay';
-import { Spinner } from 'components';
 
 const cx = classNames.bind(styles);
 
@@ -236,6 +236,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const handleDrop = useCallback(
     async (files: File[]) => {
       if (files.length > 1) {
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'import_error',
+            type: 'video_multiple',
+          },
+        });
+
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',

@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { RootState, useSelector } from 'reducers';
 
 import { partition } from 'lodash';
+import TagManager from 'react-gtm-module';
 
 import { WARNING_02, IMPORT_ERROR_INVALID_FORMAT } from 'constants/Text';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
@@ -28,6 +29,13 @@ export default function FileMenus() {
       const totalFileSize = files?.reduce((sum, file) => sum + file.size, 0);
       const onlyOneViedo = files.length === 1 && files[0].type.includes('video');
       if (hasMoreThanOneVideo) {
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'import_error',
+            type: 'video_multiple',
+          },
+        });
+
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
