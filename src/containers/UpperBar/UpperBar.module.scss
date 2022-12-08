@@ -10,13 +10,15 @@
 .left-upper {
   position: relative;
   display: flex;
-  align-items: center;
   background-color: inherit;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 3;
 
   .menus, .import-button, .export-button {
     position: relative;
     display: flex;
-    flex: 1;
+    //flex: 1;
     align-items: center;
     height: 100%;
     background-color: inherit;
@@ -36,16 +38,19 @@
 .middle-upper {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 .right-upper {
   position: relative;
   display: flex;
-  align-items: center;
   justify-content: flex-end;
-  padding: 4px 16px;
+  margin-right: 16px;
   background-color: inherit;
   gap: 2.4rem;
+  align-items: center;
+  flex: 3;
 
   .mode-switch {
     width: 52px;
