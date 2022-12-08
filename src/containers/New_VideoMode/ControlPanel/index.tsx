@@ -205,7 +205,7 @@ const ControlPanel = ({
       formData.append('modelType', valueFormData.model);
       formData.append('isFootLock', valueFormData.footLock === 'Yes' ? 'true' : 'false');
       formData.append('isTPose', valueFormData.tPose === 'Yes' ? 'true' : 'false');
-      formData.append('fps', (totalFrames / (endValue - startValue)).toString());
+      formData.append('fps', (totalFrames / duration).toString());
 
       await requestApi({
         method: 'POST',
