@@ -39,7 +39,7 @@ const TimelinePanel = ({
   endValue,
   onChangeStart,
   onChangeEnd,
-  dropzoneDisabled = false,
+  dropzoneDisabled = true,
   doneVMOnBoarding,
   fileInputRef,
   browserType,

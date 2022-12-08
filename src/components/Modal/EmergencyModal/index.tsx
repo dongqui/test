@@ -27,11 +27,11 @@ export default function NotificationModal({ onClose, title, message, closeCallba
     <BaseModal hasPadding={false}>
       <div className={cx('container')}>
         <header className={cx('header')}>
-          <h3>{title}</h3>
+          <h3>{title || 'Emergency Notice'}</h3>
           <IconButton onClick={handleClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
         <div className={cx('body')}>
-          <Image src="/images/megaPhone.svg" alt="notification" width={160} height={160} />
+          <Image src="/images/megaPhone.svg" alt="notification" width={80} height={80} />
           <Html content={message.replaceAll('\n', '<br/>')} />
         </div>
         <footer className={cx('footer')}>
