@@ -45,7 +45,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   // permission이 없을 때에 handle 할 수 있게 만든 변수
   const [cameraPermission, setCameraPermission] = useState<boolean | undefined>(undefined);
   const [currentVideoDevice, setCurrentVideoDevice] = useState<MediaDeviceInfo | null>(null);
-  const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
+  const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null | undefined>(undefined);
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoHiddenRef = useRef<HTMLVideoElement>(null);
@@ -219,7 +219,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         track.stop();
       });
 
-      setCurrentVideoStream(null);
+      setCurrentVideoStream(undefined);
       setCurrentVideoDevice(null);
       setIsDeviceInitialized(false);
     }
@@ -477,6 +477,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         setIsDeviceInitialized(true);
       })
       .catch(() => {
+        setCurrentVideoStream(null);
         console.error('Cannot get stream');
       });
   }, []);
@@ -533,7 +534,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       setStandbyCounter((prev) => --prev);
       countTimer.current = setInterval(() => setStandbyCounter((time) => --time), 1000);
 
-      if (currentVideoStream !== null) {
+      if (currentVideoStream) {
         const recorder = new MediaRecorder(currentVideoStream, {
           mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
         });
