@@ -725,7 +725,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               dispatch(changeMode({ mode: 'animationMode', videoURL: undefined }));
             },
             onCancel: () => {
-              dispatch(changeMode({ mode: 'videoMode', videoURL: undefined }));
+              dispatch(changeMode({ mode: 'videoMode' }));
             },
           }),
         );

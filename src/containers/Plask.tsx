@@ -56,7 +56,7 @@ const Plask: FunctionComponent<React.PropsWithChildren<Props>> = ({ browserType,
   };
 
   const handleChangeMode = useCallback(() => {
-    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode', videoURL: undefined }));
+    dispatch(changeMode({ mode: mode === 'animationMode' ? 'videoMode' : 'unmountVideoMode' }));
 
     if (mode === 'videoMode') {
       return false;
