@@ -137,8 +137,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const PERMISSION_DENIED = cameraPermission === false;
   const NO_DEVICE_FOUND = cameraPermission === true && videoDeviceListLoaded && videoDeviceList.length === 0;
   const VIDEO_STREAM_READY = !!currentVideoDevice && !!currentVideoStream;
-  const SYSTEM_PERMISSION_FAILED = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND || VIDEO_STREAM_READY);
-  const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && VIDEO_STREAM_READY;
+  const SYSTEM_PERMISSION_FAILED = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && currentVideoStream === null;
+  const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) && VIDEO_STREAM_READY;
   const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5;
   const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && standbyCounter !== 5;
   const ON_RECORDING = standbyCounter === -1;
@@ -228,10 +228,14 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   useEffect(() => {
     if (PERMISSION_WAITING && !videoURL) {
       setInitialLoading(true);
-    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
+    } else if (PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
       setInitialLoading(false);
     }
-  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
+
+  const handleVideoLoaded = () => {
+    setInitialLoading(false);
+  };
 
   const handleDrop = useCallback(
     async (files: File[]) => {
@@ -451,25 +455,30 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       .catch(() => []);
   }, []);
 
-  const deviceInitialize = useCallback(async (deviceId: string) => {
+  const initializeDevice = useCallback(async (deviceId: string) => {
     const constraints = {
       video: {
         width: { ideal: 3840 },
         height: { ideal: 2160 },
         aspectRatio: { ideal: 4 / 3 },
-        frameRate: { ideal: 60 },
+        frameRate: { ideal: 30 },
         deviceId: { exact: deviceId },
       },
       audio: false,
     };
-    await navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+    await navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
 
-      setCurrentVideoStream(stream);
-      setIsDeviceInitialized(true);
-    });
+        setCurrentVideoStream(stream);
+        setIsDeviceInitialized(true);
+      })
+      .catch(() => {
+        console.error('Cannot get stream');
+      });
   }, []);
 
   const startRecording = useCallback(() => {
@@ -607,7 +616,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       }
       dispatch(changeMode({ mode: mode, videoURL: videoURL, requestStandbyMode: false }));
     }
-  }, [ON_RECORDING, ON_VIDEO_MOUNTED, RECORD_COUNTDOWN, dispatch, handleDrop, mode, requestStandbyMode, requestSwitchStandbyMode, videoURL]);
+  }, [ON_RECORDING, ON_VIDEO_MOUNTED, RECORD_COUNTDOWN, dispatch, handleDrop, mode, requestStandbyMode, requestSwitchStandbyMode, switchStandbyMode, videoURL]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -657,25 +666,31 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
-    if (!ON_RECORDING && !RECORD_COUNTDOWN && !currentVideoURL && !isVideoLoaded && !videoURL) {
-      if (videoDeviceListLoaded && videoDeviceList.length > 0) {
-        if (!currentVideoDevice) {
-          setCurrentVideoDevice(videoDeviceList[0]);
-        } else if (videoDeviceList.findIndex((v) => v.deviceId === currentVideoDevice?.deviceId) === -1) {
+    const noVideoSource = !(currentVideoURL || isVideoLoaded || videoURL);
+    const notOnRecording = !(ON_RECORDING || RECORD_COUNTDOWN);
+    if (notOnRecording && noVideoSource && videoDeviceListLoaded) {
+      const hasAvailableVideoDevice = videoDeviceList.length > 0;
+      if (hasAvailableVideoDevice) {
+        const noCurrentVideoDevice = !currentVideoDevice;
+        const disconnectedCurrentDevice = videoDeviceList.findIndex((v) => v.deviceId === currentVideoDevice?.deviceId) === -1;
+        if (disconnectedCurrentDevice) {
           unmountCurrentStream();
+        }
+        if (noCurrentVideoDevice || disconnectedCurrentDevice) {
           setCurrentVideoDevice(videoDeviceList[0]);
         }
-      } else if (videoDeviceListLoaded && videoDeviceList.length === 0) {
+      } else {
         unmountCurrentStream();
       }
     }
   }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded, videoURL]);
 
   useEffect(() => {
-    if (currentVideoDevice !== null && !isDeviceInitialized) {
-      deviceInitialize(currentVideoDevice.deviceId);
+    const uninitializedCurrentDeviceExist = currentVideoDevice !== null && !isDeviceInitialized;
+    if (uninitializedCurrentDeviceExist) {
+      initializeDevice(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized]);
+  }, [currentVideoDevice, initializeDevice, isDeviceInitialized]);
 
   const dropdownList = useMemo(() => {
     return videoDeviceList.map((device) => ({
@@ -778,6 +793,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             videoRef={videoRef}
             isVideoLoaded={isVideoLoaded}
             onLoadMetadata={handleLoadMetadata}
+            onVideoLoaded={handleVideoLoaded}
           />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
@@ -841,7 +857,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         </Box>
         <Box id="TP" {...boxProps.TP}>
           <TimelinePanel
-            dropzoneDisabled={RECORD_COUNTDOWN || ON_RECORDING || !RECORD_AVAILABLE}
+            dropzoneDisabled={RECORD_COUNTDOWN || ON_RECORDING}
             duration={duration}
             isVideoLoaded={isVideoLoaded}
             videoStatus={videoStatus}
