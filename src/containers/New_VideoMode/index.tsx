@@ -107,21 +107,21 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const boxProps = useMemo(
     () => ({
       US: {
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       LS: {
         height: 180,
       } as BoxProps,
       LP: {
         width: 240,
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       RP: {
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       CP: {
         width: 312,
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       MB: {
         height: 32,
@@ -333,16 +333,27 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [dispatch, mode, unmountVideo]);
 
   const createThumbnails = useCallback(() => {
+    const innerWidth = (timelineRef.parentElement as HTMLDivElement).getBoundingClientRect().width;
+    const innerHeight = (timelineRef.parentElement as HTMLDivElement).getBoundingClientRect().height;
+    let ratio = 1920 / 1080;
+    let num = 20;
     let duration = 20;
     if (videoRef.current) {
       duration = videoRef.current.duration;
+      if (videoRef.current.videoWidth && videoRef.current.videoHeight) {
+        ratio = videoRef.current.videoWidth / videoRef.current.videoHeight;
+      }
+    }
+
+    if (ratio && innerWidth && innerHeight) {
+      num = Math.ceil(innerWidth / (ratio * innerHeight));
     }
 
     setTimeline(
       new Timeline(timelineRef, {
-        totalDuration: 20,
-        thumbnailWidth: 128,
-        thumbnailHeight: 96,
+        totalDuration: num,
+        thumbnailWidth: innerHeight * ratio,
+        thumbnailHeight: innerHeight,
         loadingTextureURI: '/images/Loading.png',
         getThumbnailCallback: (time: number, done: (input: ThinTexture | HTMLCanvasElement | HTMLVideoElement | string) => void) => {
           const hiddenVideo = document.createElement('video');
@@ -872,6 +883,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             leftCropSliderRef={setLeftCropSliderRef}
             doneVMOnBoarding={doneVMOnBoarding}
             fileInputRef={fileInputRef}
+            browserType={browserType}
           />
         </Box>
       </Box>

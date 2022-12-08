@@ -7,11 +7,11 @@
 
   &:hover {
     cursor: pointer;
-    border: 1px dotted $primary;
+    border: 2px dashed $primary;
   }
 
   &.active {
-    border: 1px dotted $primary;
+    border: 2px dashed $primary;
   }
 
   &.disabled {
