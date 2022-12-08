@@ -167,7 +167,7 @@ class PopupManager {
       if (errorNotice.title || errorNotice.contents) {
         this.dispatch(
           commonActions.openModal('EmergencyModal', {
-            message: `<p>${errorNotice.contents}</p>`,
+            message: errorNotice.contents || 'Undefined',
             title: errorNotice.title,
             closeCallback: () => {
               this.next();
@@ -177,25 +177,6 @@ class PopupManager {
       } else {
         this.next();
       }
-    }
-  }
-
-  showEmergencyNotification() {
-    if (this.dispatch) {
-      this.dispatch(
-        commonActions.openModal('EmergencyModal', {
-          message: `<p>
-          Our motion capture server is down due to technical difficulties.
-          <br />
-          You can only use the animation editing feature at the moment. <br />
-          Sorry for the inconvenience.
-        </p>`,
-          title: 'Emergency Notice',
-          closeCallback: () => {
-            this.next();
-          },
-        }),
-      );
     }
   }
 }
