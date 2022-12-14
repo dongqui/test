@@ -260,7 +260,13 @@ const TimelinePanel = ({
         </div>
       </div>
       <div className={cx('dropzone', { hidden: isVideoLoaded })}>
-        <BaseDropzone disabled={dropzoneDisabled} onDrop={onDrop} className={cx('dropzone-outer')} active={cx('dropzone-active')} accept={acceptableVideoFormat}>
+        <BaseDropzone
+          disabled={dropzoneDisabled}
+          onDrop={onDrop}
+          className={cx('dropzone-outer')}
+          active={cx('dropzone-active')}
+          // accept={acceptableVideoFormat}
+        >
           {({ open }) => (
             <div className={cx('dropzone-guide')} onClick={open} ref={fileInputRef}>
               <IconWrapper className={cx('icon-plus')} icon={SvgPath.Plus} />
