@@ -685,12 +685,12 @@ export class AnimationModule extends Module {
     }
 
     const right = {
-      toe: contactData.find((elt) => elt.boneName.includes('rightToe'))!,
-      heel: contactData.find((elt) => elt.boneName.includes('rightFoot'))!,
+      toe: contactData.find((elt) => elt.boneName.toLowerCase().includes('righttoe'))!,
+      heel: contactData.find((elt) => elt.boneName.toLowerCase().includes('rightfoot'))!,
     };
     const left = {
-      toe: contactData.find((elt) => elt.boneName.includes('leftToe'))!,
-      heel: contactData.find((elt) => elt.boneName.includes('leftFoot'))!,
+      toe: contactData.find((elt) => elt.boneName.toLowerCase().includes('lefttoe'))!,
+      heel: contactData.find((elt) => elt.boneName.toLowerCase().includes('leftfoot'))!,
     };
 
     if (!right.toe || !right.heel || !left.toe || !left.heel) {
