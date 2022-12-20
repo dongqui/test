@@ -151,6 +151,16 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
         yield call(addIK, addIKAction(asset.id, animationIngredient));
         // Update after adding IK tracks
         animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
+
+        // Set animation boundaries
+        if (contactData.left.heel.transformKeys.length) {
+          const payload = {
+            endTimeIndex: contactData.left.heel.transformKeys.length,
+            currentTimeIndex: 0,
+          };
+          console.log(`Time : ${contactData.left.heel.transformKeys.length}`);
+          yield put(animatingControlsActions.blurEndInput(payload));
+        }
         animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
         yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
         // Here, animationIngredient contains IK tracks, we don't want them, so we bake them
