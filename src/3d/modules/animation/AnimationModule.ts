@@ -585,10 +585,9 @@ export class AnimationModule extends Module {
           const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
 
           if (targetTrack) {
-            // Find the world scale to cancel
             let transformMatrix = Matrix.IdentityReadOnly;
             if (boneName === 'hips') {
-              //todo
+              // Apply position in world space, using initial position as an offset
               const transformNode = animatableTransformNodes.find((tn) => tn.id === targetTransformNodeId);
               if (transformNode && transformNode.parent) {
                 transformMatrix = transformNode.parent.getWorldMatrix().clone().invert();
