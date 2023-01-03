@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
+import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TmpVectors, TransformNode, Vector3 } from '@babylonjs/core';
 import produce from 'immer';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
 import {
@@ -38,6 +38,7 @@ import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
  */
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
+  private _savedAnimationGroup: Nullable<AnimationGroup> = null;
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
@@ -522,6 +523,81 @@ export class AnimationModule extends Module {
     };
 
     return animationIngredient;
+  }
+
+  private _gaussianKernel(sigma: number, kernelSize: number) {
+    const kernel = new Array(kernelSize);
+    const center = Math.floor(kernelSize / 2);
+    let sum = 0;
+
+    for (let i = 0; i < kernelSize; i++) {
+      kernel[i] = Math.exp(-0.5 * Math.pow((i - center) / sigma, 2));
+      sum += kernel[i];
+    }
+
+    for (let i = 0; i < kernelSize; i++) {
+      kernel[i] /= sum;
+    }
+
+    return kernel;
+  }
+
+  private _convolveKeys(keys: IAnimationKey[], kernel: number[]) {
+    const result = [] as IAnimationKey[];
+    const padding = Math.floor(kernel.length / 2);
+    const sum = TmpVectors.Quaternion[0];
+
+    for (let i = 0; i < keys.length; i++) {
+      sum.set(0, 0, 0, 0);
+      let factor = 0;
+      for (let j = 0; j < kernel.length; j++) {
+        const k = i + j - padding;
+        if (k >= 0 && k < keys.length) {
+          sum.addInPlace(keys[k].value.scale(kernel[j]));
+          factor += kernel[j];
+        }
+      }
+      result.push({ value: sum.scale(1 / factor), frame: keys[i].frame });
+    }
+
+    return result;
+  }
+
+  private _noiseFilter(transformKeys: IAnimationKey[], params: { sigma: number; kernelSize: number } = { sigma: 1, kernelSize: 5 }) {
+    const GAUSSIAN = true;
+    let newKeys = transformKeys;
+    if (GAUSSIAN) {
+      const kernel = this._gaussianKernel(params.sigma, params.kernelSize);
+      newKeys = this._convolveKeys(transformKeys, kernel);
+    }
+
+    return newKeys;
+  }
+
+  public DEBUG_filter(params: { sigma: number; kernelSize: number } = { sigma: 1, kernelSize: 5 }) {
+    if (!this._currentAnimationGroup) {
+      console.log('Could not find a loaded animation');
+      return;
+    }
+    if (this._savedAnimationGroup) {
+      this._currentAnimationGroup = this._savedAnimationGroup;
+    }
+
+    const group = new AnimationGroup('test');
+    for (const targetedAnimation of this._currentAnimationGroup.targetedAnimations) {
+      const keys = targetedAnimation.animation.getKeys();
+      if (targetedAnimation.animation.targetProperty !== 'rotationQuaternion') {
+        continue;
+      }
+      const newKeys = this._noiseFilter(keys, params);
+      const newAnim = targetedAnimation.animation.clone();
+      newAnim.setKeys(newKeys);
+      group.addTargetedAnimation(newAnim, targetedAnimation.target);
+    }
+    if (!this._savedAnimationGroup) {
+      this._savedAnimationGroup = this._currentAnimationGroup;
+    }
+    this._currentAnimationGroup = group;
   }
 
   /**

@@ -91,6 +91,7 @@ const RenderingPanel: FunctionComponent<React.PropsWithChildren<Props>> = () => 
 
       const targetNode = document.getElementById('RP')!; // always exist
       const config = { attributes: true };
+      (window as any).engine = plaskEngine;
 
       const handleEngineResize = () => {
         plaskEngine.resize();
