@@ -586,17 +586,19 @@ export class AnimationModule extends Module {
 
           if (targetTrack) {
             // Find the world scale to cancel
-            let worldMatrix = Matrix.IdentityReadOnly;
+            let transformMatrix = Matrix.IdentityReadOnly;
             if (boneName === 'hips') {
               //todo
-              const transformNode = animatableTransformNodes.find((tn) => tn.id === targetTransformNodeId)!;
-              worldMatrix = transformNode.getWorldMatrix().clone().invert();
+              const transformNode = animatableTransformNodes.find((tn) => tn.id === targetTransformNodeId);
+              if (transformNode && transformNode.parent) {
+                transformMatrix = transformNode.parent.getWorldMatrix().clone().invert();
+                transformMatrix.addTranslationFromFloats(transformNode.position.x, transformNode.position.y, transformNode.position.z);
+              }
             }
-            debugger;
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
               const newValue = (value as ArrayOfThreeNumbers).map((v, idx) => (v * hipSpace) / 106);
-              targetTrack.transformKeys.push({ frame, value: Vector3.TransformCoordinates(Vector3.FromArray(newValue), worldMatrix) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
+              targetTrack.transformKeys.push({ frame, value: Vector3.TransformCoordinates(Vector3.FromArray(newValue), transformMatrix) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
             });
           }
         } else if (property === 'scaling') {
