@@ -29,3 +29,4 @@ export const BONE_NAMES: RetargetSourceBoneType[] = [
 ];
 
 export const IK_CONTROLLER_EL_ID = 'ik-controller-container' as const;
+export const DEBUG_EL_ID = 'debug-container' as const;

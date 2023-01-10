@@ -549,37 +549,59 @@ export class AnimationModule extends Module {
 
     for (let i = 0; i < keys.length; i++) {
       sum.set(0, 0, 0, 0);
-      let factor = 0;
+      let accumulatedWeight = 0;
       for (let j = 0; j < kernel.length; j++) {
         const k = i + j - padding;
         if (k >= 0 && k < keys.length) {
-          sum.addInPlace(keys[k].value.scale(kernel[j]));
-          factor += kernel[j];
+          Quaternion.SlerpToRef(keys[k].value as Quaternion, sum, accumulatedWeight / (accumulatedWeight + kernel[j]), sum);
+          // sum.addInPlace((keys[k].value as Quaternion).scale(kernel[j]));
+          accumulatedWeight += kernel[j];
         }
       }
-      result.push({ value: sum.scale(1 / factor), frame: keys[i].frame });
+      result.push({ value: sum.clone(), frame: keys[i].frame });
     }
 
     return result;
   }
 
-  private _noiseFilter(transformKeys: IAnimationKey[], params: { sigma: number; kernelSize: number } = { sigma: 1, kernelSize: 5 }) {
-    const GAUSSIAN = true;
+  // private _convolveKeysMedian(keys: IAnimationKey[], kernelSize: number) {
+  //   const result = [] as IAnimationKey[];
+  //   const padding = Math.floor(kernelSize / 2);
+  //   const sum = TmpVectors.Quaternion[0];
+
+  //   for (let i = 0; i < keys.length; i++) {
+  //     sum.set(0, 0, 0, 0);
+  //     let factor = 0;
+  //     for (let j = 0; j < kernelSize; j++) {
+  //       const k = i + j - padding;
+  //       if (k >= 0 && k < keys.length) {
+  //         sum.addInPlace(keys[k].value.scale(kernel[j]));
+  //         factor += kernel[j];
+  //       }
+  //     }
+  //     result.push({ value: sum.scale(1 / factor), frame: keys[i].frame });
+  //   }
+
+  //   return result;
+  // }
+
+  private _noiseFilter(transformKeys: IAnimationKey[], params: { sigma?: number; kernelSize: number; method: string } = { sigma: 1, kernelSize: 5, method: 'gaussian' }) {
     let newKeys = transformKeys;
-    if (GAUSSIAN) {
-      const kernel = this._gaussianKernel(params.sigma, params.kernelSize);
+    if (params.method === 'gaussian') {
+      const kernel = this._gaussianKernel(params.sigma || 1, params.kernelSize || 5);
       newKeys = this._convolveKeys(transformKeys, kernel);
+    } else if (params.method === 'median') {
     }
 
     return newKeys;
   }
 
-  public DEBUG_filter(params: { sigma: number; kernelSize: number } = { sigma: 1, kernelSize: 5 }) {
+  public DEBUG_filter(params: { sigma?: number; kernelSize: number; method: string } = { sigma: 1, kernelSize: 5, method: 'gaussian' }, reset = true) {
     if (!this._currentAnimationGroup) {
       console.log('Could not find a loaded animation');
       return;
     }
-    if (this._savedAnimationGroup) {
+    if (reset && this._savedAnimationGroup) {
       this._currentAnimationGroup = this._savedAnimationGroup;
     }
 
@@ -587,6 +609,7 @@ export class AnimationModule extends Module {
     for (const targetedAnimation of this._currentAnimationGroup.targetedAnimations) {
       const keys = targetedAnimation.animation.getKeys();
       if (targetedAnimation.animation.targetProperty !== 'rotationQuaternion') {
+        group.addTargetedAnimation(targetedAnimation.animation.clone(), targetedAnimation.target);
         continue;
       }
       const newKeys = this._noiseFilter(keys, params);
