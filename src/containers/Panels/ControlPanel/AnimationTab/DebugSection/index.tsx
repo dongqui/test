@@ -47,6 +47,9 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
   // IK Controller
   const [sigma, setSigma] = useState<number>(1);
   const [convolutionSize, setConvolutionSize] = useState<number>(5);
+  const [fcmin, setFcmin] = useState<number>(0.5);
+  const [beta, setBeta] = useState<number>(0.007);
+  const [threshold, setThreshold] = useState<number>(0.5);
 
   useEffect(() => {
     if (visualizedRetargetMap) {
@@ -93,32 +96,75 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
     },
   ];
 
-  const MedianFilterData = [
+  const OneEuroFilterData = [
     {
-      text: 'Convolution size',
-      step: 2,
-      min: 3,
-      max: 15,
+      text: 'FCMin',
+      step: 0.1,
+      min: 0.0,
+      max: 10,
       showProgress: true,
-      currentValue: convolutionSize,
-      setCurrentValue: setConvolutionSize,
-      decimalDigit: 0,
+      currentValue: fcmin,
+      setCurrentValue: setFcmin,
+      decimalDigit: 1,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
         // Nothing to do
         // plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);
       },
       onChangeEnd: useCallback((inputValue: number) => {
-        setConvolutionSize(inputValue);
+        setFcmin(inputValue);
+      }, []),
+    },
+    {
+      text: 'beta',
+      step: 0.003,
+      min: 0.0,
+      max: 1,
+      showProgress: true,
+      currentValue: beta,
+      setCurrentValue: setBeta,
+      decimalDigit: 3,
+      handleChange: (event: ChangeEvent<HTMLInputElement>) => {
+        // Nothing to do
+        // plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);
+      },
+      onChangeEnd: useCallback((inputValue: number) => {
+        setBeta(inputValue);
       }, []),
     },
   ];
 
   const FilterButtons = [
     {
-      text: 'Run convolution',
+      text: 'Preview Filter',
       onClick: (method: string) => {
-        plaskEngine.animationModule.DEBUG_filter({ sigma, kernelSize: convolutionSize, method });
+        plaskEngine.animationModule.DEBUG_filter({ sigma, kernelSize: convolutionSize, beta, minCutoff: fcmin, threshold, method });
       },
+    },
+    {
+      text: 'Apply filter to keyframes',
+      onClick: (method: string) => {
+        plaskEngine.animationModule.DEBUG_bake({ sigma, kernelSize: convolutionSize, beta, minCutoff: fcmin, threshold, method });
+      },
+    },
+  ];
+
+  const SimplifyKeyframesData = [
+    {
+      text: 'Threshold',
+      step: 0.1,
+      min: 0.0,
+      max: 10,
+      showProgress: true,
+      currentValue: threshold,
+      setCurrentValue: setThreshold,
+      decimalDigit: 1,
+      handleChange: (event: ChangeEvent<HTMLInputElement>) => {
+        // Nothing to do
+        // plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);
+      },
+      onChangeEnd: useCallback((inputValue: number) => {
+        setThreshold(inputValue);
+      }, []),
     },
   ];
 
@@ -199,9 +245,9 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
           ))}
         </div>
       </PlaskCard>
-      <PlaskCard title={<div className={cx('title-wrapper')}>Median Filter</div>} type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive} id={DEBUG_EL_ID}>
+      <PlaskCard title={<div className={cx('title-wrapper')}>One euro Filter</div>} type="dropdown" dropdownOptions={dropdownOptions} activeStatus={isAllActive} id={DEBUG_EL_ID}>
         <div className={cx('wrapper')}>
-          {MedianFilterData.map((info, idx) => (
+          {OneEuroFilterData.map((info, idx) => (
             <StaticRangeInput
               key={`${info.text}${idx}`}
               text={info.text}
@@ -219,7 +265,44 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
 
           {FilterButtons.map((info, idx) => (
             <FilledButton
-              onClick={() => info.onClick('median')}
+              onClick={() => info.onClick('oneeuro')}
+              className={cx('button')}
+              key={`${info.text}${idx}`}
+              text={info.text}
+              buttonType="default"
+              disabled={!isAllActive}
+              fullSize={true}
+            />
+          ))}
+        </div>
+      </PlaskCard>
+      <PlaskCard
+        title={<div className={cx('title-wrapper')}>Simplify Keyframes</div>}
+        type="dropdown"
+        dropdownOptions={dropdownOptions}
+        activeStatus={isAllActive}
+        id={DEBUG_EL_ID}
+      >
+        <div className={cx('wrapper')}>
+          {SimplifyKeyframesData.map((info, idx) => (
+            <StaticRangeInput
+              key={`${info.text}${idx}`}
+              text={info.text}
+              step={info.step}
+              max={info.max}
+              min={info.min ?? 0}
+              showProgress={info.showProgress}
+              currentValue={info.currentValue}
+              decimalDigit={info.decimalDigit}
+              activeStatus={isAllActive}
+              handleChange={info.handleChange}
+              onChangeEnd={info.onChangeEnd}
+            />
+          ))}
+
+          {FilterButtons.map((info, idx) => (
+            <FilledButton
+              onClick={() => info.onClick('simplify')}
               className={cx('button')}
               key={`${info.text}${idx}`}
               text={info.text}

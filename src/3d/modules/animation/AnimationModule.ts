@@ -564,6 +564,16 @@ export class AnimationModule extends Module {
     return result;
   }
 
+  private _oneEuroFilter(keys: IAnimationKey[], params: { minCutoff?: number; beta?: number }) {
+    const filter = new OneEuroFilterForQuaternion(params.minCutoff || 0.5, params.beta || 0.007);
+    const result = [] as IAnimationKey[];
+
+    for (let i = 0; i < keys.length; i++) {
+      result.push({ value: filter.calculate(keys[i].frame, keys[i].value), frame: keys[i].frame });
+    }
+    return result;
+  }
+
   // private _convolveKeysMedian(keys: IAnimationKey[], kernelSize: number) {
   //   const result = [] as IAnimationKey[];
   //   const padding = Math.floor(kernelSize / 2);
@@ -585,18 +595,46 @@ export class AnimationModule extends Module {
   //   return result;
   // }
 
-  private _noiseFilter(transformKeys: IAnimationKey[], params: { sigma?: number; kernelSize: number; method: string } = { sigma: 1, kernelSize: 5, method: 'gaussian' }) {
+  private _noiseFilter(
+    transformKeys: IAnimationKey[],
+    params: { sigma?: number; kernelSize?: number; method: string; minCutoff?: number; beta?: number; threshold?: number } = { sigma: 1, kernelSize: 5, method: 'gaussian' },
+  ) {
     let newKeys = transformKeys;
     if (params.method === 'gaussian') {
       const kernel = this._gaussianKernel(params.sigma || 1, params.kernelSize || 5);
       newKeys = this._convolveKeys(transformKeys, kernel);
-    } else if (params.method === 'median') {
+    } else if (params.method === 'simplify') {
+      this.DEBUG_simplifyKeyframes(params.threshold || 0.5);
+    } else if (params.method === 'oneeuro') {
+      newKeys = this._oneEuroFilter(transformKeys, params);
     }
 
     return newKeys;
   }
 
-  public DEBUG_filter(params: { sigma?: number; kernelSize: number; method: string } = { sigma: 1, kernelSize: 5, method: 'gaussian' }, reset = true) {
+  public DEBUG_bake(params: { sigma: number; kernelSize: number; beta: number; minCutoff: number; method: string; threshold: number }) {
+    let animationIngredient = this.getCurrentAnimationIngredient(this.visualizedAssetIds[0]);
+    this.DEBUG_filter(params);
+    const animationGroup = this._currentAnimationGroup;
+    if (!animationGroup || !animationIngredient) {
+      console.warn('No animation group or ingredient, cannot bake');
+      return;
+    }
+    for (const targetedAnimation of animationGroup.targetedAnimations) {
+      animationIngredient = this.setKeyframesForTrack(
+        animationIngredient,
+        animationIngredient!.layers[0].id,
+        targetedAnimation.target.id,
+        targetedAnimation.animation.targetProperty as PlaskProperty,
+        targetedAnimation.animation.getKeys(),
+      );
+      // animationIngredient = AnimationModule.EditKeyframesWithParams(animationIngredient, animationIngredient!.layers[0].id, targetedAnimation.animation.targetProperty, )
+    }
+    this._savedAnimationGroup = this._currentAnimationGroup;
+  }
+
+  public DEBUG_filter(params: { sigma: number; kernelSize: number; beta: number; minCutoff: number; method: string; threshold: number }, reset = true) {
+    this.stopCurrentAnimationGroup();
     if (!this._currentAnimationGroup) {
       console.log('Could not find a loaded animation');
       return;
@@ -621,6 +659,11 @@ export class AnimationModule extends Module {
       this._savedAnimationGroup = this._currentAnimationGroup;
     }
     this._currentAnimationGroup = group;
+    this.playCurrentAnimationGroup();
+  }
+
+  public DEBUG_simplifyKeyframes(threshold: number) {
+    // TODO
   }
 
   /**
