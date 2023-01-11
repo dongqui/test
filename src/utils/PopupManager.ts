@@ -8,7 +8,7 @@ import { checkErrorNotice } from 'api';
 
 // Ref: https://www.figma.com/file/cjE07P97OvCTwOIornDmbK/Plask-Master-Design?node-id=2821%3A18043
 
-const CURRENT_NOTIFICATION_NUMBER = '2';
+const CURRENT_NOTIFICATION_NUMBER = '3';
 class PopupManager {
   isOnboardingDone: boolean;
   isNewFeatureModalDone: boolean;
