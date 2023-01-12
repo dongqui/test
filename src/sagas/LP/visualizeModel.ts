@@ -6,6 +6,7 @@ import { RootState } from 'reducers';
 import * as lpNodeActions from 'actions/LP/lpNodeAction';
 import * as selectingDataActions from 'actions/selectingDataAction';
 import * as animationDataActions from 'actions/animationDataAction';
+import * as animatingControlsActions from 'actions/animatingControlsAction';
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as plaskProjectActions from 'actions/plaskProjectAction';
 import * as TEXT from 'constants/Text';
@@ -126,6 +127,17 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
             yield call(addIK, addIKAction(asset.id, animationIngredient));
             // Update after adding IK tracks
             animationIngredient = plaskEngine.animationModule.getCurrentAnimationIngredient(asset.id)!;
+
+            // Set animation boundaries
+            if (contactData.left.heel.transformKeys.length) {
+              const payload = {
+                startTimeIndex: 0,
+                endTimeIndex: contactData.left.heel.transformKeys.length,
+                currentTimeIndex: 0,
+              };
+              console.log(`Time : ${contactData.left.heel.transformKeys.length}`);
+              yield put(animatingControlsActions.blurEndInput(payload));
+            }
             animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
             yield put(animationDataActions.editAnimationIngredient({ animationIngredient }));
             // Here, animationIngredient contains IK tracks, we don't want them, so we bake them

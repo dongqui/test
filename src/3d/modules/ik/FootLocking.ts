@@ -252,6 +252,7 @@ export class FootLocking {
 
       let targetPosition = new Vector3();
       let framePosition: Vector3;
+      // AVERAGING
       for (let i = 0; i < phase.length; i++) {
         framePosition = this.extractHeelPoseAtFrame(frameIndex).position;
         targetPosition.addInPlace(framePosition);
@@ -261,6 +262,10 @@ export class FootLocking {
         targetPosition.scaleInPlace(1 / phase.length);
       }
       phase.target = targetPosition.clone();
+
+      // FIRST FRAME
+      // phase.target = this.extractHeelPoseAtFrame(frameIndex).position;
+      // frameIndex += phase.length;
     }
 
     // Here we have all averaged IK positions in locking phases, we can now assign them to every frame
@@ -271,23 +276,24 @@ export class FootLocking {
       const currentLockingQuaternion = this.extractHeelPoseAtFrame(frameIndex).quaternion.clone();
 
       let isHeelLocked = true;
+      let target;
       for (const precisePhase of phase.phases) {
         if (precisePhase.heel === 1 && !isHeelLocked) {
-          this.ikController.ikController.computeHeelPosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+          this.ikController.ikController.computeHeelPosition(currentLockingPosition, currentLockingQuaternion, currentLockingPosition);
         } else if (precisePhase.heel !== 1 && isHeelLocked) {
-          this.ikController.ikController.computeToePosition(currentLockingPosition, this.extractHeelPoseAtFrame(frameIndex).quaternion, currentLockingPosition);
+          this.ikController.ikController.computeToePosition(currentLockingPosition, currentLockingQuaternion, currentLockingPosition);
         }
         isHeelLocked = precisePhase.heel === 1;
 
         for (let i = 0; i < precisePhase.length; i++) {
-          let target = currentLockingPosition.clone();
+          target = currentLockingPosition.clone();
           // Quaternion
           // TODO : hard locking quat makes it robotic and unbelievable
           // TODO : Add a Slerp with a factor between locked quat and FK quat with a 0.5 blend value ?
-          // if (precisePhase.heel !== 1 || precisePhase.toe !== 1) {
-          // We do not have quat lock, update the value for this frame
-          currentLockingQuaternion.copyFrom(this.extractHeelPoseAtFrame(frameIndex).quaternion);
-          // }
+          if (precisePhase.heel !== 1 || precisePhase.toe !== 1) {
+            // We do not have quat lock, update the value for this frame
+            currentLockingQuaternion.copyFrom(this.extractHeelPoseAtFrame(frameIndex).quaternion);
+          }
           if (precisePhase.heel !== 1) {
             this.ikController.ikController.computeHeelPosition(currentLockingPosition, currentLockingQuaternion, target);
           }
@@ -296,6 +302,7 @@ export class FootLocking {
           frameIndex++;
         }
       }
+      return target;
     };
 
     for (let j = 0; j < broadPhases.length - 1; j++) {
@@ -315,16 +322,9 @@ export class FootLocking {
         //   this.ikController.ikController.computeHeelPosition(phaseIn.target, this.extractHeelPoseAtFrame(phaseOut.startFrame).quaternion, phaseIn.target);
         // }
       }
-      if (!phaseOut.state) {
-        phaseOut.target = phaseIn.target!.clone();
-        // if (phaseIn.phases[phaseIn.phases.length - 1].heel !== 1) {
-        //   // This is a toe only contact
-        //   this.ikController.ikController.computeHeelPosition(phaseOut.target, this.extractHeelPoseAtFrame(phaseIn.startFrame + phaseIn.length - 1).quaternion, phaseOut.target);
-        // }
-      }
 
       if (phaseIn.state) {
-        processContactPhase(phaseIn);
+        phaseOut.target = processContactPhase(phaseIn) || phaseIn.target!.clone();
       } else {
         // First phase no contact : we have no previous contact so we fill all positions
         const l = j === 0 ? phaseIn.length : Math.ceil(phaseIn.length / 2);

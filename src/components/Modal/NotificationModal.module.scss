@@ -1,5 +1,5 @@
-@import "styles/libraries/colors";
-@import "styles/libraries/typography";
+@import 'styles/libraries/colors';
+@import 'styles/libraries/typography';
 
 .container {
   width: 64rem;
@@ -31,15 +31,17 @@
     display: block;
     background-color: $bg-elevated;
   }
+
   background-color: $content-inactive;
 }
 
 .footer {
-  padding: 1.6rem 2rem;  
+  padding: 1.6rem 2rem;
+
   div {
     color: $content-high;
     font: $modal-body;
-  }  
+  }
 
   a {
     font: $modal-body;
