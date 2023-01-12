@@ -49,7 +49,7 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
   const [convolutionSize, setConvolutionSize] = useState<number>(5);
   const [fcmin, setFcmin] = useState<number>(0.5);
   const [beta, setBeta] = useState<number>(0.007);
-  const [threshold, setThreshold] = useState<number>(0.5);
+  const [threshold, setThreshold] = useState<number>(0.002);
 
   useEffect(() => {
     if (visualizedRetargetMap) {
@@ -143,7 +143,8 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
     {
       text: 'Apply filter to keyframes',
       onClick: (method: string) => {
-        plaskEngine.animationModule.DEBUG_bake({ sigma, kernelSize: convolutionSize, beta, minCutoff: fcmin, threshold, method });
+        const animationIngredient = plaskEngine.animationModule.DEBUG_bake({ sigma, kernelSize: convolutionSize, beta, minCutoff: fcmin, threshold, method })!;
+        dispatch(editAnimationIngredient({ animationIngredient }));
       },
     },
   ];
@@ -151,13 +152,13 @@ const DebugSection: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
   const SimplifyKeyframesData = [
     {
       text: 'Threshold',
-      step: 0.1,
-      min: 0.0,
-      max: 10,
+      step: 0.0005,
+      min: 0.0005,
+      max: 0.05,
       showProgress: true,
       currentValue: threshold,
       setCurrentValue: setThreshold,
-      decimalDigit: 1,
+      decimalDigit: 4,
       handleChange: (event: ChangeEvent<HTMLInputElement>) => {
         // Nothing to do
         // plaskEngine.ikModule.setIKControllerBlend(parseFloat(event.target.value), controllers);

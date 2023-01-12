@@ -258,6 +258,17 @@ export class AnimationModule extends Module {
         return;
       }
       targetTrack.transformKeys = keyframes;
+
+      // RotationQuaternion also changes the rotation track
+      if (property === 'rotationQuaternion') {
+        const peerTrack = targetLayer.tracks.find((track) => track.targetId === targetId && track.property === 'rotation');
+        if (peerTrack) {
+          peerTrack.transformKeys = keyframes.map((key) => {
+            console.log(key.value);
+            return { frame: key.frame, value: key.value.toEulerAngles() };
+          });
+        }
+      }
     });
 
     return newAnimationIngredient;
@@ -604,7 +615,7 @@ export class AnimationModule extends Module {
       const kernel = this._gaussianKernel(params.sigma || 1, params.kernelSize || 5);
       newKeys = this._convolveKeys(transformKeys, kernel);
     } else if (params.method === 'simplify') {
-      this.DEBUG_simplifyKeyframes(params.threshold || 0.5);
+      newKeys = this.DEBUG_simplifyKeyframes(transformKeys, params.threshold || 0.5);
     } else if (params.method === 'oneeuro') {
       newKeys = this._oneEuroFilter(transformKeys, params);
     }
@@ -630,7 +641,9 @@ export class AnimationModule extends Module {
       );
       // animationIngredient = AnimationModule.EditKeyframesWithParams(animationIngredient, animationIngredient!.layers[0].id, targetedAnimation.animation.targetProperty, )
     }
-    this._savedAnimationGroup = this._currentAnimationGroup;
+    this._savedAnimationGroup = null;
+
+    return animationIngredient;
   }
 
   public DEBUG_filter(params: { sigma: number; kernelSize: number; beta: number; minCutoff: number; method: string; threshold: number }, reset = true) {
@@ -662,8 +675,45 @@ export class AnimationModule extends Module {
     this.playCurrentAnimationGroup();
   }
 
-  public DEBUG_simplifyKeyframes(threshold: number) {
-    // TODO
+  public DEBUG_simplifyKeyframes(keys: IAnimationKey[], threshold: number) {
+    const result = [] as IAnimationKey[];
+
+    if (keys.length <= 2) {
+      return keys;
+    }
+
+    let i0 = 0,
+      i1 = 2;
+
+    // Add the first keyframe
+    result.push({ frame: keys[0].frame, value: keys[0].value.clone() });
+    const skippedKeys = [];
+    while (i1 < keys.length) {
+      skippedKeys.push(keys[i1 - 1]);
+      for (const candidate of skippedKeys) {
+        const begin = keys[i0];
+        const end = keys[i1];
+        const target = Quaternion.Slerp(begin.value, end.value, (candidate.frame - begin.frame) / (end.frame - begin.frame));
+        if (this._quaternionDistance(target, candidate.value) > threshold) {
+          // One of the keys would lose too much info if we skip it, so the last keyframe is important
+          result.push({ frame: keys[i1 - 1].frame, value: keys[i1 - 1].value.clone() });
+          i0 = i1 - 1;
+          skippedKeys.length = 0;
+          break;
+        }
+      }
+      i1++;
+    }
+    // Add the last keyframe
+    result.push({ frame: keys[i1 - 1].frame, value: keys[i1 - 1].value.clone() });
+
+    return result;
+  }
+
+  private _quaternionDistance(q0: Quaternion, q1: Quaternion) {
+    // Returns the distance between 2 quats
+    const dot = Quaternion.Dot(q0, q1);
+    return 1 - dot * dot;
   }
 
   /**
