@@ -1,5 +1,19 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { AbstractMesh, ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Mesh, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
+import {
+  AbstractMesh,
+  ActionEvent,
+  ActionManager,
+  AssetContainer,
+  Axis,
+  ExecuteCodeAction,
+  Mesh,
+  Node,
+  Scene,
+  SceneLoader,
+  SkeletonViewer,
+  TransformNode,
+  Vector3,
+} from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
 import { convertModel } from 'api';
 import { PlaskScreen } from 'types/common';
@@ -10,6 +24,7 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { Channel } from 'redux-saga';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
+import { max } from 'lodash';
 
 /**
  * Options used to export scene to a .glb format file.
@@ -90,6 +105,12 @@ export class AssetModule extends Module {
   }
 
   /**
+   * Get maximum bouding info.
+   * @param meshes - id of the screen
+   */
+  public getMaximumBoundingInfo(meshes: Mesh[]) {}
+
+  /**
    * Shows skeleton on the target screen.
    * @param screenId - id of the screen
    */
@@ -158,10 +179,25 @@ export class AssetModule extends Module {
         const { id: screenId, scene } = screen;
         const targetVisibilityOption = this.visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
+        let min = new Vector3(0, 0, 0);
+        let max = new Vector3(0, 0, 0);
         if (scene.isReady()) {
           // add joint to each bone and add it to the scene
           meshes.forEach((mesh) => {
             mesh.renderingGroupId = 1;
+            console.log(mesh.id);
+            const boundingInfo = mesh.getBoundingInfo();
+            const minBoundingInfo = boundingInfo.minimum;
+            const maxBoundingInfo = boundingInfo.maximum;
+            if (minBoundingInfo.x < min.x) min.x = minBoundingInfo.x;
+            if (minBoundingInfo.y < min.y) min.y = minBoundingInfo.y;
+            if (minBoundingInfo.z < min.z) min.z = minBoundingInfo.z;
+            if (maxBoundingInfo.x > max.x) max.x = maxBoundingInfo.x;
+            if (maxBoundingInfo.y > max.y) max.y = maxBoundingInfo.y;
+            if (maxBoundingInfo.z > max.z) max.z = maxBoundingInfo.z;
+
+            // console.log(mesh.getBoundingInfo());
+            mesh.showBoundingBox = true;
             scene.addMesh(mesh);
             this._currentAssetMeshes.push(mesh);
 
@@ -170,11 +206,15 @@ export class AssetModule extends Module {
             }
           });
 
+          console.log('hipspace: ', max.y - min.y);
+
           geometries.forEach((geometry) => {
             scene.addGeometry(geometry);
           });
 
           scene.addSkeleton(skeleton);
+          console.log('scene: ', scene);
+          console.log('skeleton: ', skeleton);
 
           // // add joint to each bone and add it to the scene
           const jointBones = bones.filter(
