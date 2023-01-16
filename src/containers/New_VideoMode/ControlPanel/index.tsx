@@ -85,7 +85,6 @@ const ControlPanel = ({
   const lpNode = useSelector((state) => state.lpNode);
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
-  //TODO: 분리
   const [isOpenCreditInfoModal, setIsOpenCreditInfoModal] = useState(false);
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
