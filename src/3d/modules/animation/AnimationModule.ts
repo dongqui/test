@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { Animation, AnimationGroup, IAnimationKey, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TmpVectors, TransformNode, Vector3 } from '@babylonjs/core';
+import { Animation, AnimationGroup, IAnimationKey, Matrix, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TmpVectors, TransformNode, Vector3 } from '@babylonjs/core';
 import produce from 'immer';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
 import {
@@ -777,10 +777,19 @@ export class AnimationModule extends Module {
           const targetTrack = tracks.find((track) => track.targetId === targetTransformNodeId && track.property === property);
 
           if (targetTrack) {
+            let transformMatrix = Matrix.IdentityReadOnly;
+            if (boneName === 'hips') {
+              // Apply position in world space, using initial position as an offset
+              const transformNode = animatableTransformNodes.find((tn) => tn.id === targetTransformNodeId);
+              if (transformNode && transformNode.parent) {
+                transformMatrix = transformNode.parent.getWorldMatrix().clone().invert();
+                transformMatrix.addTranslationFromFloats(transformNode.position.x, transformNode.position.y, transformNode.position.z);
+              }
+            }
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
-              const newValue = (value as ArrayOfThreeNumbers).map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
-              targetTrack.transformKeys.push({ frame, value: Vector3.FromArray(newValue) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
+              const newValue = (value as ArrayOfThreeNumbers).map((v, idx) => (v * hipSpace) / 106);
+              targetTrack.transformKeys.push({ frame, value: Vector3.TransformCoordinates(Vector3.FromArray(newValue), transformMatrix) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
             });
           }
         } else if (property === 'scaling') {
