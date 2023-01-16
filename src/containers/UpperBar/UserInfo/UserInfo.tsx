@@ -67,19 +67,27 @@ function UserInfo() {
   const isStorageFullyUsed = (user.storage?.limitSize || 0) * 0.95 < (user.storage?.usageSize || 0);
   const isFreemium = user.planType === 'freemium';
   const hadFreeTrial = user.hadFreeTrial;
+  const remainingCredit = () => {
+    if (isFreemium) {
+      return user.credits?.remaining.toLocaleString();
+    } else {
+      return user.credits?.remaining === 0 ? 'Unlimited' : `${user.credits?.remaining.toLocaleString()} credits left and unlimited`;
+    }
+  };
 
+  const isFaster = !isFreemium && (user.credits?.remaining || 0) > 0;
   return (
     <div className={cx('container')}>
       <Avata userNameInitial={getUserNameInitial(user.name)} onClick={handleClickAvata} ref={avataRef} />
 
       {openUserInfo && (
-        <div className={cx('modal')} onClick={(e) => e.stopPropagation()}>
+        <div className={cx('modal', { 'is-faster': isFaster })} onClick={(e) => e.stopPropagation()}>
           <header>{user.name}</header>
           <section className={cx('content')}>
             <h6>{userPlanFormat(user.planName)} overview</h6>
             <section className={cx('usage-overview')}>
               <IconWrapper icon={SvgPath.Credit} />
-              <span className={cx('usage-overview-content')}>{user.credits?.remaining.toLocaleString()} credits left</span>
+              <span className={cx('usage-overview-content')}>{remainingCredit()}</span>
             </section>
             <section className={cx('usage-overview')}>
               <IconWrapper icon={SvgPath.Storage} />
