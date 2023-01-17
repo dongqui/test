@@ -37,7 +37,7 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
           </div>
           <div className={cx('info')}>
             <strong>
-              {remainingCredet} credits left
+              {remainingCredet.toLocaleString()} credits left
               <div className={cx('info-icon-wrapper')} onMouseEnter={() => setShowTooltip(true)} onMouseLeave={() => setShowTooltip(false)}>
                 <IconWrapper icon={SvgPath['Info']} />
                 {showTooltip && (
