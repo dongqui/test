@@ -26,13 +26,13 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
   const CREDIT_PER_ONE_MINUTE = 1800;
 
   const availabeTimeWithCredit = () => {
-    const minute = Math.floor(remainingCredet / CREDIT_PER_ONE_MINUTE);
-    if (minute >= 60) return '1 hour';
+    const time = Math.floor(remainingCredet / CREDIT_PER_ONE_MINUTE);
+    if (time >= 60) return '1 hour';
 
-    if (minute === 0) {
-      return `${Math.floor(duration)} seconds`;
+    if (time === 0) {
+      return `${time} seconds`;
     } else {
-      return `${minute} minutes`;
+      return `${time} minutes`;
     }
   };
 
