@@ -23,16 +23,17 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
   };
   const videoDurationMinute = Math.floor(duration / 60);
   const remainingCredet = (user.credits?.remaining || 0) - usedCredit;
-  const CREDIT_PER_ONE_MINUTE = 1800;
+  const CREDIT_PER_ONE_SECOND = 30;
 
   const availabeTimeWithCredit = () => {
-    const time = Math.floor(remainingCredet / CREDIT_PER_ONE_MINUTE);
-    if (time >= 60) return '1 hour';
+    const seconds = Math.floor(remainingCredet / CREDIT_PER_ONE_SECOND);
+    const minutes = Math.floor(seconds / 60);
+    if (minutes >= 60) return '1 hour';
 
-    if (time === 0) {
-      return `${time} seconds`;
+    if (minutes === 0) {
+      return `${seconds} seconds`;
     } else {
-      return `${time} minutes`;
+      return `${minutes} minutes`;
     }
   };
 
