@@ -24,7 +24,17 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
   const videoDurationMinute = Math.floor(duration / 60);
   const remainingCredet = (user.credits?.remaining || 0) - usedCredit;
   const CREDIT_PER_ONE_MINUTE = 1800;
-  const availabeTimeWithCredit = Math.floor(remainingCredet / CREDIT_PER_ONE_MINUTE);
+
+  const availabeTimeWithCredit = () => {
+    const minute = Math.floor(remainingCredet / CREDIT_PER_ONE_MINUTE);
+    if (minute >= 60) return '1 hour';
+
+    if (minute === 0) {
+      return `${Math.floor(duration)} seconds`;
+    } else {
+      return `${minute} minutes`;
+    }
+  };
 
   return (
     <BaseModal className="dark" hasPadding={false}>
@@ -33,7 +43,7 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
           <div>Unlimited credits with faster extraction up to 60 min (108,000 credits) monthly</div>
           <div className={cx('info')}>
             <strong>{usedCredit.toLocaleString()} credits used</strong>
-            <span>for {videoDurationMinute} minutes of video</span>
+            <span>for {videoDurationMinute ? `${videoDurationMinute} minutes` : `${Math.floor(duration)} seconds`} of video</span>
           </div>
           <div className={cx('info')}>
             <strong>
@@ -48,7 +58,7 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
                 )}
               </div>
             </strong>
-            <span>for {availabeTimeWithCredit >= 60 ? '1 hour' : `${availabeTimeWithCredit} minutes`} of video</span>
+            <span>for {availabeTimeWithCredit()} of video</span>
           </div>
         </section>
         <footer>
