@@ -51,7 +51,7 @@ const AnimationTab: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
       {/*    playDirection={_playDirection}*/}
       {/*  />*/}
       {/*)}*/}
-      {process.env.NODE_ENV === 'development' && (
+      {(process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_PROD === 'development') && (
         <DebugSection
           isAllActive={isAllActive}
           visualizedAssetIds={_visualizedAssetIds}
