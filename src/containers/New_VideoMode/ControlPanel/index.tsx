@@ -127,10 +127,10 @@ const ControlPanel = ({
       setValueFormData({
         ...data,
       });
-      if (isFasterMocap) {
-        setIsOpenCreditInfoModal(true);
-      } else {
+      if (unlimited) {
         setIsOpenExtractModal(true);
+      } else {
+        setIsOpenCreditInfoModal(true);
       }
     }
   };
@@ -301,7 +301,7 @@ const ControlPanel = ({
               <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
             </div>
             <div className={cx('modal-content')}>
-              <span className={cx('extract-text')}>Extract motion to the library in tools.</span>
+              <span className={cx('extract-text')}>Extract motion to the library in tool{unlimited && '.'}</span>
               {unlimited && <span className={cx('extract-text')}>Unlimited credits available.</span>}
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
