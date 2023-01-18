@@ -16,6 +16,6 @@
 
   &.disabled {
     cursor: no-drop;
-    border: 1px dotted $contentbg-base;
+    border: 2px dashed $contentbg-base;
   }
 }

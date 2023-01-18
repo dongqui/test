@@ -63,7 +63,7 @@ export default function FileMenus() {
     dispatch(
       globalUIActions.openModal('DropZoneModal', {
         title: 'Import',
-        subTitle: 'Import your 3D asset or source video.',
+        subTitle: 'Import your 3D asset or source video',
         onDrop: handleLoad,
       }),
     );
