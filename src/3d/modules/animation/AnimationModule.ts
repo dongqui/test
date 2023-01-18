@@ -1,5 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import { Animation, AnimationGroup, IAnimationKey, Matrix, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TmpVectors, TransformNode, Vector3 } from '@babylonjs/core';
+import { Animation, AnimationGroup, IAnimationKey, Matrix, Mesh, Nullable, Observable, Quaternion, TargetedAnimation, TransformNode, Vector3 } from '@babylonjs/core';
 import produce from 'immer';
 import { findIndex, findLastIndex, round, union, zipWith } from 'lodash';
 import {
@@ -38,7 +38,6 @@ import { getInterpolatedValue } from 'utils/RP/getInterpolatedValue';
  */
 export class AnimationModule extends Module {
   private _currentAnimationGroup: Nullable<AnimationGroup>;
-  private _savedAnimationGroup: Nullable<AnimationGroup> = null;
 
   constructor(plaskEngine: PlaskEngine) {
     super(plaskEngine);
@@ -258,17 +257,6 @@ export class AnimationModule extends Module {
         return;
       }
       targetTrack.transformKeys = keyframes;
-
-      // RotationQuaternion also changes the rotation track
-      if (property === 'rotationQuaternion') {
-        const peerTrack = targetLayer.tracks.find((track) => track.targetId === targetId && track.property === 'rotation');
-        if (peerTrack) {
-          peerTrack.transformKeys = keyframes.map((key) => {
-            console.log(key.value);
-            return { frame: key.frame, value: key.value.toEulerAngles() };
-          });
-        }
-      }
     });
 
     return newAnimationIngredient;
@@ -534,186 +522,6 @@ export class AnimationModule extends Module {
     };
 
     return animationIngredient;
-  }
-
-  private _gaussianKernel(sigma: number, kernelSize: number) {
-    const kernel = new Array(kernelSize);
-    const center = Math.floor(kernelSize / 2);
-    let sum = 0;
-
-    for (let i = 0; i < kernelSize; i++) {
-      kernel[i] = Math.exp(-0.5 * Math.pow((i - center) / sigma, 2));
-      sum += kernel[i];
-    }
-
-    for (let i = 0; i < kernelSize; i++) {
-      kernel[i] /= sum;
-    }
-
-    return kernel;
-  }
-
-  private _convolveKeys(keys: IAnimationKey[], kernel: number[]) {
-    const result = [] as IAnimationKey[];
-    const padding = Math.floor(kernel.length / 2);
-    const sum = TmpVectors.Quaternion[0];
-
-    for (let i = 0; i < keys.length; i++) {
-      sum.set(0, 0, 0, 0);
-      let accumulatedWeight = 0;
-      for (let j = 0; j < kernel.length; j++) {
-        const k = i + j - padding;
-        if (k >= 0 && k < keys.length) {
-          Quaternion.SlerpToRef(keys[k].value as Quaternion, sum, accumulatedWeight / (accumulatedWeight + kernel[j]), sum);
-          // sum.addInPlace((keys[k].value as Quaternion).scale(kernel[j]));
-          accumulatedWeight += kernel[j];
-        }
-      }
-      result.push({ value: sum.clone(), frame: keys[i].frame });
-    }
-
-    return result;
-  }
-
-  private _oneEuroFilter(keys: IAnimationKey[], params: { minCutoff?: number; beta?: number }) {
-    const filter = new OneEuroFilterForQuaternion(params.minCutoff || 0.5, params.beta || 0.007);
-    const result = [] as IAnimationKey[];
-
-    for (let i = 0; i < keys.length; i++) {
-      result.push({ value: filter.calculate(keys[i].frame, keys[i].value), frame: keys[i].frame });
-    }
-    return result;
-  }
-
-  // private _convolveKeysMedian(keys: IAnimationKey[], kernelSize: number) {
-  //   const result = [] as IAnimationKey[];
-  //   const padding = Math.floor(kernelSize / 2);
-  //   const sum = TmpVectors.Quaternion[0];
-
-  //   for (let i = 0; i < keys.length; i++) {
-  //     sum.set(0, 0, 0, 0);
-  //     let factor = 0;
-  //     for (let j = 0; j < kernelSize; j++) {
-  //       const k = i + j - padding;
-  //       if (k >= 0 && k < keys.length) {
-  //         sum.addInPlace(keys[k].value.scale(kernel[j]));
-  //         factor += kernel[j];
-  //       }
-  //     }
-  //     result.push({ value: sum.scale(1 / factor), frame: keys[i].frame });
-  //   }
-
-  //   return result;
-  // }
-
-  private _noiseFilter(
-    transformKeys: IAnimationKey[],
-    params: { sigma?: number; kernelSize?: number; method: string; minCutoff?: number; beta?: number; threshold?: number } = { sigma: 1, kernelSize: 5, method: 'gaussian' },
-  ) {
-    let newKeys = transformKeys;
-    if (params.method === 'gaussian') {
-      const kernel = this._gaussianKernel(params.sigma || 1, params.kernelSize || 5);
-      newKeys = this._convolveKeys(transformKeys, kernel);
-    } else if (params.method === 'simplify') {
-      newKeys = this.DEBUG_simplifyKeyframes(transformKeys, params.threshold || 0.5);
-    } else if (params.method === 'oneeuro') {
-      newKeys = this._oneEuroFilter(transformKeys, params);
-    }
-
-    return newKeys;
-  }
-
-  public DEBUG_bake(params: { sigma: number; kernelSize: number; beta: number; minCutoff: number; method: string; threshold: number }) {
-    let animationIngredient = this.getCurrentAnimationIngredient(this.visualizedAssetIds[0]);
-    this.DEBUG_filter(params);
-    const animationGroup = this._currentAnimationGroup;
-    if (!animationGroup || !animationIngredient) {
-      console.warn('No animation group or ingredient, cannot bake');
-      return;
-    }
-    for (const targetedAnimation of animationGroup.targetedAnimations) {
-      animationIngredient = this.setKeyframesForTrack(
-        animationIngredient,
-        animationIngredient!.layers[0].id,
-        targetedAnimation.target.id,
-        targetedAnimation.animation.targetProperty as PlaskProperty,
-        targetedAnimation.animation.getKeys(),
-      );
-      // animationIngredient = AnimationModule.EditKeyframesWithParams(animationIngredient, animationIngredient!.layers[0].id, targetedAnimation.animation.targetProperty, )
-    }
-    this._savedAnimationGroup = null;
-
-    return animationIngredient;
-  }
-
-  public DEBUG_filter(params: { sigma: number; kernelSize: number; beta: number; minCutoff: number; method: string; threshold: number }, reset = true) {
-    this.stopCurrentAnimationGroup();
-    if (!this._currentAnimationGroup) {
-      console.log('Could not find a loaded animation');
-      return;
-    }
-    if (reset && this._savedAnimationGroup) {
-      this._currentAnimationGroup = this._savedAnimationGroup;
-    }
-
-    const group = new AnimationGroup('test');
-    for (const targetedAnimation of this._currentAnimationGroup.targetedAnimations) {
-      const keys = targetedAnimation.animation.getKeys();
-      if (targetedAnimation.animation.targetProperty !== 'rotationQuaternion') {
-        group.addTargetedAnimation(targetedAnimation.animation.clone(), targetedAnimation.target);
-        continue;
-      }
-      const newKeys = this._noiseFilter(keys, params);
-      const newAnim = targetedAnimation.animation.clone();
-      newAnim.setKeys(newKeys);
-      group.addTargetedAnimation(newAnim, targetedAnimation.target);
-    }
-    if (!this._savedAnimationGroup) {
-      this._savedAnimationGroup = this._currentAnimationGroup;
-    }
-    this._currentAnimationGroup = group;
-    this.playCurrentAnimationGroup();
-  }
-
-  public DEBUG_simplifyKeyframes(keys: IAnimationKey[], threshold: number) {
-    const result = [] as IAnimationKey[];
-
-    if (keys.length <= 2) {
-      return keys;
-    }
-
-    let i0 = 0,
-      i1 = 2;
-
-    // Add the first keyframe
-    result.push({ frame: keys[0].frame, value: keys[0].value.clone() });
-    const skippedKeys = [];
-    while (i1 < keys.length) {
-      skippedKeys.push(keys[i1 - 1]);
-      for (const candidate of skippedKeys) {
-        const begin = keys[i0];
-        const end = keys[i1];
-        const target = Quaternion.Slerp(begin.value, end.value, (candidate.frame - begin.frame) / (end.frame - begin.frame));
-        if (this._quaternionDistance(target, candidate.value) > threshold) {
-          // One of the keys would lose too much info if we skip it, so the last keyframe is important
-          result.push({ frame: keys[i1 - 1].frame, value: keys[i1 - 1].value.clone() });
-          i0 = i1 - 1;
-          skippedKeys.length = 0;
-          break;
-        }
-      }
-      i1++;
-    }
-    // Add the last keyframe
-    result.push({ frame: keys[i1 - 1].frame, value: keys[i1 - 1].value.clone() });
-
-    return result;
-  }
-
-  private _quaternionDistance(q0: Quaternion, q1: Quaternion) {
-    // Returns the distance between 2 quats
-    const dot = Quaternion.Dot(q0, q1);
-    return 1 - dot * dot;
   }
 
   /**

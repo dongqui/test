@@ -8,7 +8,6 @@ import { useSelector } from 'reducers';
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
 import IKControllerSection from './IKControllerSection/index';
-import DebugSection from './DebugSection/index';
 const cx = classNames.bind(styles);
 
 interface Props {
@@ -51,17 +50,6 @@ const AnimationTab: FunctionComponent<React.PropsWithChildren<Props>> = ({ isAll
       {/*    playDirection={_playDirection}*/}
       {/*  />*/}
       {/*)}*/}
-      {process.env.NODE_ENV === 'development' && (
-        <DebugSection
-          isAllActive={isAllActive}
-          visualizedAssetIds={_visualizedAssetIds}
-          retargetMaps={_retargetMaps}
-          seletedLayer={_selectedLayer}
-          animationIngredients={_animationIngredients}
-          selectableObjects={_selectableObjects}
-          selectedTargets={_selectedTargets}
-        />
-      )}
     </Fragment>
   );
 };
