@@ -79,7 +79,7 @@ const Buttons = () => {
     }
   }, [dispatch]);
 
-  // 애니메이션 뒤로 재생 제어
+  //  애니메이션 뒤로 재생 제어
   const editAnimationRewind = useCallback(() => {
     if (plaskEngine.animationModule.currentAnimationGroup) {
       plaskEngine.animationModule.rewindCurrentAnimationGroup();
