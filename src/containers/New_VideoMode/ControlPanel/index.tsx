@@ -403,7 +403,6 @@ const ControlPanel = ({
             setIsOpenCreditInfoModal(false);
             setIsOpenExtractModal(true);
           }}
-          duration={endValue - startValue}
         />
       )}
     </div>

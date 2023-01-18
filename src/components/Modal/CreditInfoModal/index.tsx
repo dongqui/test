@@ -12,30 +12,15 @@ interface Props {
   onClose: () => void;
   usedCredit: number;
   onContinue: () => void;
-  duration: number;
 }
 
-const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) => {
+const CreditInfoModal = ({ onClose, usedCredit, onContinue }: Props) => {
   const user = useSelector((state) => state.user);
   const [showTooltip, setShowTooltip] = useState(false);
   const onClickConfirm = () => {
     onContinue();
   };
-  const videoDurationMinute = Math.floor(duration / 60);
   const remainingCredet = (user.credits?.remaining || 0) - usedCredit;
-  const CREDIT_PER_ONE_SECOND = 30;
-
-  const availabeTimeWithCredit = () => {
-    const seconds = Math.floor(remainingCredet / CREDIT_PER_ONE_SECOND);
-    const minutes = Math.floor(seconds / 60);
-    if (minutes >= 60) return '1 hour';
-
-    if (minutes === 0) {
-      return `${seconds} seconds`;
-    } else {
-      return `${minutes} minutes`;
-    }
-  };
 
   return (
     <BaseModal className="dark" hasPadding={false}>
@@ -44,7 +29,6 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
           <div>Unlimited credits with faster extraction up to 60 min (108,000 credits) monthly</div>
           <div className={cx('info')}>
             <strong>{usedCredit.toLocaleString()} credits used</strong>
-            <span>for {videoDurationMinute ? `${videoDurationMinute} minutes` : `${Math.floor(duration)} seconds`} of video</span>
           </div>
           <div className={cx('info')}>
             <strong>
@@ -59,7 +43,6 @@ const CreditInfoModal = ({ onClose, usedCredit, onContinue, duration }: Props) =
                 )}
               </div>
             </strong>
-            <span>for {availabeTimeWithCredit()} of video</span>
           </div>
         </section>
         <footer>
