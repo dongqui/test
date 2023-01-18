@@ -1,5 +1,6 @@
 import { Fragment, useCallback, ReactNode, memo } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { Accept, useDropzone } from 'react-dropzone';
+
 import classNames from 'classnames/bind';
 import styles from './BaseDropzone.module.scss';
 
@@ -16,9 +17,10 @@ interface Props {
   clickable?: boolean;
   active?: string;
   onDrop: (files: File[]) => void;
+  accept?: Accept;
 }
 
-const BaseDropzone = ({ clickable = false, disabled, children, className, active, onDrop }: Props) => {
+const BaseDropzone = ({ clickable = false, disabled, children, className, active, onDrop, accept }: Props) => {
   const handleDrop = useCallback(
     (files: File[]) => {
       onDrop(files);
@@ -26,7 +28,7 @@ const BaseDropzone = ({ clickable = false, disabled, children, className, active
     [onDrop],
   );
 
-  const { getRootProps, isDragActive, open } = useDropzone({ onDrop: handleDrop, noClick: !clickable, disabled });
+  const { getRootProps, isDragActive, open } = useDropzone({ onDrop: handleDrop, noClick: !clickable, disabled, accept });
 
   const dropzoneProps = useCallback(() => {
     const baseStyles = cx('wrapper', className, {

@@ -75,18 +75,26 @@ const MiddleBar = ({
       if (isVideoPlaying) {
         return (
           <Fragment>
-            <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={switchStandbyMode} onFocus={blurFocused} />
-            <IconButton icon={SvgPath.CameraPause} type="ghost" onClick={handlePause} onFocus={blurFocused} />
-            <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} onFocus={blurFocused} />
+            <div className={cx('button-group')}>
+              <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={switchStandbyMode} onFocus={blurFocused} />
+            </div>
+            <div className={cx('button-group')}>
+              <IconButton icon={SvgPath.CameraPause} type="ghost" onClick={handlePause} onFocus={blurFocused} />
+              <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} onFocus={blurFocused} />
+            </div>
           </Fragment>
         );
       }
 
       return (
         <Fragment>
-          <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={switchStandbyMode} onFocus={blurFocused} />
-          <IconButton icon={SvgPath.CameraPlay} type="ghost" onClick={handlePlay} onFocus={blurFocused} />
-          <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} onFocus={blurFocused} />
+          <div className={cx('button-group')}>
+            <IconButton icon={SvgPath.CameraRecord} type="negative" onClick={switchStandbyMode} onFocus={blurFocused} />
+          </div>
+          <div className={cx('button-group')}>
+            <IconButton icon={SvgPath.CameraPlay} type="ghost" onClick={handlePlay} onFocus={blurFocused} />
+            <IconButton icon={SvgPath.CameraStop} type="ghost" onClick={handleStop} onFocus={blurFocused} />
+          </div>
         </Fragment>
       );
     }
@@ -107,7 +115,7 @@ const MiddleBar = ({
   return (
     <div className={cx('wrapper')}>
       <div className={cx('inner')}>
-        <div className={cx('button-group')}>{renderButtonGroup()}</div>
+        <div className={cx('button-group-wrapper')}>{renderButtonGroup()}</div>
       </div>
     </div>
   );
