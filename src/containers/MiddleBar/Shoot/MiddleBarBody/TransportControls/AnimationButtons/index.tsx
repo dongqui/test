@@ -70,7 +70,7 @@ const Buttons = () => {
     [translateScrubber],
   );
 
-  // 애니메이션 앞으로 재생 제어
+  //  애니메이션 앞으로 재생 제어
   const editAnimationPlay = useCallback(() => {
     if (plaskEngine.animationModule.currentAnimationGroup) {
       plaskEngine.animationModule.playCurrentAnimationGroup();
