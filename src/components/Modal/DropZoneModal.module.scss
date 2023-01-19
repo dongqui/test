@@ -23,8 +23,16 @@
   .dropzone-outer {
     display: flex;
     background-color: $bg-elevated;
-    border: 1px dotted $content-inactive;
+    border: 2px dashed $content-inactive;
     border-radius: 6px;
+
+    &:hover {
+      border: 2px dashed $primary;
+    }
+
+    &:active {
+      border: 2px dashed $primary;
+    }
   }
 
   .dropzone-guide {

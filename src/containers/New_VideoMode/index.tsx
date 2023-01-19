@@ -13,6 +13,8 @@ import { Typography } from 'components/Typography';
 import { Dropdown } from 'components/Dropdown';
 import { GhostButton } from 'components/Button';
 import { IconWrapper, SvgPath } from 'components/Icon';
+import { Overlay } from 'components/Overlay';
+import { Spinner } from 'components';
 import { WARNING_02 } from 'constants/Text';
 import { VM_ON_BOARDING_KEY } from 'utils/const';
 
@@ -24,8 +26,6 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
-import { Overlay } from 'components/Overlay';
-import { Spinner } from 'components';
 
 const cx = classNames.bind(styles);
 
@@ -45,7 +45,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   // permission이 없을 때에 handle 할 수 있게 만든 변수
   const [cameraPermission, setCameraPermission] = useState<boolean | undefined>(undefined);
   const [currentVideoDevice, setCurrentVideoDevice] = useState<MediaDeviceInfo | null>(null);
-  const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null>(null);
+  const [currentVideoStream, setCurrentVideoStream] = useState<MediaStream | null | undefined>(undefined);
   const [videoRecorder, setVideoRecorder] = useState<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoHiddenRef = useRef<HTMLVideoElement>(null);
@@ -107,21 +107,21 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const boxProps = useMemo(
     () => ({
       US: {
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       LS: {
         height: 180,
       } as BoxProps,
       LP: {
         width: 240,
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       RP: {
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       CP: {
         width: 312,
-        height: windowHeight - 180 - 38,
+        height: windowHeight - 180 - 48,
       } as BoxProps,
       MB: {
         height: 32,
@@ -137,8 +137,8 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   const PERMISSION_DENIED = cameraPermission === false;
   const NO_DEVICE_FOUND = cameraPermission === true && videoDeviceListLoaded && videoDeviceList.length === 0;
   const VIDEO_STREAM_READY = !!currentVideoDevice && !!currentVideoStream;
-  const SYSTEM_PERMISSION_FAILED = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND || VIDEO_STREAM_READY);
-  const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && VIDEO_STREAM_READY;
+  const SYSTEM_PERMISSION_FAILED = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND) && currentVideoStream === null;
+  const RECORD_AVAILABLE = !(PERMISSION_WAITING || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) && VIDEO_STREAM_READY;
   const RECORD_STANDBY = RECORD_AVAILABLE && standbyCounter === 5;
   const RECORD_COUNTDOWN = RECORD_AVAILABLE && standbyCounter !== -1 && standbyCounter !== 5;
   const ON_RECORDING = standbyCounter === -1;
@@ -219,7 +219,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         track.stop();
       });
 
-      setCurrentVideoStream(null);
+      setCurrentVideoStream(undefined);
       setCurrentVideoDevice(null);
       setIsDeviceInitialized(false);
     }
@@ -228,14 +228,25 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   useEffect(() => {
     if (PERMISSION_WAITING && !videoURL) {
       setInitialLoading(true);
-    } else if (RECORD_AVAILABLE || PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
-      setTimeout(() => setInitialLoading(false), 1000);
+    } else if (PERMISSION_DENIED || NO_DEVICE_FOUND || SYSTEM_PERMISSION_FAILED) {
+      setInitialLoading(false);
     }
-  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, RECORD_AVAILABLE, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
+  }, [NO_DEVICE_FOUND, PERMISSION_DENIED, PERMISSION_WAITING, SYSTEM_PERMISSION_FAILED, videoURL, isVideoLoaded]);
+
+  const handleVideoLoaded = () => {
+    setInitialLoading(false);
+  };
 
   const handleDrop = useCallback(
     async (files: File[]) => {
       if (files.length > 1) {
+        TagManager.dataLayer({
+          dataLayer: {
+            event: 'import_error',
+            type: 'video_multiple',
+          },
+        });
+
         dispatch(
           globalUIActions.openModal('AlertModal', {
             title: 'Warning',
@@ -270,6 +281,13 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
           }
         })
         .catch(() => {
+          TagManager.dataLayer({
+            dataLayer: {
+              event: 'import_error',
+              type: 'video_format',
+            },
+          });
+
           dispatch(changeMode({ mode: mode, videoURL: undefined }));
           dispatch(
             globalUIActions.openModal('_AlertModal', {
@@ -289,17 +307,53 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     }
   }, [ON_VIDEO_MOUNTED, handleDrop, videoURL, lock]);
 
+  const unmountVideo = useCallback(() => {
+    if (currentVideoURL && videoRef.current) {
+      const tempCurrentVideoURL = currentVideoURL;
+      setVideoURL('');
+      setDuration(0);
+      videoRef.current.src = '';
+      URL.revokeObjectURL(tempCurrentVideoURL);
+    }
+  }, [currentVideoURL, videoRef]);
+
+  const switchStandbyMode = useCallback(() => {
+    dispatch(changeMode({ mode: mode, videoURL: undefined }));
+    setFrames(0);
+    setIsFastForwardDone(false);
+    setExtractButtonRef(null);
+    setCPModified(undefined);
+    setStartValue(0);
+    setEndValue(0);
+    unmountVideo();
+    setInitialLoading(true);
+    setStandbyCounter(5);
+    setIsVideoLoaded(false);
+    setVideoStatus('stop');
+  }, [dispatch, mode, unmountVideo]);
+
   const createThumbnails = useCallback(() => {
+    const innerWidth = (timelineRef.parentElement as HTMLDivElement).getBoundingClientRect().width;
+    const innerHeight = (timelineRef.parentElement as HTMLDivElement).getBoundingClientRect().height;
+    let ratio = 1920 / 1080;
+    let num = 20;
     let duration = 20;
     if (videoRef.current) {
       duration = videoRef.current.duration;
+      if (videoRef.current.videoWidth && videoRef.current.videoHeight) {
+        ratio = videoRef.current.videoWidth / videoRef.current.videoHeight;
+      }
+    }
+
+    if (ratio && innerWidth && innerHeight) {
+      num = Math.ceil(innerWidth / (ratio * innerHeight));
     }
 
     setTimeline(
       new Timeline(timelineRef, {
-        totalDuration: 20,
-        thumbnailWidth: 128,
-        thumbnailHeight: 96,
+        totalDuration: num,
+        thumbnailWidth: innerHeight * ratio,
+        thumbnailHeight: innerHeight,
         loadingTextureURI: '/images/Loading.png',
         getThumbnailCallback: (time: number, done: (input: ThinTexture | HTMLCanvasElement | HTMLVideoElement | string) => void) => {
           const hiddenVideo = document.createElement('video');
@@ -323,13 +377,25 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               }
             };
 
-            if (videoRef.current) {
-              hiddenVideo.currentTime = (duration / 20) * time;
-            } else {
+            if (duration === Infinity) {
               if (time === 0) {
-                done(hiddenVideo);
+                TagManager.dataLayer({
+                  dataLayer: {
+                    event: 'import_error',
+                    type: 'video_unknown',
+                  },
+                });
+              }
+              return;
+            } else {
+              if (videoRef.current) {
+                hiddenVideo.currentTime = (duration / 20) * time;
               } else {
-                hiddenVideo.currentTime = time;
+                if (time === 0) {
+                  done(hiddenVideo);
+                } else {
+                  hiddenVideo.currentTime = time;
+                }
               }
             }
           };
@@ -400,25 +466,31 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       .catch(() => []);
   }, []);
 
-  const deviceInitialize = useCallback(async (deviceId: string) => {
+  const initializeDevice = useCallback(async (deviceId: string) => {
     const constraints = {
       video: {
         width: { ideal: 3840 },
         height: { ideal: 2160 },
         aspectRatio: { ideal: 4 / 3 },
-        frameRate: { ideal: 60 },
+        frameRate: { ideal: 30 },
         deviceId: { exact: deviceId },
       },
       audio: false,
     };
-    await navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+    await navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
 
-      setCurrentVideoStream(stream);
-      setIsDeviceInitialized(true);
-    });
+        setCurrentVideoStream(stream);
+        setIsDeviceInitialized(true);
+      })
+      .catch(() => {
+        setCurrentVideoStream(null);
+        console.error('Cannot get stream');
+      });
   }, []);
 
   const startRecording = useCallback(() => {
@@ -473,7 +545,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       setStandbyCounter((prev) => --prev);
       countTimer.current = setInterval(() => setStandbyCounter((time) => --time), 1000);
 
-      if (currentVideoStream !== null) {
+      if (currentVideoStream) {
         const recorder = new MediaRecorder(currentVideoStream, {
           mimeType: browserType === 'safari' ? 'video/mp4' : 'video/webm',
         });
@@ -533,40 +605,17 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
     [currentVideoDevice, unmountCurrentStream],
   );
 
-  const unmountVideo = useCallback(() => {
-    if (currentVideoURL && videoRef.current) {
-      const tempCurrentVideoURL = currentVideoURL;
-      setVideoURL('');
-      setDuration(0);
-      videoRef.current.src = '';
-      URL.revokeObjectURL(tempCurrentVideoURL);
-    }
-  }, [currentVideoURL, videoRef]);
-
-  const switchStandbyMode = useCallback(() => {
+  const requestSwitchStandbyMode = useCallback(() => {
     dispatch(
       globalUIActions.openModal('ConfirmModal', {
         title: 'Delete previous video taken?',
         message: 'Your video will be deleted to take a new video.',
         confirmText: 'Delete',
         confirmButtonColor: 'negative',
-        onConfirm: () => {
-          dispatch(changeMode({ mode: mode, videoURL: undefined }));
-          setFrames(0);
-          setIsFastForwardDone(false);
-          setExtractButtonRef(null);
-          setCPModified(undefined);
-          setStartValue(0);
-          setEndValue(0);
-          unmountVideo();
-          setInitialLoading(true);
-          setStandbyCounter(5);
-          setIsVideoLoaded(false);
-          setVideoStatus('stop');
-        },
+        onConfirm: switchStandbyMode,
       }),
     );
-  }, [dispatch, mode, unmountVideo]);
+  }, [dispatch, switchStandbyMode]);
 
   useEffect(() => {
     if (requestStandbyMode) {
@@ -579,7 +628,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       }
       dispatch(changeMode({ mode: mode, videoURL: videoURL, requestStandbyMode: false }));
     }
-  }, [ON_RECORDING, ON_VIDEO_MOUNTED, RECORD_COUNTDOWN, dispatch, handleDrop, mode, requestStandbyMode, switchStandbyMode, videoURL]);
+  }, [ON_RECORDING, ON_VIDEO_MOUNTED, RECORD_COUNTDOWN, dispatch, handleDrop, mode, requestStandbyMode, requestSwitchStandbyMode, switchStandbyMode, videoURL]);
 
   useEffect(() => {
     if (standbyCounter === 0 && countTimer.current) {
@@ -629,25 +678,31 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
   }, [getVideoInputDeviceList, requestCameraPermission]);
 
   useEffect(() => {
-    if (!ON_RECORDING && !RECORD_COUNTDOWN && !currentVideoURL && !isVideoLoaded && !videoURL) {
-      if (videoDeviceListLoaded && videoDeviceList.length > 0) {
-        if (!currentVideoDevice) {
-          setCurrentVideoDevice(videoDeviceList[0]);
-        } else if (videoDeviceList.findIndex((v) => v.deviceId === currentVideoDevice?.deviceId) === -1) {
+    const noVideoSource = !(currentVideoURL || isVideoLoaded || videoURL);
+    const notOnRecording = !(ON_RECORDING || RECORD_COUNTDOWN);
+    if (notOnRecording && noVideoSource && videoDeviceListLoaded) {
+      const hasAvailableVideoDevice = videoDeviceList.length > 0;
+      if (hasAvailableVideoDevice) {
+        const noCurrentVideoDevice = !currentVideoDevice;
+        const disconnectedCurrentDevice = videoDeviceList.findIndex((v) => v.deviceId === currentVideoDevice?.deviceId) === -1;
+        if (disconnectedCurrentDevice) {
           unmountCurrentStream();
+        }
+        if (noCurrentVideoDevice || disconnectedCurrentDevice) {
           setCurrentVideoDevice(videoDeviceList[0]);
         }
-      } else if (videoDeviceListLoaded && videoDeviceList.length === 0) {
+      } else {
         unmountCurrentStream();
       }
     }
   }, [videoDeviceListLoaded, videoDeviceList, currentVideoDevice, unmountCurrentStream, currentVideoURL, ON_RECORDING, RECORD_STANDBY, RECORD_COUNTDOWN, isVideoLoaded, videoURL]);
 
   useEffect(() => {
-    if (currentVideoDevice !== null && !isDeviceInitialized) {
-      deviceInitialize(currentVideoDevice.deviceId);
+    const uninitializedCurrentDeviceExist = currentVideoDevice !== null && !isDeviceInitialized;
+    if (uninitializedCurrentDeviceExist) {
+      initializeDevice(currentVideoDevice.deviceId);
     }
-  }, [currentVideoDevice, deviceInitialize, isDeviceInitialized]);
+  }, [currentVideoDevice, initializeDevice, isDeviceInitialized]);
 
   const dropdownList = useMemo(() => {
     return videoDeviceList.map((device) => ({
@@ -682,7 +737,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
               dispatch(changeMode({ mode: 'animationMode', videoURL: undefined }));
             },
             onCancel: () => {
-              dispatch(changeMode({ mode: 'videoMode', videoURL: undefined }));
+              dispatch(changeMode({ mode: 'videoMode' }));
             },
           }),
         );
@@ -733,7 +788,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
         <Box id="LP" className={cx('library-panel')} {...boxProps.LP}>
           <div className={cx('lp-button-wrapper')}>
             {ON_VIDEO_MOUNTED && (
-              <GhostButton onFocus={blurFocused} onClick={switchStandbyMode} className={cx('lp-button')}>
+              <GhostButton onFocus={blurFocused} onClick={requestSwitchStandbyMode} className={cx('lp-button')}>
                 <div className={cx('lp-button-inner')}>
                   <IconWrapper icon={SvgPath.ChevronLeft} className={cx('button-icon')} />
                   <Typography type="title">back to standby</Typography>
@@ -750,6 +805,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             videoRef={videoRef}
             isVideoLoaded={isVideoLoaded}
             onLoadMetadata={handleLoadMetadata}
+            onVideoLoaded={handleVideoLoaded}
           />
         </Box>
         <Box id="CP" className={cx('control-panel')} {...boxProps.CP}>
@@ -797,7 +853,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
       <Box id="LS" className={cx('lower-section')} {...boxProps.LS}>
         <Box id="MB" {...boxProps.MB}>
           <MiddleBar
-            switchStandbyMode={switchStandbyMode}
+            switchStandbyMode={requestSwitchStandbyMode}
             videoRef={videoRef}
             videoStatus={videoStatus}
             isVideoLoaded={isVideoLoaded}
@@ -827,6 +883,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
             leftCropSliderRef={setLeftCropSliderRef}
             doneVMOnBoarding={doneVMOnBoarding}
             fileInputRef={fileInputRef}
+            browserType={browserType}
           />
         </Box>
       </Box>

@@ -13,9 +13,10 @@ interface Props {
   isWithoutCamera?: boolean;
   standByCount?: number;
   cancelCountdown: () => void;
+  onVideoLoaded: () => void;
 }
 
-const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true, standByCount, cancelCountdown }: Props) => {
+const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCamera = true, standByCount, cancelCountdown, onVideoLoaded }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const classes = cx('video', {
@@ -25,7 +26,7 @@ const RenderingPanel = ({ videoRef, isVideoLoaded, onLoadMetadata, isWithoutCame
   return (
     <Fragment>
       <canvas className={cx('timeline-generator')} ref={canvasRef} />
-      <video ref={videoRef} className={classes} onLoadedMetadata={onLoadMetadata} autoPlay playsInline muted loop={isVideoLoaded} />
+      <video ref={videoRef} className={classes} onLoadedMetadata={onLoadMetadata} autoPlay playsInline muted loop={isVideoLoaded} onLoadedData={onVideoLoaded} />
       {isWithoutCamera && (
         <div className={cx('notification')}>
           <IconWrapper className={cx('icon')} icon={SvgPath.NoCamera} />
