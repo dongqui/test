@@ -1,4 +1,4 @@
-@import "styles/libraries/colors";
+@import 'styles/libraries/colors';
 
 .wrapper {
   width: 100%;
@@ -13,7 +13,7 @@
     display: flex;
     align-items: center;
     height: 40px;
-    color: var(--grey090)
+    color: var(--grey090);
   }
 }
 
@@ -103,6 +103,7 @@
     border-radius: 6px;
     padding: 4.5px 8px;
     font-size: 12px;
+    margin-top: 16px;
 
     &::placeholder {
       color: $content-inactive;

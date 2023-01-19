@@ -1,5 +1,5 @@
-@import "styles/libraries/_typography";
-@import "styles/libraries/_colors";
+@import 'styles/libraries/_typography';
+@import 'styles/libraries/_colors';
 
 .container {
   position: relative;
@@ -16,6 +16,10 @@
   border: 1px solid $outline;
   padding: 12px;
   border-radius: 6px;
+
+  &.is-faster {
+    width: 244px;
+  }
 
   header {
     border-bottom: 1px solid $contentbg-base;

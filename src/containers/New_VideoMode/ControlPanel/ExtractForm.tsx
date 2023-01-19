@@ -82,14 +82,9 @@ const ExtractForm = ({ fieldProps, setExtractButtonRef, doneVMOnBoarding, isFast
   }
 
   function handleClickFootLock(key: string) {
-    if (userState.planType === 'freemium') {
-      PlanManager.openProFeaturesNotAllowedModal(userState, 'foot lock');
-      setFootLockOption(selectFootLockAndTPoseOption[DEFAULT_FOOT_LOCK_SELECT_OPTION_INDEX]);
-    } else {
-      const option = selectFootLockAndTPoseOption.find((option) => option.key === key);
-      if (option) {
-        setFootLockOption(option);
-      }
+    const option = selectFootLockAndTPoseOption.find((option) => option.key === key);
+    if (option) {
+      setFootLockOption(option);
     }
     doneVMOnBoarding(3);
   }

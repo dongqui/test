@@ -34,23 +34,29 @@ const ProFeaturesModal = ({ onClose, hadFreeTrial, referrer }: Props) => {
     <BaseModal className="dark">
       <div className={cx('container')}>
         <header>
-          <div className={cx('title')}>Unlock MoCap Pro</div>
+          <div className={cx('title')}>Upgrade to MoCap Pro</div>
           <IconButton onClick={onClose} type="ghost" icon={SvgPath['ModalClose']} />
         </header>
 
         <section className={cx('content')}>
-          <h6>Exclusive Features</h6>
+          <h6>Unlock Features</h6>
           <ul>
             <li>
               <IconWrapper icon={SvgPath['Check']} />
               <span className={cx('content-text')}>
-                <strong>Multi-person motion capture</strong> - Simultaneous MoCap up to 10 people
+                <strong>Unlimited</strong> motion capture
               </span>
             </li>
             <li>
               <IconWrapper icon={SvgPath['Check']} />
               <span className={cx('content-text')}>
-                Prevent the model from sliding with the <strong>Foot Lock</strong> feature
+                <strong>Faster</strong> than free extract motion
+              </span>
+            </li>
+            <li>
+              <IconWrapper icon={SvgPath['Check']} />
+              <span className={cx('content-text')}>
+                <strong>Multi-person</strong> motion capture
               </span>
             </li>
           </ul>

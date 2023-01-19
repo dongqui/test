@@ -74,15 +74,20 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
             <header>Freemium</header>
             <div className={cx('sub-header')}>
               <h6>Free</h6>
+              <span>For trying things out</span>
             </div>
             <ul>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                900 credits (30 sec) a day
+                Extract motion 30 sec daily
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
                 Single-person motion capture
+              </li>
+              <li>
+                <IconWrapper icon={SvgPath['Check']} />
+                Foot lock feature
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />1 GB storage
@@ -100,7 +105,6 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               MoCap Pro
               <span className={cx('recommend-chip')}>Recommended</span>
             </header>
-
             <Switch
               fullSize
               options={billingCycleOption}
@@ -110,15 +114,20 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               className={cx('billing-cycle-switch')}
               value={billingCycle}
             />
-
             <div className={cx('sub-header')}>
               <h6>${monthlyCost}/month</h6>
               <span>Billed {billingCycle === 'Annual' ? 'annually' : 'monthly'}</span>
             </div>
+
             <ul>
+              Everything in the Free plan, plus:
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
-                108,000 credits (60 min) a month
+                Unlimited extract motion
+              </li>
+              <li>
+                <IconWrapper icon={SvgPath['Check']} />
+                Faster extract motion up to 60 min monthly
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />
@@ -126,14 +135,6 @@ const UpgradePlanModal = ({ onClose, hadFreeTrial }: Props) => {
               </li>
               <li>
                 <IconWrapper icon={SvgPath['Check']} />5 GB storage
-              </li>
-              <li>
-                <IconWrapper icon={SvgPath['Check']} />
-                Foot lock feature
-              </li>
-              <li>
-                <IconWrapper icon={SvgPath['Check']} />
-                Faster motion extraction
               </li>
             </ul>
             <footer>
