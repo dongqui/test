@@ -153,6 +153,13 @@ export function* handleVisualizeModel(action: ReturnType<typeof lpNodeActions.vi
                 plaskEngine.ikModule.setFKtoIK();
               }
             }
+            // Reset animation length to 500
+            const payload = {
+              endTimeIndex: 500,
+              currentTimeIndex: 0,
+            };
+            yield put(animatingControlsActions.blurEndInput(payload));
+
             // Release IK Controllers
             yield call(removeIK, removeIKAction(asset.id));
 
