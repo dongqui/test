@@ -158,7 +158,6 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
             endTimeIndex: contactData.left.heel.transformKeys.length,
             currentTimeIndex: 0,
           };
-          console.log(`Time : ${contactData.left.heel.transformKeys.length}`);
           yield put(animatingControlsActions.blurEndInput(payload));
         }
         animationIngredient = plaskEngine.animationModule.updateIngredientWithFootLocking(animationIngredient, contactData);
@@ -176,6 +175,13 @@ export default function* handleVisualizeMotion(action: ReturnType<typeof lpNodeA
             plaskEngine.ikModule.setFKtoIK();
           }
         }
+        // Reset animation length to 500
+        const payload = {
+          endTimeIndex: 500,
+          currentTimeIndex: 0,
+        };
+        yield put(animatingControlsActions.blurEndInput(payload));
+
         // Release IK Controllers
         yield call(removeIK, removeIKAction(asset.id));
 
