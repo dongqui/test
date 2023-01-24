@@ -188,6 +188,12 @@ const createAutoRetargetMap = (assetId: string, bones: Bone[], timeout?: number)
         const targetTransformNode = targetBone.getTransformNode();
         if (targetTransformNode) {
           value.targetTransformNodeId = targetTransformNode.id;
+
+          if (sourceBoneName == 'hips') {
+            //  targetTransformNode.position.z;
+            retargetMap.hipSpace = targetTransformNode.position.z;
+            console.log(`hipspace: ${-targetTransformNode.position.z}`);
+          }
         }
       }
     });

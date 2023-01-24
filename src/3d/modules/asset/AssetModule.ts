@@ -12,6 +12,7 @@ import {
   SceneLoader,
   SkeletonViewer,
   TransformNode,
+  Bone,
   Vector3,
 } from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
@@ -24,7 +25,6 @@ import * as selectingDataActions from 'actions/selectingDataAction';
 import { forceClickAnimationPlayAndStop } from 'utils/common';
 import { Channel } from 'redux-saga';
 import { PlaskTransformNode } from '3d/entities/PlaskTransformNode';
-import { max } from 'lodash';
 
 /**
  * Options used to export scene to a .glb format file.
@@ -108,7 +108,49 @@ export class AssetModule extends Module {
    * Get maximum bouding info.
    * @param meshes - id of the screen
    */
-  public getMaximumBoundingInfo(meshes: Mesh[]) {}
+  public getMaximumBoundingInfo(meshes: Mesh[]) {
+    let min = new Vector3(0, 0, 0);
+    let max = new Vector3(0, 0, 0);
+    meshes.forEach((mesh) => {
+      mesh.renderingGroupId = 1;
+      console.log(mesh.id);
+      const boundingInfo = mesh.getBoundingInfo();
+      const minBoundingInfo = boundingInfo.minimum;
+      const maxBoundingInfo = boundingInfo.maximum;
+      if (minBoundingInfo.x < min.x) min.x = minBoundingInfo.x;
+      if (minBoundingInfo.y < min.y) min.y = minBoundingInfo.y;
+      if (minBoundingInfo.z < min.z) min.z = minBoundingInfo.z;
+      if (maxBoundingInfo.x > max.x) max.x = maxBoundingInfo.x;
+      if (maxBoundingInfo.y > max.y) max.y = maxBoundingInfo.y;
+      if (maxBoundingInfo.z > max.z) max.z = maxBoundingInfo.z;
+    });
+
+    return max;
+  }
+
+  /**
+   * Get hip space info.
+   * @param meshes - id of the screen
+   */
+  public getHipSpaceInfo(jointBones: Bone[]) {
+    let hip: Bone;
+    let leftFoot: Bone;
+    let rightFoot: Bone;
+    jointBones.map((v) => {
+      if (v.name.toLowerCase().includes('hip')) {
+        hip = v;
+        console.log('hip: ', hip.getTransformNode()?.position);
+      }
+      if (v.name.toLowerCase().includes('leftfoot')) {
+        leftFoot = v;
+        console.log('leftFoot: ', leftFoot.getTransformNode()?.position);
+      }
+      if (v.name.toLowerCase().includes('rightfoot')) {
+        rightFoot = v;
+        console.log('rightFoot: ', rightFoot.getTransformNode()?.position);
+      }
+    });
+  }
 
   /**
    * Shows skeleton on the target screen.
@@ -179,24 +221,11 @@ export class AssetModule extends Module {
         const { id: screenId, scene } = screen;
         const targetVisibilityOption = this.visibilityOptions.find((visibilityOption) => visibilityOption.screenId === screenId);
 
-        let min = new Vector3(0, 0, 0);
-        let max = new Vector3(0, 0, 0);
         if (scene.isReady()) {
           // add joint to each bone and add it to the scene
           meshes.forEach((mesh) => {
             mesh.renderingGroupId = 1;
             console.log(mesh.id);
-            const boundingInfo = mesh.getBoundingInfo();
-            const minBoundingInfo = boundingInfo.minimum;
-            const maxBoundingInfo = boundingInfo.maximum;
-            if (minBoundingInfo.x < min.x) min.x = minBoundingInfo.x;
-            if (minBoundingInfo.y < min.y) min.y = minBoundingInfo.y;
-            if (minBoundingInfo.z < min.z) min.z = minBoundingInfo.z;
-            if (maxBoundingInfo.x > max.x) max.x = maxBoundingInfo.x;
-            if (maxBoundingInfo.y > max.y) max.y = maxBoundingInfo.y;
-            if (maxBoundingInfo.z > max.z) max.z = maxBoundingInfo.z;
-
-            // console.log(mesh.getBoundingInfo());
             mesh.showBoundingBox = true;
             scene.addMesh(mesh);
             this._currentAssetMeshes.push(mesh);
@@ -205,8 +234,6 @@ export class AssetModule extends Module {
               mesh.isVisible = targetVisibilityOption.isMeshVisible;
             }
           });
-
-          console.log('hipspace: ', max.y - min.y);
 
           geometries.forEach((geometry) => {
             scene.addGeometry(geometry);
