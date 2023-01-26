@@ -70,6 +70,7 @@ import CameraStop from '../../../public/images/CameraStop.svg';
 import Storage from './svg/Storage.svg';
 import Credit from './svg/Credit.svg';
 import WarningTriangle from './svg/WarningTriangle.svg';
+import Link from './New_svg/Link.svg';
 import Info from './New_svg/Info.svg';
 
 type Icon =
@@ -141,6 +142,7 @@ type Icon =
   | 'Credit'
   | 'Storage'
   | 'WarningTriangle'
+  | 'Link'
   | 'Info';
 
 type Images = {
@@ -216,6 +218,7 @@ const images: Images = {
   Storage,
   Credit,
   WarningTriangle,
+  Link,
   Info,
 };
 
