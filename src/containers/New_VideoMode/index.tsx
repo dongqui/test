@@ -828,7 +828,11 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
                 </div>
               </div>
               <div className={cx('section')}>
-                <div className={cx('section-title', 'hover')} onClick={() => window.open('https://knowledge.plask.ai/what-are-the-video-requirements', '_blank')?.focus()}>
+                <div
+                  id="learnmore-videotip"
+                  className={cx('section-title', 'hover')}
+                  onClick={() => window.open('https://knowledge.plask.ai/what-are-the-video-requirements', '_blank')?.focus()}
+                >
                   <Typography type="title">Video tip</Typography>
                   <div className={cx('title-icon')}>
                     <SvgPath.Link />
