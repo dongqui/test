@@ -62,13 +62,36 @@
 }
 
 .section {
-  padding: 0 16px;
+  padding: 0 16px 12px;
+
+  &:not(:last-child) {
+    box-shadow: 0 1px 0 $outline;
+  }
 
   .section-title {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     height: 40px;
-    color: var(--grey090)
+    color: var(--grey090);
+
+    &.hover {
+      height: 20px;
+      margin: 10px 0;
+      cursor: pointer;
+
+      &:hover {
+        .title-icon {
+          * {
+            stroke: var(--blue065);
+          }
+        }
+      }
+    }
+
+    .title-icon {
+      height: 20px;
+      margin-left: 8px;
+    }
   }
 
   .section-item {
@@ -77,6 +100,23 @@
     height: 36px;
     justify-content: space-between;
     color: var(--grey070)
+  }
+
+  .section-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px 0 4px;
+
+    .tips {
+      margin-top: 12px;
+      font-weight: 300;
+      font-size: 12px;
+      line-height: 150%;
+      color: $content-medium;
+
+
+    }
   }
 }
 
