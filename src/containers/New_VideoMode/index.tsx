@@ -839,7 +839,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
                   </div>
                 </div>
                 <div className={cx('section-body')}>
-                  <Image src="/images/videoTip.png" alt="video tip" width={268} height={163} />
+                  <Image src="/images/videoTip.svg" alt="video tip" width={268} height={163} />
                   <div className={cx('tips')}>
                     • Include the whole body in frame
                     <br />• Keep camera stationary
