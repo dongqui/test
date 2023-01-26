@@ -831,7 +831,7 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
                 <div
                   id="learnmore-videotip"
                   className={cx('section-title', 'hover')}
-                  onClick={() => window.open('https://knowledge.plask.ai/what-are-the-video-requirements', '_blank')?.focus()}
+                  onClick={() => window.open('https://knowledge.plask.ai/whats-the-best-way-to-capture-motion-using-your-camera-on-plask', '_blank')?.focus()}
                 >
                   <Typography type="title">Video tip</Typography>
                   <div className={cx('title-icon')}>
