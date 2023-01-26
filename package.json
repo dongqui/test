@@ -43,6 +43,7 @@
     "react-gtm-module": "^2.0.11",
     "react-hook-form": "^7.22.2",
     "react-input-mask": "^2.0.4",
+    "react-lottie-player": "^1.5.4",
     "react-redux": "^7.2.3",
     "react-resizable": "^3.0.4",
     "react-switch": "^6.0.0",

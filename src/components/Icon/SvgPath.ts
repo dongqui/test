@@ -70,6 +70,8 @@ import CameraStop from '../../../public/images/CameraStop.svg';
 import Storage from './svg/Storage.svg';
 import Credit from './svg/Credit.svg';
 import WarningTriangle from './svg/WarningTriangle.svg';
+import Link from './New_svg/Link.svg';
+import Info from './New_svg/Info.svg';
 
 type Icon =
   | 'ModalClose'
@@ -139,7 +141,9 @@ type Icon =
   | 'CameraStop'
   | 'Credit'
   | 'Storage'
-  | 'WarningTriangle';
+  | 'WarningTriangle'
+  | 'Link'
+  | 'Info';
 
 type Images = {
   [key in Icon]: FunctionComponent<React.PropsWithChildren<unknown>>;
@@ -214,6 +218,8 @@ const images: Images = {
   Storage,
   Credit,
   WarningTriangle,
+  Link,
+  Info,
 };
 
 export default images;

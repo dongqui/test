@@ -26,6 +26,7 @@ import ControlPanel from './ControlPanel';
 
 import classNames from 'classnames/bind';
 import styles from './index.module.scss';
+import Image from 'next/image';
 
 const cx = classNames.bind(styles);
 
@@ -824,6 +825,25 @@ const VideoMode = ({ browserType, sceneId, token }: Props) => {
                     list={dropdownList}
                     onSelect={selectHandler}
                   />
+                </div>
+              </div>
+              <div className={cx('section')}>
+                <div
+                  id="learnmore-videotip"
+                  className={cx('section-title', 'hover')}
+                  onClick={() => window.open('https://knowledge.plask.ai/whats-the-best-way-to-capture-motion-using-your-camera-on-plask', '_blank')?.focus()}
+                >
+                  <Typography type="title">Video tip</Typography>
+                  <div className={cx('title-icon')}>
+                    <SvgPath.Link />
+                  </div>
+                </div>
+                <div className={cx('section-body')}>
+                  <Image src="/images/videoTip.svg" alt="video tip" width={268} height={163} />
+                  <div className={cx('tips')}>
+                    • Include the whole body in frame
+                    <br />• Keep camera stationary
+                  </div>
                 </div>
               </div>
             </div>

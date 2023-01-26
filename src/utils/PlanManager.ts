@@ -26,7 +26,7 @@ class PlanManager {
   }
 
   isCreditExceeded(user: User, requiredCredit: number) {
-    return (user.credits?.remaining || 0) < requiredCredit;
+    return user.planType === 'freemium' && (user.credits?.remaining || 0) < requiredCredit;
   }
 
   openStorageExceededModal(user: User) {

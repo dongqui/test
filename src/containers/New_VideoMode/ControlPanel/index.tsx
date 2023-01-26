@@ -2,9 +2,9 @@ import { RefObject, useState, useCallback, useRef, ChangeEvent, useEffect } from
 import { useDispatch } from 'react-redux';
 import axios, { Canceler } from 'axios';
 import TagManager from 'react-gtm-module';
+
 import { useSelector } from 'reducers';
 import * as errors from 'errors';
-
 import * as globalUIActions from 'actions/Common/globalUI';
 import * as modeSelectActions from 'actions/modeSelection';
 import * as lpActions from 'actions/LP/lpNodeAction';
@@ -22,6 +22,8 @@ import { Overlay } from 'components/Overlay';
 import planManager from 'utils/PlanManager';
 import ExtractForm from './ExtractForm';
 import { convertServerResponseToNode, setChildNodeIds } from 'utils/LP/converters';
+import { CreditInfoModal } from 'containers/Common/Modal/modals';
+import FireLottie from 'components/Lotties/FireLottie/FireLottie';
 
 import classNames from 'classnames/bind';
 import styles from './ControlPanel.module.scss';
@@ -83,6 +85,7 @@ const ControlPanel = ({
   const lpNode = useSelector((state) => state.lpNode);
   let cancelTokenSource = useRef<Canceler>();
   const [isOpenExceptionModal, setIsOpenExceptionModal] = useState<MocapException>({ isOpen: false });
+  const [isOpenCreditInfoModal, setIsOpenCreditInfoModal] = useState(false);
   const [valueName, setValueName] = useState('Extracted motion');
   const [valueFormData, setValueFormData] = useState({
     model: 'single',
@@ -99,6 +102,9 @@ const ControlPanel = ({
       inputRef.current.select();
     }
   }, [isOpenExtractModal, inputRef]);
+
+  const unlimited = user.planType !== 'freemium' && (user.credits?.remaining || 0) < requiredCredit;
+  const isFasterMocap = user.planType !== 'freemium' && !unlimited;
 
   const handleSubmit = async (data: ExtractFormData) => {
     if (planManager.isCreditExceeded(user, requiredCredit)) {
@@ -121,7 +127,11 @@ const ControlPanel = ({
       setValueFormData({
         ...data,
       });
-      setIsOpenExtractModal(true);
+      if (unlimited) {
+        setIsOpenExtractModal(true);
+      } else {
+        setIsOpenCreditInfoModal(true);
+      }
     }
   };
 
@@ -287,14 +297,12 @@ const ControlPanel = ({
         <BaseModal>
           <div className={cx('modal-inner')}>
             <div className={cx('modal-header')}>
-              <div className={cx('title')}>Extract Mocap</div>
+              <div className={cx('title')}>Extract to library</div>
               <IconWrapper className={cx('button-close')} icon={SvgPath.Close} onClick={handleCloseModal} />
             </div>
             <div className={cx('modal-content')}>
-              <span className={cx('extract-text')}>
-                <strong>{requiredCredit.toLocaleString()} credits</strong> are required on this. You will have <strong>{remainingCredit} credits</strong> remaining.
-              </span>
-              <label className={cx('label-name')}>Name</label>
+              <span className={cx('extract-text')}>Extract motion to the library in tool{unlimited && '.'}</span>
+              {unlimited && <span className={cx('extract-text')}>Unlimited credits available.</span>}
               <BaseInput ref={inputRef} className={cx('input-name')} name="name" placeholder="Enter the name" value={valueName} onChange={handleChangeName} />
             </div>
             <div className={cx('modal-footer')}>
@@ -316,15 +324,12 @@ const ControlPanel = ({
               <div className={cx('title')}>Extracting mocap</div>
             </div>
             <div className={cx('modal-content')}>
-              <div className={cx('message')}>It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}</div>
-              <div className={cx('loading-spinner')}>
-                <Spinner size="small" backgroundColor="elevated" />
-              </div>
-            </div>
-            <div className={cx('modal-footer', 'loading-footer')}>
-              <OutlineButton className={cx('button-cancel')} onClick={handleCancel}>
-                Cancel
-              </OutlineButton>
+              {unlimited ? (
+                <div className={cx('message')}>Extracting mocap may take some time, but if you take a break and come back, it will be processed as soon as possible.</div>
+              ) : (
+                <div className={cx('message')}>It can take up to {duration * 6 >= 60 ? Math.floor((duration * 6) / 60) + ' minutes' : Math.floor(duration * 6) + ' seconds'}</div>
+              )}
+              <div className={cx('loading-spinner')}>{isFasterMocap ? <FireLottie /> : <Spinner size="small" backgroundColor="elevated" />}</div>
             </div>
           </div>
           <Overlay />
@@ -387,6 +392,18 @@ const ControlPanel = ({
           </div>
           <Overlay />
         </BaseModal>
+      )}
+      {isOpenCreditInfoModal && (
+        <CreditInfoModal
+          onClose={() => {
+            setIsOpenCreditInfoModal(false);
+          }}
+          usedCredit={requiredCredit}
+          onContinue={() => {
+            setIsOpenCreditInfoModal(false);
+            setIsOpenExtractModal(true);
+          }}
+        />
       )}
     </div>
   );

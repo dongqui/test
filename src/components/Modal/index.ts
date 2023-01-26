@@ -7,3 +7,4 @@ export { default as DropZoneModal } from './DropZoneModal';
 export { default as _AlertModal } from './_AlertModal';
 export { default as NotificationModal } from './NotificationModal';
 export { default as OnBoardingModal } from './OnBoardingModal';
+export { default as CreditInfoModal } from './CreditInfoModal';

@@ -1,6 +1,6 @@
-@import "../common.scss";
-@import "styles/libraries/_typography";
-@import "styles/libraries/_colors";
+@import '../common';
+@import 'styles/libraries/_typography';
+@import 'styles/libraries/_colors';
 
 .buttons {
   display: flex;
@@ -9,6 +9,8 @@
 }
 
 .container {
+  color: $content-medium;
+
   header {
     display: flex;
     justify-content: space-between;
@@ -53,7 +55,10 @@
 
       ul {
         margin-top: 7.6rem;
-        color: $content-medium;
+
+        li:not(:first-child) {
+          margin-top: 0.4rem;
+        }
       }
     }
 
@@ -70,6 +75,10 @@
       ul {
         margin-top: 3rem;
         color: $content-medium;
+
+        li {
+          margin-top: 0.4rem;
+        }
       }
     }
   }
