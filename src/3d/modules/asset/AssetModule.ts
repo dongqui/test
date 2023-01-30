@@ -226,7 +226,7 @@ export class AssetModule extends Module {
           meshes.forEach((mesh) => {
             mesh.renderingGroupId = 1;
             console.log(mesh.id);
-            mesh.showBoundingBox = true;
+            // mesh.showBoundingBox = true;
             scene.addMesh(mesh);
             this._currentAssetMeshes.push(mesh);
 
