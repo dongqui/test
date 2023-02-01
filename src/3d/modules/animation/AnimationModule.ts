@@ -591,7 +591,13 @@ export class AnimationModule extends Module {
               const transformNode = animatableTransformNodes.find((tn) => tn.id === targetTransformNodeId);
               if (transformNode && transformNode.parent) {
                 transformMatrix = transformNode.parent.getWorldMatrix().clone().invert();
-                transformMatrix.addTranslationFromFloats(transformNode.position.x, transformNode.position.y, transformNode.position.z);
+                const targetInitialPose = initialPoses.find((initialPose) => initialPose.target.id === targetTransformNodeId);
+
+                if (targetInitialPose) {
+                  transformMatrix.addTranslationFromFloats(targetInitialPose.position.x, targetInitialPose.position.y, targetInitialPose.position.z);
+                } else {
+                  console.warn('could not find initial pose for hips, position will be incorrect');
+                }
               }
             }
             transformKeys.forEach((transformKey) => {
