@@ -1,20 +1,5 @@
 import { PlaskEngine } from '3d/PlaskEngine';
-import {
-  AbstractMesh,
-  ActionEvent,
-  ActionManager,
-  AssetContainer,
-  Axis,
-  ExecuteCodeAction,
-  Mesh,
-  Node,
-  Scene,
-  SceneLoader,
-  SkeletonViewer,
-  TransformNode,
-  Bone,
-  Vector3,
-} from '@babylonjs/core';
+import { AbstractMesh, ActionEvent, ActionManager, AssetContainer, Axis, ExecuteCodeAction, Mesh, Node, Scene, SceneLoader, SkeletonViewer, TransformNode } from '@babylonjs/core';
 import { GLTF2Export } from '@babylonjs/serializers';
 import { convertModel } from 'api';
 import { PlaskScreen } from 'types/common';
@@ -105,54 +90,6 @@ export class AssetModule extends Module {
   }
 
   /**
-   * Get maximum bouding info.
-   * @param meshes - id of the screen
-   */
-  public getMaximumBoundingInfo(meshes: Mesh[]) {
-    let min = new Vector3(0, 0, 0);
-    let max = new Vector3(0, 0, 0);
-    meshes.forEach((mesh) => {
-      mesh.renderingGroupId = 1;
-      console.log(mesh.id);
-      const boundingInfo = mesh.getBoundingInfo();
-      const minBoundingInfo = boundingInfo.minimum;
-      const maxBoundingInfo = boundingInfo.maximum;
-      if (minBoundingInfo.x < min.x) min.x = minBoundingInfo.x;
-      if (minBoundingInfo.y < min.y) min.y = minBoundingInfo.y;
-      if (minBoundingInfo.z < min.z) min.z = minBoundingInfo.z;
-      if (maxBoundingInfo.x > max.x) max.x = maxBoundingInfo.x;
-      if (maxBoundingInfo.y > max.y) max.y = maxBoundingInfo.y;
-      if (maxBoundingInfo.z > max.z) max.z = maxBoundingInfo.z;
-    });
-
-    return max;
-  }
-
-  /**
-   * Get hip space info.
-   * @param meshes - id of the screen
-   */
-  public getHipSpaceInfo(jointBones: Bone[]) {
-    let hip: Bone;
-    let leftFoot: Bone;
-    let rightFoot: Bone;
-    jointBones.map((v) => {
-      if (v.name.toLowerCase().includes('hip')) {
-        hip = v;
-        console.log('hip: ', hip.getTransformNode()?.position);
-      }
-      if (v.name.toLowerCase().includes('leftfoot')) {
-        leftFoot = v;
-        console.log('leftFoot: ', leftFoot.getTransformNode()?.position);
-      }
-      if (v.name.toLowerCase().includes('rightfoot')) {
-        rightFoot = v;
-        console.log('rightFoot: ', rightFoot.getTransformNode()?.position);
-      }
-    });
-  }
-
-  /**
    * Shows skeleton on the target screen.
    * @param screenId - id of the screen
    */
@@ -225,8 +162,6 @@ export class AssetModule extends Module {
           // add joint to each bone and add it to the scene
           meshes.forEach((mesh) => {
             mesh.renderingGroupId = 1;
-            console.log(mesh.id);
-            // mesh.showBoundingBox = true;
             scene.addMesh(mesh);
             this._currentAssetMeshes.push(mesh);
 
@@ -240,8 +175,6 @@ export class AssetModule extends Module {
           });
 
           scene.addSkeleton(skeleton);
-          console.log('scene: ', scene);
-          console.log('skeleton: ', skeleton);
 
           // // add joint to each bone and add it to the scene
           const jointBones = bones.filter(
