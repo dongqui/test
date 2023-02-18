@@ -550,7 +550,7 @@ export class AnimationModule extends Module {
 
     const { tracks } = baseLayer;
     const { hipSpace } = retargetMap;
-    console.log('hipSpace: ', hipSpace);
+
     const contactData = [];
 
     // iterate mocapData not tracks for efficiency
@@ -602,8 +602,7 @@ export class AnimationModule extends Module {
             }
             transformKeys.forEach((transformKey) => {
               const { frame, value } = transformKey;
-              const newValue = (value as ArrayOfThreeNumbers).map((v, idx) => (idx === 2 ? ((v * 100 - 106) * hipSpace) / 106 : (v * 100 * hipSpace) / 106));
-
+              const newValue = (value as ArrayOfThreeNumbers).map((v, idx) => (v * hipSpace) / 106);
               targetTrack.transformKeys.push({ frame, value: Vector3.TransformCoordinates(Vector3.FromArray(newValue), transformMatrix) }); // the root mesh is scaled down to 1/100, all transformKeys have to have 100 * value
             });
           }
